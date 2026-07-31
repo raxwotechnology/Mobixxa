@@ -1,7 +1,7 @@
 const User = require('../models/User');
 const RegistrationOtp = require('../models/RegistrationOtp');
 const generateToken = require('../utils/generateToken');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const { isValidEmail, isValidSLPhone, formatSLPhone } = require('../utils/validators');
 const { isRealEmailAddress } = require('../utils/emailValidationService');

@@ -4,7 +4,7 @@
  * Run once: node scripts/bootstrapAdmin.js
  */
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
 
 dotenv.config();
