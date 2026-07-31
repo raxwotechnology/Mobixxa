@@ -5,7 +5,11 @@ const Store = require('../models/Store');
 const User = require('../models/User');
 const LoyaltyTransaction = require('../models/LoyaltyTransaction');
 const Settings = require('../models/Settings');
-const PDFDocument = require('pdfkit');
+let PDFDocument;
+const getPDFDocument = () => {
+  if (!PDFDocument) PDFDocument = require('pdfkit');
+  return PDFDocument;
+};
 const path = require('path');
 const { sendEmail, customerReturnUpdateEmail } = require('../utils/emailService');
 
@@ -446,7 +450,8 @@ const exportCustomerReturnsPdf = async (req, res, next) => {
       .limit(500);
     const settings = await Settings.findOne().lean();
 
-    const doc = new PDFDocument({ size: 'A4', margin: 40 });
+    const PDFDoc = getPDFDocument();
+    const doc = new PDFDoc({ size: 'A4', margin: 40 });
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename="customer-returns-report.pdf"');
     doc.pipe(res);
