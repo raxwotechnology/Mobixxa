@@ -245,7 +245,12 @@ const DashboardLayout = ({ children, navItems, title }) => {
           >
             <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-brand-indigo to-brand-fuchsia p-[2px] shadow-md flex items-center justify-center flex-shrink-0">
               {logoSrc ? (
-                <img src={logoSrc} alt="Logo" className="w-full h-full object-contain rounded-lg bg-white" />
+                <img
+                  src={logoSrc}
+                  alt="Logo"
+                  className="w-full h-full object-cover rounded-lg bg-white"
+                  onError={(e) => { e.target.onerror = null; e.target.src = '/logo.png'; }}
+                />
               ) : (
                 <span className="text-white text-xs font-black">MH</span>
               )}
