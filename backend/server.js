@@ -7,6 +7,10 @@ const connectDB = require('./config/db');
 
 const app = express();
 
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 // Ensure DB connection for incoming requests
 app.use(async (req, res, next) => {
   try {
