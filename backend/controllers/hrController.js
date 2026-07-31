@@ -765,7 +765,15 @@ const getEmployeePerformance = async (req, res, next) => {
 // @access  Private/Admin/Manager
 const adminMarkAttendance = async (req, res, next) => {
   try {
-    const { employeeId, date, checkInTime, checkOutTime, status, notes } = req.body;
+    let { employeeId, date, checkInTime, checkOutTime, status, notes } = req.body;
+
+    const staffRoles = ['cashier', 'deliveryGuy', 'stockEmployee'];
+    const isSelfMark = staffRoles.includes(req.user.role);
+
+    // Staff can only mark their own attendance
+    if (isSelfMark) {
+      employeeId = req.user._id.toString();
+    }
 
     if (!employeeId) { res.status(400); return next(new Error('employeeId is required')); }
 
@@ -795,15 +803,18 @@ const adminMarkAttendance = async (req, res, next) => {
       attendance.markedBy = req.user._id;
       await attendance.save();
 
-      const { sendNotification } = require('../utils/notificationService');
-      await sendNotification({
-        userId: employee._id,
-        userEmail: employee.email,
-        type: 'attendance',
-        title: 'Attendance Updated',
-        message: `Your attendance for ${targetDate.toLocaleDateString()} was updated to ${status || attendance.status}.`,
-        link: '/employee/attendance',
-      });
+      // Notify only when admin/manager marks someone else
+      if (!isSelfMark) {
+        const { sendNotification } = require('../utils/notificationService');
+        await sendNotification({
+          userId: employee._id,
+          userEmail: employee.email,
+          type: 'attendance',
+          title: 'Attendance Updated',
+          message: `Your attendance for ${targetDate.toLocaleDateString()} was updated to ${status || attendance.status}.`,
+          link: '/employee/attendance',
+        });
+      }
 
       return res.json(attendance);
     }
@@ -830,19 +841,21 @@ const adminMarkAttendance = async (req, res, next) => {
       hoursWorked,
       overtime,
       status: status || 'present',
-      notes: notes || `Marked by ${req.user.name}`,
+      notes: notes || (isSelfMark ? 'Self marked' : `Marked by ${req.user.name}`),
       markedBy: req.user._id,
     });
 
-    const { sendNotification } = require('../utils/notificationService');
-    await sendNotification({
-      userId: employee._id,
-      userEmail: employee.email,
-      type: 'attendance',
-      title: 'Attendance Marked',
-      message: `Your attendance for ${targetDate.toLocaleDateString()} was marked as ${status || 'present'}.`,
-      link: '/employee/attendance',
-    });
+    if (!isSelfMark) {
+      const { sendNotification } = require('../utils/notificationService');
+      await sendNotification({
+        userId: employee._id,
+        userEmail: employee.email,
+        type: 'attendance',
+        title: 'Attendance Marked',
+        message: `Your attendance for ${targetDate.toLocaleDateString()} was marked as ${status || 'present'}.`,
+        link: '/employee/attendance',
+      });
+    }
 
     res.status(201).json(attendance);
   } catch (error) { next(error); }

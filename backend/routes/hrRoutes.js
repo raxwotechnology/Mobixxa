@@ -18,7 +18,13 @@ router.post('/attendance/check-in', authorize('cashier', 'deliveryGuy', 'stockEm
 router.post('/attendance/check-out', authorize('cashier', 'deliveryGuy', 'stockEmployee', 'manager'), checkOut);
 router.get('/attendance', getMyAttendance);
 router.get('/attendance/report', requirePermission('employees'), getAttendanceReport);
-router.post('/attendance/mark', requirePermission('employees'), adminMarkAttendance);
+// Admin/manager can mark any employee; cashier/delivery/stock can mark themselves only
+router.post('/attendance/mark', (req, res, next) => {
+  if (['cashier', 'deliveryGuy', 'stockEmployee'].includes(req.user?.role)) {
+    return next();
+  }
+  return requirePermission('employees')(req, res, next);
+}, adminMarkAttendance);
 
 // Leaves
 router.post('/leaves', requestLeave);
