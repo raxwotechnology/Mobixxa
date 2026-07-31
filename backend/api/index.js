@@ -76,6 +76,10 @@ app.get('/', (req, res) => {
   res.send('Mobile Hub API is running...');
 });
 
+app.get('/api', (req, res) => {
+  res.json({ message: 'Mobile Hub API is active', status: 'online' });
+});
+
 app.use((err, req, res, next) => {
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
   res.status(statusCode).json({
