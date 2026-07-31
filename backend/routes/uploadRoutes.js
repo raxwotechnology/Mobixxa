@@ -5,15 +5,17 @@ const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-// Setup Multer Storage
-const storage = multer.diskStorage({
-  destination(req, file, cb) {
-    cb(null, 'uploads/');
-  },
-  filename(req, file, cb) {
-    cb(null, `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`);
-  },
-});
+// Setup Multer Storage (memoryStorage for serverless, diskStorage for server)
+const storage = process.env.VERCEL
+  ? multer.memoryStorage()
+  : multer.diskStorage({
+      destination(req, file, cb) {
+        cb(null, 'uploads/');
+      },
+      filename(req, file, cb) {
+        cb(null, `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`);
+      },
+    });
 
 function checkFileType(file, cb, isDocument = false) {
   const filetypes = isDocument ? /pdf|doc|docx|jpg|jpeg|png/ : /jpg|jpeg|png|webp/;
