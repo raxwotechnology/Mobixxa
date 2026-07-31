@@ -47,40 +47,40 @@ const Login = () => {
     const dashPath = redirectMap[user.role] || '/';
 
     return (
-      <div className="min-h-[85vh] flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-stone-100 py-12">
+      <div className="min-h-[85vh] flex items-center justify-center bg-gradient-to-br from-slate-50 via-slate-100 to-indigo-50/50 py-16 px-4">
         <motion.div
-          className="bg-white p-8 md:p-10 rounded-3xl shadow-xl border border-card-border w-full max-w-md mx-4"
+          className="glass-card p-8 md:p-10 rounded-[2rem] w-full max-w-md"
           initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
         >
           <div className="text-center mb-6">
-            <Link to="/" className="text-3xl font-bold text-primary-blue inline-flex items-center gap-2 mb-4">
-              {brandLogoUrl && <img src={brandLogoUrl} alt={brandName} className="w-9 h-9 rounded object-cover" />}
-              <span>{brandName}</span>
+            <Link to="/" className="text-3xl font-extrabold inline-flex items-center gap-2 mb-4">
+              {brandLogoUrl && <img src={brandLogoUrl} alt={brandName} className="w-9 h-9 rounded-xl object-cover border border-slate-100" />}
+              <span className="bg-gradient-to-r from-brand-indigo via-brand-violet to-brand-fuchsia bg-clip-text text-transparent font-black">{brandName}</span>
             </Link>
-            <h1 className="text-2xl font-bold text-dark-navy mt-0 mb-2">Already Signed In</h1>
+            <h1 className="text-2xl font-black text-slate-800 mt-0 mb-2">Already Signed In</h1>
           </div>
 
-          <div className="bg-blue-50 rounded-2xl p-5 mb-6 text-center">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-md mx-auto mb-3">
+          <div className="bg-brand-indigo/5 border border-brand-indigo/10 rounded-2xl p-5 mb-6 text-center">
+            <div className="w-16 h-16 bg-gradient-to-br from-brand-indigo to-brand-violet rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-md mx-auto mb-3">
               {user.name.charAt(0).toUpperCase()}
             </div>
-            <p className="text-lg font-semibold text-dark-navy m-0">{user.name}</p>
-            <p className="text-sm text-muted-text m-0">{user.email}</p>
-            <span className="inline-block mt-2 text-xs font-bold uppercase bg-primary-blue/10 text-primary-blue px-3 py-1 rounded-full">{user.role}</span>
+            <p className="text-lg font-bold text-slate-800 m-0">{user.name}</p>
+            <p className="text-xs text-slate-400 m-0 mt-0.5">{user.email}</p>
+            <span className="inline-block mt-3.5 text-[10px] font-bold uppercase bg-brand-indigo/10 text-brand-indigo px-3 py-1 rounded-full">{user.role}</span>
           </div>
 
           <button
             onClick={() => navigate(dashPath)}
-            className="w-full bg-primary-blue text-white font-semibold py-3.5 rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-blue-200 mb-3"
+            className="w-full bg-gradient-to-r from-brand-indigo to-brand-violet hover:opacity-95 text-white font-bold py-3.5 rounded-xl transition-all shadow-[0_4px_12px_rgba(99,102,241,0.25)] mb-3 cursor-pointer"
           >
             Continue as {user.name.split(' ')[0]}
           </button>
 
           <button
             onClick={handleSwitchAccount}
-            className="w-full flex items-center justify-center gap-2 bg-gray-100 text-dark-navy font-semibold py-3.5 rounded-xl hover:bg-gray-200 transition-all"
+            className="w-full flex items-center justify-center gap-2 bg-slate-50 border border-slate-200 text-slate-700 font-bold py-3.5 rounded-xl hover:bg-slate-100 transition-all cursor-pointer text-sm"
           >
-            <LogOut size={16} />
+            <LogOut size={15} />
             Switch Account
           </button>
         </motion.div>
@@ -89,29 +89,29 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-[85vh] flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-stone-100 py-12">
+    <div className="min-h-[85vh] flex items-center justify-center bg-gradient-to-br from-slate-50 via-slate-100 to-indigo-50/50 py-16 px-4">
       <motion.div
-        className="bg-white p-8 md:p-10 rounded-3xl shadow-xl border border-card-border w-full max-w-md mx-4"
+        className="glass-card p-8 md:p-10 rounded-[2rem] w-full max-w-md"
         initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
       >
         <div className="text-center mb-8">
-          <Link to="/" className="text-3xl font-bold text-primary-blue inline-flex items-center gap-2 mb-4">
-            {brandLogoUrl && <img src={brandLogoUrl} alt={brandName} className="w-9 h-9 rounded object-cover" />}
-            <span>{brandName}</span>
+          <Link to="/" className="text-3xl font-extrabold inline-flex items-center gap-2 mb-4">
+            {brandLogoUrl && <img src={brandLogoUrl} alt={brandName} className="w-9 h-9 rounded-xl object-cover border border-slate-100" />}
+            <span className="bg-gradient-to-r from-brand-indigo via-brand-violet to-brand-fuchsia bg-clip-text text-transparent font-black">{brandName}</span>
           </Link>
-          <h1 className="text-2xl font-bold text-dark-navy mt-0 mb-2">Welcome Back</h1>
-          <p className="text-muted-text m-0">Sign in to continue your tech and smart devices shopping</p>
+          <h1 className="text-2xl font-black text-slate-800 mt-0 mb-2">Welcome Back</h1>
+          <p className="text-slate-400 text-sm m-0 font-medium">Sign in to continue your tech and smart devices shopping</p>
         </div>
 
         <form onSubmit={submitHandler} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-dark-navy mb-1.5" htmlFor="login-email">
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2" htmlFor="login-email">
               Email Address
             </label>
             <input
               type="email"
               id="login-email"
-              className="w-full border border-card-border rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary-blue focus:border-transparent outline-none transition-all"
+              className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-indigo/25 focus:border-brand-indigo outline-none transition-all text-sm"
               placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -120,17 +120,17 @@ const Login = () => {
           </div>
 
           <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-sm font-medium text-dark-navy" htmlFor="login-password">
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide" htmlFor="login-password">
                 Password
               </label>
-              <Link to="/forgot-password" className="text-xs text-primary-blue hover:underline">Forgot password?</Link>
+              <Link to="/forgot-password" className="text-xs text-brand-indigo font-semibold hover:underline">Forgot password?</Link>
             </div>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
                 id="login-password"
-                className="w-full border border-card-border rounded-xl px-4 py-3 pr-12 focus:ring-2 focus:ring-primary-blue focus:border-transparent outline-none transition-all"
+                className="w-full border border-slate-200 rounded-xl px-4 py-3 pr-12 focus:ring-2 focus:ring-brand-indigo/25 focus:border-brand-indigo outline-none transition-all text-sm"
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -139,9 +139,9 @@ const Login = () => {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-text hover:text-dark-navy"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
               >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
           </div>
@@ -149,16 +149,16 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-primary-blue text-white font-semibold py-3.5 rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-blue-200 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full bg-gradient-to-r from-brand-indigo to-brand-violet hover:opacity-95 text-white font-bold py-3.5 rounded-xl transition-all shadow-[0_4px_12px_rgba(99,102,241,0.25)] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer mt-2"
           >
             {loading ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
 
         <div className="mt-8 text-center">
-          <p className="text-sm text-muted-text">
+          <p className="text-sm text-slate-400 font-medium">
             Don't have an account?{' '}
-            <Link to="/register" className="text-primary-blue font-semibold hover:underline">
+            <Link to="/register" className="text-brand-indigo font-bold hover:underline">
               Create Account
             </Link>
           </p>

@@ -303,60 +303,60 @@ const Checkout = () => {
   }
 
   return (
-    <div className="base-container py-8">
-      <h1 className="text-2xl md:text-3xl font-bold text-dark-navy mt-0 mb-6">Checkout</h1>
+    <div className="base-container py-10 bg-slate-50/20 min-h-screen">
+      <h1 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight mt-0 mb-8 border-b border-slate-100 pb-4">Secure Checkout</h1>
 
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div className="flex flex-col lg:flex-row gap-8 items-start">
         {/* Left — Forms */}
-        <div className="flex-1 space-y-6">
+        <div className="flex-1 w-full space-y-6">
           {/* Delivery Address */}
           <motion.div
-            className="bg-white border border-card-border rounded-2xl p-6"
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
+            className="bg-white border border-slate-200/60 rounded-[2rem] p-6 lg:p-8 shadow-sm"
+            initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
           >
-            <h3 className="font-bold text-dark-navy mt-0 mb-4 flex items-center gap-2">
-              <MapPin size={20} className="text-primary-blue" /> Delivery Address
+            <h3 className="font-bold text-slate-800 mt-0 mb-5 flex items-center gap-2 border-b border-slate-100 pb-2">
+              <MapPin size={18} className="text-brand-indigo" /> Delivery Address
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-dark-navy mb-1">Street</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Street Address</label>
                 <input type="text" value={address.street} onChange={(e) => setAddress({ ...address, street: e.target.value })}
-                  className="w-full border border-card-border rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary-blue focus:border-transparent outline-none text-sm" placeholder="123 Main Street" />
+                  className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-indigo/25 focus:border-brand-indigo outline-none text-sm font-semibold text-slate-700" placeholder="123 Main Street" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-dark-navy mb-1">City</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">City</label>
                 <input type="text" value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })}
-                  className="w-full border border-card-border rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary-blue focus:border-transparent outline-none text-sm" placeholder="New York" />
+                  className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-indigo/25 focus:border-brand-indigo outline-none text-sm font-semibold text-slate-700" placeholder="Colombo" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-dark-navy mb-1">State</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">State / Province</label>
                 <input type="text" value={address.state} onChange={(e) => setAddress({ ...address, state: e.target.value })}
-                  className="w-full border border-card-border rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary-blue focus:border-transparent outline-none text-sm" placeholder="NY" />
+                  className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-indigo/25 focus:border-brand-indigo outline-none text-sm font-semibold text-slate-700" placeholder="Western" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-dark-navy mb-1">Zip Code</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Zip Code</label>
                 <input type="text" value={address.zipCode} onChange={(e) => setAddress({ ...address, zipCode: e.target.value })}
-                  className="w-full border border-card-border rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary-blue focus:border-transparent outline-none text-sm" placeholder="10001" />
+                  className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-indigo/25 focus:border-brand-indigo outline-none text-sm font-semibold text-slate-700" placeholder="00100" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-dark-navy mb-1">Country</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Country</label>
                 <input type="text" value={address.country} onChange={(e) => setAddress({ ...address, country: e.target.value })}
-                  className="w-full border border-card-border rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary-blue focus:border-transparent outline-none text-sm" placeholder="USA" />
+                  className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-indigo/25 focus:border-brand-indigo outline-none text-sm font-semibold text-slate-700" placeholder="Sri Lanka" />
               </div>
             </div>
           </motion.div>
 
           {/* Delivery Slot */}
           <motion.div
-            className="bg-white border border-card-border rounded-2xl p-6"
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }}
+            className="bg-white border border-slate-200/60 rounded-[2rem] p-6 lg:p-8 shadow-sm"
+            initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }}
           >
-            <h3 className="font-bold text-dark-navy mt-0 mb-4 flex items-center gap-2">
-              <Clock size={20} className="text-primary-blue" /> Delivery Slot
+            <h3 className="font-bold text-slate-800 mt-0 mb-5 flex items-center gap-2 border-b border-slate-100 pb-2">
+              <Clock size={18} className="text-brand-indigo" /> Delivery Slot
             </h3>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-dark-navy mb-2">Select Date</label>
-              <div className="flex flex-wrap gap-2">
+            <div className="mb-5">
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-3.5">Select Date</label>
+              <div className="flex flex-wrap gap-2.5">
                 {dateOptions.map((d) => {
                   const dateObj = new Date(d + 'T00:00:00');
                   const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
@@ -364,25 +364,25 @@ const Checkout = () => {
                   const month = dateObj.toLocaleDateString('en-US', { month: 'short' });
                   return (
                     <button key={d} type="button" onClick={() => setDeliveryDate(d)}
-                      className={`px-4 py-3 rounded-xl border text-sm font-medium transition-all text-center min-w-[70px] ${
-                        deliveryDate === d ? 'border-primary-blue bg-emerald-50 text-primary-blue' : 'border-card-border hover:border-gray-300'
+                      className={`px-4 py-3 rounded-xl border text-sm font-medium transition-all text-center min-w-[72px] cursor-pointer ${
+                        deliveryDate === d ? 'border-brand-indigo bg-brand-indigo/5 text-brand-indigo font-bold shadow-sm' : 'border-slate-200 hover:border-slate-350 text-slate-500'
                       }`}
                     >
-                      <div className="text-xs text-muted-text">{dayName}</div>
-                      <div className="font-bold">{dayNum}</div>
-                      <div className="text-xs">{month}</div>
+                      <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{dayName}</div>
+                      <div className="font-black text-lg my-0.5 leading-none">{dayNum}</div>
+                      <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{month}</div>
                     </button>
                   );
                 })}
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-dark-navy mb-2">Select Time</label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-3.5">Select Time Slot</label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5">
                 {timeSlots.map((slot) => (
                   <button key={slot} type="button" onClick={() => setDeliveryTime(slot)}
-                    className={`px-3 py-2.5 rounded-xl border text-sm font-medium transition-all ${
-                      deliveryTime === slot ? 'border-primary-blue bg-emerald-50 text-primary-blue' : 'border-card-border hover:border-gray-300'
+                    className={`px-3 py-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                      deliveryTime === slot ? 'border-brand-indigo bg-brand-indigo/5 text-brand-indigo shadow-sm' : 'border-slate-200 hover:border-slate-350 text-slate-550'
                     }`}
                   >
                     {slot}
@@ -394,12 +394,12 @@ const Checkout = () => {
 
           {/* Voucher */}
           <motion.div
-            className="bg-white border border-card-border rounded-2xl p-6"
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2 }}
+            className="bg-white border border-slate-200/60 rounded-[2rem] p-6 lg:p-8 shadow-sm"
+            initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2 }}
           >
-            <h3 className="font-bold text-dark-navy mt-0 mb-4">Voucher</h3>
+            <h3 className="font-bold text-slate-800 mt-0 mb-5 border-b border-slate-100 pb-2">Apply Voucher</h3>
             {claimedVouchers.length === 0 ? (
-              <p className="text-sm text-amber-600 mb-0">No valid vouchers available for current cart items.</p>
+              <p className="text-xs font-bold text-amber-600 bg-amber-50 rounded-xl px-4 py-3 m-0">No valid vouchers available for current cart items.</p>
             ) : (
               <div className="flex flex-col sm:flex-row gap-3">
                 <select
@@ -413,21 +413,21 @@ const Checkout = () => {
                       setVoucherDiscount(0);
                     }
                   }}
-                  className="w-full border border-card-border rounded-xl px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-indigo/25 focus:border-brand-indigo font-semibold text-slate-650 cursor-pointer"
                 >
                   <option value="">Select claimed voucher</option>
                   {claimedVouchers.map((v, idx) => (
                     <option key={`${v.code}-${idx}`} value={v.code}>
-                      {v.code} ({v.type === 'percentage' ? `${v.value}%` : `Rs. ${v.value}`})
+                      🎟️ {v.code} ({v.type === 'percentage' ? `${v.value}%` : `Rs. ${v.value}`})
                     </option>
                   ))}
                 </select>
               </div>
             )}
             {voucherDiscount > 0 && (
-              <div className="mt-3 p-3 bg-emerald-50 rounded-xl border border-emerald-100">
-                <p className="text-sm text-emerald-700 font-semibold mb-0 flex items-center gap-2">
-                  <ShieldCheck size={16} /> Voucher discount applied: -Rs. {voucherDiscount.toFixed(2)} deducted from total
+              <div className="mt-4 p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
+                <p className="text-xs text-emerald-700 font-bold uppercase tracking-wider mb-0 flex items-center gap-2">
+                  <ShieldCheck size={16} /> Voucher discount applied: -Rs. {voucherDiscount.toFixed(2)} deducted
                 </p>
               </div>
             )}
@@ -435,31 +435,31 @@ const Checkout = () => {
 
           {/* Loyalty Points */}
           <motion.div
-            className="bg-white border border-card-border rounded-2xl p-6"
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.15 }}
+            className="bg-white border border-slate-200/60 rounded-[2rem] p-6 lg:p-8 shadow-sm"
+            initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.15 }}
           >
-            <h3 className="font-bold text-dark-navy mt-0 mb-4 flex items-center gap-2">
+            <h3 className="font-bold text-slate-800 mt-0 mb-5 border-b border-slate-100 pb-2">
               🏆 Redeem Loyalty Points
             </h3>
             {!user ? (
-              <p className="text-sm text-muted-text mb-0">Login to redeem your loyalty points.</p>
+              <p className="text-sm text-slate-400 font-semibold mb-0">Login to redeem your loyalty points.</p>
             ) : (
               <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm text-muted-text">Available Points:</span>
-                  <span className="font-bold text-amber-600">{customerPoints}</span>
+                <div className="flex items-center justify-between mb-4 text-xs font-bold uppercase tracking-wider text-slate-450">
+                  <span>Available Balance:</span>
+                  <span className="text-amber-600 font-black text-sm">{customerPoints} PTS</span>
                 </div>
                 {loyaltyPointsToRedeem > 0 ? (
-                  <div className="flex items-center justify-between bg-amber-50 rounded-xl p-3 border border-amber-100">
-                    <span className="text-sm text-emerald-700 font-semibold">✅ {loyaltyPointsToRedeem} pts = Rs.{loyaltyDiscount.toFixed(2)} off</span>
+                  <div className="flex items-center justify-between bg-amber-50 rounded-2xl p-4 border border-amber-100">
+                    <span className="text-xs text-emerald-700 font-black uppercase tracking-wider">✅ {loyaltyPointsToRedeem} points applied = Rs.{loyaltyDiscount.toFixed(2)} discount</span>
                     <button onClick={() => { setLoyaltyPointsToRedeem(0); setLoyaltyDiscount(0); setPointsInput(''); toast.info('Points removed'); }}
-                      className="text-xs text-red-600 font-semibold hover:underline bg-transparent border-none cursor-pointer">Remove</button>
+                      className="text-xs text-rose-500 font-bold hover:underline bg-transparent border-none cursor-pointer">Remove</button>
                   </div>
                 ) : (
-                  <div className="flex gap-2">
+                  <div className="flex gap-3">
                     <input type="number" value={pointsInput} onChange={(e) => setPointsInput(e.target.value)}
                       placeholder="Points to redeem (min 10)" min="10" max={customerPoints}
-                      className="flex-1 border border-card-border rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary-blue outline-none" />
+                      className="flex-1 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand-indigo/25 focus:border-brand-indigo outline-none font-semibold text-slate-700" />
                     <button onClick={() => {
                       const pts = parseInt(pointsInput);
                       if (isNaN(pts) || pts < 10) { toast.error('Minimum 10 points'); return; }
@@ -469,39 +469,39 @@ const Checkout = () => {
                       setLoyaltyDiscount(disc);
                       toast.success(`${pts} points applied (Rs.${disc} discount)`);
                       setPointsInput('');
-                    }} className="bg-amber-500 hover:bg-amber-600 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors">Apply</button>
+                    }} className="bg-amber-500 hover:bg-amber-650 text-white font-bold px-6 py-3 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer shadow-[0_4px_12px_rgba(245,158,11,0.2)]">Apply</button>
                   </div>
                 )}
-                <p className="text-xs text-muted-text mt-2 mb-0">1 point = Rs.{pointValue} discount. Minimum 10 points to redeem.</p>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-3 mb-0">1 point = Rs.{pointValue} discount. Minimum 10 points to redeem.</p>
               </div>
             )}
           </motion.div>
 
           {/* Payment Method */}
           <motion.div
-            className="bg-white border border-card-border rounded-2xl p-6"
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.22 }}
+            className="bg-white border border-slate-200/60 rounded-[2rem] p-6 lg:p-8 shadow-sm"
+            initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.22 }}
           >
-            <h3 className="font-bold text-dark-navy mt-0 mb-4 flex items-center gap-2">
-              <CreditCard size={20} className="text-primary-blue" /> Payment Method
+            <h3 className="font-bold text-slate-800 mt-0 mb-5 flex items-center gap-2 border-b border-slate-100 pb-2">
+              <CreditCard size={18} className="text-brand-indigo" /> Payment Method
             </h3>
             <div className="space-y-3">
               {[
                 { id: 'cod', label: 'Cash on Delivery', icon: '💵', desc: 'Pay when your order arrives' },
-                { id: 'payhere', label: 'PayHere (Card/Bank)', icon: '💳', desc: 'Secure online payment via PayHere' },
-                { id: 'koko', label: 'Koko Pay', icon: '📱', desc: 'Buy now and pay later with Koko' },
+                { id: 'payhere', label: 'PayHere Gateway', icon: '💳', desc: 'Secure online payment (Visa / Master / LANKAQR)' },
+                { id: 'koko', label: 'Koko (3 Installments)', icon: '📱', desc: 'Split the bill into 3 easy payments' },
               ].map((method) => (
                 <label key={method.id}
-                  className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
-                    paymentMethod === method.id ? 'border-primary-blue bg-emerald-50' : 'border-card-border hover:border-gray-300'
+                  className={`flex items-center gap-4 p-4 rounded-2xl border cursor-pointer transition-all ${
+                    paymentMethod === method.id ? 'border-brand-indigo bg-brand-indigo/5 shadow-[0_4px_12px_rgba(99,102,241,0.05)]' : 'border-slate-200 hover:border-slate-350'
                   }`}
                 >
                   <input type="radio" name="payment" value={method.id} checked={paymentMethod === method.id}
-                    onChange={(e) => setPaymentMethod(e.target.value)} className="accent-primary-blue" />
+                    onChange={(e) => setPaymentMethod(e.target.value)} className="accent-brand-indigo w-4 h-4 cursor-pointer" />
                   <span className="text-2xl">{method.icon}</span>
                   <div>
-                    <p className="font-semibold text-dark-navy text-sm m-0">{method.label}</p>
-                    <p className="text-xs text-muted-text m-0">{method.desc}</p>
+                    <p className="font-bold text-slate-800 text-sm m-0 leading-tight">{method.label}</p>
+                    <p className="text-xs text-slate-400 m-0 mt-0.5 font-medium">{method.desc}</p>
                   </div>
                 </label>
               ))}
@@ -509,28 +509,28 @@ const Checkout = () => {
           </motion.div>
 
           <motion.div
-            className="bg-white border border-card-border rounded-2xl p-6"
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.25 }}
+            className="bg-white border border-slate-200/60 rounded-[2rem] p-6 lg:p-8 shadow-sm"
+            initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.25 }}
           >
-            <h3 className="font-bold text-dark-navy mt-0 mb-4">Receipt Delivery</h3>
-            <label className="flex items-center gap-3 p-3 rounded-xl border border-card-border cursor-pointer">
+            <h3 className="font-bold text-slate-800 mt-0 mb-5 border-b border-slate-100 pb-2">Receipt Delivery</h3>
+            <label className="flex items-center gap-3 p-3.5 rounded-2xl border border-slate-200/60 cursor-pointer">
               <input
                 type="checkbox"
                 checked={sendReceiptEmail}
                 onChange={(e) => setSendReceiptEmail(e.target.checked)}
-                className="accent-primary-blue"
+                className="accent-brand-indigo w-4 h-4 cursor-pointer"
               />
-              <span className="text-sm text-dark-navy">Send receipt via Email after successful payment</span>
+              <span className="text-sm font-bold text-slate-700">Send receipt via Email after successful payment</span>
             </label>
             {sendReceiptEmail && (
-              <div className="mt-3">
-                <label className="block text-sm font-medium text-dark-navy mb-1">Receipt Email</label>
+              <div className="mt-4">
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Receipt Email Address</label>
                 <input
                   type="email"
                   value={receiptEmail}
                   onChange={(e) => setReceiptEmail(e.target.value)}
                   placeholder={user?.email || 'you@example.com'}
-                  className="w-full border border-card-border rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary-blue focus:border-transparent outline-none text-sm"
+                  className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-indigo/25 focus:border-brand-indigo outline-none text-sm font-semibold text-slate-700"
                 />
               </div>
             )}
@@ -538,15 +538,15 @@ const Checkout = () => {
         </div>
 
         {/* Right — Order Summary */}
-        <div className="lg:w-96">
+        <div className="lg:w-96 w-full">
           <motion.div
-            className="bg-white border border-card-border rounded-2xl p-6 sticky top-24"
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.3 }}
+            className="bg-white border border-slate-200/60 rounded-[2rem] p-6 lg:p-8 sticky top-24 shadow-sm"
+            initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.3 }}
           >
-            <h3 className="font-bold text-dark-navy text-lg mt-0 mb-4">Order Summary</h3>
+            <h3 className="font-black text-slate-800 text-lg mt-0 mb-5 border-b border-slate-100 pb-2">Order Summary</h3>
 
             {/* Items preview */}
-            <div className="space-y-3 mb-4 max-h-60 overflow-y-auto">
+            <div className="space-y-4 mb-5 max-h-60 overflow-y-auto pr-1">
               {items.map((item) => {
                 const product = item.productId || {};
                 return (
@@ -554,105 +554,105 @@ const Checkout = () => {
                     <img 
                       src={getImageUrl(product.productLink || product.images?.[0] || item.image) || ''} 
                       alt="" 
-                      className="w-12 h-12 rounded-lg object-cover flex-shrink-0" 
+                      className="w-12 h-12 rounded-xl object-cover border border-slate-100 p-0.5 flex-shrink-0" 
                       onError={(e) => handleImageError(e, 'Product')}
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-dark-navy m-0 truncate">{product.name || item.name}</p>
-                      <p className="text-xs text-muted-text m-0">Qty: {item.quantity}</p>
+                      <p className="text-xs font-bold text-slate-850 m-0 truncate leading-snug">{product.name || item.name}</p>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Qty: {item.quantity}</p>
                     </div>
-                    <span className="text-sm font-semibold text-dark-navy">{formatPrice(convertPrice((product.price || item.price) * item.quantity))}</span>
+                    <span className="text-xs font-extrabold text-slate-800 whitespace-nowrap">{formatPrice(convertPrice((product.price || item.price) * item.quantity))}</span>
                   </div>
                 );
               })}
             </div>
 
-            <div className="border-t border-card-border pt-4 space-y-2 mb-4">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-text">Subtotal</span>
-                <span className="font-medium">{formatPrice(convertPrice(subtotal))}</span>
+            <div className="border-t border-slate-100 pt-5 space-y-3.5 mb-5">
+              <div className="flex justify-between text-xs font-bold uppercase tracking-wider text-slate-400">
+                <span>Subtotal</span>
+                <span className="text-slate-700 font-extrabold">{formatPrice(convertPrice(subtotal))}</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-text">Delivery</span>
-                <span className="font-medium">{deliveryFee === 0 ? <span className="text-primary-blue">FREE</span> : formatPrice(convertPrice(deliveryFee))}</span>
+              <div className="flex justify-between text-xs font-bold uppercase tracking-wider text-slate-400">
+                <span>Delivery</span>
+                <span className="text-slate-700 font-extrabold">{deliveryFee === 0 ? <span className="text-emerald-600">FREE</span> : formatPrice(convertPrice(deliveryFee))}</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-text">Tax</span>
-                <span className="font-medium">{formatPrice(convertPrice(tax))}</span>
+              <div className="flex justify-between text-xs font-bold uppercase tracking-wider text-slate-400">
+                <span>Tax</span>
+                <span className="text-slate-700 font-extrabold">{formatPrice(convertPrice(tax))}</span>
               </div>
               {voucherDiscount > 0 && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-text">Voucher Discount</span>
-                  <span className="font-medium text-emerald-700">- {formatPrice(convertPrice(voucherDiscount))}</span>
+                <div className="flex justify-between text-xs font-bold uppercase tracking-wider text-slate-400 bg-emerald-50 rounded-lg p-2.5">
+                  <span className="text-emerald-700">Voucher</span>
+                  <span className="text-emerald-700 font-extrabold">- {formatPrice(convertPrice(voucherDiscount))}</span>
                 </div>
               )}
               {loyaltyDiscount > 0 && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-text">🏆 Loyalty ({loyaltyPointsToRedeem} pts)</span>
-                  <span className="font-medium text-emerald-700">- {formatPrice(convertPrice(loyaltyDiscount))}</span>
+                <div className="flex justify-between text-xs font-bold uppercase tracking-wider text-slate-400 bg-amber-50 rounded-lg p-2.5">
+                  <span className="text-amber-800">🏆 Loyalty</span>
+                  <span className="text-amber-800 font-extrabold">- {formatPrice(convertPrice(loyaltyDiscount))}</span>
                 </div>
               )}
             </div>
 
-            <div className="border-t border-card-border pt-4 mb-6">
-              <div className="flex justify-between">
-                <span className="font-bold text-dark-navy text-lg">Total</span>
-                <span className="font-bold text-dark-navy text-lg">{formatPrice(convertPrice(total))}</span>
+            <div className="border-t border-slate-100 pt-5 mb-6">
+              <div className="flex justify-between items-baseline">
+                <span className="font-black text-slate-800 text-lg">Total</span>
+                <span className="font-black text-brand-indigo text-xl tracking-tight">{formatPrice(convertPrice(total))}</span>
               </div>
             </div>
 
             <button
               onClick={handlePlaceOrder}
               disabled={loading}
-              className="w-full bg-primary-blue text-white font-semibold py-3.5 rounded-xl hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-gradient-to-r from-brand-indigo to-brand-violet hover:opacity-95 text-white font-bold py-3.5 rounded-xl transition-all shadow-[0_4px_12px_rgba(99,102,241,0.25)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer text-sm"
             >
-              {loading ? 'Processing...' : paymentMethod === 'payhere' ? 'Pay Now' : paymentMethod === 'koko' ? 'Place Koko Order' : 'Place Order'}
-              <ChevronRight size={18} />
+              {loading ? 'Processing...' : paymentMethod === 'payhere' ? 'Pay Now Securely' : paymentMethod === 'koko' ? 'Place Koko Order' : 'Confirm Order (COD)'}
+              <ChevronRight size={15} />
             </button>
 
-            <div className="flex items-center justify-center gap-2 mt-4 text-xs text-muted-text">
-              <ShieldCheck size={14} className="text-primary-blue" />
-              <span>Secure & encrypted checkout</span>
+            <div className="flex items-center justify-center gap-1.5 mt-4 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              <ShieldCheck size={14} className="text-brand-indigo" />
+              <span>Secure Checkout</span>
             </div>
           </motion.div>
         </div>
       </div>
 
       {otpModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md border border-card-border shadow-xl">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-dark-navy m-0">Verify Payment OTP</h3>
+        <div className="fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2rem] p-8 w-full max-w-md border border-slate-200/60 shadow-xl relative">
+            <div className="flex items-center justify-between mb-5 border-b border-slate-100 pb-2">
+              <h3 className="text-lg font-black text-slate-800 m-0">Verify Payment OTP</h3>
               <button
                 onClick={() => setOtpModalOpen(false)}
-                className="text-muted-text hover:text-dark-navy"
+                className="text-slate-400 hover:text-slate-650 cursor-pointer"
                 aria-label="Close OTP dialog"
               >
                 <X size={18} />
               </button>
             </div>
-            <p className="text-sm text-muted-text mb-4">
-              Enter the 6-digit OTP sent to your phone to continue with payment.
+            <p className="text-sm text-slate-450 font-medium mb-5">
+              Enter the 6-digit verification code sent to your phone to proceed with payment.
             </p>
             <input
               type="text"
               value={otpCode}
               onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
               placeholder="Enter OTP"
-              className="w-full border border-card-border rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary-blue focus:border-transparent outline-none text-sm mb-4"
+              className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-indigo/25 focus:border-brand-indigo outline-none text-sm font-semibold tracking-widest text-center mb-5"
             />
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <button
                 onClick={() => sendPaymentOtp(otpOrderId)}
                 disabled={otpSending || otpVerifying}
-                className="flex-1 border border-primary-blue text-primary-blue font-semibold py-2.5 rounded-xl hover:bg-emerald-50 transition-all disabled:opacity-60"
+                className="flex-1 border border-brand-indigo text-brand-indigo font-bold py-3 rounded-xl hover:bg-slate-50 transition-all disabled:opacity-60 cursor-pointer text-xs uppercase tracking-wider"
               >
-                {otpSending ? 'Sending...' : 'Resend OTP'}
+                {otpSending ? 'Sending...' : 'Resend Code'}
               </button>
               <button
                 onClick={handleVerifyPaymentOtp}
                 disabled={otpVerifying || otpSending}
-                className="flex-1 bg-primary-blue text-white font-semibold py-2.5 rounded-xl hover:bg-emerald-600 transition-all disabled:opacity-60"
+                className="flex-1 bg-gradient-to-r from-brand-indigo to-brand-violet hover:opacity-95 text-white font-bold py-3 rounded-xl transition-all disabled:opacity-60 cursor-pointer text-xs uppercase tracking-wider shadow-[0_4px_12px_rgba(99,102,241,0.2)]"
               >
                 {otpVerifying ? 'Verifying...' : 'Verify & Pay'}
               </button>

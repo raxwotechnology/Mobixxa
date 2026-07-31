@@ -183,16 +183,16 @@ const AdminProfitReports = () => {
   const profitPositive = s.totalProfit >= 0;
 
   return (
-    <DashboardLayout navItems={navItems} title="Admin Panel">
+    <DashboardLayout navItems={navItems} title="Profit Reports">
       <div className="space-y-6">
         
         {/* Title and Top Level Controls */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-dark-navy flex items-center gap-2">
+            <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2 m-0">
               📈 Standalone Profit Analysis
             </h1>
-            <p className="text-muted-text text-sm mt-1">
+            <p className="text-slate-500 text-xs font-bold mt-1.5 m-0">
               Analyze margins and gross product profitability by categories, brands, and timelines.
             </p>
           </div>
@@ -200,48 +200,48 @@ const AdminProfitReports = () => {
           <div className="flex flex-wrap gap-2 items-center">
             <button
               onClick={() => handleExport('excel')}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-2 rounded-xl transition-colors flex items-center gap-1.5 shadow-sm"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all flex items-center gap-1.5 shadow-md shadow-emerald-600/10 cursor-pointer"
             >
-              <Download size={14} /> Excel Export
+              <Download size={13} /> Excel Export
             </button>
             <button
               onClick={() => handleExport('pdf')}
-              className="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-3 py-2 rounded-xl transition-colors flex items-center gap-1.5 shadow-sm"
+              className="bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-black uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all flex items-center gap-1.5 shadow-md shadow-rose-600/10 cursor-pointer"
             >
-              <FileText size={14} /> PDF Export
+              <FileText size={13} /> PDF Export
             </button>
             <button
               onClick={fetchProfitData}
               disabled={loading}
-              className="bg-white border border-card-border hover:bg-gray-50 text-dark-navy text-xs font-semibold p-2 rounded-xl transition-colors flex items-center justify-center shadow-sm"
+              className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold p-2.5 rounded-xl transition-all flex items-center justify-center shadow-xs cursor-pointer"
               title="Refresh Data"
             >
-              <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+              <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
             </button>
           </div>
         </div>
 
         {/* Filters Panel */}
-        <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm space-y-4">
-          <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-muted-text flex items-center gap-1">
+        <div className="glass-card rounded-2xl p-5 space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1">
               🔍 Report Filters
             </span>
-            <div className="flex items-center gap-1">
-              <button onClick={() => handleQuickDate('today')} className="text-[10px] bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded">Today</button>
-              <button onClick={() => handleQuickDate('week')} className="text-[10px] bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded">Last 7 Days</button>
-              <button onClick={() => handleQuickDate('month')} className="text-[10px] bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded">Last 30 Days</button>
-              <button onClick={() => handleQuickDate('year')} className="text-[10px] bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded">This Year</button>
+            <div className="flex items-center gap-1.5">
+              <button onClick={() => handleQuickDate('today')} className="text-[9px] font-black uppercase tracking-wider bg-slate-100 hover:bg-slate-200/80 text-slate-600 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer">Today</button>
+              <button onClick={() => handleQuickDate('week')} className="text-[9px] font-black uppercase tracking-wider bg-slate-100 hover:bg-slate-200/80 text-slate-600 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer">Last 7 Days</button>
+              <button onClick={() => handleQuickDate('month')} className="text-[9px] font-black uppercase tracking-wider bg-slate-100 hover:bg-slate-200/80 text-slate-600 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer">Last 30 Days</button>
+              <button onClick={() => handleQuickDate('year')} className="text-[9px] font-black uppercase tracking-wider bg-slate-100 hover:bg-slate-200/80 text-slate-600 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer">This Year</button>
             </div>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <label className="text-[10px] uppercase font-bold text-muted-text block mb-1">Category Type</label>
+              <label className="text-[10px] uppercase font-black tracking-wider text-slate-400 block mb-1.5">Category Type</label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full border border-card-border rounded-xl py-2 px-3 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary-blue text-dark-navy font-medium"
+                className="w-full border border-slate-200 rounded-xl py-2.5 px-4 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-brand-indigo/15 focus:border-brand-indigo text-slate-700 font-extrabold cursor-pointer"
               >
                 <option value="all">All Categories</option>
                 <option value="mobiles">Mobiles (Phones/Tablets)</option>
@@ -253,11 +253,11 @@ const AdminProfitReports = () => {
             </div>
 
             <div>
-              <label className="text-[10px] uppercase font-bold text-muted-text block mb-1">Brand Filter</label>
+              <label className="text-[10px] uppercase font-black tracking-wider text-slate-400 block mb-1.5">Brand Filter</label>
               <select
                 value={brand}
                 onChange={(e) => setBrand(e.target.value)}
-                className="w-full border border-card-border rounded-xl py-2 px-3 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary-blue text-dark-navy font-medium"
+                className="w-full border border-slate-200 rounded-xl py-2.5 px-4 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-brand-indigo/15 focus:border-brand-indigo text-slate-700 font-extrabold cursor-pointer"
               >
                 <option value="all">All Brands</option>
                 {BRANDS_LIST.slice(1).map((b) => (
@@ -267,72 +267,68 @@ const AdminProfitReports = () => {
             </div>
 
             <div>
-              <label className="text-[10px] uppercase font-bold text-muted-text block mb-1">From Date</label>
-              <div className="relative">
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full border border-card-border rounded-xl py-1.5 px-3 text-xs focus:outline-none focus:ring-1 focus:ring-primary-blue text-dark-navy"
-                />
-              </div>
+              <label className="text-[10px] uppercase font-black tracking-wider text-slate-400 block mb-1.5">From Date</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="w-full border border-slate-200 rounded-xl py-2 px-3.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-indigo/15 focus:border-brand-indigo text-slate-700 font-bold"
+              />
             </div>
 
             <div>
-              <label className="text-[10px] uppercase font-bold text-muted-text block mb-1">To Date</label>
-              <div className="relative">
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full border border-card-border rounded-xl py-1.5 px-3 text-xs focus:outline-none focus:ring-1 focus:ring-primary-blue text-dark-navy"
-                />
-              </div>
+              <label className="text-[10px] uppercase font-black tracking-wider text-slate-400 block mb-1.5">To Date</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="w-full border border-slate-200 rounded-xl py-2 px-3.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-indigo/15 focus:border-brand-indigo text-slate-700 font-bold"
+              />
             </div>
           </div>
         </div>
 
         {/* Summary Metric Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm flex items-center justify-between">
+          <div className="glass-card rounded-2xl p-5 flex items-center justify-between">
             <div>
-              <p className="text-xs text-muted-text">Gross Revenue</p>
-              <p className="text-xl font-bold text-dark-navy mt-1">Rs. {s.totalRevenue.toLocaleString()}</p>
+              <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 m-0 mb-1">Gross Revenue</p>
+              <p className="text-xl font-black text-slate-900 m-0">Rs. {s.totalRevenue.toLocaleString()}</p>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
+            <div className="w-10 h-10 rounded-xl bg-teal-50/50 flex items-center justify-center text-brand-fuchsia">
               <ArrowUpRight size={20} />
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm flex items-center justify-between">
+          <div className="glass-card rounded-2xl p-5 flex items-center justify-between">
             <div>
-              <p className="text-xs text-muted-text">Cost of Goods Sold (COGS)</p>
-              <p className="text-xl font-bold text-dark-navy mt-1">Rs. {s.totalCost.toLocaleString()}</p>
+              <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 m-0 mb-1">Cost of Goods Sold (COGS)</p>
+              <p className="text-xl font-black text-slate-900 m-0">Rs. {s.totalCost.toLocaleString()}</p>
             </div>
             <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-500">
               <Package size={20} />
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm flex items-center justify-between relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-1.5 h-full bg-emerald-500" />
+          <div className="glass-card rounded-2xl p-5 flex items-center justify-between relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1 h-full bg-brand-fuchsia" />
             <div>
-              <p className="text-xs text-muted-text font-semibold">Total Gross Profit</p>
-              <p className={`text-xl font-bold mt-1 ${profitPositive ? 'text-emerald-600' : 'text-red-600'}`}>
+              <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 m-0 mb-1">Total Gross Profit</p>
+              <p className={`text-xl font-black m-0 ${profitPositive ? 'text-brand-fuchsia' : 'text-rose-600'}`}>
                 Rs. {s.totalProfit.toLocaleString()}
               </p>
             </div>
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${profitPositive ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${profitPositive ? 'bg-teal-50/50 text-brand-fuchsia' : 'bg-rose-50 text-rose-600'}`}>
               {profitPositive ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm flex items-center justify-between">
+          <div className="glass-card rounded-2xl p-5 flex items-center justify-between">
             <div>
-              <p className="text-xs text-muted-text font-semibold">Profit Margin</p>
-              <p className="text-xl font-bold text-purple-600 mt-1">{s.profitMargin}%</p>
+              <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 m-0 mb-1">Profit Margin</p>
+              <p className="text-xl font-black text-brand-indigo m-0">{s.profitMargin}%</p>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600">
+            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-brand-indigo">
               <DollarSign size={20} />
             </div>
           </div>
@@ -341,48 +337,48 @@ const AdminProfitReports = () => {
         {/* Visual Analytics Row */}
         <div className="grid lg:grid-cols-2 gap-6">
           {/* Gross Profit by Category */}
-          <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm">
-            <h3 className="font-semibold text-dark-navy mb-3 text-xs uppercase tracking-wider flex items-center gap-1.5">
-              <Tag size={14} className="text-blue-500" /> Gross Profit by Category
+          <div className="glass-card rounded-2xl p-5">
+            <h3 className="font-black text-slate-800 mb-6 text-xs uppercase tracking-wider flex items-center gap-1.5 m-0">
+              <Tag size={14} className="text-brand-fuchsia" /> Gross Profit by Category
             </h3>
             {profitData?.byCategory?.length > 0 ? (
               <ResponsiveContainer width="100%" height={240}>
                 <BarChart data={profitData.byCategory}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f5" />
-                  <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-                  <YAxis tick={{ fontSize: 10 }} />
+                  <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#64748b', fontWeight: 600 }} />
+                  <YAxis tick={{ fontSize: 10, fill: '#64748b', fontWeight: 600 }} />
                   <Tooltip formatter={(v) => `Rs. ${v.toLocaleString()}`} />
                   <Legend />
-                  <Bar dataKey="revenue" fill="#3b82f6" name="Revenue" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="profit" fill="#10b981" name="Gross Profit" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="revenue" fill="#334155" name="Revenue" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="profit" fill="#0d9488" name="Gross Profit" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-[240px] flex items-center justify-center text-xs text-muted-text border border-dashed border-gray-100 rounded-xl bg-gray-50/50">
+              <div className="h-[240px] flex items-center justify-center text-xs text-slate-400 font-bold border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
                 No category data matches current filters
               </div>
             )}
           </div>
 
           {/* Gross Profit by Brand */}
-          <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm">
-            <h3 className="font-semibold text-dark-navy mb-3 text-xs uppercase tracking-wider flex items-center gap-1.5">
-              <Landmark size={14} className="text-purple-500" /> Gross Profit by Brand
+          <div className="glass-card rounded-2xl p-5">
+            <h3 className="font-black text-slate-800 mb-6 text-xs uppercase tracking-wider flex items-center gap-1.5 m-0">
+              <Landmark size={14} className="text-brand-fuchsia" /> Gross Profit by Brand
             </h3>
             {profitData?.byBrand?.length > 0 ? (
               <ResponsiveContainer width="100%" height={240}>
                 <BarChart data={profitData.byBrand}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f5" />
-                  <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-                  <YAxis tick={{ fontSize: 10 }} />
+                  <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#64748b', fontWeight: 600 }} />
+                  <YAxis tick={{ fontSize: 10, fill: '#64748b', fontWeight: 600 }} />
                   <Tooltip formatter={(v) => `Rs. ${v.toLocaleString()}`} />
                   <Legend />
-                  <Bar dataKey="revenue" fill="#8b5cf6" name="Revenue" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="profit" fill="#10b981" name="Gross Profit" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="revenue" fill="#475569" name="Revenue" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="profit" fill="#0d9488" name="Gross Profit" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-[240px] flex items-center justify-center text-xs text-muted-text border border-dashed border-gray-100 rounded-xl bg-gray-50/50">
+              <div className="h-[240px] flex items-center justify-center text-xs text-slate-400 font-bold border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
                 No brand data matches current filters
               </div>
             )}
@@ -390,34 +386,34 @@ const AdminProfitReports = () => {
         </div>
 
         {/* Time Series Profit Trend Chart */}
-        <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm">
-          <h3 className="font-semibold text-dark-navy mb-3 text-xs uppercase tracking-wider flex items-center gap-1.5">
-            <Calendar size={14} className="text-emerald-500" /> Chronological Daily Profit Trend
+        <div className="glass-card rounded-2xl p-5">
+          <h3 className="font-black text-slate-800 mb-6 text-xs uppercase tracking-wider flex items-center gap-1.5 m-0">
+            <Calendar size={14} className="text-brand-fuchsia" /> Chronological Daily Profit Trend
           </h3>
           {dailyTrendData.length > 0 ? (
             <ResponsiveContainer width="100%" height={240}>
               <AreaChart data={dailyTrendData}>
                 <defs>
                   <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.2}/>
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#0d9488" stopOpacity={0.2}/>
+                    <stop offset="95%" stopColor="#0d9488" stopOpacity={0}/>
                   </linearGradient>
                   <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#334155" stopOpacity={0.1}/>
+                    <stop offset="95%" stopColor="#334155" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f5" />
-                <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 10 }} />
+                <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#64748b', fontWeight: 600 }} />
+                <YAxis tick={{ fontSize: 10, fill: '#64748b', fontWeight: 600 }} />
                 <Tooltip formatter={(v) => `Rs. ${v.toLocaleString()}`} />
                 <Legend />
-                <Area type="monotone" dataKey="revenue" stroke="#3b82f6" fillOpacity={1} fill="url(#colorRevenue)" name="Gross Revenue" strokeWidth={2} />
-                <Area type="monotone" dataKey="profit" stroke="#10b981" fillOpacity={1} fill="url(#colorProfit)" name="Gross Profit" strokeWidth={2.5} />
+                <Area type="monotone" dataKey="revenue" stroke="#334155" fillOpacity={1} fill="url(#colorRevenue)" name="Gross Revenue" strokeWidth={2} />
+                <Area type="monotone" dataKey="profit" stroke="#0d9488" fillOpacity={1} fill="url(#colorProfit)" name="Gross Profit" strokeWidth={2.5} />
               </AreaChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-[240px] flex items-center justify-center text-xs text-muted-text border border-dashed border-gray-100 rounded-xl bg-gray-50/50">
+            <div className="h-[240px] flex items-center justify-center text-xs text-slate-400 font-bold border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
               No historical timeline data matches filters
             </div>
           )}

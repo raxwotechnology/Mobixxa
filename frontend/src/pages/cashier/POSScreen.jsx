@@ -1506,8 +1506,12 @@ const POSScreen = () => {
             <span className="pos-topbar-btn-text">Return</span>
           </button>
           <div className="pos-topbar-cashier">
-            <div className="pos-topbar-avatar">
-              {user?.name?.charAt(0)?.toUpperCase() || 'C'}
+            <div className="pos-topbar-avatar" style={{ overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {user?.avatar ? (
+                <img src={getImageUrl(user.avatar)} alt={user?.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                user?.name?.charAt(0)?.toUpperCase() || 'C'
+              )}
             </div>
             <span className="pos-topbar-cashier-name">{user?.name}</span>
           </div>

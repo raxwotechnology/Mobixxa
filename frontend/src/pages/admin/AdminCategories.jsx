@@ -81,62 +81,67 @@ const AdminCategories = () => {
 
   if (loading) {
     return (
-      <DashboardLayout navItems={navItems} title="Admin Panel">
+      <DashboardLayout navItems={navItems} title="Categories">
         <div className="flex items-center justify-center h-64">
-          <div className="w-10 h-10 border-4 border-primary-blue border-t-transparent rounded-full animate-spin" />
+          <div className="w-10 h-10 border-4 border-slate-200 border-t-brand-indigo rounded-full animate-spin" />
         </div>
       </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout navItems={navItems} title="Admin Panel">
-      <div>
+    <DashboardLayout navItems={navItems} title="Categories">
+      <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-dark-navy">Categories</h1>
-            <p className="text-muted-text text-sm mt-1">{categories.length} categories</p>
+            <div className="flex items-center gap-2.5 mb-1">
+              <span className="inline-flex items-center gap-1.5 bg-brand-indigo/10 text-brand-indigo text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg border border-brand-indigo/15">
+                <Tag size={11} /> Business Management
+              </span>
+            </div>
+            <h1 className="text-2xl font-black text-slate-900 m-0">Product Categories</h1>
+            <p className="text-slate-400 text-xs font-bold mt-1 m-0">{categories.length} categories configured</p>
           </div>
           <button
             onClick={openCreate}
-            className="flex items-center gap-2 bg-primary-blue text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-emerald-600 shadow-lg shadow-emerald-200 transition-all text-sm"
+            className="flex items-center gap-2 bg-gradient-to-r from-brand-indigo to-brand-violet hover:opacity-95 text-white px-6 py-3 rounded-xl font-black text-xs uppercase tracking-wider shadow-lg shadow-brand-indigo/20 transition-all cursor-pointer"
           >
-            <Plus size={18} /> Add Category
+            <Plus size={16} /> Add Category
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           {categories.map((cat) => (
-            <div key={cat._id} className="bg-white rounded-2xl border border-card-border shadow-sm overflow-hidden hover:shadow-md transition-all group">
+            <div key={cat._id} className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden hover:shadow-md hover:border-brand-indigo/30 transition-all group">
               {/* Image */}
-              <div className="h-32 bg-gradient-to-br from-emerald-100 to-teal-50 flex items-center justify-center relative overflow-hidden">
+              <div className="h-32 bg-gradient-to-br from-brand-indigo/10 to-brand-violet/5 flex items-center justify-center relative overflow-hidden">
                 {cat.image ? (
                   <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
                 ) : (
-                  <Tag size={40} className="text-emerald-300" />
+                  <Tag size={36} className="text-brand-indigo/30" />
                 )}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all" />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-all" />
               </div>
 
               <div className="p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  {cat.icon && <span className="text-xl">{cat.icon}</span>}
-                  <h3 className="font-semibold text-dark-navy">{cat.name}</h3>
+                <div className="flex items-center gap-2 mb-2">
+                  {cat.icon && <span className="text-lg">{cat.icon}</span>}
+                  <h3 className="font-extrabold text-slate-800 text-sm m-0">{cat.name}</h3>
                 </div>
-                <p className="text-xs text-muted-text mb-3">Slug: {cat.slug}</p>
+                <p className="text-[10px] text-slate-400 font-mono mb-3 m-0">slug: {cat.slug}</p>
 
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => openEdit(cat)}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold text-blue-500 bg-blue-50 hover:bg-blue-100 transition-colors"
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider text-brand-indigo bg-brand-indigo/10 hover:bg-brand-indigo/15 transition-colors cursor-pointer"
                   >
-                    <Edit2 size={14} /> Edit
+                    <Edit2 size={12} /> Edit
                   </button>
                   <button
                     onClick={() => handleDeleteClick(cat)}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold text-red-500 bg-red-50 hover:bg-red-100 transition-colors"
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider text-rose-500 bg-rose-50 hover:bg-rose-100 transition-colors cursor-pointer"
                   >
-                    <Trash2 size={14} /> Delete
+                    <Trash2 size={12} /> Delete
                   </button>
                 </div>
               </div>
@@ -145,7 +150,7 @@ const AdminCategories = () => {
         </div>
 
         {categories.length === 0 && (
-          <div className="bg-white rounded-2xl border border-card-border p-12 text-center text-muted-text text-sm">
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-16 text-center text-slate-400 text-sm font-bold">
             No categories yet. Click "Add Category" to create one.
           </div>
         )}
@@ -153,30 +158,30 @@ const AdminCategories = () => {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-card-border flex items-center justify-between">
-              <h2 className="text-lg font-bold text-dark-navy">{editingId ? 'Edit Category' : 'New Category'}</h2>
-              <button onClick={() => setShowModal(false)} className="p-1.5 rounded-lg hover:bg-gray-100"><X size={20} /></button>
+        <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-slate-200/80" onClick={(e) => e.stopPropagation()}>
+            <div className="px-6 py-4 border-b border-slate-200/80 flex items-center justify-between">
+              <h2 className="text-base font-black text-slate-900 m-0">{editingId ? 'Edit Category' : 'New Category'}</h2>
+              <button onClick={() => setShowModal(false)} className="p-1.5 rounded-lg hover:bg-slate-100 cursor-pointer"><X size={18} className="text-slate-400" /></button>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-dark-navy mb-1">Name *</label>
-                <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" />
+                <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Name *</label>
+                <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full border border-slate-200 rounded-xl py-2.5 px-4 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-brand-indigo/15 focus:border-brand-indigo bg-slate-50 focus:bg-white transition-all" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-dark-navy mb-1">Icon (emoji)</label>
-                <input value={form.icon} onChange={(e) => setForm({ ...form, icon: e.target.value })} placeholder="🥬" className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" />
+                <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Icon (emoji)</label>
+                <input value={form.icon} onChange={(e) => setForm({ ...form, icon: e.target.value })} placeholder="📱" className="w-full border border-slate-200 rounded-xl py-2.5 px-4 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-brand-indigo/15 focus:border-brand-indigo bg-slate-50 focus:bg-white transition-all" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-dark-navy mb-1">Image URL</label>
-                <input value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" />
+                <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Image URL</label>
+                <input value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} className="w-full border border-slate-200 rounded-xl py-2.5 px-4 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-brand-indigo/15 focus:border-brand-indigo bg-slate-50 focus:bg-white transition-all" />
               </div>
-              <div className="flex gap-3">
-                <button type="submit" disabled={saving} className="flex-1 bg-primary-blue text-white py-2.5 rounded-xl font-semibold hover:bg-emerald-600 transition-all disabled:opacity-50 text-sm">
+              <div className="flex gap-3 pt-2">
+                <button type="submit" disabled={saving} className="flex-1 bg-gradient-to-r from-brand-indigo to-brand-violet hover:opacity-95 text-white py-2.5 rounded-xl font-black text-xs uppercase tracking-wider transition-all disabled:opacity-50 shadow-lg shadow-brand-indigo/20 cursor-pointer">
                   {saving ? 'Saving...' : editingId ? 'Update' : 'Create'}
                 </button>
-                <button type="button" onClick={() => setShowModal(false)} className="flex-1 border border-card-border py-2.5 rounded-xl font-semibold text-muted-text hover:bg-gray-50 transition-all text-sm">
+                <button type="button" onClick={() => setShowModal(false)} className="flex-1 border border-slate-200 py-2.5 rounded-xl font-bold text-xs text-slate-500 hover:bg-slate-50 transition-all cursor-pointer">
                   Cancel
                 </button>
               </div>

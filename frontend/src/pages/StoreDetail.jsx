@@ -34,10 +34,10 @@ const StoreDetail = () => {
   if (loading) {
     return (
       <div className="animate-pulse">
-        <div className="h-64 bg-gray-200" />
-        <div className="base-container py-8 space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/3" />
-          <div className="h-4 bg-gray-200 rounded w-2/3" />
+        <div className="h-64 bg-slate-100" />
+        <div className="base-container py-10 space-y-4">
+          <div className="h-8 bg-slate-100 rounded w-1/3" />
+          <div className="h-4 bg-slate-100 rounded w-2/3" />
         </div>
       </div>
     );
@@ -46,9 +46,11 @@ const StoreDetail = () => {
   if (!store) {
     return (
       <div className="base-container py-20 text-center">
-        <p className="text-5xl mb-4">🏪</p>
-        <h2 className="text-2xl font-bold text-dark-navy mb-2">Store Not Found</h2>
-        <Link to="/stores" className="text-primary-blue hover:underline">Back to Stores</Link>
+        <div className="w-16 h-16 bg-slate-50 border border-slate-100 rounded-full mx-auto mb-4 flex items-center justify-center">
+          <span className="text-2xl">🏪</span>
+        </div>
+        <h2 className="text-2xl font-black text-slate-800 mb-2">Store Not Found</h2>
+        <Link to="/stores" className="text-brand-indigo font-bold hover:underline">Back to Stores</Link>
       </div>
     );
   }
@@ -62,23 +64,23 @@ const StoreDetail = () => {
           alt={store.name}
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/30 to-transparent"></div>
         <div className="absolute bottom-0 left-0 right-0">
           <div className="base-container py-6 flex items-end gap-5">
-            <div className="w-20 h-20 rounded-2xl border-4 border-white overflow-hidden bg-white shadow-xl flex-shrink-0">
-              <img src={getImageUrl(store.logo) || 'https://via.placeholder.com/100'} alt="" className="w-full h-full object-cover" />
+            <div className="w-20 h-20 rounded-[1.25rem] border-2 border-white/95 overflow-hidden bg-white shadow-xl flex-shrink-0 p-0.5">
+              <img src={getImageUrl(store.logo) || 'https://via.placeholder.com/100'} alt="" className="w-full h-full object-cover rounded-xl" />
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-white mt-0 mb-1 drop-shadow-lg">{store.name}</h1>
-              <div className="flex items-center gap-4 text-white/80 text-sm flex-wrap">
+              <h1 className="text-2xl md:text-3xl font-black text-white mt-0 mb-1 drop-shadow-md">{store.name}</h1>
+              <div className="flex items-center gap-4 text-white/80 text-xs font-bold uppercase tracking-wider flex-wrap">
                 {store.city && (
-                  <span className="flex items-center gap-1"><MapPin size={14} /> {store.city}</span>
+                  <span className="flex items-center gap-1"><MapPin size={13} className="text-brand-indigo" /> {store.city}</span>
                 )}
                 {store.operatingHours && (
-                  <span className="flex items-center gap-1"><Clock size={14} /> {store.operatingHours.open} - {store.operatingHours.close}</span>
+                  <span className="flex items-center gap-1"><Clock size={13} className="text-brand-indigo" /> {store.operatingHours.open} - {store.operatingHours.close}</span>
                 )}
                 {store.isActive && (
-                  <span className="bg-primary-blue text-white text-xs font-bold px-2.5 py-0.5 rounded-full">Open Now</span>
+                  <span className="bg-emerald-600 text-white text-[10px] font-black px-2.5 py-1 rounded-xl">Open Now</span>
                 )}
               </div>
             </div>
@@ -86,43 +88,45 @@ const StoreDetail = () => {
         </div>
       </div>
 
-      <div className="base-container py-8">
+      <div className="base-container py-10">
         {/* Store Info Card */}
         <motion.div
-          className="bg-white border border-card-border rounded-2xl p-6 mb-8"
+          className="bg-white border border-slate-200/60 rounded-[2rem] p-6 lg:p-8 mb-10 shadow-sm"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-2">
-              <h3 className="font-bold text-dark-navy mt-0 mb-2">About</h3>
-              <p className="text-muted-text leading-relaxed m-0">{store.description}</p>
+              <h3 className="font-extrabold text-slate-800 text-sm uppercase tracking-wider mt-0 mb-3 border-b border-slate-100 pb-2">About the Showroom</h3>
+              <p className="text-xs font-semibold text-slate-400 leading-relaxed m-0">{store.description}</p>
             </div>
-            <div className="space-y-3">
-              <h3 className="font-bold text-dark-navy mt-0 mb-2">Contact</h3>
-              {store.phone && (
-                <p className="text-sm text-muted-text m-0 flex items-center gap-2">
-                  <Phone size={14} className="text-primary-blue" /> {store.phone}
-                </p>
-              )}
-              {store.email && (
-                <p className="text-sm text-muted-text m-0 flex items-center gap-2">
-                  <Mail size={14} className="text-primary-blue" /> {store.email}
-                </p>
-              )}
-              {store.address && (
-                <p className="text-sm text-muted-text m-0 flex items-center gap-2">
-                  <MapPin size={14} className="text-primary-blue" /> {store.address}
-                </p>
-              )}
+            <div>
+              <h3 className="font-extrabold text-slate-800 text-sm uppercase tracking-wider mt-0 mb-3 border-b border-slate-100 pb-2">Contact Details</h3>
+              <div className="space-y-3">
+                {store.phone && (
+                  <p className="text-xs font-bold text-slate-650 m-0 flex items-center gap-2">
+                    <Phone size={14} className="text-brand-indigo" /> {store.phone}
+                  </p>
+                )}
+                {store.email && (
+                  <p className="text-xs font-bold text-slate-650 m-0 flex items-center gap-2">
+                    <Mail size={14} className="text-brand-indigo" /> {store.email}
+                  </p>
+                )}
+                {store.address && (
+                  <p className="text-xs font-bold text-slate-650 m-0 flex items-center gap-2">
+                    <MapPin size={14} className="text-brand-indigo" /> {store.address}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </motion.div>
 
         {/* Store Products */}
         <div>
-          <h2 className="text-2xl font-bold text-dark-navy mb-6 mt-0">Products from {store.name}</h2>
+          <h2 className="text-xl md:text-2xl font-black text-slate-850 mb-6 mt-0">Products from {store.name}</h2>
           {products.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {products.map((product, i) => (
@@ -137,10 +141,12 @@ const StoreDetail = () => {
               ))}
             </div>
           ) : (
-            <div className="bg-white border border-card-border rounded-2xl p-12 text-center">
-              <p className="text-3xl mb-3">📦</p>
-              <h3 className="text-lg font-bold text-dark-navy m-0">No products yet</h3>
-              <p className="text-muted-text">This store hasn't added any products.</p>
+            <div className="bg-white border border-slate-200/60 rounded-[2rem] p-12 text-center shadow-sm">
+              <div className="w-16 h-16 bg-slate-50 border border-slate-100 rounded-full mx-auto mb-4 flex items-center justify-center">
+                <span className="text-2xl">📦</span>
+              </div>
+              <h3 className="text-lg font-black text-slate-800 m-0">No Products Yet</h3>
+              <p className="text-slate-400 text-sm font-semibold mt-1 mb-0">This store hasn't added any products.</p>
             </div>
           )}
         </div>

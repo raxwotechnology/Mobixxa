@@ -178,35 +178,53 @@ const AdminAccounts = () => {
 
   return (
     <DashboardLayout navItems={navItems} title="Accounts Management">
-      <div className="animate-fade-in">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-dark-navy flex items-center gap-2">
-              <Landmark className="text-primary-blue" /> Bank Financial Accounts
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/80 backdrop-blur-md p-6 rounded-3xl border border-slate-100 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-brand-indigo/10 to-brand-violet/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
+          
+          <div className="relative">
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-brand-indigo/10 flex items-center justify-center text-brand-indigo">
+                <Landmark size={18} strokeWidth={3} />
+              </div>
+              Bank Financial Accounts
             </h1>
-            <p className="text-muted-text text-sm mt-1">Manage cash drawers, bank accounts and mobile wallets</p>
+            <p className="text-sm font-bold text-slate-500 mt-1">Manage cash drawers, bank accounts and mobile wallets</p>
           </div>
-          <button onClick={openCreate} className="flex items-center gap-2 bg-primary-blue text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-emerald-600 shadow-lg shadow-emerald-200 transition-all">
-            <Plus size={18} /> New Account
-          </button>
+          
+          <div className="relative">
+            <button onClick={openCreate} className="flex items-center gap-2 bg-brand-indigo hover:bg-indigo-700 text-white px-5 py-3 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-lg shadow-brand-indigo/20 hover:shadow-xl hover:shadow-brand-indigo/30 hover:-translate-y-0.5">
+              <Plus size={16} strokeWidth={3} /> New Account
+            </button>
+          </div>
         </div>
 
         {/* Total Liquidity Card */}
-        <div className="bg-gradient-to-r from-indigo-600 to-blue-700 rounded-[2rem] p-8 text-white shadow-2xl mb-10 relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-8 opacity-10">
-            <TrendingUp size={120} />
+        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden border border-slate-800">
+          <div className="absolute top-0 right-0 p-8 opacity-5">
+            <TrendingUp size={160} strokeWidth={1} />
           </div>
-          <div className="relative z-10">
-            <p className="text-indigo-100 text-sm font-medium mb-2">Total Combined Balance</p>
-            <h2 className="text-5xl font-bold mb-6">Rs. {totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</h2>
-            <div className="flex gap-8">
+          <div className="absolute top-0 right-1/4 w-64 h-64 bg-brand-indigo/20 rounded-full blur-3xl mix-blend-screen pointer-events-none"></div>
+          <div className="absolute bottom-0 left-1/4 w-48 h-48 bg-brand-violet/20 rounded-full blur-3xl mix-blend-screen pointer-events-none"></div>
+          
+          <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-8">
+            <div>
+              <p className="text-[11px] uppercase font-black tracking-widest text-slate-400 mb-2">Total Combined Balance</p>
+              <h2 className="text-5xl font-black tracking-tight text-white flex items-center gap-3">
+                <span className="text-2xl text-slate-400">Rs.</span>
+                {totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              </h2>
+            </div>
+            
+            <div className="flex gap-8 bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10">
               <div>
-                <p className="text-indigo-100 text-[10px] uppercase font-bold tracking-wider mb-1">Cash on Hand</p>
-                <p className="text-lg font-bold">Rs. {accounts.filter(a => a.type === 'Cash').reduce((s, a) => s + a.balance, 0).toLocaleString()}</p>
+                <p className="text-[10px] uppercase font-black tracking-widest text-emerald-400 mb-1 flex items-center gap-1.5"><Wallet size={12} /> Cash on Hand</p>
+                <p className="text-xl font-bold text-white">Rs. {accounts.filter(a => a.type === 'Cash').reduce((s, a) => s + a.balance, 0).toLocaleString()}</p>
               </div>
+              <div className="w-px bg-white/10"></div>
               <div>
-                <p className="text-indigo-100 text-[10px] uppercase font-bold tracking-wider mb-1">Bank Balance</p>
-                <p className="text-lg font-bold">Rs. {accounts.filter(a => a.type === 'Bank').reduce((s, a) => s + a.balance, 0).toLocaleString()}</p>
+                <p className="text-[10px] uppercase font-black tracking-widest text-brand-violet mb-1 flex items-center gap-1.5"><Landmark size={12} /> Bank Balance</p>
+                <p className="text-xl font-bold text-white">Rs. {accounts.filter(a => a.type === 'Bank').reduce((s, a) => s + a.balance, 0).toLocaleString()}</p>
               </div>
             </div>
           </div>
@@ -214,40 +232,43 @@ const AdminAccounts = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {accounts.map((account) => (
-            <div key={account._id} className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm hover:shadow-xl transition-all group">
-              <div className="flex justify-between items-start mb-6">
-                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${
-                  account.type === 'Cash' ? 'bg-emerald-50 text-emerald-600' :
-                  account.type === 'Bank' ? 'bg-blue-50 text-blue-600' :
-                  'bg-indigo-50 text-indigo-600'
+            <div key={account._id} className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-bl-[100px] -z-10 transition-colors group-hover:bg-slate-100/50"></div>
+              
+              <div className="flex justify-between items-start mb-6 relative z-10">
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm ${
+                  account.type === 'Cash' ? 'bg-emerald-50 text-emerald-500 border border-emerald-100' :
+                  account.type === 'Bank' ? 'bg-blue-50 text-blue-500 border border-blue-100' :
+                  'bg-brand-indigo/10 text-brand-indigo border border-brand-indigo/20'
                 }`}>
-                  {account.type === 'Cash' ? <Wallet size={24} /> : <Landmark size={24} />}
+                  {account.type === 'Cash' ? <Wallet size={24} strokeWidth={2.5} /> : <Landmark size={24} strokeWidth={2.5} />}
                 </div>
-                <div className="flex gap-1">
-                   <button onClick={() => fetchTransactions(account)} className="p-2 rounded-xl bg-gray-50 text-gray-400 hover:text-primary-blue hover:bg-indigo-50 transition-all" title="Ledger Transactions"><History size={16} /></button>
-                   <button onClick={() => openEdit(account)} className="p-2 rounded-xl bg-gray-50 text-gray-400 hover:text-primary-blue hover:bg-indigo-50 transition-all" title="Edit Account"><Edit2 size={16} /></button>
-                   <button onClick={() => handleDeleteClick(account)} className="p-2 rounded-xl bg-gray-50 text-gray-400 hover:text-rose-600 hover:bg-red-50 transition-all" title="Delete Account"><Trash2 size={16} /></button>
+                <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                   <button onClick={() => fetchTransactions(account)} className="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:text-brand-indigo hover:bg-brand-indigo/10 transition-all border border-slate-100 hover:border-brand-indigo/20" title="Ledger Transactions"><History size={14} strokeWidth={2.5} /></button>
+                   <button onClick={() => openEdit(account)} className="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:text-brand-indigo hover:bg-brand-indigo/10 transition-all border border-slate-100 hover:border-brand-indigo/20" title="Edit Account"><Edit2 size={14} strokeWidth={2.5} /></button>
+                   <button onClick={() => handleDeleteClick(account)} className="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all border border-slate-100 hover:border-rose-200" title="Delete Account"><Trash2 size={14} strokeWidth={2.5} /></button>
                 </div>
               </div>
 
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-bold text-dark-navy text-lg">{account.name}</h3>
-                  {account.isDefault && <span className="text-[10px] font-bold bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full">DEFAULT</span>}
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <h3 className="font-black text-slate-900 text-lg leading-tight">{account.name}</h3>
+                  {account.isDefault && <span className="text-[9px] uppercase font-black tracking-wider bg-amber-100 text-amber-700 px-2 py-0.5 rounded-lg border border-amber-200">Default</span>}
                 </div>
-                <p className="text-xs text-muted-text mb-4 uppercase tracking-wide font-bold">{account.type} • {account.bankName || 'Direct'}</p>
+                <p className="text-[10px] uppercase font-black tracking-wider text-slate-400 mb-5">{account.type} • {account.bankName || 'Direct'}</p>
                 
-                <div className="text-2xl font-bold text-dark-navy mb-1">
-                  Rs. {Number(account.balance || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                <div className="text-3xl font-black text-slate-900 tracking-tight mb-2">
+                  <span className="text-xl text-slate-400 font-bold mr-1">Rs.</span>
+                  {Number(account.balance || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                 </div>
-                <p className="text-[10px] text-gray-400 font-mono">{account.accountNumber || 'No Acc. Number'}</p>
+                <p className="text-xs font-bold text-slate-400 font-mono tracking-widest">{account.accountNumber || 'NO ACC. NUMBER'}</p>
               </div>
 
-              <div className="mt-6 pt-6 border-t border-gray-50 flex items-center justify-between text-xs font-bold uppercase">
-                 <span className={`px-3 py-1 rounded-full ${account.status === 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-400'}`}>
+              <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-between relative z-10">
+                 <span className={`px-3 py-1.5 rounded-lg text-[10px] uppercase font-black tracking-wider border ${account.status === 'active' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-100 text-slate-400 border-slate-200'}`}>
                    {account.status}
                  </span>
-                 <button onClick={() => fetchTransactions(account)} className="text-primary-blue hover:underline flex items-center gap-1">
+                 <button onClick={() => fetchTransactions(account)} className="text-[11px] uppercase font-black tracking-wider text-brand-indigo hover:text-indigo-700 transition-colors flex items-center gap-1">
                    View Ledger <ArrowUpRight size={14} />
                  </button>
               </div>
@@ -255,30 +276,38 @@ const AdminAccounts = () => {
           ))}
 
           {/* Add New Empty State */}
-          <div onClick={openCreate} className="bg-gray-50 border-2 border-dashed border-gray-200 rounded-3xl p-6 flex flex-col items-center justify-center text-gray-400 hover:border-primary-blue hover:text-primary-blue cursor-pointer transition-all h-[260px]">
-            <Plus size={40} className="mb-4" />
-            <p className="font-bold">Add New Account</p>
+          <div onClick={openCreate} className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl p-6 flex flex-col items-center justify-center text-slate-400 hover:border-brand-indigo hover:text-brand-indigo hover:bg-brand-indigo/5 cursor-pointer transition-all duration-300 h-[260px] group">
+            <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center shadow-sm mb-4 group-hover:scale-110 transition-transform duration-300 group-hover:shadow-md">
+              <Plus size={32} strokeWidth={2.5} />
+            </div>
+            <p className="font-black text-sm">Add New Account</p>
           </div>
         </div>
 
         {/* Modal: Create/Edit Account */}
         {showModal && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
-            <div className="bg-white rounded-3xl w-full max-w-xl shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
-              <div className="px-8 py-5 border-b border-gray-100 flex items-center justify-between">
-                <h2 className="text-xl font-bold text-dark-navy">{editingId ? 'Edit Account' : 'Create Account'}</h2>
-                <button onClick={() => setShowModal(false)} className="p-2 rounded-xl hover:bg-red-50 text-gray-400 hover:text-red-500 transition-all"><X size={22} /></button>
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowModal(false)}>
+            <div className="bg-white rounded-3xl w-full max-w-xl shadow-2xl overflow-hidden flex flex-col border border-slate-100" onClick={(e) => e.stopPropagation()}>
+              <div className="px-6 py-5 border-b border-slate-100 flex flex-col items-center justify-center text-center bg-white/80 backdrop-blur-md relative">
+                <button onClick={() => setShowModal(false)} className="absolute right-4 top-4 p-2 rounded-full hover:bg-slate-100 text-slate-400 transition-colors">
+                  <X size={16} />
+                </button>
+                <div className="w-12 h-12 bg-brand-indigo/10 text-brand-indigo rounded-full flex items-center justify-center mb-3 border border-brand-indigo/20 shadow-sm">
+                  <Landmark size={24} />
+                </div>
+                <h2 className="text-xl font-black text-slate-900">{editingId ? 'Edit Account' : 'Create Account'}</h2>
+                <p className="text-xs font-bold text-slate-500 mt-1">{editingId ? 'Update account details' : 'Add a new financial account'}</p>
               </div>
 
-              <form onSubmit={handleSubmit} className="p-8 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <form onSubmit={handleSubmit} className="p-6 bg-slate-50/50 space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="md:col-span-2">
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Account Label / Name *</label>
-                    <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm" placeholder="e.g. Commercial Bank - Main" />
+                    <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Account Label / Name *</label>
+                    <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm" placeholder="e.g. Commercial Bank - Main" />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Account Type *</label>
-                    <select required value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm">
+                    <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Account Type *</label>
+                    <select required value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm cursor-pointer">
                       <option value="Cash">Cash Drawer</option>
                       <option value="Bank">Bank Account</option>
                       <option value="Mobile Wallet">Mobile Wallet</option>
@@ -286,48 +315,46 @@ const AdminAccounts = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Bank Name (Optional)</label>
-                    <input value={form.bankName} onChange={(e) => setForm({ ...form, bankName: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm" placeholder="e.g. Sampath Bank" />
+                    <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Bank Name (Optional)</label>
+                    <input value={form.bankName} onChange={(e) => setForm({ ...form, bankName: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm" placeholder="e.g. Sampath Bank" />
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Account Number</label>
-                    <input value={form.accountNumber} onChange={(e) => setForm({ ...form, accountNumber: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm" placeholder="XXXX-XXXX-XXXX" />
+                    <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Account Number</label>
+                    <input value={form.accountNumber} onChange={(e) => setForm({ ...form, accountNumber: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm font-mono" placeholder="XXXX-XXXX-XXXX" />
                   </div>
                   {!editingId && (
                     <div className="md:col-span-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Initial Balance (Rs.)</label>
-                      <input type="number" step="0.01" value={form.balance} onChange={(e) => setForm({ ...form, balance: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm font-bold text-indigo-600" />
+                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Initial Balance (Rs.)</label>
+                      <input type="number" step="0.01" value={form.balance} onChange={(e) => setForm({ ...form, balance: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-lg font-black text-brand-indigo focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm" />
                     </div>
                   )}
                   <div className="md:col-span-2">
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Store Assignment *</label>
+                    <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Store Assignment *</label>
                     <select 
                       required 
                       disabled={selectedStoreId !== 'all'}
                       value={form.storeId} 
                       onChange={(e) => setForm({ ...form, storeId: e.target.value })} 
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm disabled:opacity-50"
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm cursor-pointer disabled:opacity-50"
                     >
                       <option value="">Select Store</option>
                       {stores.map((s) => <option key={s._id} value={s._id}>{s.name}</option>)}
                     </select>
                   </div>
                   <div className="md:col-span-2">
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input type="checkbox" checked={form.isDefault} onChange={(e) => setForm({ ...form, isDefault: e.target.checked })} className="w-4 h-4 rounded text-primary-blue" />
-                      <span className="text-sm font-bold text-dark-navy">Set as Default Account</span>
+                    <label className="flex items-center gap-3 cursor-pointer p-3 bg-white border border-slate-200 rounded-xl hover:border-brand-indigo transition-colors">
+                      <input type="checkbox" checked={form.isDefault} onChange={(e) => setForm({ ...form, isDefault: e.target.checked })} className="w-4 h-4 rounded text-brand-indigo focus:ring-brand-indigo accent-brand-indigo" />
+                      <span className="text-xs font-black text-slate-700">Set as Default Account</span>
                     </label>
                   </div>
-
-
                 </div>
 
-                <div className="flex gap-4 pt-4">
-                  <button type="submit" disabled={saving} className="flex-1 bg-primary-blue text-white py-4 rounded-2xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all">
-                    {saving ? 'Saving...' : editingId ? 'Update Account' : 'Create Account'}
-                  </button>
-                  <button type="button" onClick={() => setShowModal(false)} className="px-8 border border-gray-200 rounded-2xl font-bold text-gray-500 hover:bg-gray-50 transition-all">
+                <div className="flex gap-3 pt-4 border-t border-slate-100">
+                  <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-3 rounded-xl bg-slate-100 text-[11px] uppercase tracking-wider font-black hover:bg-slate-200 text-slate-700 transition-all">
                     Cancel
+                  </button>
+                  <button type="submit" disabled={saving} className="flex-1 py-3 rounded-xl bg-brand-indigo hover:bg-indigo-700 text-white text-[11px] uppercase tracking-wider font-black shadow-lg shadow-brand-indigo/20 transition-all disabled:opacity-50">
+                    {saving ? 'Saving...' : editingId ? 'Update Account' : 'Create Account'}
                   </button>
                 </div>
               </form>
@@ -337,62 +364,76 @@ const AdminAccounts = () => {
 
         {/* Modal: Account Transactions (Ledger) */}
         {viewingTransactions && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setViewingTransactions(null)}>
-            <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] shadow-2xl overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
-              <div className="px-8 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/30">
-                <div>
-                  <h2 className="text-lg font-bold text-dark-navy">{viewingTransactions.name}</h2>
-                  <p className="text-xs text-muted-text uppercase font-bold tracking-widest">{viewingTransactions.type} Ledger</p>
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setViewingTransactions(null)}>
+            <div className="bg-white rounded-3xl w-full max-w-5xl max-h-[90vh] shadow-2xl overflow-hidden flex flex-col border border-slate-100" onClick={(e) => e.stopPropagation()}>
+              <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/80 backdrop-blur-md">
+                <div className="flex items-center gap-4">
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-sm ${
+                    viewingTransactions.type === 'Cash' ? 'bg-emerald-50 text-emerald-500 border border-emerald-100' :
+                    viewingTransactions.type === 'Bank' ? 'bg-blue-50 text-blue-500 border border-blue-100' :
+                    'bg-brand-indigo/10 text-brand-indigo border border-brand-indigo/20'
+                  }`}>
+                    {viewingTransactions.type === 'Cash' ? <Wallet size={20} /> : <Landmark size={20} />}
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-black text-slate-900 tracking-tight">{viewingTransactions.name}</h2>
+                    <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest">{viewingTransactions.type} Ledger</p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <button onClick={() => exportExcel(viewingTransactions)} className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition-colors shadow-sm">Export Excel</button>
-                  <button onClick={() => exportPDF(viewingTransactions)} className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition-colors shadow-sm">Export PDF</button>
-                  <button onClick={() => setViewingTransactions(null)} className="p-2 rounded-xl hover:bg-red-50 text-gray-400 hover:text-red-500 transition-all ml-1"><X size={20} /></button>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => exportExcel(viewingTransactions)} className="bg-emerald-50 hover:bg-emerald-500 text-emerald-600 hover:text-white border border-emerald-100 hover:border-emerald-500 text-[10px] font-black uppercase tracking-wider px-4 py-2 rounded-xl transition-all shadow-sm">Export Excel</button>
+                  <button onClick={() => exportPDF(viewingTransactions)} className="bg-rose-50 hover:bg-rose-500 text-rose-600 hover:text-white border border-rose-100 hover:border-rose-500 text-[10px] font-black uppercase tracking-wider px-4 py-2 rounded-xl transition-all shadow-sm">Export PDF</button>
+                  <button onClick={() => setViewingTransactions(null)} className="p-2 rounded-xl hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors bg-slate-100"><X size={20} /></button>
                 </div>
               </div>
 
-              <div className="p-8 overflow-y-auto flex-1">
+              <div className="p-6 overflow-y-auto flex-1 custom-scrollbar">
                 {transLoading ? (
-                   <div className="flex items-center justify-center py-20">
-                     <div className="w-8 h-8 border-4 border-primary-blue border-t-transparent rounded-full animate-spin" />
+                   <div className="flex flex-col items-center justify-center py-20 gap-4">
+                     <div className="w-10 h-10 border-4 border-brand-indigo/20 border-t-brand-indigo rounded-full animate-spin" />
+                     <p className="text-sm font-bold text-slate-400">Loading ledger...</p>
                    </div>
                 ) : (
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="text-left text-gray-400 border-b border-gray-100">
-                        <th className="pb-3 font-bold uppercase text-[10px]">Date</th>
-                        <th className="pb-3 font-bold uppercase text-[10px]">Reference</th>
-                        <th className="pb-3 font-bold uppercase text-[10px]">Description</th>
-                        <th className="pb-3 font-bold uppercase text-[10px]">Type</th>
-                        <th className="pb-3 font-bold uppercase text-[10px] text-right">Amount</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                      {transactions.map((t) => (
-                        <tr key={t._id} className="hover:bg-gray-50 transition-colors">
-                          <td className="py-4 text-xs text-muted-text">{new Date(t.date || t.createdAt).toLocaleDateString()}</td>
-                          <td className="py-4 font-mono text-[10px] font-bold text-primary-blue">{t.referenceNo || '—'}</td>
-                          <td className="py-4">
-                             <div className="text-xs font-bold text-dark-navy">{t.category}</div>
-                             <div className="text-[10px] text-muted-text">{t.description}</div>
-                          </td>
-                          <td className="py-4">
-                             <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                               t.type === 'income' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
-                             }`}>
-                               {t.type.toUpperCase()}
-                             </span>
-                          </td>
-                          <td className={`py-4 text-right font-bold ${t.type === 'income' ? 'text-emerald-600' : 'text-red-600'}`}>
-                            {t.type === 'income' ? '+' : '-'} Rs. {Number(t.amount).toLocaleString()}
-                          </td>
-                        </tr>
-                      ))}
-                      {transactions.length === 0 && (
-                        <tr><td colSpan={5} className="py-20 text-center text-gray-400 italic">No transactions found for this account.</td></tr>
-                      )}
-                    </tbody>
-                  </table>
+                  <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm text-left">
+                        <thead className="bg-slate-50 text-[10px] uppercase font-black tracking-wider text-slate-500 border-b border-slate-200">
+                          <tr>
+                            <th className="px-6 py-4">Date</th>
+                            <th className="px-6 py-4">Reference</th>
+                            <th className="px-6 py-4">Description</th>
+                            <th className="px-6 py-4 text-center">Type</th>
+                            <th className="px-6 py-4 text-right">Amount</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {transactions.map((t) => (
+                            <tr key={t._id} className="hover:bg-slate-50/50 transition-colors">
+                              <td className="px-6 py-4 font-bold text-slate-600 text-xs">{new Date(t.date || t.createdAt).toLocaleDateString()}</td>
+                              <td className="px-6 py-4 font-mono text-[10px] font-black tracking-widest text-brand-indigo">{t.referenceNo || '—'}</td>
+                              <td className="px-6 py-4">
+                                 <div className="text-xs font-black text-slate-800">{t.category}</div>
+                                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">{t.description}</div>
+                              </td>
+                              <td className="px-6 py-4 text-center">
+                                 <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border ${
+                                   t.type === 'income' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'
+                                 }`}>
+                                   {t.type}
+                                 </span>
+                              </td>
+                              <td className={`px-6 py-4 text-right text-base font-black tracking-tight ${t.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                {t.type === 'income' ? '+' : '-'} <span className="text-xs">Rs.</span> {Number(t.amount).toLocaleString()}
+                              </td>
+                            </tr>
+                          ))}
+                          {transactions.length === 0 && (
+                            <tr><td colSpan={5} className="py-20 text-center text-slate-400 font-bold">No transactions found for this account.</td></tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 )}
               </div>
               

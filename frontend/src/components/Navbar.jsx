@@ -61,8 +61,8 @@ const Navbar = () => {
   const fetchCart = useCartStore((s) => s.fetchCart);
   const { currency, toggleCurrency, fetchRate, getProductPrice } = useCurrencyStore();
   const settings = useSettingsStore((s) => s.settings);
-  const brandName = settings?.shopName || 'Mobile Hub';
-  const brandLogoUrl = getImageUrl(settings?.logoUrl);
+  const brandName = 'Mobixa';
+  const brandLogoUrl = '/logo.png';
   const brandPhone = settings?.phone || '+94 11 255 5000';
   const freeDeliveryThreshold = Number(settings?.deliveryFeeThreshold || 5000).toLocaleString();
 
@@ -185,21 +185,21 @@ const Navbar = () => {
   const isActive = (path) => location.pathname === path || (path !== '/' && location.pathname.startsWith(path));
 
   return (
-    <header className="bg-white/85 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-slate-200/50 transition-all duration-300">
+    <header className="glass-panel shadow-[0_4px_30px_rgba(0,0,0,0.03)] sticky top-0 z-50 transition-all duration-300">
       {/* Top Utility Bar */}
-      <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white text-xs">
-        <div className="base-container py-1.5 flex items-center justify-between">
-          <span className="hidden sm:inline">🛍️ {brandName} — Premium Tech & Gadgets</span>
-          <span className="sm:hidden text-[11px]">🛍️ {brandName}</span>
+      <div className="bg-gradient-to-r from-brand-indigo via-brand-violet to-brand-fuchsia text-white text-[11px] font-semibold tracking-wide">
+        <div className="base-container py-2 flex items-center justify-between">
+          <span className="hidden sm:inline">✨ {brandName} — Next-Gen Technology & Accessories Store</span>
+          <span className="sm:hidden">✨ {brandName}</span>
           <div className="flex items-center gap-3">
             <span className="hidden md:inline">📞 {brandPhone}</span>
             {/* Currency Toggle */}
             <button
               onClick={toggleCurrency}
-              className="flex items-center gap-1 bg-white/15 hover:bg-white/25 rounded-full px-2.5 py-0.5 transition-colors backdrop-blur-sm text-[11px] font-semibold"
+              className="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 rounded-full px-3 py-1 transition-all backdrop-blur-sm text-[10px] font-bold shadow-sm"
               title="Toggle currency"
             >
-              <RefreshCw size={10} className="opacity-70" />
+              <RefreshCw size={10} className="animate-spin-slow" />
               <span>{currency === 'LKR' ? 'LKR 🇱🇰' : 'USD 🇺🇸'}</span>
             </button>
           </div>
@@ -209,27 +209,30 @@ const Navbar = () => {
       {/* Main Nav */}
       <div className="base-container py-3 flex items-center justify-between gap-4">
         {/* Logo */}
-        <Link to="/" className="text-2xl font-black text-slate-900 flex-shrink-0 flex items-center gap-2.5">
-          {brandLogoUrl ? (
-            <img src={brandLogoUrl} alt={brandName} className="w-9 h-9 rounded-xl object-cover shadow-sm" />
-          ) : (
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white text-lg font-bold shadow-md shadow-blue-500/20 shrink-0">
-              {brandName ? brandName.charAt(0) : 'S'}
-            </div>
-          )}
-          <span className="tracking-tight text-slate-900 whitespace-nowrap">{brandName}</span>
+        <Link to="/" className="text-2xl font-black text-slate-900 flex-shrink-0 flex items-center gap-3 group">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-indigo via-brand-violet to-brand-fuchsia p-[2px] shadow-[0_8px_20px_-4px_rgba(99,102,241,0.4)] group-hover:scale-105 transition-transform duration-300">
+            <img
+              src={brandLogoUrl}
+              alt={brandName}
+              className="w-full h-full rounded-[14px] object-cover bg-white"
+              onError={(e) => { e.target.onerror = null; e.target.src = '/logo.png'; }}
+            />
+          </div>
+          <span className="tracking-tight font-black text-2xl bg-gradient-to-r from-brand-indigo via-brand-violet to-brand-fuchsia bg-clip-text text-transparent whitespace-nowrap drop-shadow-sm">
+            {brandName}
+          </span>
         </Link>
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden lg:flex items-center gap-1">
+        <nav className="hidden lg:flex items-center gap-1.5 bg-slate-100/50 p-1.5 rounded-2xl border border-slate-200/50 backdrop-blur-sm">
           {navLinks.filter((l) => l.show).map((link) => (
             <Link
               key={link.path}
               to={link.path}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 ${
                 isActive(link.path)
-                  ? 'text-primary-blue bg-blue-50'
-                  : 'text-muted-text hover:text-dark-navy hover:bg-gray-50'
+                  ? 'text-white bg-gradient-to-r from-brand-indigo via-brand-violet to-brand-fuchsia shadow-[0_4px_15px_rgba(99,102,241,0.35)] scale-[1.02]'
+                  : 'text-slate-600 hover:text-brand-indigo hover:bg-white/80 hover:shadow-sm'
               }`}
             >
               {link.label}
@@ -238,10 +241,10 @@ const Navbar = () => {
           {dashLink && (
             <Link
               to={dashLink.path}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 ${
                 isActive(dashLink.path)
-                  ? 'text-primary-blue bg-blue-50'
-                  : 'text-violet-600 hover:bg-violet-50'
+                  ? 'text-white bg-gradient-to-r from-brand-indigo to-brand-violet shadow-[0_4px_15px_rgba(99,102,241,0.35)]'
+                  : 'text-brand-violet bg-brand-violet/10 hover:bg-brand-violet/20'
               }`}
             >
               {dashLink.emoji} {dashLink.label}
@@ -252,18 +255,19 @@ const Navbar = () => {
         {/* Search Bar (Desktop) */}
         <div className="hidden md:flex flex-1 max-w-md" ref={searchRef}>
           <form onSubmit={handleSearchSubmit} className="relative w-full">
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-indigo pointer-events-none" />
             <input
               type="text"
               placeholder="Search smartphones, laptops, accessories..."
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 hover:border-blue-300 rounded-full py-2.5 pl-5 pr-12 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-white focus:border-blue-500 transition-all text-sm shadow-inner"
+              className="w-full bg-white/80 border border-slate-200 hover:border-brand-indigo/60 rounded-2xl py-2.5 pl-10 pr-12 focus:outline-none focus:ring-4 focus:ring-brand-indigo/15 focus:bg-white focus:border-brand-indigo transition-all text-xs font-semibold text-slate-800 shadow-sm placeholder:text-slate-400 placeholder:font-medium"
             />
             <button
               type="submit"
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors shadow-sm"
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-gradient-to-r from-brand-indigo via-brand-violet to-brand-fuchsia text-white w-8 h-8 rounded-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-[0_4px_14px_rgba(99,102,241,0.35)]"
             >
-              <Search size={16} />
+              <Search size={15} />
             </button>
 
             {/* Search Dropdown Results */}
@@ -332,23 +336,23 @@ const Navbar = () => {
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-3">
           {/* Notification Bell */}
           {user && <NotificationBell />}
 
           {/* Wishlist */}
           {user && isCustomer && (
-            <Link to="/wishlist" className="hidden sm:flex relative text-muted-text hover:text-red-500 transition-colors p-1.5 rounded-lg hover:bg-red-50" title="Wishlist">
-              <Heart size={20} />
+            <Link to="/wishlist" className="hidden sm:flex relative text-slate-600 hover:text-brand-violet hover:bg-brand-violet/10 transition-all p-2.5 rounded-xl border border-slate-200/60 shadow-sm" title="Wishlist">
+              <Heart size={18} />
             </Link>
           )}
 
           {/* Cart */}
           {isCustomer && (
-            <Link to="/cart" className="relative text-dark-navy hover:text-primary-blue transition-colors p-1.5 rounded-lg hover:bg-blue-50" title="Cart">
-              <ShoppingCart size={20} />
+            <Link to="/cart" className="relative text-slate-700 hover:text-brand-indigo hover:bg-brand-indigo/10 transition-all p-2.5 rounded-xl border border-slate-200/60 shadow-sm" title="Cart">
+              <ShoppingCart size={18} />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-accent-slate text-white text-[10px] font-bold rounded-full h-4.5 w-4.5 min-w-[18px] h-[18px] flex items-center justify-center">
+                <span className="absolute -top-1.5 -right-1.5 bg-gradient-to-r from-rose-500 to-amber-500 text-white text-[10px] font-black rounded-full h-4 w-4 min-w-[20px] h-[20px] flex items-center justify-center shadow-md animate-bounce">
                   {cartCount > 99 ? '99+' : cartCount}
                 </span>
               )}
@@ -358,62 +362,64 @@ const Navbar = () => {
           {/* User Menu */}
           {user ? (
             <div className="relative group cursor-pointer">
-              <div className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-gray-50 transition-colors">
+              <div className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-slate-100/70 border border-slate-200/60 transition-colors shadow-sm">
                 {user.avatar ? (
                   <img
                     src={getImageUrl(user.avatar)}
                     alt="Profile"
-                    className="w-8 h-8 rounded-full object-cover border border-slate-200 shadow-sm"
+                    className="w-8 h-8 rounded-full object-cover border border-brand-indigo/30 shadow-sm"
                   />
                 ) : (
-                  <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm">
+                  <div className="w-8 h-8 bg-gradient-to-br from-brand-indigo to-brand-violet rounded-full flex items-center justify-center text-white font-black text-xs shadow-sm">
                     {user.name.charAt(0).toUpperCase()}
                   </div>
                 )}
                 <div className="hidden md:block">
-                  <p className="text-xs text-muted-text m-0 leading-tight">Hello, {user.name.split(' ')[0]}</p>
-                  <p className="text-xs font-bold text-dark-navy m-0 leading-tight flex items-center gap-0.5">Account <ChevronDown size={12} /></p>
+                  <p className="text-[10px] text-slate-400 m-0 leading-tight">Hello, {user.name.split(' ')[0]}</p>
+                  <p className="text-xs font-black text-slate-800 m-0 leading-tight flex items-center gap-0.5">Account <ChevronDown size={12} /></p>
                 </div>
               </div>
 
               {/* Dropdown */}
-              <div className="absolute top-full right-0 mt-1 w-56 bg-white border border-card-border rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 py-1 overflow-hidden">
-                <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-card-border">
-                  <p className="text-sm font-semibold text-dark-navy m-0">{user.name}</p>
-                  <p className="text-xs text-muted-text m-0">{user.email}</p>
-                  <span className="inline-block mt-1 text-[10px] font-bold uppercase bg-primary-blue/10 text-primary-blue px-2 py-0.5 rounded-full">{user.role}</span>
+              <div className="absolute top-full right-0 mt-2 w-56 bg-white border border-slate-200/80 rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 py-1 overflow-hidden">
+                <div className="px-4 py-3 bg-gradient-to-r from-brand-indigo/10 to-brand-violet/10 border-b border-slate-100">
+                  <p className="text-sm font-black text-slate-800 m-0">{user.name}</p>
+                  <p className="text-[11px] text-slate-500 m-0 truncate">{user.email}</p>
+                  <span className="inline-block mt-1.5 text-[9px] font-black uppercase tracking-wider bg-brand-indigo text-white px-2.5 py-0.5 rounded-full shadow-sm">{user.role}</span>
                 </div>
-                <Link to="/profile" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-dark-navy hover:bg-blue-50 hover:text-blue-600 transition-colors">
-                  <User size={14} /> My Profile
+                <Link to="/profile" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-brand-indigo transition-colors font-medium">
+                  <User size={14} className="text-slate-400" /> My Profile
                 </Link>
                 {isCustomer && (
                   <>
-                    <Link to="/orders" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-dark-navy hover:bg-blue-50 hover:text-blue-600 transition-colors">
-                      <Package size={14} /> Orders
+                    <Link to="/orders" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-brand-indigo transition-colors font-medium">
+                      <Package size={14} className="text-slate-400" /> Orders
                     </Link>
-                    <Link to="/wishlist" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-dark-navy hover:bg-blue-50 hover:text-blue-600 transition-colors">
-                      <Heart size={14} /> Wishlist
+                    <Link to="/wishlist" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-brand-indigo transition-colors font-medium">
+                      <Heart size={14} className="text-slate-400" /> Wishlist
                     </Link>
-                    <Link to="/loyalty" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-dark-navy hover:bg-amber-50 hover:text-amber-600 transition-colors">
+                    <Link to="/loyalty" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-amber-50 hover:text-amber-600 transition-colors font-medium">
                       🎁 <span>Loyalty & Rewards</span>
                     </Link>
                   </>
                 )}
-                <Link to={settingsLink} className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-dark-navy hover:bg-gray-50 transition-colors">
-                  <Settings size={14} /> Settings
-                </Link>
+                {settingsLink && (
+                  <Link to={settingsLink} className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-brand-indigo transition-colors font-medium">
+                    <Settings size={14} className="text-slate-400" /> Settings
+                  </Link>
+                )}
                 {dashLink && (
                   <>
-                    <hr className="my-1 border-card-border" />
-                    <Link to={dashLink.path} className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-violet-600 hover:bg-violet-50 font-medium transition-colors">
+                    <hr className="my-1 border-slate-100" />
+                    <Link to={dashLink.path} className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-brand-violet hover:bg-brand-violet/5 font-black transition-colors">
                       <LayoutDashboard size={14} /> {dashLink.emoji} {dashLink.label}
                     </Link>
                   </>
                 )}
-                <hr className="my-1 border-card-border" />
+                <hr className="my-1 border-slate-100" />
                 <button
                   onClick={handleLogout}
-                  className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors flex items-center gap-2.5"
+                  className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors flex items-center gap-2.5 font-bold"
                 >
                   ↪ Logout
                 </button>
@@ -421,11 +427,11 @@ const Navbar = () => {
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <Link to="/login" className="flex items-center gap-2 text-sm font-medium text-dark-navy hover:text-primary-blue transition-colors px-3 py-2 rounded-lg hover:bg-gray-50">
-                <User size={18} />
+              <Link to="/login" className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 hover:text-brand-indigo transition-all px-4 py-2.5 rounded-xl border border-slate-200/80 hover:bg-brand-indigo/10 shadow-sm hover:shadow hover:-translate-y-0.5">
+                <User size={15} />
                 <span className="hidden sm:inline">Sign In</span>
               </Link>
-              <Link to="/register" className="hidden sm:flex bg-primary-blue text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
+              <Link to="/register" className="hidden sm:flex bg-gradient-to-r from-brand-indigo via-brand-violet to-brand-fuchsia hover:opacity-95 text-white text-xs font-black uppercase tracking-wider px-6 py-2.5 rounded-xl transition-all shadow-[0_6px_20px_rgba(99,102,241,0.35)] hover:shadow-[0_8px_25px_rgba(99,102,241,0.45)] hover:-translate-y-0.5">
                 Register
               </Link>
             </div>
@@ -433,118 +439,128 @@ const Navbar = () => {
 
           {/* Mobile Menu Toggle */}
           <button
-            className="lg:hidden text-dark-navy p-1.5 rounded-lg hover:bg-gray-50"
+            className="lg:hidden text-slate-700 p-2 rounded-xl hover:bg-slate-50 transition-colors"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
       </div>
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-white border-t border-card-border animate-slideDown">
-          <div className="base-container py-4 space-y-1">
+        <div className="lg:hidden bg-white/95 backdrop-blur-lg border-t border-slate-100 animate-slideDown shadow-xl rounded-b-3xl">
+          <div className="base-container py-5 px-4 space-y-4">
             {/* Mobile Search */}
-            <form onSubmit={handleSearchSubmit} className="mb-3">
+            <form onSubmit={handleSearchSubmit} className="mb-2">
               <div className="relative">
                 <input
                   type="text"
                   placeholder="Search tech devices..."
                   value={searchQuery}
                   onChange={(e) => handleSearchChange(e.target.value)}
-                  className="w-full border border-card-border rounded-xl py-2.5 pl-4 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  className="w-full border border-slate-200 rounded-xl py-2.5 pl-4 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-brand-indigo/30 focus:border-brand-indigo bg-slate-50 transition-all"
                 />
-                <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 text-primary-blue">
-                  <Search size={18} />
+                <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-indigo">
+                  <Search size={16} />
                 </button>
               </div>
             </form>
 
             {/* Nav Links */}
-            {navLinks.filter((l) => l.show).map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                  isActive(link.path)
-                    ? 'text-primary-blue bg-blue-50'
-                    : 'text-dark-navy hover:bg-gray-50'
-                }`}
-              >
-                <link.icon size={18} />
-                {link.label}
-              </Link>
-            ))}
+            <div className="grid grid-cols-2 gap-2">
+              {navLinks.filter((l) => l.show).map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={`flex flex-col items-center justify-center p-3 rounded-2xl text-xs font-bold transition-all border ${
+                    isActive(link.path)
+                      ? 'text-brand-indigo bg-brand-indigo/5 border-brand-indigo/10 shadow-sm'
+                      : 'text-slate-600 bg-slate-50/50 border-slate-100 hover:bg-slate-50'
+                  }`}
+                >
+                  <link.icon size={18} className="mb-1.5 opacity-80" />
+                  {link.label}
+                </Link>
+              ))}
+            </div>
 
             {/* Dashboard Link */}
             {dashLink && (
               <Link
                 to={dashLink.path}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-violet-600 hover:bg-violet-50 transition-colors"
+                className="flex items-center justify-between p-3.5 rounded-2xl text-sm font-bold text-brand-violet bg-brand-violet/5 border border-brand-violet/10 hover:bg-brand-violet/10 transition-all"
               >
-                <LayoutDashboard size={18} />
-                {dashLink.emoji} {dashLink.label}
+                <div className="flex items-center gap-2.5">
+                  <LayoutDashboard size={18} />
+                  <span>{dashLink.emoji} {dashLink.label}</span>
+                </div>
+                <ChevronRight size={16} />
               </Link>
             )}
 
             {/* User Links */}
-            {user && (
-              <>
-                <hr className="my-2 border-card-border" />
-                {isCustomer && (
-                  <>
-                    <Link to="/orders" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-dark-navy hover:bg-gray-50">
-                      <Package size={18} /> My Orders
-                    </Link>
-                    <Link to="/wishlist" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-dark-navy hover:bg-gray-50">
-                      <Heart size={18} /> Wishlist
-                    </Link>
-                    <Link to="/loyalty" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-dark-navy hover:bg-gray-50">
-                      🎁 Loyalty & Rewards
-                    </Link>
-                  </>
-                )}
-              </>
+            {user && isCustomer && (
+              <div className="bg-slate-50 rounded-2xl p-2.5 space-y-1 border border-slate-100">
+                <Link to="/orders" className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-slate-700 hover:bg-white transition-all">
+                  <Package size={16} className="text-slate-400" /> My Orders
+                </Link>
+                <Link to="/wishlist" className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-slate-700 hover:bg-white transition-all">
+                  <Heart size={16} className="text-slate-400" /> Wishlist
+                </Link>
+                <Link to="/loyalty" className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-slate-700 hover:bg-white transition-all">
+                  🎁 Loyalty & Rewards
+                </Link>
+              </div>
             )}
 
-            {/* Currency Toggle */}
-            <hr className="my-2 border-card-border" />
-            <button
-              onClick={toggleCurrency}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-dark-navy hover:bg-gray-50 w-full"
-            >
-              <RefreshCw size={18} />
-              Switch to {currency === 'LKR' ? 'USD 🇺🇸' : 'LKR 🇱🇰'}
-            </button>
+            {/* Currency & Actions */}
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={toggleCurrency}
+                className="flex items-center justify-between p-3.5 rounded-2xl text-xs font-bold text-slate-700 bg-slate-50 border border-slate-100 hover:bg-slate-100 transition-all w-full"
+              >
+                <div className="flex items-center gap-2">
+                  <RefreshCw size={14} className="text-slate-400" />
+                  <span>Currency: {currency}</span>
+                </div>
+                <span className="text-[10px] text-brand-indigo uppercase">Switch to {currency === 'LKR' ? 'USD' : 'LKR'}</span>
+              </button>
+            </div>
 
             {/* Login/Logout */}
             {user ? (
-              <>
-                <hr className="my-2 border-card-border" />
-                <div className="px-3 py-2 mb-1">
-                  <p className="text-sm font-semibold text-dark-navy m-0">{user.name}</p>
-                  <p className="text-xs text-muted-text m-0">{user.email}</p>
+              <div className="border-t border-slate-100 pt-4 space-y-3">
+                <div className="flex items-center gap-3 px-2">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-indigo to-brand-violet flex items-center justify-center text-white font-bold text-sm">
+                    {user.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-800 m-0 leading-tight">{user.name}</p>
+                    <p className="text-xs text-slate-400 m-0 leading-tight">{user.email}</p>
+                  </div>
                 </div>
-                <Link to="/profile" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-dark-navy hover:bg-gray-50 transition-colors">
-                  <User size={18} /> My Profile
-                </Link>
-                <Link to={settingsLink} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-dark-navy hover:bg-gray-50 transition-colors">
-                  <Settings size={18} /> Settings
-                </Link>
+                <div className="grid grid-cols-2 gap-2">
+                  <Link to="/profile" className="flex items-center justify-center gap-2 p-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all">
+                    <User size={14} /> Profile
+                  </Link>
+                  <Link to={settingsLink} className="flex items-center justify-center gap-2 p-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all">
+                    <Settings size={14} /> Settings
+                  </Link>
+                </div>
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition-colors"
+                  className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-red-50 text-red-600 text-xs font-bold hover:bg-red-100 transition-all"
                 >
-                  ↪ Logout
+                  ↪ Logout Account
                 </button>
-              </>
+              </div>
             ) : (
-              <div className="flex gap-2 pt-2">
-                <Link to="/login" className="flex-1 text-center bg-gray-100 text-dark-navy text-sm font-medium py-2.5 rounded-xl hover:bg-gray-200 transition-colors">
+              <div className="flex gap-3 pt-2">
+                <Link to="/login" className="flex-1 text-center border border-slate-200 text-slate-700 text-sm font-bold py-3 rounded-xl hover:bg-slate-50 transition-all">
                   Sign In
                 </Link>
-                <Link to="/register" className="flex-1 text-center bg-primary-blue text-white text-sm font-medium py-2.5 rounded-xl hover:bg-indigo-700 transition-colors">
+                <Link to="/register" className="flex-1 text-center bg-gradient-to-r from-brand-indigo to-brand-violet text-white text-sm font-bold py-3 rounded-xl hover:opacity-90 transition-all shadow-md shadow-brand-indigo/10">
                   Register
                 </Link>
               </div>

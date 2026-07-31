@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
-import { Truck, Clock, DollarSign, CheckCircle, MapPin, Phone, Package, ArrowRight, Download } from 'lucide-react';
+import {
+  Truck, Clock, DollarSign, CheckCircle, MapPin, Phone, Package, ArrowRight, Download,
+} from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
-import { getDeliveryOrders, getDeliveryHistory, getDeliveryEarnings, markDeliveryPaymentSuccess, updateDeliveryStatus } from '../../services/api';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import {
+  getDeliveryOrders, getDeliveryHistory, getDeliveryEarnings,
+  markDeliveryPaymentSuccess, updateDeliveryStatus,
+} from '../../services/api';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { toast } from 'react-toastify';
-
-const navItems = [
-  { path: '/delivery', label: 'Active Orders', icon: Truck },
-];
+import useAuthStore from '../../store/authStore';
+import { getEmployeeNavGroups } from '../employee/employeeNav';
+import EmployeePageHeader, { EmployeeStatCard, EmployeeLoading } from '../employee/EmployeePageHeader';
 
 const statusFlow = ['assigned_delivery', 'out_for_delivery', 'delivered'];
 const statusColors = {
@@ -19,23 +23,34 @@ const statusColors = {
 };
 
 const DeliveryDashboard = () => {
+  const { user } = useAuthStore();
+  const navItems = getEmployeeNavGroups(user?.role);
   const [orders, setOrders] = useState([]);
   const [history, setHistory] = useState([]);
   const [earnings, setEarnings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('active');
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [ordersRes, historyRes, earningsRes] = await Promise.all([getDeliveryOrders(), getDeliveryHistory(), getDeliveryEarnings()]);
+      const [ordersRes, historyRes, earningsRes] = await Promise.all([
+        getDeliveryOrders(),
+        getDeliveryHistory(),
+        getDeliveryEarnings(),
+      ]);
       setOrders(ordersRes.data);
       setHistory(historyRes.data);
       setEarnings(earningsRes.data);
-    } catch (err) { console.error(err); }
-    finally { setLoading(false); }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleStatusUpdate = async (orderId, newStatus) => {
@@ -43,7 +58,9 @@ const DeliveryDashboard = () => {
       await updateDeliveryStatus(orderId, { status: newStatus });
       toast.success(`Status updated to ${newStatus.replace(/_/g, ' ')}`);
       fetchData();
-    } catch (err) { toast.error(err.response?.data?.message || 'Failed to update'); }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to update');
+    }
   };
 
   const handlePaymentSuccess = async (orderId) => {
@@ -56,14 +73,21 @@ const DeliveryDashboard = () => {
     }
   };
 
-  const getNextStatus = (s) => { const i = statusFlow.indexOf(s); return i >= 0 && i < statusFlow.length - 1 ? statusFlow[i + 1] : null; };
+  const getNextStatus = (s) => {
+    const i = statusFlow.indexOf(s);
+    return i >= 0 && i < statusFlow.length - 1 ? statusFlow[i + 1] : null;
+  };
 
-  // Weekly earnings for chart
   const weeklyData = [];
   const now = new Date();
   for (let i = 6; i >= 0; i--) {
-    const d = new Date(now); d.setDate(d.getDate() - i);
-    const dayDeliveries = history.filter(o => o.orderStatus === 'delivered' && new Date(o.updatedAt || o.createdAt).toDateString() === d.toDateString());
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const dayDeliveries = history.filter(
+      (o) =>
+        o.orderStatus === 'delivered' &&
+        new Date(o.updatedAt || o.createdAt).toDateString() === d.toDateString()
+    );
     weeklyData.push({
       day: d.toLocaleDateString('en', { weekday: 'short' }),
       deliveries: dayDeliveries.length,
@@ -72,97 +96,193 @@ const DeliveryDashboard = () => {
   }
 
   const exportCSV = () => {
-    const rows = [['Order ID', 'Customer', 'Amount', 'Status', 'Date'].join(','), ...history.map(o => [o._id.slice(-8), o.userId?.name || 'N/A', o.totalAmount?.toFixed(2), o.orderStatus, new Date(o.createdAt).toLocaleDateString()].join(','))].join('\n');
+    const rows = [
+      ['Order ID', 'Customer', 'Amount', 'Status', 'Date'].join(','),
+      ...history.map((o) =>
+        [
+          o._id.slice(-8),
+          o.userId?.name || 'N/A',
+          o.totalAmount?.toFixed(2),
+          o.orderStatus,
+          new Date(o.createdAt).toLocaleDateString(),
+        ].join(',')
+      ),
+    ].join('\n');
     const blob = new Blob([rows], { type: 'text/csv' });
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'delivery_history.csv'; a.click();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'delivery_history.csv';
+    a.click();
     toast.success('Report downloaded');
   };
 
-  if (loading) return <DashboardLayout navItems={navItems} title="Delivery Dashboard"><div className="flex items-center justify-center h-64"><div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" /></div></DashboardLayout>;
+  if (loading) {
+    return (
+      <DashboardLayout navItems={navItems} title="Employee Portal">
+        <EmployeeLoading />
+      </DashboardLayout>
+    );
+  }
 
   return (
-    <DashboardLayout navItems={navItems} title="Delivery Dashboard">
-      <div>
-        <h1 className="text-2xl font-bold text-dark-navy mb-2">🚚 Delivery Dashboard</h1>
-        <p className="text-muted-text text-sm mb-6">Manage deliveries and track earnings</p>
+    <DashboardLayout navItems={navItems} title="Employee Portal">
+      <div className="animate-fade-in space-y-6">
+        <EmployeePageHeader
+          badge="DELIVERY OPERATIONS"
+          title="Delivery Dashboard"
+          subtitle={`${orders.length} active · ${earnings?.totalDeliveries || 0} completed`}
+          icon={Truck}
+          actions={
+            history.length > 0 ? (
+              <button
+                onClick={exportCSV}
+                className="bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 text-[10px] uppercase tracking-wider font-black px-4 py-2.5 rounded-xl transition-all shadow-sm flex items-center gap-2 cursor-pointer"
+              >
+                <Download size={14} /> Export CSV
+              </button>
+            ) : null
+          }
+        />
 
-        {/* Stats Cards */}
         {earnings && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center mb-3 shadow-lg"><Truck size={18} className="text-white" /></div>
-              <p className="text-2xl font-bold text-dark-navy">{orders.length}</p>
-              <p className="text-xs text-muted-text">Active Deliveries</p>
-            </div>
-            <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center mb-3 shadow-lg"><CheckCircle size={18} className="text-white" /></div>
-              <p className="text-2xl font-bold text-dark-navy">{earnings.totalDeliveries}</p>
-              <p className="text-xs text-muted-text">Completed Total</p>
-            </div>
-            <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mb-3 shadow-lg"><DollarSign size={18} className="text-white" /></div>
-              <p className="text-2xl font-bold text-dark-navy">Rs. {earnings.thisMonth.earnings.toLocaleString()}</p>
-              <p className="text-xs text-muted-text">This Month ({earnings.thisMonth.deliveries} trips)</p>
-            </div>
-            <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center mb-3 shadow-lg"><DollarSign size={18} className="text-white" /></div>
-              <p className="text-2xl font-bold text-dark-navy">Rs. {earnings.totalEarnings.toLocaleString()}</p>
-              <p className="text-xs text-muted-text">All-Time Earnings</p>
-            </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <EmployeeStatCard
+              label="Active Deliveries"
+              value={orders.length}
+              icon={Truck}
+              iconBg="bg-indigo-50 border-indigo-100/60"
+              iconColor="text-brand-indigo"
+            />
+            <EmployeeStatCard
+              label="Completed Total"
+              value={earnings.totalDeliveries}
+              color="text-emerald-600"
+              icon={CheckCircle}
+              iconBg="bg-emerald-50 border-emerald-100/60"
+              iconColor="text-emerald-600"
+            />
+            <EmployeeStatCard
+              label={`This Month (${earnings.thisMonth.deliveries} trips)`}
+              value={`Rs. ${earnings.thisMonth.earnings.toLocaleString()}`}
+              color="text-amber-600"
+              icon={DollarSign}
+              iconBg="bg-amber-50 border-amber-100/60"
+              iconColor="text-amber-600"
+            />
+            <EmployeeStatCard
+              label="All-Time Earnings"
+              value={`Rs. ${earnings.totalEarnings.toLocaleString()}`}
+              color="text-purple-600"
+              icon={DollarSign}
+              iconBg="bg-purple-50 border-purple-100/60"
+              iconColor="text-purple-600"
+            />
           </div>
         )}
 
-        {/* Tabs */}
-        <div className="flex gap-2 mb-6">
-          {[{key: 'active', label: `Active (${orders.length})`}, {key: 'earnings', label: 'Earnings'}, {key: 'history', label: 'History'}].map(t => (
-            <button key={t.key} onClick={() => setTab(t.key)} className={`px-4 py-2 text-sm font-medium rounded-xl transition-colors ${tab === t.key ? 'bg-blue-600 text-white' : 'bg-gray-100 text-muted-text hover:bg-gray-200'}`}>{t.label}</button>
+        <div className="flex gap-2 flex-wrap">
+          {[
+            { key: 'active', label: `Active (${orders.length})` },
+            { key: 'earnings', label: 'Earnings' },
+            { key: 'history', label: 'History' },
+          ].map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={`px-4 py-2.5 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all border-0 cursor-pointer ${
+                tab === t.key
+                  ? 'bg-slate-900 text-white shadow-md'
+                  : 'bg-white/80 text-slate-500 border border-slate-200 hover:bg-slate-50'
+              }`}
+            >
+              {t.label}
+            </button>
           ))}
         </div>
 
         {tab === 'active' && (
-          <div className="bg-white rounded-2xl border border-card-border shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-card-border"><h2 className="font-semibold text-dark-navy">Active Deliveries</h2></div>
+          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-100">
+              <h2 className="font-black text-slate-900 text-sm m-0 uppercase tracking-wider">Active Deliveries</h2>
+            </div>
             {orders.length === 0 ? (
-              <div className="text-center py-12 text-muted-text"><Truck size={40} className="mx-auto mb-3 text-gray-300" /><p className="text-sm">No active deliveries right now</p></div>
+              <div className="text-center py-12 text-slate-400">
+                <Truck size={40} className="mx-auto mb-3 text-slate-200" />
+                <p className="text-[11px] font-black uppercase tracking-wider m-0">No active deliveries right now</p>
+              </div>
             ) : (
-              <div className="divide-y divide-card-border">
-                {orders.map(order => {
+              <div className="divide-y divide-slate-100">
+                {orders.map((order) => {
                   const next = getNextStatus(order.orderStatus);
                   return (
-                    <div key={order._id} className="p-5">
+                    <div key={order._id} className="p-5 hover:bg-slate-50/50 transition-colors">
                       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                         <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded-lg">#{order._id.slice(-8).toUpperCase()}</span>
-                            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${statusColors[order.orderStatus]}`}>{order.orderStatus?.replace(/_/g, ' ')}</span>
+                          <div className="flex items-center gap-2 mb-2 flex-wrap">
+                            <span className="font-mono text-[10px] font-black bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg">
+                              #{order._id.slice(-8).toUpperCase()}
+                            </span>
+                            <span className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full ${statusColors[order.orderStatus]}`}>
+                              {order.orderStatus?.replace(/_/g, ' ')}
+                            </span>
                           </div>
-                          <p className="text-sm font-medium text-dark-navy">{order.items?.length} items • Rs. {order.totalAmount?.toFixed(2)}</p>
-                          {order.userId && <p className="text-xs text-muted-text mt-1 flex items-center gap-1"><Package size={12} /> {order.userId.name} {order.userId.phone && <><Phone size={12} className="ml-2" /> {order.userId.phone}</>}</p>}
-                          {order.deliveryAddress && <p className="text-xs text-muted-text mt-1 flex items-center gap-1"><MapPin size={12} /> {order.deliveryAddress.street}, {order.deliveryAddress.city}</p>}
-                          {/* Status Progress */}
+                          <p className="text-sm font-black text-slate-900 m-0">
+                            {order.items?.length} items · Rs. {order.totalAmount?.toFixed(2)}
+                          </p>
+                          {order.userId && (
+                            <p className="text-xs text-slate-500 mt-1.5 m-0 flex items-center gap-1.5 font-semibold">
+                              <Package size={12} /> {order.userId.name}
+                              {order.userId.phone && (
+                                <>
+                                  <Phone size={12} className="ml-2" /> {order.userId.phone}
+                                </>
+                              )}
+                            </p>
+                          )}
+                          {order.deliveryAddress && (
+                            <p className="text-xs text-slate-500 mt-1 m-0 flex items-center gap-1.5 font-semibold">
+                              <MapPin size={12} /> {order.deliveryAddress.street}, {order.deliveryAddress.city}
+                            </p>
+                          )}
                           <div className="flex items-center gap-1 mt-3">
                             {statusFlow.map((s, i) => (
                               <div key={s} className="flex items-center">
-                                <div className={`w-2.5 h-2.5 rounded-full ${statusFlow.indexOf(order.orderStatus) >= i ? 'bg-blue-600' : 'bg-gray-200'}`} />
-                                {i < statusFlow.length - 1 && <div className={`w-6 h-0.5 ${statusFlow.indexOf(order.orderStatus) > i ? 'bg-blue-600' : 'bg-gray-200'}`} />}
+                                <div
+                                  className={`w-2.5 h-2.5 rounded-full ${
+                                    statusFlow.indexOf(order.orderStatus) >= i ? 'bg-brand-indigo' : 'bg-slate-200'
+                                  }`}
+                                />
+                                {i < statusFlow.length - 1 && (
+                                  <div
+                                    className={`w-6 h-0.5 ${
+                                      statusFlow.indexOf(order.orderStatus) > i ? 'bg-brand-indigo' : 'bg-slate-200'
+                                    }`}
+                                  />
+                                )}
                               </div>
                             ))}
                           </div>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap">
                           {next && (
-                            <button onClick={() => handleStatusUpdate(order._id, next)} className="flex items-center gap-2 bg-blue-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors shadow-md flex-shrink-0">
-                              {next === 'delivered' ? 'Mark Delivered ✓' : `→ ${next.replace(/_/g, ' ')}`} <ArrowRight size={16} />
-                            </button>
-                          )}
-                          {order.paymentMethod === 'cod' && order.orderStatus === 'delivered' && order.paymentStatus !== 'completed' && (
                             <button
-                              onClick={() => handlePaymentSuccess(order._id)}
-                              className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors shadow-md flex-shrink-0"
+                              onClick={() => handleStatusUpdate(order._id, next)}
+                              className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-[10px] font-black uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all shadow-md border-0 cursor-pointer"
                             >
-                              Mark as Payment Successful
+                              {next === 'delivered' ? 'Mark Delivered' : next.replace(/_/g, ' ')}
+                              <ArrowRight size={14} />
                             </button>
                           )}
+                          {order.paymentMethod === 'cod' &&
+                            order.orderStatus === 'delivered' &&
+                            order.paymentStatus !== 'completed' && (
+                              <button
+                                onClick={() => handlePaymentSuccess(order._id)}
+                                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all shadow-md border-0 cursor-pointer"
+                              >
+                                Mark Payment Done
+                              </button>
+                            )}
                         </div>
                       </div>
                     </div>
@@ -175,69 +295,91 @@ const DeliveryDashboard = () => {
 
         {tab === 'earnings' && (
           <div className="space-y-6">
-            {/* Earnings Chart */}
-            <div className="bg-white rounded-2xl border border-card-border p-6 shadow-sm">
-              <h2 className="font-semibold text-dark-navy mb-4">📈 Weekly Earnings (Rs. 150/delivery)</h2>
+            <div className="bg-white/60 backdrop-blur-md rounded-3xl border border-white/40 p-6 shadow-sm">
+              <h2 className="font-black text-slate-900 text-lg mb-6 m-0">Weekly Earnings (Rs. 150/delivery)</h2>
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={weeklyData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="day" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 10 }} />
-                  <Tooltip formatter={(v, name) => name === 'earnings' ? `Rs. ${v}` : v} />
-                  <Bar dataKey="deliveries" fill="#3b82f6" name="Deliveries" radius={[6, 6, 0, 0]} />
-                  <Bar dataKey="earnings" fill="#10b981" name="Earnings (Rs.)" radius={[6, 6, 0, 0]} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                  <XAxis dataKey="day" tick={{ fontSize: 10, fill: '#64748b', fontWeight: 'bold' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: '#64748b', fontWeight: 'bold' }} axisLine={false} tickLine={false} />
+                  <Tooltip
+                    formatter={(v, name) => (name === 'earnings' ? `Rs. ${v}` : v)}
+                    contentStyle={{ borderRadius: '16px', border: '1px solid #e2e8f0' }}
+                  />
+                  <Legend wrapperStyle={{ fontSize: '10px', fontWeight: 900, textTransform: 'uppercase' }} iconType="circle" />
+                  <Bar dataKey="deliveries" fill="#6366f1" name="Deliveries" radius={[6, 6, 0, 0]} maxBarSize={32} />
+                  <Bar dataKey="earnings" fill="#10b981" name="Earnings (Rs.)" radius={[6, 6, 0, 0]} maxBarSize={32} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
 
-            {/* Earnings Breakdown */}
-            {earnings && (
-              <div className="grid sm:grid-cols-3 gap-4">
-                <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm text-center">
-                  <p className="text-muted-text text-xs mb-1">Today</p>
-                  <p className="text-xl font-bold text-dark-navy">Rs. {(weeklyData[weeklyData.length - 1]?.earnings || 0).toLocaleString()}</p>
-                  <p className="text-xs text-muted-text">{weeklyData[weeklyData.length - 1]?.deliveries || 0} deliveries</p>
-                </div>
-                <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm text-center">
-                  <p className="text-muted-text text-xs mb-1">This Week</p>
-                  <p className="text-xl font-bold text-dark-navy">Rs. {weeklyData.reduce((s, d) => s + d.earnings, 0).toLocaleString()}</p>
-                  <p className="text-xs text-muted-text">{weeklyData.reduce((s, d) => s + d.deliveries, 0)} deliveries</p>
-                </div>
-                <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm text-center">
-                  <p className="text-muted-text text-xs mb-1">Rate</p>
-                  <p className="text-xl font-bold text-emerald-600">Rs. 150</p>
-                  <p className="text-xs text-muted-text">per delivery</p>
-                </div>
-              </div>
-            )}
+            <div className="grid sm:grid-cols-3 gap-4">
+              <EmployeeStatCard
+                label={`Today (${weeklyData[weeklyData.length - 1]?.deliveries || 0} deliveries)`}
+                value={`Rs. ${(weeklyData[weeklyData.length - 1]?.earnings || 0).toLocaleString()}`}
+              />
+              <EmployeeStatCard
+                label={`This Week (${weeklyData.reduce((s, d) => s + d.deliveries, 0)} deliveries)`}
+                value={`Rs. ${weeklyData.reduce((s, d) => s + d.earnings, 0).toLocaleString()}`}
+              />
+              <EmployeeStatCard label="Rate per delivery" value="Rs. 150" color="text-emerald-600" />
+            </div>
           </div>
         )}
 
         {tab === 'history' && (
-          <div className="bg-white rounded-2xl border border-card-border shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-card-border flex items-center justify-between">
-              <h2 className="font-semibold text-dark-navy">Delivery History ({history.length})</h2>
-              {history.length > 0 && <button onClick={exportCSV} className="flex items-center gap-2 bg-blue-600 hover:bg-indigo-700 text-white text-xs font-medium px-3 py-2 rounded-xl"><Download size={14} /> CSV</button>}
+          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+              <h2 className="font-black text-slate-900 text-sm m-0 uppercase tracking-wider">
+                Delivery History ({history.length})
+              </h2>
+              {history.length > 0 && (
+                <button
+                  onClick={exportCSV}
+                  className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-[10px] font-black uppercase tracking-wider px-3 py-2 rounded-xl border-0 cursor-pointer"
+                >
+                  <Download size={14} /> CSV
+                </button>
+              )}
             </div>
             {history.length === 0 ? (
-              <div className="text-center py-12 text-muted-text"><Clock size={40} className="mx-auto mb-3 text-gray-300" /><p>No delivery history</p></div>
+              <div className="text-center py-12 text-slate-400">
+                <Clock size={40} className="mx-auto mb-3 text-slate-200" />
+                <p className="text-[11px] font-black uppercase tracking-wider m-0">No delivery history</p>
+              </div>
             ) : (
-              <div className="divide-y divide-card-border">
-                {history.map(order => (
-                  <div key={order._id} className="px-6 py-3 flex items-center justify-between">
+              <div className="divide-y divide-slate-100">
+                {history.map((order) => (
+                  <div key={order._id} className="px-6 py-3.5 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
                     <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${order.orderStatus === 'delivered' ? 'bg-emerald-100' : 'bg-red-100'}`}>
-                        {order.orderStatus === 'delivered' ? <CheckCircle size={14} className="text-emerald-600" /> : <span className="text-red-500 text-xs">✗</span>}
+                      <div
+                        className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                          order.orderStatus === 'delivered' ? 'bg-emerald-100' : 'bg-rose-100'
+                        }`}
+                      >
+                        {order.orderStatus === 'delivered' ? (
+                          <CheckCircle size={14} className="text-emerald-600" />
+                        ) : (
+                          <span className="text-rose-500 text-xs font-black">X</span>
+                        )}
                       </div>
                       <div>
-                        <span className="font-mono text-xs text-muted-text">#{order._id.slice(-8).toUpperCase()}</span>
-                        <span className="text-sm text-dark-navy ml-2">{order.userId?.name}</span>
-                        <p className="text-xs text-muted-text">{new Date(order.createdAt).toLocaleDateString()}</p>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-[10px] font-black text-slate-400">
+                            #{order._id.slice(-8).toUpperCase()}
+                          </span>
+                          <span className="text-sm font-black text-slate-900">{order.userId?.name}</span>
+                        </div>
+                        <p className="text-[10px] font-bold text-slate-400 m-0 mt-0.5 uppercase tracking-wide">
+                          {new Date(order.createdAt).toLocaleDateString()}
+                        </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-semibold">Rs. {order.totalAmount?.toFixed(2)}</p>
-                      {order.orderStatus === 'delivered' && <p className="text-xs text-emerald-600">+Rs. 150</p>}
+                      <p className="text-sm font-black text-slate-900 m-0">Rs. {order.totalAmount?.toFixed(2)}</p>
+                      {order.orderStatus === 'delivered' && (
+                        <p className="text-[10px] font-black text-emerald-600 m-0">+Rs. 150</p>
+                      )}
                     </div>
                   </div>
                 ))}

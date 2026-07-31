@@ -19,7 +19,7 @@ const ManagerAttendance = () => {
   const [year, setYear] = useState(now.getFullYear());
   const [selectedRole, setSelectedRole] = useState('All');
   const [selectedDepartment, setSelectedDepartment] = useState('All');
-  
+
   const [showAttModal, setShowAttModal] = useState(false);
   const [attForm, setAttForm] = useState({ employeeId: '', date: new Date().toISOString().split('T')[0], checkInTime: '09:00', checkOutTime: '17:00', status: 'present', notes: '' });
 
@@ -69,7 +69,7 @@ const ManagerAttendance = () => {
   // Group by employee
   const summaryData = useMemo(() => {
     const byEmployee = {};
-    
+
     // Initialize all employees to 0 first so they appear even if no attendance
     employees.forEach(e => {
       byEmployee[e._id] = {
@@ -124,7 +124,7 @@ const ManagerAttendance = () => {
     doc.text(`Attendance Report - ${month}/${year}`, 14, 15);
     const head = [['Employee', 'Role', 'Department', 'Present', 'Leave', 'Absent', 'Late', 'Hours', 'Overtime']];
     const body = summaryData.map(e => [e.name, e.role, e.department, e.present, e.leave, e.absent, e.late, e.totalHours.toFixed(1), e.overtime.toFixed(1)]);
-    
+
     autoTable(doc, {
       head,
       body,
@@ -140,37 +140,46 @@ const ManagerAttendance = () => {
 
   return (
     <DashboardLayout navItems={navItems} title="Manager Dashboard">
-      <div>
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-          <div><h1 className="text-2xl font-bold text-dark-navy">📋 Attendance Report</h1><p className="text-muted-text text-sm mt-1">{summaryData.length} employees found for {month}/{year}</p></div>
+      <div className="animate-fade-in space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-indigo/5 rounded-full blur-3xl pointer-events-none -z-10"></div>
+          <div>
+            <div className="flex items-center gap-2.5 mb-1">
+              <span className="inline-flex items-center gap-1.5 bg-brand-indigo/10 text-brand-indigo text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg border border-brand-indigo/15">
+                TRACKING & SCHEDULING
+              </span>
+            </div>
+            <h1 className="text-2xl font-black text-slate-900 m-0">Attendance Tracker</h1>
+            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mt-2 m-0">{summaryData.length} employees tracked for {month}/{year}</p>
+          </div>
           <div className="flex items-center gap-3 flex-wrap">
-            <button onClick={() => setShowAttModal(true)} className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors flex items-center gap-2"><Clock size={16} /> Mark Attendance</button>
-            <button onClick={exportExcel} className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors flex items-center gap-2"><FileSpreadsheet size={16} /> Excel</button>
-            <button onClick={exportPDF} className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors flex items-center gap-2"><FileText size={16} /> PDF</button>
+            <button onClick={() => setShowAttModal(true)} className="bg-slate-900 hover:bg-slate-800 text-white text-[10px] uppercase tracking-wider font-black px-4 py-2.5 rounded-xl transition-all shadow-md flex items-center gap-2"><Clock size={14} /> Mark Attendance</button>
+            <button onClick={exportExcel} className="bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 text-[10px] uppercase tracking-wider font-black px-4 py-2.5 rounded-xl transition-all shadow-sm flex items-center gap-2"><FileSpreadsheet size={14} /> Excel</button>
+            <button onClick={exportPDF} className="bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 text-[10px] uppercase tracking-wider font-black px-4 py-2.5 rounded-xl transition-all shadow-sm flex items-center gap-2"><FileText size={14} /> PDF</button>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm mb-6 flex flex-wrap gap-4 items-end">
+        <div className="bg-white/60 backdrop-blur-md rounded-3xl border border-white/40 p-5 shadow-sm flex flex-wrap gap-4 items-end">
           <div>
-            <label className="block text-xs font-semibold text-muted-text uppercase tracking-wider mb-2">Month</label>
-            <select value={month} onChange={e => setMonth(Number(e.target.value))} className="w-full border border-card-border rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue">
+            <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Month</label>
+            <select value={month} onChange={e => setMonth(Number(e.target.value))} className="w-full bg-white/80 border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all cursor-pointer shadow-sm">
               {Array.from({ length: 12 }, (_, i) => <option key={i + 1} value={i + 1}>{new Date(2000, i).toLocaleString('en', { month: 'long' })}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-xs font-semibold text-muted-text uppercase tracking-wider mb-2">Year</label>
-            <input type="number" value={year} onChange={e => setYear(Number(e.target.value))} className="w-24 border border-card-border rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" />
+            <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Year</label>
+            <input type="number" value={year} onChange={e => setYear(Number(e.target.value))} className="w-24 bg-white/80 border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-muted-text uppercase tracking-wider mb-2">Department</label>
-            <select value={selectedDepartment} onChange={e => setSelectedDepartment(e.target.value)} className="w-40 border border-card-border rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue">
+            <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Department</label>
+            <select value={selectedDepartment} onChange={e => setSelectedDepartment(e.target.value)} className="w-40 bg-white/80 border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all cursor-pointer shadow-sm">
               {departments.map(d => <option key={d} value={d}>{d}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-xs font-semibold text-muted-text uppercase tracking-wider mb-2">Role</label>
-            <select value={selectedRole} onChange={e => setSelectedRole(e.target.value)} className="w-40 border border-card-border rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue">
+            <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Role</label>
+            <select value={selectedRole} onChange={e => setSelectedRole(e.target.value)} className="w-40 bg-white/80 border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all cursor-pointer shadow-sm">
               {roles.map(r => <option key={r} value={r}>{r}</option>)}
             </select>
           </div>
@@ -178,20 +187,20 @@ const ManagerAttendance = () => {
 
         {/* Attendance Chart */}
         {chartData.length > 0 && (
-          <div className="bg-white rounded-2xl border border-card-border p-6 shadow-sm mb-6">
-            <h2 className="font-semibold text-dark-navy mb-4">📊 Attendance Overview</h2>
+          <div className="bg-white/60 backdrop-blur-md rounded-3xl border border-white/40 p-6 shadow-sm">
+            <h2 className="font-black text-slate-900 text-lg mb-6 flex items-center gap-2"><span className="text-xl">📊</span> Attendance Overview</h2>
             <div className="overflow-x-auto overflow-y-hidden w-full custom-scrollbar">
               <div style={{ minWidth: `${Math.max(chartData.length * 60, 600)}px`, height: 300 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="name" tick={{ fontSize: 11 }} interval={0} angle={-45} textAnchor="end" height={60} />
-                    <YAxis tick={{ fontSize: 11 }} />
-                    <Tooltip cursor={{fill: '#f8fafc'}} />
-                    <Legend wrapperStyle={{ paddingTop: '20px' }} />
-                    <Bar dataKey="present" fill="#10b981" name="Present" radius={[4, 4, 0, 0]} maxBarSize={40} />
-                    <Bar dataKey="leave" fill="#f59e0b" name="Leave" radius={[4, 4, 0, 0]} maxBarSize={40} />
-                    <Bar dataKey="absent" fill="#ef4444" name="Absent" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                    <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#64748b', fontWeight: 'bold', textTransform: 'uppercase' }} interval={0} angle={-45} textAnchor="end" height={60} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: '#64748b', fontWeight: 'bold' }} axisLine={false} tickLine={false} />
+                    <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
+                    <Legend wrapperStyle={{ paddingTop: '20px', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', color: '#64748b' }} iconType="circle" />
+                    <Bar dataKey="present" fill="#10b981" name="Present" radius={[6, 6, 0, 0]} maxBarSize={32} />
+                    <Bar dataKey="leave" fill="#f59e0b" name="Leave" radius={[6, 6, 0, 0]} maxBarSize={32} />
+                    <Bar dataKey="absent" fill="#ef4444" name="Absent" radius={[6, 6, 0, 0]} maxBarSize={32} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -200,37 +209,39 @@ const ManagerAttendance = () => {
         )}
 
         {/* Summary Table */}
-        <div className="bg-white rounded-2xl border border-card-border shadow-sm overflow-hidden">
+        <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead><tr className="bg-gray-50">
-                <th className="text-left px-5 py-3 font-medium text-muted-text">Employee</th>
-                <th className="text-center px-3 py-3 font-medium text-muted-text">Role/Dept</th>
-                <th className="text-center px-3 py-3 font-medium text-emerald-600">Present</th>
-                <th className="text-center px-3 py-3 font-medium text-amber-600">Leave</th>
-                <th className="text-center px-3 py-3 font-medium text-red-500">Absent</th>
-                <th className="text-center px-3 py-3 font-medium text-orange-500">Late</th>
-                <th className="text-center px-3 py-3 font-medium text-blue-600">Hours</th>
-                <th className="text-center px-3 py-3 font-medium text-purple-600">Overtime</th>
-              </tr></thead>
-              <tbody className="divide-y divide-card-border">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-100">
+                  <th className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500 text-left">Employee</th>
+                  <th className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500 text-center">Role/Dept</th>
+                  <th className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-emerald-600 text-center">Present</th>
+                  <th className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-amber-600 text-center">Leave</th>
+                  <th className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-rose-500 text-center">Absent</th>
+                  <th className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-orange-500 text-center">Late</th>
+                  <th className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-brand-indigo text-center">Hours</th>
+                  <th className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-purple-600 text-center">Overtime</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
                 {summaryData.length === 0 ? (
-                  <tr><td colSpan={8} className="text-center py-12 text-muted-text">No attendance records found</td></tr>
+                  <tr><td colSpan={8} className="text-center py-12 font-black text-slate-400 text-[11px] uppercase tracking-wider">No attendance records found</td></tr>
                 ) : summaryData.map(e => (
-                  <tr key={e.id} className="hover:bg-gray-50">
-                    <td className="px-5 py-3 font-medium text-dark-navy">{e.name}</td>
-                    <td className="px-3 py-3 text-center">
-                      <div className="flex flex-col items-center gap-1">
-                        <span className="text-[10px] uppercase font-bold text-gray-500">{e.role}</span>
-                        {e.department && <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded">{e.department}</span>}
+                  <tr key={e.id} className="hover:bg-slate-50/50 transition-colors">
+                    <td className="px-6 py-4 font-black text-slate-900">{e.name}</td>
+                    <td className="px-6 py-4 text-center">
+                      <div className="flex flex-col items-center gap-1.5">
+                        <span className="text-[10px] uppercase font-black tracking-wider text-slate-400">{e.role}</span>
+                        {e.department && <span className="text-[9px] uppercase tracking-wider font-black bg-brand-indigo/10 text-brand-indigo px-2 py-0.5 rounded-md">{e.department}</span>}
                       </div>
                     </td>
-                    <td className="px-3 py-3 text-center font-bold text-emerald-600">{e.present}</td>
-                    <td className="px-3 py-3 text-center font-bold text-amber-600">{e.leave}</td>
-                    <td className="px-3 py-3 text-center font-bold text-red-500">{e.absent}</td>
-                    <td className="px-3 py-3 text-center font-bold text-orange-500">{e.late}</td>
-                    <td className="px-3 py-3 text-center font-bold text-blue-600">{e.totalHours.toFixed(1)}h</td>
-                    <td className="px-3 py-3 text-center font-bold text-purple-600">{e.overtime.toFixed(1)}h</td>
+                    <td className="px-6 py-4 text-center font-black text-emerald-600">{e.present}</td>
+                    <td className="px-6 py-4 text-center font-black text-amber-600">{e.leave}</td>
+                    <td className="px-6 py-4 text-center font-black text-rose-500">{e.absent}</td>
+                    <td className="px-6 py-4 text-center font-black text-orange-500">{e.late}</td>
+                    <td className="px-6 py-4 text-center font-black text-brand-indigo">{e.totalHours.toFixed(1)}h</td>
+                    <td className="px-6 py-4 text-center font-black text-purple-600">{e.overtime.toFixed(1)}h</td>
                   </tr>
                 ))}
               </tbody>
@@ -250,7 +261,7 @@ const ManagerAttendance = () => {
             <div className="p-5 space-y-4">
               <div>
                 <label className="text-xs text-muted-text block mb-1">Employee *</label>
-                <select value={attForm.employeeId} onChange={(e) => setAttForm({...attForm, employeeId: e.target.value})}
+                <select value={attForm.employeeId} onChange={(e) => setAttForm({ ...attForm, employeeId: e.target.value })}
                   className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm bg-white">
                   <option value="">Select employee</option>
                   {employees.map(e => <option key={e._id} value={e._id}>{e.name} ({e.role})</option>)}
@@ -259,12 +270,12 @@ const ManagerAttendance = () => {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-muted-text block mb-1">Date</label>
-                  <input type="date" value={attForm.date} onChange={(e) => setAttForm({...attForm, date: e.target.value})}
+                  <input type="date" value={attForm.date} onChange={(e) => setAttForm({ ...attForm, date: e.target.value })}
                     className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm" />
                 </div>
                 <div>
                   <label className="text-xs text-muted-text block mb-1">Status</label>
-                  <select value={attForm.status} onChange={(e) => setAttForm({...attForm, status: e.target.value})}
+                  <select value={attForm.status} onChange={(e) => setAttForm({ ...attForm, status: e.target.value })}
                     className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm bg-white">
                     <option value="present">Present</option>
                     <option value="absent">Absent</option>
@@ -277,18 +288,18 @@ const ManagerAttendance = () => {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-muted-text block mb-1">Check In</label>
-                  <input type="time" value={attForm.checkInTime} onChange={(e) => setAttForm({...attForm, checkInTime: e.target.value})}
+                  <input type="time" value={attForm.checkInTime} onChange={(e) => setAttForm({ ...attForm, checkInTime: e.target.value })}
                     className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm" />
                 </div>
                 <div>
                   <label className="text-xs text-muted-text block mb-1">Check Out</label>
-                  <input type="time" value={attForm.checkOutTime} onChange={(e) => setAttForm({...attForm, checkOutTime: e.target.value})}
+                  <input type="time" value={attForm.checkOutTime} onChange={(e) => setAttForm({ ...attForm, checkOutTime: e.target.value })}
                     className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm" />
                 </div>
               </div>
               <div>
                 <label className="text-xs text-muted-text block mb-1">Notes</label>
-                <input value={attForm.notes} onChange={(e) => setAttForm({...attForm, notes: e.target.value})}
+                <input value={attForm.notes} onChange={(e) => setAttForm({ ...attForm, notes: e.target.value })}
                   className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm" placeholder="Optional notes" />
               </div>
               <button onClick={handleMarkAtt} className="w-full py-2.5 bg-blue-600 text-white rounded-xl font-semibold">

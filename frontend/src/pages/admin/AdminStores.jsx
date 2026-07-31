@@ -98,81 +98,86 @@ const AdminStores = () => {
     finally { setSaving(false); }
   };
 
-  if (loading) return <DashboardLayout navItems={navItems} title="Admin Panel"><div className="flex items-center justify-center h-64"><div className="w-10 h-10 border-4 border-primary-blue border-t-transparent rounded-full animate-spin" /></div></DashboardLayout>;
+  if (loading) return <DashboardLayout navItems={navItems} title="Stores"><div className="flex items-center justify-center h-64"><div className="w-10 h-10 border-4 border-slate-200 border-t-brand-indigo rounded-full animate-spin" /></div></DashboardLayout>;
 
   return (
-    <DashboardLayout navItems={navItems} title="Admin Panel">
-      <div>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
+    <DashboardLayout navItems={navItems} title="Stores">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-dark-navy">🏪 Store Management</h1>
-            <p className="text-muted-text text-sm mt-1">{stores.length} registered stores</p>
+            <div className="flex items-center gap-2.5 mb-1">
+              <span className="inline-flex items-center gap-1.5 bg-brand-indigo/10 text-brand-indigo text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg border border-brand-indigo/15">
+                <Store size={11} /> Business Management
+              </span>
+            </div>
+            <h1 className="text-2xl font-black text-slate-900 m-0">Store Management</h1>
+            <p className="text-slate-400 text-xs font-bold mt-1 m-0">{stores.length} registered boutiques</p>
           </div>
           <div className="flex items-center gap-3">
-            <button onClick={() => setShowTransferModal(true)} className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-indigo-700 shadow-lg shadow-indigo-200 text-sm">
-              <ToggleRight size={18} /> Transfer Stock
+            <button onClick={() => setShowTransferModal(true)} className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider hover:bg-slate-50 shadow-sm transition-all cursor-pointer">
+              <ToggleRight size={15} /> Transfer Stock
             </button>
-            <button onClick={openCreate} className="flex items-center gap-2 bg-primary-blue text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-emerald-600 shadow-lg shadow-emerald-200 text-sm">
-              <Plus size={18} /> Add Store
+            <button onClick={openCreate} className="flex items-center gap-2 bg-gradient-to-r from-brand-indigo to-brand-violet hover:opacity-95 text-white px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider shadow-lg shadow-brand-indigo/20 transition-all cursor-pointer">
+              <Plus size={16} /> Add Store
             </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {stores.map(store => (
-            <div key={store._id} className={`bg-white rounded-2xl border shadow-sm overflow-hidden hover:shadow-md transition-all ${store.isActive ? 'border-card-border' : 'border-red-200 opacity-75'}`}>
-              <div className="h-28 bg-gradient-to-br from-emerald-400 to-teal-500 relative">
+            <div key={store._id} className={`bg-white rounded-2xl border shadow-sm overflow-hidden hover:shadow-md transition-all ${store.isActive ? 'border-slate-200/80' : 'border-rose-200 opacity-75'}`}>
+              <div className="h-28 bg-gradient-to-br from-brand-indigo to-brand-violet relative">
                 {store.bannerImage && <img src={getImageUrl(store.bannerImage)} alt="" className="w-full h-full object-cover" />}
-                <span className={`absolute top-3 right-3 text-xs font-semibold px-3 py-1 rounded-full ${store.isActive ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'}`}>
+                <span className={`absolute top-3 right-3 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-lg ${store.isActive ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'}`}>
                   {store.isActive ? 'Active' : 'Inactive'}
                 </span>
               </div>
               <div className="p-5">
                 <div className="flex items-center gap-3 mb-3">
-                  {store.logo ? <img src={getImageUrl(store.logo)} alt="" className="w-10 h-10 rounded-xl object-cover" /> : <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center"><Store size={18} className="text-primary-blue" /></div>}
-                  <div><h3 className="font-semibold text-dark-navy">{store.name}</h3><p className="text-xs text-muted-text">{store.city || 'No city'}</p></div>
+                  {store.logo ? <img src={getImageUrl(store.logo)} alt="" className="w-10 h-10 rounded-xl object-cover shadow-xs" /> : <div className="w-10 h-10 rounded-xl bg-brand-indigo/10 flex items-center justify-center"><Store size={18} className="text-brand-indigo" /></div>}
+                  <div><h3 className="font-extrabold text-slate-800 text-sm m-0">{store.name}</h3><p className="text-[10px] text-slate-400 mt-0.5 m-0">{store.city || 'No city'}</p></div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 mb-3 bg-gray-50 rounded-xl p-3 border border-gray-100">
+                <div className="grid grid-cols-2 gap-2 mb-3 bg-slate-50 rounded-xl p-3 border border-slate-100">
                   <div>
-                    <p className="text-[10px] uppercase font-bold text-muted-text">Items in Stock</p>
-                    <p className="text-sm font-bold text-dark-navy">{(store.totalStock || 0).toLocaleString()} <span className="text-[10px] font-normal text-muted-text">({store.totalProducts || 0} unique)</span></p>
+                    <p className="text-[10px] uppercase font-black tracking-wider text-slate-400 m-0">Items in Stock</p>
+                    <p className="text-xs font-extrabold text-slate-800 m-0 mt-0.5">{(store.totalStock || 0).toLocaleString()} <span className="text-[9px] font-bold text-slate-400">({store.totalProducts || 0} unique)</span></p>
                   </div>
                   <div>
-                    <p className="text-[10px] uppercase font-bold text-muted-text">Stock Value</p>
-                    <p className="text-sm font-bold text-emerald-600">Rs. {(store.totalStockValue || 0).toLocaleString()}</p>
+                    <p className="text-[10px] uppercase font-black tracking-wider text-slate-400 m-0">Stock Value</p>
+                    <p className="text-xs font-extrabold text-emerald-600 m-0 mt-0.5">Rs. {(store.totalStockValue || 0).toLocaleString()}</p>
                   </div>
-                  <div className="col-span-2 mt-1 pt-2 border-t border-gray-200">
-                    <p className="text-[10px] uppercase font-bold text-muted-text">Bank & Cash Assets</p>
-                    <p className="text-sm font-bold text-blue-600">Rs. {(store.totalAssets || 0).toLocaleString()}</p>
+                  <div className="col-span-2 mt-1 pt-2 border-t border-slate-200">
+                    <p className="text-[10px] uppercase font-black tracking-wider text-slate-400 m-0">Bank & Cash Assets</p>
+                    <p className="text-xs font-extrabold text-blue-600 m-0 mt-0.5">Rs. {(store.totalAssets || 0).toLocaleString()}</p>
                   </div>
                 </div>
 
-                <div className="text-xs text-muted-text space-y-1 mb-4">
-                  <p><span className="font-medium text-dark-navy">Manager:</span> {store.managerId?.name || 'N/A'}</p>
-                  <p><span className="font-medium text-dark-navy">Phone:</span> {store.phone || '—'}</p>
+                <div className="text-[10px] text-slate-400 space-y-1 mb-4 font-bold">
+                  <p className="m-0"><span className="font-extrabold text-slate-600">Manager:</span> {store.managerId?.name || 'N/A'}</p>
+                  <p className="m-0"><span className="font-extrabold text-slate-600">Phone:</span> {store.phone || '—'}</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button onClick={() => handleToggleClick(store._id, store.name, store.isActive)} className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold flex-1 justify-center ${store.isActive ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`}>
-                    {store.isActive ? <><ToggleRight size={16} /> Deactivate</> : <><ToggleLeft size={16} /> Activate</>}
+                  <button onClick={() => handleToggleClick(store._id, store.name, store.isActive)} className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider flex-1 justify-center cursor-pointer transition-all ${store.isActive ? 'bg-rose-50 text-rose-600 hover:bg-rose-100' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`}>
+                    {store.isActive ? <><ToggleRight size={14} /> Deactivate</> : <><ToggleLeft size={14} /> Activate</>}
                   </button>
-                  <button onClick={() => openEdit(store)} className="p-2 rounded-xl border border-card-border hover:bg-blue-50 text-blue-500" title="Edit Store"><Edit2 size={14} /></button>
-                  <button onClick={() => handleDeleteClick(store)} className="p-2 rounded-xl border border-card-border hover:bg-red-50 text-red-500 animate-pulse hover:animate-none" title="Delete Store"><Trash2 size={14} /></button>
-                  <Link to={`/store/${store._id}`} className="p-2 rounded-xl border border-card-border hover:bg-gray-50" title="Open Store Dashboard"><ExternalLink size={14} className="text-muted-text" /></Link>
+                  <button onClick={() => openEdit(store)} className="p-2 rounded-xl border border-slate-200 hover:bg-brand-indigo/10 text-brand-indigo cursor-pointer transition-all" title="Edit Store"><Edit2 size={13} /></button>
+                  <button onClick={() => handleDeleteClick(store)} className="p-2 rounded-xl border border-slate-200 hover:bg-rose-50 text-rose-500 cursor-pointer transition-all" title="Delete Store"><Trash2 size={13} /></button>
+                  <Link to={`/store/${store._id}`} className="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition-all" title="Open Store Dashboard"><ExternalLink size={13} className="text-slate-400" /></Link>
                 </div>
               </div>
             </div>
           ))}
         </div>
-        {stores.length === 0 && <div className="bg-white rounded-2xl border border-card-border p-12 text-center text-muted-text"><Store size={48} className="mx-auto mb-3 text-gray-300" /><p>No stores yet</p></div>}
+        {stores.length === 0 && <div className="bg-white rounded-2xl border border-slate-200/80 p-16 text-center text-slate-400 font-bold text-sm"><Store size={40} className="mx-auto mb-3 text-slate-200" /><p className="m-0">No stores yet</p></div>}
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
-          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-card-border flex items-center justify-between sticky top-0 bg-white rounded-t-2xl">
-              <h2 className="text-lg font-bold text-dark-navy">{editingId ? 'Edit Store' : 'Add New Store'}</h2>
-              <button onClick={() => setShowModal(false)} className="p-1.5 rounded-lg hover:bg-gray-100"><X size={20} /></button>
+        <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
+          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200/80" onClick={e => e.stopPropagation()}>
+            <div className="px-6 py-4 border-b border-slate-200/80 flex items-center justify-between sticky top-0 bg-white/90 backdrop-blur-md rounded-t-2xl z-10">
+              <h2 className="text-base font-black text-slate-900 m-0">{editingId ? 'Edit Store' : 'Add New Store'}</h2>
+              <button onClick={() => setShowModal(false)} className="p-1.5 rounded-lg hover:bg-slate-100 cursor-pointer"><X size={18} className="text-slate-400" /></button>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>

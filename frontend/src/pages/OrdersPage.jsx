@@ -179,25 +179,25 @@ const OrdersPage = () => {
   if (!user) {
     return (
       <div className="base-container py-20 text-center">
-        <Package size={48} className="text-muted-text mx-auto mb-4" />
-        <h2 className="text-2xl font-bold text-dark-navy mb-2 mt-0">Sign in to view orders</h2>
-        <Link to="/login" className="text-primary-blue font-semibold hover:underline">Sign In</Link>
+        <Package size={48} className="text-slate-350 mx-auto mb-4" />
+        <h2 className="text-2xl font-black text-slate-800 mb-2 mt-0">Sign In to View Orders</h2>
+        <Link to="/login" className="text-brand-indigo font-bold hover:underline">Sign In</Link>
       </div>
     );
   }
 
   if (loading) {
     return (
-      <div className="base-container py-8">
-        <h1 className="text-2xl font-bold text-dark-navy mt-0 mb-6">My Orders</h1>
+      <div className="base-container py-10">
+        <h1 className="text-2xl font-black text-slate-800 mt-0 mb-8 border-b border-slate-100 pb-4">My Orders</h1>
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-white border border-card-border rounded-2xl p-6 animate-pulse">
+            <div key={i} className="bg-white border border-slate-200/60 rounded-[2rem] p-6 animate-pulse">
               <div className="flex justify-between mb-4">
-                <div className="h-5 bg-gray-200 rounded w-1/4" />
-                <div className="h-5 bg-gray-200 rounded w-1/6" />
+                <div className="h-5 bg-slate-100 rounded w-1/4" />
+                <div className="h-5 bg-slate-100 rounded w-1/6" />
               </div>
-              <div className="h-4 bg-gray-200 rounded w-1/2" />
+              <div className="h-4 bg-slate-100 rounded w-1/2" />
             </div>
           ))}
         </div>
@@ -208,13 +208,15 @@ const OrdersPage = () => {
   if (orders.length === 0) {
     return (
       <div className="base-container py-20 text-center">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="w-24 h-24 bg-emerald-50 rounded-full mx-auto mb-6 flex items-center justify-center">
-            <ShoppingBag size={40} className="text-primary-blue" />
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          className="glass-card rounded-[2rem] p-12 max-w-md mx-auto border border-slate-200/50 shadow-sm"
+        >
+          <div className="w-20 h-20 bg-brand-indigo/5 border border-brand-indigo/10 rounded-full mx-auto mb-6 flex items-center justify-center">
+            <ShoppingBag size={32} className="text-brand-indigo" />
           </div>
-          <h2 className="text-2xl font-bold text-dark-navy mb-2 mt-0">No orders yet</h2>
-          <p className="text-muted-text mb-6">Looks like you haven't placed any orders.</p>
-          <Link to="/shop" className="bg-primary-blue text-white font-semibold py-3 px-8 rounded-full hover:bg-emerald-600 transition-all inline-block shadow-lg shadow-emerald-200">
+          <h2 className="text-2xl font-black text-slate-800 mb-2 mt-0">No Orders Yet</h2>
+          <p className="text-slate-400 text-sm mb-6 font-medium">Looks like you haven't placed any orders.</p>
+          <Link to="/shop" className="bg-gradient-to-r from-brand-indigo to-brand-violet hover:opacity-95 text-white text-xs font-bold py-3.5 px-8 rounded-xl transition-all shadow-[0_4px_12px_rgba(99,102,241,0.2)] inline-block cursor-pointer">
             Start Shopping
           </Link>
         </motion.div>
@@ -223,10 +225,10 @@ const OrdersPage = () => {
   }
 
   return (
-    <div className="base-container py-8">
-      <h1 className="text-2xl md:text-3xl font-bold text-dark-navy mt-0 mb-6">My Orders</h1>
+    <div className="base-container py-10">
+      <h1 className="text-2xl md:text-3xl font-black text-slate-800 mt-0 mb-8 border-b border-slate-100 pb-4">My Orders</h1>
 
-      <div className="space-y-4">
+      <div className="space-y-5">
         {orders.map((order, i) => (
           <motion.div
             key={order._id}
@@ -234,73 +236,73 @@ const OrdersPage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05, duration: 0.3 }}
           >
-            <Link to={`/order-confirmation/${order._id}`} className="block bg-white border border-card-border rounded-2xl p-5 hover:shadow-lg hover:border-primary-blue transition-all group">
+            <Link to={`/order-confirmation/${order._id}`} className="block bg-white border border-slate-200/60 rounded-[2rem] p-6 hover:shadow-lg hover:border-brand-indigo/40 transition-all group">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Package size={20} className="text-primary-blue" />
+                  <div className="w-12 h-12 bg-brand-indigo/5 border border-brand-indigo/10 rounded-2xl flex items-center justify-center flex-shrink-0">
+                    <Package size={20} className="text-brand-indigo" />
                   </div>
                   <div>
-                    <p className="font-bold text-dark-navy m-0 text-sm">Order #{order._id.slice(-8).toUpperCase()}</p>
-                    <p className="text-xs text-muted-text m-0">
+                    <p className="font-extrabold text-slate-800 m-0 text-sm">Order #{order._id.slice(-8).toUpperCase()}</p>
+                    <p className="text-xs text-slate-400 font-bold tracking-wide mt-0.5">
                       {new Date(order.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
                       {' · '}{order.items.length} item{order.items.length > 1 ? 's' : ''}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <span className={`text-xs font-bold px-3 py-1 rounded-full capitalize ${statusColor(order.orderStatus)}`}>
+                <div className="flex items-center justify-between md:justify-end gap-3.5 w-full md:w-auto pt-3 md:pt-0 border-t md:border-t-0 border-slate-100 mt-1 md:mt-0">
+                  <span className={`text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-xl border capitalize ${statusColor(order.orderStatus)}`}>
                     {order.orderStatus.replace('_', ' ')}
                   </span>
-                  <span className="font-bold text-dark-navy">{formatPrice(convertPrice(order.totalAmount))}</span>
-                  <ChevronRight size={18} className="text-muted-text group-hover:text-primary-blue transition-colors" />
+                  <span className="font-extrabold text-slate-800">{formatPrice(convertPrice(order.totalAmount))}</span>
+                  <ChevronRight size={16} className="text-slate-400 group-hover:text-brand-indigo transition-colors" />
                 </div>
               </div>
 
               {/* Item previews */}
-              <div className="flex gap-2 mt-3 overflow-x-auto">
+              <div className="flex gap-2.5 mt-4 overflow-x-auto pb-1 scrollbar-hide border-b border-slate-100 pb-4 mb-4">
                 {order.items.slice(0, 4).map((item, j) => (
                   <img 
                     key={j} 
                     src={getImageUrl(item.image) || 'https://via.placeholder.com/50'} 
                     alt="" 
-                    className="w-10 h-10 rounded-lg object-cover flex-shrink-0" 
+                    className="w-10 h-10 rounded-xl object-cover flex-shrink-0 border border-slate-150 p-0.5" 
                     onError={(e) => handleImageError(e, 'Product')}
                   />
                 ))}
                 {order.items.length > 4 && (
-                  <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-xs text-muted-text font-medium">
+                  <div className="w-10 h-10 bg-slate-50 border border-slate-200/60 rounded-xl flex items-center justify-center text-xs text-slate-450 font-bold">
                     +{order.items.length - 4}
                   </div>
                 )}
               </div>
-              <div className="mt-3 flex items-center gap-3 flex-wrap">
+              <div className="flex items-center gap-2.5 flex-wrap">
                 {isCancellable(order) && (
                   <button
                     type="button"
                     onClick={(e) => { e.preventDefault(); handleCancel(order._id); }}
-                    className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 flex items-center gap-1"
+                    className="text-[10px] font-bold uppercase tracking-wide px-3.5 py-2.5 rounded-xl bg-rose-50 border border-rose-100 text-rose-600 hover:bg-rose-100 flex items-center gap-1.5 cursor-pointer transition-colors"
                   >
-                    <XCircle size={14} /> Cancel Order
-                    <span className="text-red-400 ml-1 flex items-center gap-0.5"><Clock size={10} />{getCancelTimeLeft(order)}</span>
+                    <XCircle size={13} /> Cancel Order
+                    <span className="text-[10px] text-rose-450 font-normal lowercase tracking-normal flex items-center gap-0.5"><Clock size={10} />{getCancelTimeLeft(order)}</span>
                   </button>
                 )}
                 <button
                   type="button"
                   onClick={(e) => { e.preventDefault(); downloadBill(order); }}
-                  className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center gap-1"
+                  className="text-[10px] font-bold uppercase tracking-wide px-3.5 py-2.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200/70 flex items-center gap-1.5 cursor-pointer transition-colors"
                 >
-                  <Download size={14} /> Download Bill
+                  <Download size={13} /> Download Receipt
                 </button>
                 <button
                   type="button"
                   onClick={(e) => { e.preventDefault(); if (isReturnEligible(order)) openReturnModal(order); }}
                   disabled={!isReturnEligible(order)}
-                  className={`text-xs font-semibold px-3 py-1.5 rounded-lg ${
+                  className={`text-[10px] font-bold uppercase tracking-wide px-3.5 py-2.5 rounded-xl border transition-colors cursor-pointer ${
                     isReturnEligible(order)
-                      ? 'bg-amber-50 text-amber-700 hover:bg-amber-100'
-                      : 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                      ? 'bg-amber-50 border-amber-100 text-amber-700 hover:bg-amber-100'
+                      : 'bg-slate-50 border-slate-100 text-slate-400 cursor-not-allowed'
                   }`}
                   title={
                     isReturnEligible(order)
@@ -311,7 +313,7 @@ const OrdersPage = () => {
                   Request Return
                 </button>
                 {order.returnStatus && order.returnStatus !== 'none' && (
-                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-700">
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-xl border bg-slate-50 border-slate-200 text-slate-500">
                     Return: {order.returnStatus.replaceAll('_', ' ')}
                   </span>
                 )}
@@ -321,54 +323,54 @@ const OrdersPage = () => {
         ))}
       </div>
       {requestingFor && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl">
-            <div className="px-6 py-4 border-b border-card-border">
-              <h3 className="text-lg font-bold text-dark-navy">Request Return (within 7 days)</h3>
+        <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2rem] w-full max-w-lg shadow-2xl relative border border-slate-200/60 overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
+              <h3 className="text-lg font-black text-slate-800 m-0">Request Product Return</h3>
             </div>
             <form onSubmit={submitReturnRequest} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-dark-navy mb-1">Product</label>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5">Select Item</label>
                 <select
                   value={returnForm.productId}
                   onChange={(e) => setReturnForm((p) => ({ ...p, productId: e.target.value }))}
-                  className="w-full border border-card-border rounded-xl px-3 py-2.5 text-sm bg-white"
+                  className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white font-semibold text-slate-700 focus:ring-2 focus:ring-brand-indigo/25 focus:border-brand-indigo cursor-pointer"
                 >
                   {(requestingFor.items || []).map((item, idx) => (
                     <option key={idx} value={item.productId}>{item.name} (sold: {item.quantity})</option>
                   ))}
                 </select>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-sm font-medium text-dark-navy mb-1">Qty</label>
-                  <input type="number" min="1" value={returnForm.qty} onChange={(e) => setReturnForm((p) => ({ ...p, qty: e.target.value }))} className="w-full border border-card-border rounded-xl px-3 py-2.5 text-sm" />
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5">Quantity</label>
+                  <input type="number" min="1" value={returnForm.qty} onChange={(e) => setReturnForm((p) => ({ ...p, qty: e.target.value }))} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-brand-indigo/25 focus:border-brand-indigo" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-dark-navy mb-1">Condition</label>
-                  <select value={returnForm.condition} onChange={(e) => setReturnForm((p) => ({ ...p, condition: e.target.value }))} className="w-full border border-card-border rounded-xl px-3 py-2.5 text-sm bg-white">
-                    <option value="good">Not damaged</option>
-                    <option value="damaged">Damaged</option>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5">Condition</label>
+                  <select value={returnForm.condition} onChange={(e) => setReturnForm((p) => ({ ...p, condition: e.target.value }))} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white font-semibold text-slate-700 focus:ring-2 focus:ring-brand-indigo/25 focus:border-brand-indigo cursor-pointer">
+                    <option value="good">Brand New Sealed</option>
+                    <option value="damaged">Damaged / Open Box</option>
                   </select>
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-dark-navy mb-1">Reason</label>
-                <select value={returnForm.reason} onChange={(e) => setReturnForm((p) => ({ ...p, reason: e.target.value }))} className="w-full border border-card-border rounded-xl px-3 py-2.5 text-sm bg-white">
-                  <option value="damaged_item">Damaged item</option>
-                  <option value="wrong_item">Wrong item</option>
-                  <option value="quality_issue">Quality issue</option>
-                  <option value="other">Other</option>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5">Reason for Return</label>
+                <select value={returnForm.reason} onChange={(e) => setReturnForm((p) => ({ ...p, reason: e.target.value }))} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white font-semibold text-slate-700 focus:ring-2 focus:ring-brand-indigo/25 focus:border-brand-indigo cursor-pointer">
+                  <option value="damaged_item">Damaged Item / Faulty Hardware</option>
+                  <option value="wrong_item">Received Wrong Model / Color</option>
+                  <option value="quality_issue">Quality / Performance Issue</option>
+                  <option value="other">Other Reason</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-dark-navy mb-1">Note (optional)</label>
-                <input value={returnForm.note} onChange={(e) => setReturnForm((p) => ({ ...p, note: e.target.value }))} className="w-full border border-card-border rounded-xl px-3 py-2.5 text-sm" />
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5">Note Details</label>
+                <input value={returnForm.note} onChange={(e) => setReturnForm((p) => ({ ...p, note: e.target.value }))} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-brand-indigo/25 focus:border-brand-indigo" placeholder="Explain the problem..." />
               </div>
-              <div className="flex justify-end gap-3 pt-2">
-                <button type="button" onClick={() => setRequestingFor(null)} className="px-4 py-2 text-sm font-medium text-muted-text">Cancel</button>
-                <button type="submit" disabled={submittingReturn} className="bg-primary-blue text-white px-5 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50">
-                  {submittingReturn ? 'Submitting...' : 'Submit Return Request'}
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+                <button type="button" onClick={() => setRequestingFor(null)} className="px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-slate-700 cursor-pointer">Cancel</button>
+                <button type="submit" disabled={submittingReturn} className="bg-gradient-to-r from-brand-indigo to-brand-violet hover:opacity-95 text-white px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider shadow-[0_4px_12px_rgba(99,102,241,0.2)] disabled:opacity-50 cursor-pointer">
+                  {submittingReturn ? 'Submitting...' : 'Submit Request'}
                 </button>
               </div>
             </form>

@@ -321,51 +321,57 @@ const AdminAttendance = () => {
 
   return (
     <DashboardLayout navItems={navItems} title="Admin Dashboard">
-      <div>
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+      <div className="animate-fade-in space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-indigo/5 rounded-full blur-3xl pointer-events-none -z-10"></div>
           <div>
-            <h1 className="text-2xl font-bold text-dark-navy">📋 HR & Attendance Management</h1>
-            <p className="text-muted-text text-sm mt-1">Configure shift times, leaves, and track employee hours</p>
+            <div className="flex items-center gap-2.5 mb-1">
+              <span className="inline-flex items-center gap-1.5 bg-brand-indigo/10 text-brand-indigo text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg border border-brand-indigo/15">
+                USER & EMPLOYEE MANAGEMENT
+              </span>
+            </div>
+            <h1 className="text-2xl font-black text-slate-900 m-0">HR & Attendance</h1>
+            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mt-2 m-0">Configure shift times, leaves, and track employee hours</p>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
             {activeTab === 'records' && (
               <>
-                <button onClick={() => setShowAttModal(true)} className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors flex items-center gap-2"><Clock size={16} /> Mark Attendance</button>
-                <button onClick={exportExcel} className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors flex items-center gap-2"><FileSpreadsheet size={16} /> Excel</button>
-                <button onClick={exportPDF} className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors flex items-center gap-2"><FileText size={16} /> PDF</button>
+                <button onClick={() => setShowAttModal(true)} className="bg-slate-900 hover:bg-slate-800 text-white text-[10px] uppercase tracking-wider font-black px-4 py-2.5 rounded-xl transition-all shadow-md flex items-center gap-2"><Clock size={14} /> Mark Attendance</button>
+                <button onClick={exportExcel} className="bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 text-[10px] uppercase tracking-wider font-black px-4 py-2.5 rounded-xl transition-all shadow-sm flex items-center gap-2"><FileSpreadsheet size={14} /> Excel</button>
+                <button onClick={exportPDF} className="bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 text-[10px] uppercase tracking-wider font-black px-4 py-2.5 rounded-xl transition-all shadow-sm flex items-center gap-2"><FileText size={14} /> PDF</button>
               </>
             )}
             {activeTab === 'attendance-policies' && (
-              <button onClick={openCreateAttendance} className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors flex items-center gap-2"><Plus size={16} /> Create Attendance Policy</button>
+              <button onClick={openCreateAttendance} className="bg-slate-900 hover:bg-slate-800 text-white text-[10px] uppercase tracking-wider font-black px-4 py-2.5 rounded-xl transition-all shadow-md flex items-center gap-2"><Plus size={14} /> Create Policy</button>
             )}
           </div>
         </div>
 
         {/* Tab switcher */}
-        <div className="flex border-b border-card-border mb-6 gap-6">
+        <div className="flex gap-2 flex-wrap mb-6 bg-white/40 backdrop-blur-sm p-2 rounded-2xl border border-white/40 shadow-sm w-fit">
           <button
             onClick={() => setActiveTab('records')}
-            className={`pb-3 font-semibold text-sm transition-all border-b-2 ${
-              activeTab === 'records' ? 'border-primary-blue text-primary-blue' : 'border-transparent text-muted-text hover:text-dark-navy'
+            className={`px-4 py-2.5 text-[10px] uppercase font-black tracking-wider rounded-xl transition-all flex items-center gap-2 ${
+              activeTab === 'records' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-white hover:text-slate-900'
             }`}
           >
-            📋 Attendance Records
+            📋 Records
           </button>
           <button
             onClick={() => setActiveTab('attendance-policies')}
-            className={`pb-3 font-semibold text-sm transition-all border-b-2 ${
-              activeTab === 'attendance-policies' ? 'border-primary-blue text-primary-blue' : 'border-transparent text-muted-text hover:text-dark-navy'
+            className={`px-4 py-2.5 text-[10px] uppercase font-black tracking-wider rounded-xl transition-all flex items-center gap-2 ${
+              activeTab === 'attendance-policies' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-white hover:text-slate-900'
             }`}
           >
-            ⏱️ Attendance Policies
+            ⏱️ Policies
           </button>
           <button
             onClick={() => setActiveTab('assign-policies')}
-            className={`pb-3 font-semibold text-sm transition-all border-b-2 ${
-              activeTab === 'assign-policies' ? 'border-primary-blue text-primary-blue' : 'border-transparent text-muted-text hover:text-dark-navy'
+            className={`px-4 py-2.5 text-[10px] uppercase font-black tracking-wider rounded-xl transition-all flex items-center gap-2 ${
+              activeTab === 'assign-policies' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-white hover:text-slate-900'
             }`}
           >
-            👤 Assign Attendance Policies
+            👤 Assign
           </button>
         </div>
 
@@ -373,33 +379,34 @@ const AdminAttendance = () => {
         {activeTab === 'records' && (
           <>
             {/* Filters */}
-            <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm mb-6 flex flex-wrap gap-4 items-end">
+            {/* Filters */}
+            <div className="bg-white/60 backdrop-blur-md rounded-3xl border border-white/40 p-5 shadow-sm mb-6 flex flex-wrap gap-4 items-end">
               <div>
-                <label className="block text-xs font-semibold text-muted-text uppercase tracking-wider mb-2">Month</label>
-                <select value={month} onChange={e => setMonth(Number(e.target.value))} className="w-full border border-card-border rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue">
+                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Month</label>
+                <select value={month} onChange={e => setMonth(Number(e.target.value))} className="w-full bg-white/80 border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all cursor-pointer shadow-sm">
                   {Array.from({ length: 12 }, (_, i) => <option key={i + 1} value={i + 1}>{new Date(2000, i).toLocaleString('en', { month: 'long' })}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-muted-text uppercase tracking-wider mb-2">Year</label>
-                <input type="number" value={year} onChange={e => setYear(Number(e.target.value))} className="w-24 border border-card-border rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" />
+                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Year</label>
+                <input type="number" value={year} onChange={e => setYear(Number(e.target.value))} className="w-24 bg-white/80 border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm" />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-muted-text uppercase tracking-wider mb-2">Department</label>
-                <select value={selectedDepartment} onChange={e => setSelectedDepartment(e.target.value)} className="w-40 border border-card-border rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue">
+                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Department</label>
+                <select value={selectedDepartment} onChange={e => setSelectedDepartment(e.target.value)} className="w-40 bg-white/80 border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all cursor-pointer shadow-sm">
                   {departments.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-muted-text uppercase tracking-wider mb-2 text-primary-blue">Store</label>
-                <select value={selectedStore} onChange={e => setSelectedStore(e.target.value)} className="w-40 border border-card-border rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue bg-white shadow-sm font-medium">
+                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Store</label>
+                <select value={selectedStore} onChange={e => setSelectedStore(e.target.value)} className="w-40 bg-white/80 border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all cursor-pointer shadow-sm">
                   <option value="All">All Stores</option>
                   {stores.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-muted-text uppercase tracking-wider mb-2">Role</label>
-                <select value={selectedRole} onChange={e => setSelectedRole(e.target.value)} className="w-40 border border-card-border rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue bg-white shadow-sm">
+                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2">Role</label>
+                <select value={selectedRole} onChange={e => setSelectedRole(e.target.value)} className="w-40 bg-white/80 border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all cursor-pointer shadow-sm">
                   {roles.map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
               </div>
@@ -407,20 +414,20 @@ const AdminAttendance = () => {
 
             {/* Attendance Chart */}
             {chartData.length > 0 && (
-              <div className="bg-white rounded-2xl border border-card-border p-6 shadow-sm mb-6">
-                <h2 className="font-semibold text-dark-navy mb-4">📊 Attendance Overview</h2>
+              <div className="bg-white/60 backdrop-blur-md rounded-3xl border border-white/40 p-6 shadow-sm mb-6">
+                <h2 className="font-black text-slate-900 text-lg mb-6 flex items-center gap-2"><span className="text-xl">📊</span> Attendance Overview</h2>
                 <div className="overflow-x-auto overflow-y-hidden w-full custom-scrollbar">
                   <div style={{ minWidth: `${Math.max(chartData.length * 60, 600)}px`, height: 300 }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                        <XAxis dataKey="name" tick={{ fontSize: 11 }} interval={0} angle={-45} textAnchor="end" height={60} />
-                        <YAxis tick={{ fontSize: 11 }} />
-                        <Tooltip cursor={{fill: '#f8fafc'}} />
-                        <Legend wrapperStyle={{ paddingTop: '20px' }} />
-                        <Bar dataKey="present" fill="#10b981" name="Present" radius={[4, 4, 0, 0]} maxBarSize={40} />
-                        <Bar dataKey="leave" fill="#f59e0b" name="Leave" radius={[4, 4, 0, 0]} maxBarSize={40} />
-                        <Bar dataKey="absent" fill="#ef4444" name="Absent" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                        <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#64748b', fontWeight: 'bold', textTransform: 'uppercase' }} interval={0} angle={-45} textAnchor="end" height={60} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fontSize: 10, fill: '#64748b', fontWeight: 'bold' }} axisLine={false} tickLine={false} />
+                        <Tooltip cursor={{fill: '#f8fafc'}} contentStyle={{ borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)', fontWeight: 'bold' }} />
+                        <Legend wrapperStyle={{ paddingTop: '20px', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', color: '#64748b' }} iconType="circle" />
+                        <Bar dataKey="present" fill="#10b981" name="Present" radius={[6, 6, 0, 0]} maxBarSize={32} />
+                        <Bar dataKey="leave" fill="#f59e0b" name="Leave" radius={[6, 6, 0, 0]} maxBarSize={32} />
+                        <Bar dataKey="absent" fill="#ef4444" name="Absent" radius={[6, 6, 0, 0]} maxBarSize={32} />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
@@ -429,39 +436,39 @@ const AdminAttendance = () => {
             )}
 
             {/* Summary Table */}
-            <div className="bg-white rounded-2xl border border-card-border shadow-sm overflow-hidden">
+            <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-gray-50">
-                      <th className="text-left px-5 py-3 font-medium text-muted-text">Employee</th>
-                      <th className="text-center px-3 py-3 font-medium text-muted-text">Role/Dept</th>
-                      <th className="text-center px-3 py-3 font-medium text-emerald-600">Present</th>
-                      <th className="text-center px-3 py-3 font-medium text-amber-600">Leave</th>
-                      <th className="text-center px-3 py-3 font-medium text-red-500">Absent</th>
-                      <th className="text-center px-3 py-3 font-medium text-orange-500">Late</th>
-                      <th className="text-center px-3 py-3 font-medium text-blue-600">Hours</th>
-                      <th className="text-center px-3 py-3 font-medium text-purple-600">Overtime</th>
+                    <tr className="bg-slate-50 border-b border-slate-100">
+                      <th className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500 text-left">Employee</th>
+                      <th className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500 text-center">Role/Dept</th>
+                      <th className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-emerald-600 text-center">Present</th>
+                      <th className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-amber-600 text-center">Leave</th>
+                      <th className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-rose-500 text-center">Absent</th>
+                      <th className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-orange-500 text-center">Late</th>
+                      <th className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-brand-indigo text-center">Hours</th>
+                      <th className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-purple-600 text-center">Overtime</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-card-border">
+                  <tbody className="divide-y divide-slate-100">
                     {summaryData.length === 0 ? (
-                      <tr><td colSpan={8} className="text-center py-12 text-muted-text">No attendance records found</td></tr>
+                      <tr><td colSpan={8} className="text-center py-12 font-black text-slate-400 text-[11px] uppercase tracking-wider">No attendance records found</td></tr>
                     ) : summaryData.map(e => (
-                      <tr key={e.id} className="hover:bg-gray-50">
-                        <td className="px-5 py-3 font-medium text-dark-navy">{e.name}</td>
-                        <td className="px-3 py-3 text-center">
-                          <div className="flex flex-col items-center gap-1">
-                            <span className="text-[10px] uppercase font-bold text-gray-500">{e.role}</span>
-                            {e.department && <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded">{e.department}</span>}
+                      <tr key={e.id} className="hover:bg-slate-50/50 transition-colors">
+                        <td className="px-6 py-4 font-black text-slate-900">{e.name}</td>
+                        <td className="px-6 py-4 text-center">
+                          <div className="flex flex-col items-center gap-1.5">
+                            <span className="text-[10px] uppercase font-black tracking-wider text-slate-400">{e.role}</span>
+                            {e.department && <span className="text-[9px] uppercase tracking-wider font-black bg-brand-indigo/10 text-brand-indigo px-2 py-0.5 rounded-md">{e.department}</span>}
                           </div>
                         </td>
-                        <td className="px-3 py-3 text-center font-bold text-emerald-600">{e.present}</td>
-                        <td className="px-3 py-3 text-center font-bold text-amber-600">{e.leave}</td>
-                        <td className="px-3 py-3 text-center font-bold text-red-500">{e.absent}</td>
-                        <td className="px-3 py-3 text-center font-bold text-orange-500">{e.late}</td>
-                        <td className="px-3 py-3 text-center font-bold text-blue-600">{e.totalHours.toFixed(1)}h</td>
-                        <td className="px-3 py-3 text-center font-bold text-purple-600">{e.overtime.toFixed(1)}h</td>
+                        <td className="px-6 py-4 text-center font-black text-emerald-600">{e.present}</td>
+                        <td className="px-6 py-4 text-center font-black text-amber-600">{e.leave}</td>
+                        <td className="px-6 py-4 text-center font-black text-rose-500">{e.absent}</td>
+                        <td className="px-6 py-4 text-center font-black text-orange-500">{e.late}</td>
+                        <td className="px-6 py-4 text-center font-black text-brand-indigo">{e.totalHours.toFixed(1)}h</td>
+                        <td className="px-6 py-4 text-center font-black text-purple-600">{e.overtime.toFixed(1)}h</td>
                       </tr>
                     ))}
                   </tbody>
@@ -477,52 +484,49 @@ const AdminAttendance = () => {
           <div className="space-y-6">
             {policiesLoading ? (
               <div className="flex items-center justify-center h-48">
-                <div className="w-8 h-8 border-3 border-primary-blue border-t-transparent rounded-full animate-spin" />
+                <div className="w-10 h-10 border-4 border-brand-indigo border-t-transparent rounded-full animate-spin" />
               </div>
             ) : attendancePolicies.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-card-border p-12 text-center text-muted-text">
-                No attendance policies found. Click "Create Attendance Policy" to add one.
+              <div className="bg-white/60 backdrop-blur-md rounded-3xl border border-white/40 p-12 text-center text-[11px] uppercase tracking-wider font-black text-slate-500 shadow-sm">
+                No attendance policies found. Click "Create Policy" to add one.
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {attendancePolicies.map(p => (
-
-                  <div key={p._id} className="bg-white rounded-2xl border border-card-border p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden flex flex-col justify-between">
+                  <div key={p._id} className="bg-white/60 backdrop-blur-md rounded-3xl border border-white/40 p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden flex flex-col justify-between group">
                     {p.isDefault && (
-                      <div className="absolute top-0 right-0 bg-emerald-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-wider">
-                        Default
+                      <div className="absolute top-0 right-0 bg-emerald-50 text-emerald-600 border-b border-l border-emerald-100 text-[9px] font-black px-3 py-1.5 rounded-bl-2xl uppercase tracking-wider shadow-sm">
+                        System Default
                       </div>
                     )}
                     <div>
-                      <h3 className="font-bold text-dark-navy text-lg mb-4 pr-16">{p.name}</h3>
-                      <div className="space-y-2.5 text-sm text-gray-600 mb-6">
-                        <div className="flex justify-between border-b border-gray-50 pb-1.5">
-                          <span>⏰ Shift Schedule</span>
-                          <span className="font-semibold text-dark-navy">{p.shiftStartTime} - {p.shiftEndTime}</span>
+                      <h3 className="font-black text-slate-800 text-lg mb-5 pr-16">{p.name}</h3>
+                      <div className="space-y-3 text-sm text-slate-600 mb-6">
+                        <div className="flex justify-between items-center border-b border-slate-50 pb-2">
+                          <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">⏰ Shift Schedule</span>
+                          <span className="font-black text-slate-800">{p.shiftStartTime} - {p.shiftEndTime}</span>
                         </div>
-                        <div className="flex justify-between border-b border-gray-50 pb-1.5">
-                          <span>⏱️ Late Grace Period</span>
-                          <span className="font-semibold text-dark-navy">{p.graceTimeMinutes} mins</span>
+                        <div className="flex justify-between items-center border-b border-slate-50 pb-2">
+                          <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">⏱️ Late Grace</span>
+                          <span className="font-black text-slate-800">{p.graceTimeMinutes} mins</span>
                         </div>
-                        <div className="flex justify-between border-b border-gray-50 pb-1.5">
-                          <span>⚠️ Late Check-in Fine</span>
-                          <span className="font-semibold text-red-500">Rs. {p.lateArrivalPenalty.toLocaleString()}</span>
+                        <div className="flex justify-between items-center border-b border-slate-50 pb-2">
+                          <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">⚠️ Check-in Fine</span>
+                          <span className="font-black text-rose-500">Rs. {p.lateArrivalPenalty.toLocaleString()}</span>
                         </div>
-                        <div className="flex justify-between border-b border-gray-50 pb-1.5">
-                          <span>🚶 Early Checkout Fine</span>
-                          <span className="font-semibold text-red-500">Rs. {p.earlyCheckoutPenalty.toLocaleString()}</span>
+                        <div className="flex justify-between items-center border-b border-slate-50 pb-2">
+                          <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">🚶 Checkout Fine</span>
+                          <span className="font-black text-rose-500">Rs. {p.earlyCheckoutPenalty.toLocaleString()}</span>
                         </div>
-                        <div className="flex justify-between border-b border-gray-50 pb-1.5">
-                          <span>⚖️ Half-Day Threshold</span>
-                          <span className="font-semibold text-dark-navy">&lt; {p.halfDayThresholdHours} working hours</span>
-
+                        <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                          <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">⚖️ Half-Day</span>
+                          <span className="font-black text-slate-800">&lt; {p.halfDayThresholdHours} hrs</span>
                         </div>
                       </div>
                     </div>
-                    <div className="flex gap-2 border-t border-gray-50 pt-4 mt-auto">
-                      <button onClick={() => openEditAttendance(p)} className="flex-1 bg-gray-50 hover:bg-gray-100 text-gray-700 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors border border-gray-200"><Edit2 size={12} /> Edit</button>
-                      <button onClick={() => handlePolicyDeleteClick(p, 'attendance')} className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors border border-red-100"><Trash2 size={12} /> Delete</button>
-
+                    <div className="flex gap-3 border-t border-slate-100 pt-5 mt-auto opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => openEditAttendance(p)} className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 rounded-xl text-[10px] uppercase tracking-wider font-black flex items-center justify-center gap-1.5 transition-all"><Edit2 size={12} /> Edit</button>
+                      <button onClick={() => handlePolicyDeleteClick(p, 'attendance')} className="flex-1 bg-rose-50 hover:bg-rose-100 text-rose-600 py-2.5 rounded-xl text-[10px] uppercase tracking-wider font-black flex items-center justify-center gap-1.5 transition-all border border-rose-200"><Trash2 size={12} /> Delete</button>
                     </div>
                   </div>
                 ))}
@@ -533,35 +537,35 @@ const AdminAttendance = () => {
 
 
         {activeTab === 'assign-policies' && (
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row justify-between sm:items-center bg-white p-5 rounded-2xl border border-card-border shadow-sm gap-4">
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm gap-4">
               <div>
-                <h3 className="font-bold text-dark-navy">Bulk Policy Assignment</h3>
-                <p className="text-xs text-muted-text">Assign policies to all employees at once</p>
+                <h3 className="font-black text-slate-900 text-lg">Bulk Policy Assignment</h3>
+                <p className="text-[10px] uppercase tracking-wider font-black text-slate-500 mt-1">Assign policies to all employees at once</p>
               </div>
               <button
                 onClick={() => openAssignModal(null)}
-                className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4.5 py-2.5 rounded-xl transition-colors shadow-sm"
+                className="bg-slate-900 hover:bg-slate-800 text-white text-[10px] uppercase tracking-wider font-black px-6 py-3 rounded-xl transition-all shadow-md"
               >
                 Bulk Assign to All
               </button>
             </div>
 
-            <div className="bg-white rounded-2xl border border-card-border shadow-sm overflow-hidden">
+            <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                  <tr className="bg-gray-50 border-b border-card-border">
-                    <th className="text-left px-6 py-4 font-semibold text-dark-navy">Employee</th>
-                    <th className="text-left px-6 py-4 font-semibold text-dark-navy">Role</th>
-                    <th className="text-left px-6 py-4 font-semibold text-dark-navy">Attendance Policy</th>
-                    <th className="text-center px-6 py-4 font-semibold text-dark-navy">Action</th>
+                  <tr className="bg-slate-50 border-b border-slate-100">
+                    <th className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500 text-left">Employee</th>
+                    <th className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500 text-left">Role</th>
+                    <th className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500 text-left">Attendance Policy</th>
+                    <th className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500 text-center">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-card-border">
+                <tbody className="divide-y divide-slate-100">
                   {employees.filter(e => e.role !== 'customer').length === 0 ? (
                     <tr>
-                      <td colSpan={4} className="text-center py-12 text-muted-text">
+                      <td colSpan={4} className="text-center py-12 font-bold text-slate-400 text-sm">
                         No employees found
                       </td>
                     </tr>
@@ -570,16 +574,16 @@ const AdminAttendance = () => {
                       const ap = attendancePolicies.find(p => p._id === (emp.employeeInfo?.attendancePolicyId?._id || emp.employeeInfo?.attendancePolicyId));
                       
                       return (
-                        <tr key={emp._id} className="hover:bg-slate-50 transition-colors">
-                          <td className="px-6 py-4 font-medium text-dark-navy">{emp.name}</td>
-                          <td className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">{emp.role}</td>
+                        <tr key={emp._id} className="hover:bg-slate-50/80 transition-colors">
+                          <td className="px-6 py-4 font-black text-slate-900">{emp.name}</td>
+                          <td className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-wider">{emp.role}</td>
                           <td className="px-6 py-4">
                             {ap ? (
-                              <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold border border-blue-100">
+                              <span className="bg-brand-indigo/10 text-brand-indigo px-3 py-1.5 rounded-lg text-[10px] uppercase tracking-wider font-black border border-brand-indigo/20">
                                 {ap.name}
                               </span>
                             ) : (
-                              <span className="text-xs text-muted-text bg-gray-100 px-3 py-1 rounded-full border border-gray-200">
+                              <span className="text-[10px] uppercase tracking-wider text-slate-500 font-black bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
                                 System Default
                               </span>
                             )}
@@ -587,7 +591,7 @@ const AdminAttendance = () => {
                           <td className="px-6 py-4 text-center">
                             <button
                               onClick={() => openAssignModal(emp)}
-                              className="text-xs font-semibold bg-primary-blue hover:bg-blue-700 text-white px-4 py-2 rounded-xl transition-colors shadow-sm"
+                              className="text-[10px] uppercase tracking-wider font-black bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl transition-all"
                             >
                               Assign Policy
                             </button>
@@ -597,40 +601,47 @@ const AdminAttendance = () => {
                     })
                   )}
                 </tbody>
-              </table>
+                </table>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
       </div>
 
       {/* Mark Attendance Modal */}
       {showAttModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
-            <div className="flex items-center justify-between p-5 border-b border-card-border">
-              <h2 className="text-lg font-bold text-dark-navy flex items-center gap-2"><Clock size={20} className="text-blue-600" /> Mark Attendance</h2>
-              <button onClick={() => setShowAttModal(false)} className="p-1.5 rounded-lg hover:bg-gray-100"><X size={18} /></button>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col border border-slate-100">
+            <div className="px-6 py-6 border-b border-slate-100 flex flex-col items-center justify-center text-center bg-white/80 backdrop-blur-md relative">
+              <button onClick={() => setShowAttModal(false)} className="absolute right-4 top-4 p-2 rounded-full hover:bg-slate-100 text-slate-400 transition-colors">
+                <X size={16} />
+              </button>
+              <div className="w-12 h-12 bg-slate-50 text-slate-900 rounded-full flex items-center justify-center mb-4 border border-slate-200 shadow-sm">
+                <Clock size={24} />
+              </div>
+              <h3 className="font-black text-slate-900 text-xl">Mark Attendance</h3>
+              <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mt-2">Record manual attendance for an employee</p>
             </div>
-            <div className="p-5 space-y-4">
+            
+            <div className="p-6 bg-slate-50/50 space-y-4">
               <div>
-                <label className="text-xs text-muted-text block mb-1">Employee *</label>
+                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Employee *</label>
                 <select value={attForm.employeeId} onChange={(e) => setAttForm({...attForm, employeeId: e.target.value})}
-                  className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm bg-white">
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm cursor-pointer">
                   <option value="">Select employee</option>
                   {employees.map(e => <option key={e._id} value={e._id}>{e.name} ({e.role})</option>)}
                 </select>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-muted-text block mb-1">Date</label>
+                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Date</label>
                   <input type="date" value={attForm.date} onChange={(e) => setAttForm({...attForm, date: e.target.value})}
-                    className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm" />
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm" />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-text block mb-1">Status</label>
+                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Status</label>
                   <select value={attForm.status} onChange={(e) => setAttForm({...attForm, status: e.target.value})}
-                    className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm bg-white">
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm cursor-pointer">
                     <option value="present">Present</option>
                     <option value="absent">Absent</option>
                     <option value="half-day">Half Day</option>
@@ -639,26 +650,32 @@ const AdminAttendance = () => {
                   </select>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-muted-text block mb-1">Check In</label>
+                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Check In</label>
                   <input type="time" value={attForm.checkInTime} onChange={(e) => setAttForm({...attForm, checkInTime: e.target.value})}
-                    className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm" />
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm" />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-text block mb-1">Check Out</label>
+                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Check Out</label>
                   <input type="time" value={attForm.checkOutTime} onChange={(e) => setAttForm({...attForm, checkOutTime: e.target.value})}
-                    className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm" />
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm" />
                 </div>
               </div>
               <div>
-                <label className="text-xs text-muted-text block mb-1">Notes</label>
+                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Notes</label>
                 <input value={attForm.notes} onChange={(e) => setAttForm({...attForm, notes: e.target.value})}
-                  className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm" placeholder="Optional notes" />
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm" placeholder="Optional notes" />
               </div>
-              <button onClick={handleMarkAtt} className="w-full py-2.5 bg-blue-600 text-white rounded-xl font-semibold">
-                <CheckCircle size={16} className="inline mr-2" />Mark Attendance
-              </button>
+              
+              <div className="flex gap-3 pt-6">
+                <button type="button" onClick={() => setShowAttModal(false)} className="flex-1 py-3 rounded-xl bg-slate-100 text-[10px] uppercase tracking-wider font-black hover:bg-slate-200 text-slate-700 transition-all">
+                  Cancel
+                </button>
+                <button onClick={handleMarkAtt} className="flex-1 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[10px] uppercase tracking-wider font-black shadow-lg shadow-slate-900/20 transition-all flex items-center justify-center gap-2">
+                  <CheckCircle size={14} /> Submit
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -666,114 +683,116 @@ const AdminAttendance = () => {
 
       {/* Attendance Policy Modal */}
       {showAttendanceModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-fadeIn">
-            <div className="flex items-center justify-between p-5 border-b border-card-border bg-slate-50">
-              <h2 className="text-lg font-bold text-dark-navy flex items-center gap-2">
-                ⏱️ {editingAttendancePolicyId ? 'Edit Attendance Policy' : 'Create Attendance Policy'}
-              </h2>
-              <button onClick={() => setShowAttendanceModal(false)} className="p-1.5 rounded-lg hover:bg-gray-200 text-gray-500 transition-colors">
-                <X size={18} />
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col border border-slate-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div className="px-6 py-6 border-b border-slate-100 flex flex-col items-center justify-center text-center bg-white/80 backdrop-blur-md relative sticky top-0 z-10">
+              <button onClick={() => setShowAttendanceModal(false)} className="absolute right-4 top-4 p-2 rounded-full hover:bg-slate-100 text-slate-400 transition-colors">
+                <X size={16} />
               </button>
+              <div className="w-12 h-12 bg-slate-50 text-slate-900 rounded-full flex items-center justify-center mb-4 border border-slate-200 shadow-sm text-xl">
+                ⏱️
+              </div>
+              <h3 className="font-black text-slate-900 text-xl">{editingAttendancePolicyId ? 'Edit Policy' : 'Create Policy'}</h3>
             </div>
-            <form onSubmit={handleSaveAttendancePolicy} className="p-5 space-y-4">
+            
+            <form onSubmit={handleSaveAttendancePolicy} className="p-6 bg-slate-50/50 space-y-4">
               <div>
-                <label className="text-xs font-bold text-dark-navy block mb-1">Policy Name *</label>
+                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Policy Name *</label>
                 <input
                   type="text"
                   required
                   value={attendanceForm.name}
                   onChange={(e) => setAttendanceForm({ ...attendanceForm, name: e.target.value })}
                   placeholder="e.g., Day Shift (Colombo)"
-                  className="w-full border border-card-border rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-dark-navy block mb-1">Shift Start (HH:MM)</label>
+                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Shift Start (HH:MM)</label>
                   <input
                     type="text"
                     required
                     value={attendanceForm.shiftStartTime}
                     onChange={(e) => setAttendanceForm({ ...attendanceForm, shiftStartTime: e.target.value })}
                     placeholder="09:00"
-                    className="w-full border border-card-border rounded-xl px-3.5 py-2.5 text-sm"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-dark-navy block mb-1">Shift End (HH:MM)</label>
+                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Shift End (HH:MM)</label>
                   <input
                     type="text"
                     required
                     value={attendanceForm.shiftEndTime}
                     onChange={(e) => setAttendanceForm({ ...attendanceForm, shiftEndTime: e.target.value })}
                     placeholder="17:00"
-                    className="w-full border border-card-border rounded-xl px-3.5 py-2.5 text-sm"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm"
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-dark-navy block mb-1">Late Grace (Minutes)</label>
+                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Late Grace (Mins)</label>
                   <input
                     type="number"
                     min="0"
                     value={attendanceForm.graceTimeMinutes}
                     onChange={(e) => setAttendanceForm({ ...attendanceForm, graceTimeMinutes: parseInt(e.target.value) || 0 })}
-                    className="w-full border border-card-border rounded-xl px-3.5 py-2.5 text-sm"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-dark-navy block mb-1">Half-Day Limit (Hours)</label>
+                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Half-Day Limit (Hrs)</label>
                   <input
                     type="number"
                     min="0"
                     value={attendanceForm.halfDayThresholdHours}
                     onChange={(e) => setAttendanceForm({ ...attendanceForm, halfDayThresholdHours: parseInt(e.target.value) || 0 })}
-                    className="w-full border border-card-border rounded-xl px-3.5 py-2.5 text-sm"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm"
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-dark-navy block mb-1">Late Check-in Fine (Rs.)</label>
+                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Check-in Fine (Rs.)</label>
                   <input
                     type="number"
                     min="0"
                     value={attendanceForm.lateArrivalPenalty}
                     onChange={(e) => setAttendanceForm({ ...attendanceForm, lateArrivalPenalty: parseFloat(e.target.value) || 0 })}
-                    className="w-full border border-card-border rounded-xl px-3.5 py-2.5 text-sm"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-dark-navy block mb-1">Early Checkout Fine (Rs.)</label>
+                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Early Out Fine (Rs.)</label>
                   <input
                     type="number"
                     min="0"
                     value={attendanceForm.earlyCheckoutPenalty}
                     onChange={(e) => setAttendanceForm({ ...attendanceForm, earlyCheckoutPenalty: parseFloat(e.target.value) || 0 })}
-                    className="w-full border border-card-border rounded-xl px-3.5 py-2.5 text-sm"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm"
                   />
                 </div>
               </div>
-              <div className="flex items-center gap-2 pt-2">
+              <div className="flex items-center gap-3 pt-2 bg-slate-100 p-3 rounded-xl border border-slate-200">
                 <input
                   type="checkbox"
                   id="attendanceDefault"
                   checked={attendanceForm.isDefault}
                   onChange={(e) => setAttendanceForm({ ...attendanceForm, isDefault: e.target.checked })}
-                  className="w-4 h-4 rounded text-primary-blue focus:ring-primary-blue"
+                  className="w-4 h-4 rounded text-brand-indigo focus:ring-brand-indigo accent-brand-indigo cursor-pointer"
                 />
-                <label htmlFor="attendanceDefault" className="text-sm font-semibold text-dark-navy cursor-pointer select-none">
-                  Set as system default attendance policy
+                <label htmlFor="attendanceDefault" className="text-xs font-black text-slate-700 cursor-pointer select-none">
+                  Set as system default policy
                 </label>
               </div>
-              <div className="flex gap-3 pt-3">
-                <button type="submit" className="flex-1 bg-primary-blue hover:bg-blue-700 text-white py-2.5 rounded-xl font-bold transition-colors">
-                  {editingAttendancePolicyId ? 'Update Policy' : 'Create Policy'}
-                </button>
-                <button type="button" onClick={() => setShowAttendanceModal(false)} className="flex-1 border border-card-border hover:bg-gray-50 py-2.5 rounded-xl font-semibold text-muted-text">
+              <div className="flex gap-3 pt-6">
+                <button type="button" onClick={() => setShowAttendanceModal(false)} className="flex-1 py-3 rounded-xl bg-slate-100 text-[10px] uppercase tracking-wider font-black hover:bg-slate-200 text-slate-700 transition-all">
                   Cancel
+                </button>
+                <button type="submit" className="flex-1 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[10px] uppercase tracking-wider font-black shadow-lg shadow-slate-900/20 transition-all">
+                  {editingAttendancePolicyId ? 'Update Policy' : 'Create Policy'}
                 </button>
               </div>
             </form>
@@ -783,27 +802,29 @@ const AdminAttendance = () => {
 
       {/* Assign Policies Modal */}
       {showAssignModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-fadeIn">
-            <div className="flex items-center justify-between p-5 border-b border-card-border bg-slate-50">
-              <h2 className="text-lg font-bold text-dark-navy flex items-center gap-1.5">
-                👤 Assign Attendance Policy
-              </h2>
-              <button onClick={() => setShowAssignModal(false)} className="p-1.5 rounded-lg hover:bg-gray-200 text-gray-500 transition-colors">
-                <X size={18} />
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col border border-slate-100">
+            <div className="px-6 py-6 border-b border-slate-100 flex flex-col items-center justify-center text-center bg-white/80 backdrop-blur-md relative">
+              <button onClick={() => setShowAssignModal(false)} className="absolute right-4 top-4 p-2 rounded-full hover:bg-slate-100 text-slate-400 transition-colors">
+                <X size={16} />
               </button>
+              <div className="w-12 h-12 bg-slate-50 text-slate-900 rounded-full flex items-center justify-center mb-4 border border-slate-200 shadow-sm text-xl">
+                👤
+              </div>
+              <h3 className="font-black text-slate-900 text-xl">Assign Policy</h3>
             </div>
-            <form onSubmit={handleSaveAssignment} className="p-5 space-y-4">
-              <div>
-                <label className="text-xs font-bold text-muted-text uppercase block mb-1">Employee</label>
-                <p className="font-bold text-dark-navy text-base">{assignForm.employeeName}</p>
+            
+            <form onSubmit={handleSaveAssignment} className="p-6 bg-slate-50/50 space-y-4">
+              <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                <label className="text-[10px] uppercase font-black tracking-wider text-slate-400 block mb-1">Employee</label>
+                <p className="font-black text-slate-900 text-lg">{assignForm.employeeName}</p>
               </div>
               <div>
-                <label className="text-xs font-bold text-dark-navy block mb-1">Assign Attendance Policy</label>
+                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Select Attendance Policy</label>
                 <select
                   value={assignForm.attendancePolicyId}
                   onChange={(e) => setAssignForm({ ...assignForm, attendancePolicyId: e.target.value })}
-                  className="w-full border border-card-border rounded-xl px-3.5 py-2.5 text-sm bg-white"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm cursor-pointer"
                 >
                   <option value="">System Default</option>
                   {attendancePolicies.map(p => (
@@ -813,12 +834,12 @@ const AdminAttendance = () => {
                   ))}
                 </select>
               </div>
-              <div className="flex gap-3 pt-3">
-                <button type="submit" className="flex-1 bg-primary-blue hover:bg-blue-700 text-white py-2.5 rounded-xl font-bold transition-colors">
-                  Save Changes
-                </button>
-                <button type="button" onClick={() => setShowAssignModal(false)} className="flex-1 border border-card-border hover:bg-gray-50 py-2.5 rounded-xl font-semibold text-muted-text">
+              <div className="flex gap-3 pt-6">
+                <button type="button" onClick={() => setShowAssignModal(false)} className="flex-1 py-3 rounded-xl bg-slate-100 text-[10px] uppercase tracking-wider font-black hover:bg-slate-200 text-slate-700 transition-all">
                   Cancel
+                </button>
+                <button type="submit" className="flex-1 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[10px] uppercase tracking-wider font-black shadow-lg shadow-slate-900/20 transition-all">
+                  Save Changes
                 </button>
               </div>
             </form>

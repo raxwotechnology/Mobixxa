@@ -443,78 +443,77 @@ const ManagerRepairs = ({ isAdmin = false, isEmployee = false, navItems: propNav
     <DashboardLayout navItems={navItems} title={isAdmin ? "Admin Repairs Dashboard" : "Repairs Dashboard"}>
       <div className="no-print">
         {/* Header Block */}
-        <div className="mb-6">
-          <div className="bg-white rounded-3xl border border-card-border shadow-sm p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-dark-navy flex items-center gap-2">
-                <Wrench className="text-primary-blue" /> Device Repairs
-              </h1>
-              <p className="text-muted-text text-sm mt-1">
-                Log customer devices, manage technician tasks, parts replacements, and track ledger synchronization.
-              </p>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm relative overflow-hidden mb-6">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-indigo/5 rounded-full blur-3xl pointer-events-none -z-10"></div>
+          <div>
+            <div className="flex items-center gap-3 mb-1">
+              <div className="w-10 h-10 rounded-2xl bg-brand-indigo/10 flex items-center justify-center text-brand-indigo">
+                <Wrench size={20} strokeWidth={2.5} />
+              </div>
+              <h1 className="text-2xl font-black text-slate-900 m-0">Device Repairs</h1>
             </div>
-            
+            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mt-2 m-0">Log customer devices, manage technician tasks, parts replacements, and track ledger synchronization</p>
+          </div>
+          <div className="flex flex-wrap gap-2.5">
             <button
               onClick={handleOpenCreate}
-              className="bg-primary-blue hover:bg-blue-700 text-white font-bold py-3 px-5 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 self-start md:self-auto"
+              className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors shadow-sm flex items-center gap-2 cursor-pointer self-start md:self-auto"
             >
-              <Plus size={20} /> Log Repair Job
+              <Plus size={14} /> Log Repair Job
             </button>
           </div>
         </div>
 
         {/* Filters, Search, and Tabs */}
-        <div className="bg-white rounded-2xl border border-card-border shadow-sm p-4 mb-6">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            {/* Tabs */}
-            <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-none">
-              {['all', 'received', 'in_progress', 'completed', 'delivered', 'cancelled', 'reports'].map((status) => {
-                let count = 0;
-                if (status === 'all') count = repairs.length;
-                else if (status === 'reports') count = '';
-                else count = repairs.filter(r => r.status === status).length;
-                
-                const isSelected = filterStatus === status;
-                
-                return (
-                  <button
-                    key={status}
-                    onClick={() => setFilterStatus(status)}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-                      isSelected
-                        ? 'bg-primary-blue text-white shadow-sm'
-                        : 'bg-gray-50 border border-card-border text-muted-text hover:bg-gray-100'
-                    }`}
-                  >
-                    {status === 'reports' ? 'REPAIRS REPORT' : status.toUpperCase().replace('_', ' ')}
-                    {status !== 'reports' && (
-                      <span className={`ml-2 px-1.5 py-0.5 rounded-full text-[10px] ${
-                        isSelected ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-700'
-                      }`}>
-                        {count}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Search Input (hide on reports tab) */}
-            {filterStatus !== 'reports' && (
-              <div className="relative w-full lg:w-72">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-text">
-                  <Search size={18} />
-                </span>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search by ID, name, phone..."
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-card-border focus:ring-2 focus:ring-primary-blue focus:outline-none text-sm bg-white"
-                />
-              </div>
-            )}
+        <div className="glass-card rounded-[2rem] p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+          {/* Tabs */}
+          <div className="flex gap-2 pb-1 overflow-x-auto scrollbar-hide">
+            {['all', 'received', 'in_progress', 'completed', 'delivered', 'cancelled', 'reports'].map((status) => {
+              let count = 0;
+              if (status === 'all') count = repairs.length;
+              else if (status === 'reports') count = '';
+              else count = repairs.filter(r => r.status === status).length;
+              
+              const isSelected = filterStatus === status;
+              
+              return (
+                <button
+                  key={status}
+                  onClick={() => setFilterStatus(status)}
+                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider whitespace-nowrap transition-all cursor-pointer flex items-center gap-2 ${
+                    isSelected
+                      ? 'bg-brand-indigo text-white shadow-sm'
+                      : 'bg-slate-100 text-slate-550 hover:bg-slate-200'
+                  }`}
+                >
+                  {status === 'reports' ? 'Repairs Report' : status.replace('_', ' ')}
+                  {status !== 'reports' && (
+                    <span className={`ml-2 px-1.5 py-0.5 rounded-md text-[9px] font-black ${
+                      isSelected ? 'bg-white/20 text-white' : 'bg-slate-200/80 text-slate-700'
+                    }`}>
+                      {count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
+
+          {/* Search Input (hide on reports tab) */}
+          {filterStatus !== 'reports' && (
+            <div className="relative w-full lg:w-72">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                <Search size={16} />
+              </span>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search ID, name, model..."
+                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-indigo focus:border-transparent focus:outline-none text-xs font-semibold text-slate-800 bg-white"
+              />
+            </div>
+          )}
         </div>
 
         {/* Dynamic Display (Reports vs Table) */}

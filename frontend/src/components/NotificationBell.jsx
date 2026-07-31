@@ -1,31 +1,43 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bell, Check, CheckCheck } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Bell, CheckCheck } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import useNotificationStore from '../store/notificationStore';
+import useAuthStore from '../store/authStore';
 
 const NotificationBell = () => {
   const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user);
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   const { notifications, unreadCount, fetchNotifications, markAsRead, markAllRead } = useNotificationStore();
   const [now] = useState(() => Date.now());
 
+  const fallbackProfilePath = ['cashier', 'deliveryGuy', 'stockEmployee'].includes(user?.role)
+    ? '/employee/profile'
+    : user?.role === 'admin'
+      ? '/admin'
+      : user?.role === 'manager'
+        ? '/manager'
+        : '/profile';
+
   useEffect(() => {
     fetchNotifications();
-    // Poll every 60 seconds
     const interval = setInterval(() => {
       useNotificationStore.getState().fetchUnreadCount();
     }, 60000);
     return () => clearInterval(interval);
   }, []);
 
-  // Close on outside click
   useEffect(() => {
     const handleClick = (e) => {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false);
     };
     document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
+    document.addEventListener('touchstart', handleClick);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('touchstart', handleClick);
+    };
   }, []);
 
   const handleOpen = () => {
@@ -43,6 +55,7 @@ const NotificationBell = () => {
     leave_update: '📅',
     low_stock: '⚠️',
     system: '🔔',
+    attendance: '🗓️',
   };
 
   const timeAgo = (date) => {
@@ -52,15 +65,15 @@ const NotificationBell = () => {
     if (minutes < 60) return `${minutes}m ago`;
     const hours = Math.floor(minutes / 60);
     if (hours < 24) return `${hours}h ago`;
-    const days = Math.floor(hours / 24);
-    return `${days}d ago`;
+    return `${Math.floor(hours / 24)}d ago`;
   };
 
   return (
     <div className="relative" ref={ref}>
       <button
+        type="button"
         onClick={handleOpen}
-        className="relative text-dark-navy hover:text-primary-blue transition-colors p-1"
+        className="relative text-slate-700 hover:text-brand-indigo transition-colors p-1 border-0 bg-transparent cursor-pointer"
         aria-label="Notifications"
       >
         <Bell size={20} />
@@ -72,13 +85,14 @@ const NotificationBell = () => {
       </button>
 
       {open && (
-        <div className="absolute top-full right-0 mt-2 w-80 bg-white border border-card-border rounded-2xl shadow-2xl z-50 overflow-hidden">
-          <div className="px-4 py-3 border-b border-card-border flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50">
-            <h3 className="font-semibold text-dark-navy text-sm m-0">Notifications</h3>
+        <div className="fixed sm:absolute inset-x-3 sm:inset-x-auto top-[3.75rem] sm:top-full right-auto sm:right-0 mt-0 sm:mt-2 w-auto sm:w-80 max-w-none sm:max-w-none bg-white border border-slate-200 rounded-2xl shadow-2xl z-[110] overflow-hidden">
+          <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50 gap-2">
+            <h3 className="font-semibold text-slate-900 text-sm m-0">Notifications</h3>
             {unreadCount > 0 && (
               <button
+                type="button"
                 onClick={() => markAllRead()}
-                className="text-xs text-primary-blue hover:text-indigo-700 font-medium flex items-center gap-1"
+                className="text-xs text-brand-indigo hover:text-indigo-700 font-medium flex items-center gap-1 border-0 bg-transparent cursor-pointer whitespace-nowrap"
               >
                 <CheckCheck size={14} />
                 Mark all read
@@ -86,10 +100,10 @@ const NotificationBell = () => {
             )}
           </div>
 
-          <div className="max-h-80 overflow-y-auto">
+          <div className="max-h-[min(60vh,20rem)] overflow-y-auto overscroll-contain">
             {notifications.length === 0 ? (
-              <div className="text-center py-10 text-muted-text">
-                <Bell size={28} className="mx-auto mb-2 text-gray-300" />
+              <div className="text-center py-10 text-slate-400">
+                <Bell size={28} className="mx-auto mb-2 text-slate-300" />
                 <p className="text-sm m-0">No notifications yet</p>
               </div>
             ) : (
@@ -98,30 +112,23 @@ const NotificationBell = () => {
                   key={n._id}
                   onClick={() => {
                     if (!n.isRead) markAsRead(n._id);
-                    if (n.link) {
-                      navigate(n.link);
-                      setOpen(false);
-                    } else {
-                      navigate('/profile');
-                      setOpen(false);
-                    }
+                    navigate(n.link || fallbackProfilePath);
+                    setOpen(false);
                   }}
-                  className={`px-4 py-3 border-b border-card-border last:border-b-0 cursor-pointer transition-colors hover:bg-blue-50 ${
+                  className={`px-4 py-3 border-b border-slate-100 last:border-b-0 cursor-pointer transition-colors hover:bg-blue-50 active:bg-blue-50 ${
                     !n.isRead ? 'bg-blue-50/50' : ''
                   }`}
                 >
                   <div className="flex items-start gap-3">
                     <span className="text-lg flex-shrink-0 mt-0.5">{typeIcons[n.type] || '🔔'}</span>
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm m-0 leading-snug ${!n.isRead ? 'font-semibold text-dark-navy' : 'text-muted-text'}`}>
+                      <p className={`text-sm m-0 leading-snug ${!n.isRead ? 'font-semibold text-slate-900' : 'text-slate-500'}`}>
                         {n.title}
                       </p>
-                      <p className="text-xs text-muted-text m-0 mt-0.5 truncate">{n.message}</p>
-                      <p className="text-[10px] text-gray-400 m-0 mt-1">{timeAgo(n.createdAt)}</p>
+                      <p className="text-xs text-slate-500 m-0 mt-0.5 truncate">{n.message}</p>
+                      <p className="text-[10px] text-slate-400 m-0 mt-1">{timeAgo(n.createdAt)}</p>
                     </div>
-                    {!n.isRead && (
-                      <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1.5" />
-                    )}
+                    {!n.isRead && <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1.5" />}
                   </div>
                 </div>
               ))
@@ -129,12 +136,13 @@ const NotificationBell = () => {
           </div>
 
           {notifications.length > 0 && (
-            <div className="px-4 py-2.5 border-t border-card-border text-center bg-gray-50">
+            <div className="px-4 py-2.5 border-t border-slate-100 text-center bg-slate-50">
               <button
+                type="button"
                 onClick={() => setOpen(false)}
-                className="text-xs text-primary-blue hover:text-indigo-700 font-medium"
+                className="text-xs text-brand-indigo hover:text-indigo-700 font-medium border-0 bg-transparent cursor-pointer"
               >
-                View all notifications
+                Close
               </button>
             </div>
           )}

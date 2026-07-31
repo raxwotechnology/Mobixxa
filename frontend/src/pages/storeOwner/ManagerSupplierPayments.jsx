@@ -194,84 +194,87 @@ const ManagerSupplierPayments = () => {
   if (selectedSupplier) {
     return (
       <DashboardLayout navItems={navItems} title="Manager Dashboard">
-        <div style={{ maxWidth: '1100px' }}>
+        <div className="animate-fade-in space-y-6">
           {/* Back Button */}
           <button onClick={() => { setSelectedSupplier(null); setLedger(null); }}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none', color: '#d946a0', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer', marginBottom: '1rem', padding: 0 }}>
-            <ArrowLeft size={18} /> Back to Suppliers
+            className="flex items-center gap-2 text-brand-indigo hover:text-brand-violet text-xs font-black uppercase tracking-wider bg-transparent border-0 cursor-pointer p-0 transition-colors">
+            <ArrowLeft size={16} /> Back to Suppliers
           </button>
 
           {/* Supplier Header */}
-          <div style={{ background: 'linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%)', borderRadius: '16px', padding: '1.5rem', marginBottom: '1.5rem', border: '1px solid #fbcfe8' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+          <div className="bg-slate-50 border border-slate-200/60 rounded-3xl p-6 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-brand-indigo/5 rounded-full blur-3xl pointer-events-none -z-10"></div>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div>
-                <h2 style={{ margin: '0 0 0.25rem', fontSize: '1.4rem', fontWeight: 800, color: '#1f1f1f' }}>{selectedSupplier.name}</h2>
-                <p style={{ margin: 0, color: '#7b6f69', fontSize: '0.85rem' }}>{selectedSupplier.phone} {selectedSupplier.email && `· ${selectedSupplier.email}`}</p>
+                <h2 className="text-xl font-black text-slate-800 m-0">{selectedSupplier.name}</h2>
+                <p className="text-xs text-slate-400 font-bold m-0 mt-1">{selectedSupplier.phone} {selectedSupplier.email && `· ${selectedSupplier.email}`}</p>
               </div>
-              <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <button onClick={exportCSV} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1rem', borderRadius: '10px', border: '1px solid #eaded6', background: 'white', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', color: '#1f1f1f' }}>
-                  <Download size={16} /> Export CSV
+              <div className="flex flex-wrap gap-2.5">
+                <button onClick={exportCSV} className="bg-white border border-slate-200 text-slate-650 hover:bg-slate-55 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
+                  <Download size={14} /> Export CSV
                 </button>
-                <button onClick={() => setShowPurchaseModal(true)} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1.25rem', borderRadius: '10px', border: '1px solid #d946a0', background: 'white', color: '#d946a0', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer' }}>
-                  <TrendingUp size={16} /> Record Purchase
+                <button onClick={() => setShowPurchaseModal(true)} className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
+                  <TrendingUp size={14} /> Record Purchase
                 </button>
-                <button onClick={() => setShowPayModal(true)} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1.25rem', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #d946a0, #c026d3)', color: 'white', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer', boxShadow: '0 2px 10px rgba(217,70,160,0.3)' }}>
-                  <CreditCard size={16} /> Record Payment
+                <button onClick={() => setShowPayModal(true)} className="bg-brand-indigo hover:bg-brand-violet text-white px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors shadow-md flex items-center gap-2 cursor-pointer">
+                  <CreditCard size={14} /> Record Payment
                 </button>
               </div>
             </div>
 
             {/* Balance Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginTop: '1rem' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
               {[
-                { label: 'Total Purchased', value: ledger?.totalPurchased || 0, color: '#1f1f1f', icon: TrendingUp },
-                { label: 'Total Paid', value: ledger?.totalPaid || 0, color: '#059669', icon: TrendingDown },
-                { label: 'Balance Due', value: ledger?.balanceDue || 0, color: ledger?.balanceDue > 0 ? '#dc2626' : '#059669', icon: Wallet },
+                { label: 'Total Purchased', value: ledger?.totalPurchased || 0, color: 'text-slate-850', bg: 'bg-slate-100/50', icon: TrendingUp },
+                { label: 'Total Paid', value: ledger?.totalPaid || 0, color: 'text-teal-700', bg: 'bg-teal-50', icon: TrendingDown },
+                { label: 'Balance Due', value: ledger?.balanceDue || 0, color: ledger?.balanceDue > 0 ? 'text-rose-600' : 'text-teal-700', bg: ledger?.balanceDue > 0 ? 'bg-rose-50' : 'bg-teal-50', icon: Wallet },
               ].map((c, i) => (
-                <div key={i} style={{ background: 'white', borderRadius: '12px', padding: '1rem', border: '1px solid #eaded6', textAlign: 'center' }}>
-                  <c.icon size={20} style={{ color: c.color, marginBottom: '0.25rem' }} />
-                  <p style={{ margin: '0 0 0.15rem', fontSize: '0.7rem', color: '#7b6f69', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>{c.label}</p>
-                  <p style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: c.color }}>LKR {c.value.toLocaleString()}</p>
+                <div key={i} className="bg-white rounded-2xl p-4 border border-slate-100 text-center flex flex-col items-center">
+                  <c.icon size={20} className={`${c.color} mb-1.5`} />
+                  <p className="text-[9px] uppercase font-black tracking-wider text-slate-400 m-0 mb-1">{c.label}</p>
+                  <p className={`text-lg font-black m-0 ${c.color}`}>Rs. {c.value.toLocaleString()}</p>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Transactions Table */}
-          <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #eaded6', overflow: 'hidden' }}>
-            <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid #eaded6' }}>
-              <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#1f1f1f' }}>Transaction Ledger</h3>
+          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+            <div className="px-6 py-4.5 border-b border-slate-100">
+              <h3 className="font-black text-slate-800 text-xs uppercase tracking-wider m-0">Transaction Ledger</h3>
             </div>
             {ledgerLoading ? (
-              <div style={{ padding: '3rem', textAlign: 'center', color: '#7b6f69' }}>Loading...</div>
+              <div className="py-16 text-center text-slate-400 font-bold text-xs uppercase tracking-wider">Loading...</div>
             ) : !ledger?.transactions?.length ? (
-              <div style={{ padding: '3rem', textAlign: 'center', color: '#7b6f69' }}>No transactions yet</div>
+              <div className="py-16 text-center text-slate-400 font-bold text-xs uppercase tracking-wider">No transactions yet</div>
             ) : (
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
                   <thead>
-                    <tr style={{ background: '#fdf2f8' }}>
-                      {['Date', 'Type', 'Description', 'By', 'Amount', 'Balance'].map((h) => (
-                        <th key={h} style={{ padding: '0.75rem 1rem', textAlign: 'left', fontWeight: 700, color: '#7b6f69', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
+                    <tr className="bg-slate-50 border-b border-slate-100">
+                      {['Date', 'Type', 'Description', 'Recorded By', 'Amount', 'Balance'].map((h) => (
+                        <th key={h} className="px-6 py-3.5 text-left text-[10px] uppercase font-black tracking-wider text-slate-500">{h}</th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-slate-100">
                     {ledger.transactions.map((t, i) => (
-                      <tr key={i} style={{ borderBottom: '1px solid #f5f0ec' }}>
-                        <td style={{ padding: '0.7rem 1rem', color: '#1f1f1f' }}>{new Date(t.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
-                        <td style={{ padding: '0.7rem 1rem' }}>
-                          <span style={{ padding: '2px 10px', borderRadius: '6px', fontSize: '0.72rem', fontWeight: 700, background: t.type === 'purchase' ? '#fef3c7' : '#d1fae5', color: t.type === 'purchase' ? '#92400e' : '#065f46' }}>
-                            {t.type === 'purchase' ? 'PURCHASE' : 'PAYMENT'}
+                      <tr key={i} className="hover:bg-slate-50/50 transition-colors">
+                        <td className="px-6 py-4 text-slate-650 font-bold">{new Date(t.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                        <td className="px-6 py-4">
+                          <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md border ${
+                            t.type === 'purchase' ? 'bg-amber-50 text-amber-700 border-amber-100/60' : 'bg-teal-50 text-teal-700 border-teal-100/60'
+                          }`}>
+                            {t.type}
                           </span>
                         </td>
-                        <td style={{ padding: '0.7rem 1rem', color: '#7b6f69', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.description}</td>
-                        <td style={{ padding: '0.7rem 1rem', color: '#7b6f69' }}>{t.createdBy?.name || '—'}</td>
-                        <td style={{ padding: '0.7rem 1rem', fontWeight: 700, color: t.type === 'purchase' ? '#dc2626' : '#059669' }}>
-                          {t.type === 'purchase' ? '+' : '-'} LKR {t.amount.toLocaleString()}
+                        <td className="px-6 py-4 text-slate-500 font-semibold max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">{t.description}</td>
+                        <td className="px-6 py-4 text-slate-500 font-semibold">{t.createdBy?.name || '—'}</td>
+                        <td className={`px-6 py-4 font-black ${t.type === 'purchase' ? 'text-rose-500' : 'text-teal-650'}`}>
+                          {t.type === 'purchase' ? '+' : '-'} Rs. {t.amount.toLocaleString()}
                         </td>
-                        <td style={{ padding: '0.7rem 1rem', fontWeight: 700, color: t.runningBalance > 0 ? '#dc2626' : '#059669' }}>
-                          LKR {t.runningBalance.toLocaleString()}
+                        <td className={`px-6 py-4 font-black ${t.runningBalance > 0 ? 'text-rose-550' : 'text-teal-650'}`}>
+                          Rs. {t.runningBalance.toLocaleString()}
                         </td>
                       </tr>
                     ))}
@@ -284,113 +287,117 @@ const ManagerSupplierPayments = () => {
 
         {/* Payment Modal */}
         {showPayModal && (
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
-            <div style={{ background: 'white', borderRadius: '20px', width: '100%', maxWidth: '420px', padding: '1.5rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>Record Payment</h3>
-                <button onClick={() => setShowPayModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#7b6f69' }}><X size={20} /></button>
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setShowPayModal(false)}>
+            <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-fade-in" onClick={(e) => e.stopPropagation()}>
+              <div className="px-6 py-4 border-b border-slate-205 flex items-center justify-between">
+                <h3 className="text-lg font-bold text-dark-navy flex items-center gap-2"><CreditCard size={20} className="text-brand-indigo" /> Record Payment</h3>
+                <button onClick={() => setShowPayModal(false)} className="p-1.5 rounded-lg hover:bg-gray-100 cursor-pointer"><X size={20} /></button>
               </div>
-              <p style={{ margin: '0 0 1rem', fontSize: '0.85rem', color: '#7b6f69' }}>
-                Payment to <strong>{selectedSupplier.name}</strong> · Balance: <strong style={{ color: '#dc2626' }}>LKR {(ledger?.balanceDue || 0).toLocaleString()}</strong>
-              </p>
-              <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#7b6f69', marginBottom: '0.35rem', textTransform: 'uppercase' }}>Amount (LKR)</label>
-                <input type="number" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} placeholder="0.00"
-                  style={{ width: '100%', padding: '0.7rem 1rem', borderRadius: '10px', border: '1px solid #eaded6', fontSize: '1.1rem', fontWeight: 700, outline: 'none', boxSizing: 'border-box' }} />
-              </div>
-              <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#7b6f69', marginBottom: '0.35rem', textTransform: 'uppercase' }}>Payment Method</label>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  {['cash', 'bank_transfer', 'cheque'].map((m) => (
-                    <button key={m} onClick={() => setPayMethod(m)}
-                      style={{ flex: 1, padding: '0.5rem', borderRadius: '8px', border: `1px solid ${payMethod === m ? '#d946a0' : '#eaded6'}`, background: payMethod === m ? '#fdf2f8' : 'white', color: payMethod === m ? '#d946a0' : '#7b6f69', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize' }}>
-                      {m.replace('_', ' ')}
-                    </button>
-                  ))}
+              <div className="p-6 space-y-4">
+                <p className="text-xs text-slate-400 font-semibold m-0">
+                  Payment to <strong>{selectedSupplier.name}</strong> · Balance Due: <strong className="text-rose-500">Rs. {(ledger?.balanceDue || 0).toLocaleString()}</strong>
+                </p>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1">Amount (Rs.) *</label>
+                  <input type="number" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} placeholder="0.00"
+                    className="w-full border border-slate-200 rounded-xl py-2.5 px-4 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all" />
                 </div>
-              </div>
-              
-              {payMethod === 'cheque' && (
-                <div style={{ background: '#fdf2f8', padding: '1rem', borderRadius: '12px', marginBottom: '1rem', border: '1px solid #fbcfe8' }}>
-                  <h4 style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: '#d946a0' }}>Cheque Details</h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 600, color: '#7b6f69', marginBottom: '0.25rem', textTransform: 'uppercase' }}>Cheque No. *</label>
-                      <input type="text" value={chequeDetails.chequeNumber} onChange={(e) => setChequeDetails({...chequeDetails, chequeNumber: e.target.value})} placeholder="0000123"
-                        style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1px solid #eaded6', fontSize: '0.85rem', outline: 'none' }} />
-                    </div>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 600, color: '#7b6f69', marginBottom: '0.25rem', textTransform: 'uppercase' }}>Bank Name *</label>
-                      <input type="text" value={chequeDetails.bankName} onChange={(e) => setChequeDetails({...chequeDetails, bankName: e.target.value})} placeholder="BOC"
-                        style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1px solid #eaded6', fontSize: '0.85rem', outline: 'none' }} />
-                    </div>
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 600, color: '#7b6f69', marginBottom: '0.25rem', textTransform: 'uppercase' }}>Cheque Date *</label>
-                      <input type="date" value={chequeDetails.chequeDate} onChange={(e) => setChequeDetails({...chequeDetails, chequeDate: e.target.value})}
-                        style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1px solid #eaded6', fontSize: '0.85rem', outline: 'none' }} />
-                    </div>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 600, color: '#7b6f69', marginBottom: '0.25rem', textTransform: 'uppercase' }}>Account No.</label>
-                      <input type="text" value={chequeDetails.accountNumber} onChange={(e) => setChequeDetails({...chequeDetails, accountNumber: e.target.value})} placeholder="Optional"
-                        style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1px solid #eaded6', fontSize: '0.85rem', outline: 'none' }} />
-                    </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1">Payment Method</label>
+                  <div className="flex gap-2">
+                    {['cash', 'bank_transfer', 'cheque'].map((m) => (
+                      <button key={m} onClick={() => setPayMethod(m)}
+                        className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-wider border cursor-pointer transition-all ${
+                          payMethod === m ? 'bg-brand-indigo border-brand-indigo text-white' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+                        }`}>
+                        {m.replace('_', ' ')}
+                      </button>
+                    ))}
                   </div>
                 </div>
-              )}
+                
+                {payMethod === 'cheque' && (
+                  <div className="bg-slate-50 border border-slate-200/60 p-4 rounded-xl space-y-3">
+                    <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider m-0">Cheque Details</h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Cheque No. *</label>
+                        <input type="text" value={chequeDetails.chequeNumber} onChange={(e) => setChequeDetails({...chequeDetails, chequeNumber: e.target.value})} placeholder="0000123"
+                          className="w-full border border-slate-200 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Bank Name *</label>
+                        <input type="text" value={chequeDetails.bankName} onChange={(e) => setChequeDetails({...chequeDetails, bankName: e.target.value})} placeholder="BOC"
+                          className="w-full border border-slate-200 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Cheque Date *</label>
+                        <input type="date" value={chequeDetails.chequeDate} onChange={(e) => setChequeDetails({...chequeDetails, chequeDate: e.target.value})}
+                          className="w-full border border-slate-200 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Account No.</label>
+                        <input type="text" value={chequeDetails.accountNumber} onChange={(e) => setChequeDetails({...chequeDetails, accountNumber: e.target.value})} placeholder="Optional"
+                          className="w-full border border-slate-200 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all" />
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-              <div style={{ marginBottom: '1.25rem' }}>
-                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#7b6f69', marginBottom: '0.35rem', textTransform: 'uppercase' }}>Note (optional)</label>
-                <input type="text" value={payDescription} onChange={(e) => setPayDescription(e.target.value)} placeholder="Payment reference..."
-                  style={{ width: '100%', padding: '0.6rem 1rem', borderRadius: '10px', border: '1px solid #eaded6', fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' }} />
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1">Note (optional)</label>
+                  <input type="text" value={payDescription} onChange={(e) => setPayDescription(e.target.value)} placeholder="Payment reference..."
+                    className="w-full border border-slate-200 rounded-xl py-2.5 px-4 text-xs focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all" />
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <button onClick={handlePayment} disabled={paying} className="flex-1 bg-brand-indigo hover:bg-brand-violet text-white py-3 rounded-xl font-bold transition-all shadow-md disabled:opacity-50 cursor-pointer text-xs uppercase tracking-wider">
+                    {paying ? 'Processing...' : 'Record Payment'}
+                  </button>
+                  <button onClick={() => setShowPayModal(false)} className="flex-1 border border-slate-200 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-55 transition-all cursor-pointer text-xs uppercase tracking-wider">Cancel</button>
+                </div>
               </div>
-              <button onClick={handlePayment} disabled={paying}
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: 'none', background: 'linear-gradient(135deg, #d946a0, #c026d3)', color: 'white', fontSize: '0.95rem', fontWeight: 700, cursor: 'pointer', opacity: paying ? 0.7 : 1 }}>
-                {paying ? 'Processing...' : `Pay LKR ${Number(payAmount || 0).toLocaleString()}`}
-              </button>
             </div>
           </div>
         )}
 
         {/* Purchase Modal */}
         {showPurchaseModal && (
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
-            <div style={{ background: 'white', borderRadius: '20px', width: '100%', maxWidth: '420px', padding: '1.5rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>Record Purchase</h3>
-                <button onClick={() => setShowPurchaseModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#7b6f69' }}><X size={20} /></button>
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setShowPurchaseModal(false)}>
+            <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-fade-in" onClick={(e) => e.stopPropagation()}>
+              <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+                <h3 className="text-lg font-bold text-dark-navy flex items-center gap-2"><TrendingUp size={20} className="text-brand-indigo" /> Record Purchase</h3>
+                <button onClick={() => setShowPurchaseModal(false)} className="p-1.5 rounded-lg hover:bg-gray-100 cursor-pointer"><X size={20} /></button>
               </div>
-              <p style={{ margin: '0 0 0.5rem', fontSize: '0.85rem', color: '#7b6f69' }}>
-                Stock purchase from <strong>{selectedSupplier.name}</strong>
-              </p>
-              <p style={{ margin: '0 0 1rem', fontSize: '0.78rem', color: '#7b6f69', background: '#fdf2f8', padding: '0.6rem', borderRadius: '8px' }}>
-                💡 Enter the total cost. If you pay partially now, the rest is tracked as balance due.
-              </p>
-              <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#7b6f69', marginBottom: '0.35rem', textTransform: 'uppercase' }}>Total Purchase Cost (LKR) *</label>
-                <input type="number" value={purchaseForm.totalCost} onChange={(e) => setPurchaseForm({...purchaseForm, totalCost: e.target.value})} placeholder="e.g. 10000"
-                  style={{ width: '100%', padding: '0.7rem 1rem', borderRadius: '10px', border: '1px solid #eaded6', fontSize: '1.1rem', fontWeight: 700, outline: 'none', boxSizing: 'border-box' }} />
-              </div>
-              <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#7b6f69', marginBottom: '0.35rem', textTransform: 'uppercase' }}>Amount Paid Now (LKR)</label>
-                <input type="number" value={purchaseForm.amountPaid} onChange={(e) => setPurchaseForm({...purchaseForm, amountPaid: e.target.value})} placeholder="e.g. 5000 (optional)"
-                  style={{ width: '100%', padding: '0.7rem 1rem', borderRadius: '10px', border: '1px solid #eaded6', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' }} />
-              </div>
-              {purchaseForm.totalCost && (
-                <div style={{ background: '#fef2f2', padding: '0.6rem 1rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.85rem' }}>
-                  <strong style={{ color: '#dc2626' }}>Balance to track: LKR {(Number(purchaseForm.totalCost || 0) - Number(purchaseForm.amountPaid || 0)).toLocaleString()}</strong>
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1">Total Cost (Rs.) *</label>
+                  <input type="number" value={purchaseForm.totalCost} onChange={(e) => setPurchaseForm({ ...purchaseForm, totalCost: e.target.value })} placeholder="0.00"
+                    className="w-full border border-slate-200 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all" />
                 </div>
-              )}
-              <div style={{ marginBottom: '1.25rem' }}>
-                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#7b6f69', marginBottom: '0.35rem', textTransform: 'uppercase' }}>Description (optional)</label>
-                <input type="text" value={purchaseForm.description} onChange={(e) => setPurchaseForm({...purchaseForm, description: e.target.value})} placeholder="Stock batch, items..."
-                  style={{ width: '100%', padding: '0.6rem 1rem', borderRadius: '10px', border: '1px solid #eaded6', fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' }} />
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1">Amount Paid (Rs.)</label>
+                  <input type="number" value={purchaseForm.amountPaid} onChange={(e) => setPurchaseForm({ ...purchaseForm, amountPaid: e.target.value })} placeholder="0.00"
+                    className="w-full border border-slate-200 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all" />
+                </div>
+                {purchaseForm.totalCost && (
+                  <div className="bg-rose-50 border border-rose-100/60 p-3 rounded-lg text-xs">
+                    <strong className="text-rose-600">Balance to track: Rs. {(Number(purchaseForm.totalCost || 0) - Number(purchaseForm.amountPaid || 0)).toLocaleString()}</strong>
+                  </div>
+                )}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1">Description (optional)</label>
+                  <input type="text" value={purchaseForm.description} onChange={(e) => setPurchaseForm({ ...purchaseForm, description: e.target.value })} placeholder="Stock batch, items..."
+                    className="w-full border border-slate-200 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all" />
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <button onClick={handlePurchase} disabled={paying} className="flex-1 bg-slate-900 hover:bg-slate-800 text-white py-3 rounded-xl font-bold transition-all shadow-md cursor-pointer text-xs uppercase tracking-wider">
+                    {paying ? 'Saving...' : 'Record Purchase'}
+                  </button>
+                  <button onClick={() => setShowPurchaseModal(false)} className="flex-1 border border-slate-200 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-50 transition-all cursor-pointer text-xs uppercase tracking-wider">Cancel</button>
+                </div>
               </div>
-              <button onClick={handlePurchase} disabled={paying}
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: 'none', background: 'linear-gradient(135deg, #d946a0, #c026d3)', color: 'white', fontSize: '0.95rem', fontWeight: 700, cursor: 'pointer', opacity: paying ? 0.7 : 1 }}>
-                {paying ? 'Processing...' : 'Record Purchase'}
-              </button>
             </div>
           </div>
         )}
@@ -401,91 +408,101 @@ const ManagerSupplierPayments = () => {
   // Summary View
   return (
     <DashboardLayout navItems={navItems} title="Manager Dashboard">
-      <div style={{ maxWidth: '1100px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+      <div className="animate-fade-in space-y-6">
+        {/* Operations Control Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-indigo/5 rounded-full blur-3xl pointer-events-none -z-10"></div>
           <div>
-            <h1 style={{ margin: '0 0 0.25rem', fontSize: '1.5rem', fontWeight: 800, color: '#1f1f1f' }}>Supplier Payments</h1>
-            <p style={{ margin: 0, color: '#7b6f69', fontSize: '0.85rem' }}>Track supplier balances, purchases, and payments</p>
+            <div className="flex items-center gap-3 mb-1">
+              <div className="w-10 h-10 rounded-2xl bg-brand-indigo/10 flex items-center justify-center text-brand-indigo">
+                <Wallet size={20} strokeWidth={2.5} />
+              </div>
+              <h1 className="text-2xl font-black text-slate-900 m-0">Supplier Payments</h1>
+            </div>
+            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mt-2 m-0">Track supplier balances, purchases, and payments</p>
           </div>
-          <button
-            onClick={() => fetchSummary(true)}
-            disabled={loading}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.6rem 1.2rem', borderRadius: '12px', border: '1px solid #eaded6', background: 'white', color: '#1f1f1f', fontWeight: 600, fontSize: '0.85rem', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1 }}
-          >
-            <RefreshCw size={16} />
-            {loading ? 'Refreshing...' : 'Refresh'}
-          </button>
+          <div className="flex flex-wrap gap-2.5">
+            <button
+              onClick={() => fetchSummary(true)}
+              disabled={loading}
+              className="bg-white border border-slate-200 text-slate-650 hover:bg-slate-50 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors shadow-sm flex items-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh
+            </button>
+          </div>
         </div>
 
         {/* Summary Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
           {[
-            { label: 'Total Purchased', value: totalPurchased, color: '#1f1f1f', bg: '#f5f0ec', icon: TrendingUp },
-            { label: 'Total Paid', value: totalPaid, color: '#059669', bg: '#d1fae5', icon: DollarSign },
-            { label: 'Total Due', value: totalDue, color: totalDue > 0 ? '#dc2626' : '#059669', bg: totalDue > 0 ? '#fef2f2' : '#d1fae5', icon: Wallet },
+            { label: 'Total Purchased', value: totalPurchased, color: 'text-slate-800', bg: 'bg-slate-100/50', icon: TrendingUp },
+            { label: 'Total Paid', value: totalPaid, color: 'text-teal-700', bg: 'bg-teal-50', icon: DollarSign },
+            { label: 'Total Due', value: totalDue, color: totalDue > 0 ? 'text-rose-600' : 'text-teal-700', bg: totalDue > 0 ? 'bg-rose-50' : 'bg-teal-50', icon: Wallet },
           ].map((c, i) => (
-            <div key={i} style={{ background: 'white', borderRadius: '16px', padding: '1.25rem', border: '1px solid #eaded6' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: c.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <c.icon size={18} style={{ color: c.color }} />
-                </div>
-                <span style={{ fontSize: '0.72rem', color: '#7b6f69', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>{c.label}</span>
+            <div key={i} className="glass-card rounded-[1.8rem] p-5 flex items-center gap-4">
+              <div className={`w-11 h-11 rounded-xl ${c.bg} flex items-center justify-center`}>
+                <c.icon size={20} className={c.color} />
               </div>
-              <p style={{ margin: 0, fontSize: '1.3rem', fontWeight: 800, color: c.color }}>LKR {c.value.toLocaleString()}</p>
+              <div>
+                <p className="text-[9px] uppercase font-black tracking-wider text-slate-400 m-0 mb-1">{c.label}</p>
+                <p className={`text-xl font-black m-0 ${c.color}`}>Rs. {c.value.toLocaleString()}</p>
+              </div>
             </div>
           ))}
         </div>
 
         {/* Search & Export */}
-        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-          <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
-            <Search size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#7b6f69' }} />
+        <div className="glass-card rounded-[2rem] p-5 flex flex-col md:flex-row gap-4 items-center justify-between">
+          <div className="relative w-full md:w-80">
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search suppliers..."
-              style={{ width: '100%', padding: '0.7rem 1rem 0.7rem 2.75rem', borderRadius: '12px', border: '1px solid #eaded6', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' }} />
+              className="w-full bg-white border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all" />
           </div>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button onClick={exportAllPaymentsExcel} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: '#059669', color: 'white', padding: '0.7rem 1rem', borderRadius: '12px', border: 'none', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}>
-              <FileSpreadsheet size={16} /> Export Payments (Excel)
+          <div className="flex gap-2 flex-wrap">
+            <button onClick={exportAllPaymentsExcel} className="bg-teal-50 border border-teal-100/60 text-teal-755 hover:bg-teal-100 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
+              <FileSpreadsheet size={14} /> Excel Export
             </button>
-            <button onClick={exportAllPaymentsPDF} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: '#dc2626', color: 'white', padding: '0.7rem 1rem', borderRadius: '12px', border: 'none', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}>
-              <FileText size={16} /> Export Payments (PDF)
+            <button onClick={exportAllPaymentsPDF} className="bg-rose-50 border border-rose-100/65 text-rose-650 hover:bg-rose-100 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
+              <FileText size={14} /> PDF Export
             </button>
           </div>
         </div>
 
         {/* Supplier Table */}
-        <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #eaded6', overflow: 'hidden' }}>
+        <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
           {loading ? (
-            <div style={{ padding: '3rem', textAlign: 'center', color: '#7b6f69' }}>Loading suppliers...</div>
+            <div className="py-16 text-center text-slate-400 font-bold text-xs uppercase tracking-wider">Loading suppliers...</div>
           ) : !filtered.length ? (
-            <div style={{ padding: '3rem', textAlign: 'center', color: '#7b6f69' }}>No suppliers found</div>
+            <div className="py-16 text-center text-slate-400 font-bold text-xs uppercase tracking-wider">No suppliers found</div>
           ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
                 <thead>
-                  <tr style={{ background: '#fdf2f8' }}>
+                  <tr className="bg-slate-50 border-b border-slate-100">
                     {['Supplier', 'Contact', 'Total Purchased', 'Total Paid', 'Balance Due', 'Actions'].map((h) => (
-                      <th key={h} style={{ padding: '0.75rem 1rem', textAlign: 'left', fontWeight: 700, color: '#7b6f69', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
+                      <th key={h} className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500 text-left">{h}</th>
                     ))}
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-slate-100">
                   {filtered.map((s) => (
-                    <tr key={s._id} style={{ borderBottom: '1px solid #f5f0ec', cursor: 'pointer' }} onClick={() => openLedger(s)}>
-                      <td style={{ padding: '0.75rem 1rem' }}>
-                        <span style={{ fontWeight: 700, color: '#1f1f1f' }}>{s.name}</span>
+                    <tr key={s._id} className="hover:bg-slate-50/50 transition-colors cursor-pointer" onClick={() => openLedger(s)}>
+                      <td className="px-6 py-4.5">
+                        <span className="font-black text-slate-800 text-xs">{s.name}</span>
                       </td>
-                      <td style={{ padding: '0.75rem 1rem', color: '#7b6f69' }}>{s.phone || s.email || '—'}</td>
-                      <td style={{ padding: '0.75rem 1rem', fontWeight: 600, color: '#1f1f1f' }}>LKR {(s.totalPurchased || 0).toLocaleString()}</td>
-                      <td style={{ padding: '0.75rem 1rem', fontWeight: 600, color: '#059669' }}>LKR {(s.totalPaid || 0).toLocaleString()}</td>
-                      <td style={{ padding: '0.75rem 1rem' }}>
-                        <span style={{ padding: '3px 10px', borderRadius: '8px', fontWeight: 700, fontSize: '0.82rem', background: s.balanceDue > 0 ? '#fef2f2' : '#d1fae5', color: s.balanceDue > 0 ? '#dc2626' : '#059669' }}>
-                          LKR {(s.balanceDue || 0).toLocaleString()}
+                      <td className="px-6 py-4.5 text-slate-450 font-bold">{s.phone || s.email || '—'}</td>
+                      <td className="px-6 py-4.5 font-black text-slate-850">Rs. {(s.totalPurchased || 0).toLocaleString()}</td>
+                      <td className="px-6 py-4.5 font-black text-teal-700">Rs. {(s.totalPaid || 0).toLocaleString()}</td>
+                      <td className="px-6 py-4.5">
+                        <span className={`text-[10px] font-black tracking-wider px-2.5 py-1 rounded-md border ${
+                          s.balanceDue > 0 ? 'bg-rose-50 text-rose-700 border-rose-100/60' : 'bg-teal-50 text-teal-700 border-teal-100/60'
+                        }`}>
+                          Rs. {(s.balanceDue || 0).toLocaleString()}
                         </span>
                       </td>
-                      <td style={{ padding: '0.75rem 1rem' }}>
+                      <td className="px-6 py-4.5">
                         <button onClick={(e) => { e.stopPropagation(); setSupplierToPay(s); setShowPayModal(true); }}
-                          style={{ padding: '0.35rem 0.75rem', borderRadius: '8px', border: 'none', background: '#fdf2f8', color: '#d946a0', fontWeight: 600, fontSize: '0.78rem', cursor: 'pointer' }}>
+                          className="bg-brand-indigo/10 text-brand-indigo hover:bg-brand-indigo hover:text-white px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer">
                           Pay
                         </button>
                       </td>
@@ -499,71 +516,77 @@ const ManagerSupplierPayments = () => {
 
         {/* Payment Modal for Summary View */}
         {showPayModal && (
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
-            <div style={{ background: 'white', borderRadius: '20px', width: '100%', maxWidth: '420px', padding: '1.5rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>Record Payment</h3>
-                <button onClick={() => { setShowPayModal(false); setSupplierToPay(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#7b6f69' }}><X size={20} /></button>
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => { setShowPayModal(false); setSupplierToPay(null); }}>
+            <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-fade-in" onClick={(e) => e.stopPropagation()}>
+              <div className="px-6 py-4 border-b border-slate-205 flex items-center justify-between">
+                <h3 className="text-lg font-bold text-dark-navy flex items-center gap-2"><CreditCard size={20} className="text-brand-indigo" /> Record Payment</h3>
+                <button onClick={() => { setShowPayModal(false); setSupplierToPay(null); }} className="p-1.5 rounded-lg hover:bg-gray-100 cursor-pointer"><X size={20} /></button>
               </div>
-              <p style={{ margin: '0 0 1rem', fontSize: '0.85rem', color: '#7b6f69' }}>
-                Payment to <strong>{(supplierToPay || selectedSupplier)?.name}</strong> · Balance: <strong style={{ color: '#dc2626' }}>LKR {((supplierToPay || ledger)?.balanceDue || 0).toLocaleString()}</strong>
-              </p>
-              <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#7b6f69', marginBottom: '0.35rem', textTransform: 'uppercase' }}>Amount (LKR)</label>
-                <input type="number" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} placeholder="0.00"
-                  style={{ width: '100%', padding: '0.7rem 1rem', borderRadius: '10px', border: '1px solid #eaded6', fontSize: '1.1rem', fontWeight: 700, outline: 'none', boxSizing: 'border-box' }} />
-              </div>
-              <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#7b6f69', marginBottom: '0.35rem', textTransform: 'uppercase' }}>Payment Method</label>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  {['cash', 'bank_transfer', 'cheque'].map((m) => (
-                    <button key={m} onClick={() => setPayMethod(m)}
-                      style={{ flex: 1, padding: '0.5rem', borderRadius: '8px', border: `1px solid ${payMethod === m ? '#d946a0' : '#eaded6'}`, background: payMethod === m ? '#fdf2f8' : 'white', color: payMethod === m ? '#d946a0' : '#7b6f69', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize' }}>
-                      {m.replace('_', ' ')}
-                    </button>
-                  ))}
+              <div className="p-6 space-y-4">
+                <p className="text-xs text-slate-400 font-semibold m-0">
+                  Payment to <strong>{(supplierToPay || selectedSupplier)?.name}</strong> · Balance Due: <strong className="text-rose-500">Rs. {((supplierToPay || ledger)?.balanceDue || 0).toLocaleString()}</strong>
+                </p>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1">Amount (Rs.) *</label>
+                  <input type="number" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} placeholder="0.00"
+                    className="w-full border border-slate-200 rounded-xl py-2.5 px-4 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all" />
                 </div>
-              </div>
-              
-              {payMethod === 'cheque' && (
-                <div style={{ background: '#fdf2f8', padding: '1rem', borderRadius: '12px', marginBottom: '1rem', border: '1px solid #fbcfe8' }}>
-                  <h4 style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: '#d946a0' }}>Cheque Details</h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 600, color: '#7b6f69', marginBottom: '0.25rem', textTransform: 'uppercase' }}>Cheque No. *</label>
-                      <input type="text" value={chequeDetails.chequeNumber} onChange={(e) => setChequeDetails({...chequeDetails, chequeNumber: e.target.value})} placeholder="0000123"
-                        style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1px solid #eaded6', fontSize: '0.85rem', outline: 'none' }} />
-                    </div>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 600, color: '#7b6f69', marginBottom: '0.25rem', textTransform: 'uppercase' }}>Bank Name *</label>
-                      <input type="text" value={chequeDetails.bankName} onChange={(e) => setChequeDetails({...chequeDetails, bankName: e.target.value})} placeholder="BOC"
-                        style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1px solid #eaded6', fontSize: '0.85rem', outline: 'none' }} />
-                    </div>
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 600, color: '#7b6f69', marginBottom: '0.25rem', textTransform: 'uppercase' }}>Cheque Date *</label>
-                      <input type="date" value={chequeDetails.chequeDate} onChange={(e) => setChequeDetails({...chequeDetails, chequeDate: e.target.value})}
-                        style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1px solid #eaded6', fontSize: '0.85rem', outline: 'none' }} />
-                    </div>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 600, color: '#7b6f69', marginBottom: '0.25rem', textTransform: 'uppercase' }}>Account No.</label>
-                      <input type="text" value={chequeDetails.accountNumber} onChange={(e) => setChequeDetails({...chequeDetails, accountNumber: e.target.value})} placeholder="Optional"
-                        style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1px solid #eaded6', fontSize: '0.85rem', outline: 'none' }} />
-                    </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1">Payment Method</label>
+                  <div className="flex gap-2">
+                    {['cash', 'bank_transfer', 'cheque'].map((m) => (
+                      <button key={m} onClick={() => setPayMethod(m)}
+                        className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-wider border cursor-pointer transition-all ${
+                          payMethod === m ? 'bg-brand-indigo border-brand-indigo text-white' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-55'
+                        }`}>
+                        {m.replace('_', ' ')}
+                      </button>
+                    ))}
                   </div>
                 </div>
-              )}
+                
+                {payMethod === 'cheque' && (
+                  <div className="bg-slate-50 border border-slate-200/60 p-4 rounded-xl space-y-3">
+                    <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider m-0">Cheque Details</h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Cheque No. *</label>
+                        <input type="text" value={chequeDetails.chequeNumber} onChange={(e) => setChequeDetails({...chequeDetails, chequeNumber: e.target.value})} placeholder="0000123"
+                          className="w-full border border-slate-200 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Bank Name *</label>
+                        <input type="text" value={chequeDetails.bankName} onChange={(e) => setChequeDetails({...chequeDetails, bankName: e.target.value})} placeholder="BOC"
+                          className="w-full border border-slate-200 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Cheque Date *</label>
+                        <input type="date" value={chequeDetails.chequeDate} onChange={(e) => setChequeDetails({...chequeDetails, chequeDate: e.target.value})}
+                          className="w-full border border-slate-200 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Account No.</label>
+                        <input type="text" value={chequeDetails.accountNumber} onChange={(e) => setChequeDetails({...chequeDetails, accountNumber: e.target.value})} placeholder="Optional"
+                          className="w-full border border-slate-200 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all" />
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-              <div style={{ marginBottom: '1.25rem' }}>
-                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#7b6f69', marginBottom: '0.35rem', textTransform: 'uppercase' }}>Note (optional)</label>
-                <input type="text" value={payDescription} onChange={(e) => setPayDescription(e.target.value)} placeholder="Payment reference..."
-                  style={{ width: '100%', padding: '0.6rem 1rem', borderRadius: '10px', border: '1px solid #eaded6', fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' }} />
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1">Note (optional)</label>
+                  <input type="text" value={payDescription} onChange={(e) => setPayDescription(e.target.value)} placeholder="Payment reference..."
+                    className="w-full border border-slate-200 rounded-xl py-2.5 px-4 text-xs focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all" />
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <button onClick={handlePayment} disabled={paying} className="flex-1 bg-brand-indigo hover:bg-brand-violet text-white py-3 rounded-xl font-bold transition-all shadow-md disabled:opacity-50 cursor-pointer text-xs uppercase tracking-wider">
+                    {paying ? 'Processing...' : 'Record Payment'}
+                  </button>
+                  <button onClick={() => { setShowPayModal(false); setSupplierToPay(null); }} className="flex-1 border border-slate-200 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-50 transition-all cursor-pointer text-xs uppercase tracking-wider">Cancel</button>
+                </div>
               </div>
-              <button onClick={handlePayment} disabled={paying}
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: 'none', background: 'linear-gradient(135deg, #d946a0, #c026d3)', color: 'white', fontSize: '0.95rem', fontWeight: 700, cursor: 'pointer', opacity: paying ? 0.7 : 1 }}>
-                {paying ? 'Processing...' : `Pay LKR ${Number(payAmount || 0).toLocaleString()}`}
-              </button>
             </div>
           </div>
         )}

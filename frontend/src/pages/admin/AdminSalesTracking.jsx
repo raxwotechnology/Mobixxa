@@ -129,44 +129,50 @@ const AdminSalesTracking = () => {
   const detailedItems = getDetailedItemsList();
 
   return (
-    <DashboardLayout navItems={navItems} title="Admin Panel">
-      <div>
+    <DashboardLayout navItems={navItems} title="Sales Tracking">
+      <div className="space-y-6">
         {/* Header Controls */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-brand-indigo/10 to-brand-fuchsia/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
           <div>
-            <h1 style={{ margin: '0 0 0.25rem', fontSize: '1.5rem', fontWeight: 800, color: '#1f1f1f' }}>📊 Cashier Sales Tracking</h1>
-            <p style={{ margin: 0, color: '#7b6f69', fontSize: '0.85rem' }}>Cashier POS performance monitoring and detailed summaries</p>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2 m-0">
+              <div className="w-8 h-8 rounded-xl bg-brand-fuchsia/10 flex items-center justify-center text-brand-fuchsia">
+                <span className="text-lg">📊</span>
+              </div>
+              Cashier Sales Tracking
+            </h1>
+            <p className="text-sm font-bold text-slate-500 mt-1 m-0">Cashier POS performance monitoring and detailed summaries</p>
           </div>
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="flex flex-wrap gap-2.5 items-center z-10">
             <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)}
-              style={{ padding: '0.5rem', borderRadius: '8px', border: '1px solid #eaded6', fontSize: '0.82rem' }} />
-            <span style={{ color: '#7b6f69' }}>to</span>
+              className="bg-white border border-slate-200 rounded-xl py-2 px-3.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-indigo/15 text-slate-700 font-bold" />
+            <span className="text-slate-400 text-xs font-bold">to</span>
             <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)}
-              style={{ padding: '0.5rem', borderRadius: '8px', border: '1px solid #eaded6', fontSize: '0.82rem' }} />
+              className="bg-white border border-slate-200 rounded-xl py-2 px-3.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-indigo/15 text-slate-700 font-bold" />
             
-            <button onClick={exportPDFReport} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1rem', borderRadius: '10px', border: '1px solid #dc2626', background: '#dc2626', color: 'white', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>
-              <FileText size={16} /> PDF
+            <button onClick={exportPDFReport} className="bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-black uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all flex items-center gap-1.5 shadow-md shadow-rose-600/10 cursor-pointer">
+              <FileText size={13} /> PDF
             </button>
           </div>
         </div>
 
         {/* Summary Cards */}
         {data?.totals && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { label: 'Total POS Sales', value: `Rs. ${data.totals.totalSales.toLocaleString()}`, icon: DollarSign, color: '#d946a0', bg: '#fdf2f8' },
-              { label: 'Transactions', value: data.totals.totalTransactions, icon: ShoppingCart, color: '#7c3aed', bg: '#f5f3ff' },
-              { label: 'Items Sold', value: data.totals.totalItems, icon: BarChart3, color: '#059669', bg: '#d1fae5' },
-              { label: 'Cashiers Logged', value: data.cashiers?.length || 0, icon: Users, color: '#ea580c', bg: '#fff7ed' },
+              { label: 'Total POS Sales', value: `Rs. ${data.totals.totalSales.toLocaleString()}`, icon: DollarSign, color: 'text-brand-fuchsia', bg: 'bg-teal-50 border border-teal-100/60' },
+              { label: 'Transactions', value: data.totals.totalTransactions, icon: ShoppingCart, color: 'text-brand-indigo', bg: 'bg-slate-50 border border-slate-200/60' },
+              { label: 'Items Sold', value: data.totals.totalItems, icon: BarChart3, color: 'text-brand-fuchsia', bg: 'bg-teal-50 border border-teal-100/60' },
+              { label: 'Cashiers Logged', value: data.cashiers?.length || 0, icon: Users, color: 'text-brand-indigo', bg: 'bg-slate-50 border border-slate-200/60' },
             ].map((c, i) => (
-              <div key={i} style={{ background: 'white', borderRadius: '16px', padding: '1.25rem', border: '1px solid #eaded6' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                  <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: c.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <c.icon size={18} style={{ color: c.color }} />
+              <div key={i} className="glass-card rounded-2xl p-5 flex flex-col justify-between group relative overflow-hidden">
+                <div className="flex items-center gap-3 mb-3 relative">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${c.bg} ${c.color}`}>
+                    <c.icon size={18} strokeWidth={2.5} />
                   </div>
-                  <span style={{ fontSize: '0.72rem', color: '#7b6f69', textTransform: 'uppercase', fontWeight: 600 }}>{c.label}</span>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">{c.label}</span>
                 </div>
-                <p style={{ margin: 0, fontSize: '1.3rem', fontWeight: 800, color: '#1f1f1f' }}>{c.value}</p>
+                <p className="text-xl font-black text-slate-900 m-0">{c.value}</p>
               </div>
             ))}
           </div>
@@ -174,18 +180,19 @@ const AdminSalesTracking = () => {
 
         {/* Visual Bar Chart */}
         {data?.cashiers?.length > 0 && (
-          <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #eaded6', padding: '1.25rem', marginBottom: '1.5rem' }}>
-            <h3 style={{ margin: '0 0 1rem', fontSize: '0.95rem', fontWeight: 700, color: '#1f1f1f' }}>Cashier Performance Comparison</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <div className="glass-card rounded-2xl p-6">
+            <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider mb-6 m-0">Cashier Performance Comparison</h3>
+            <div className="flex flex-col gap-4">
               {data.cashiers.map((c, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <span style={{ minWidth: '120px', fontSize: '0.82rem', fontWeight: 600, color: '#1f1f1f', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.cashier.name}</span>
-                  <div style={{ flex: 1, height: '28px', background: '#f5f0ec', borderRadius: '8px', overflow: 'hidden', position: 'relative' }}>
-                    <div style={{ height: '100%', width: `${maxSales > 0 ? (c.totalSales / maxSales * 100) : 0}%`, background: `linear-gradient(90deg, #d946a0, #c026d3)`, borderRadius: '8px', transition: 'width 0.5s ease', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '8px' }}>
-                      {c.totalSales / maxSales > 0.3 && <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'white' }}>Rs. {c.totalSales.toLocaleString()}</span>}
+                <div key={i} className="flex items-center gap-4">
+                  <span className="min-w-[120px] text-xs font-bold text-slate-800 truncate">{c.cashier.name}</span>
+                  <div className="flex-1 h-6 bg-slate-100 rounded-lg overflow-hidden relative border border-slate-200/50">
+                    <div className="h-full bg-gradient-to-r from-brand-indigo to-brand-fuchsia rounded-lg transition-all duration-500 flex items-center justify-end pr-3"
+                      style={{ width: `${maxSales > 0 ? (c.totalSales / maxSales * 100) : 0}%` }}>
+                      {c.totalSales / maxSales > 0.3 && <span className="text-[10px] font-black text-white">Rs. {c.totalSales.toLocaleString()}</span>}
                     </div>
                   </div>
-                  {c.totalSales / maxSales <= 0.3 && <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#d946a0' }}>Rs. {c.totalSales.toLocaleString()}</span>}
+                  {c.totalSales / maxSales <= 0.3 && <span className="text-xs font-black text-brand-fuchsia">Rs. {c.totalSales.toLocaleString()}</span>}
                 </div>
               ))}
             </div>
@@ -193,56 +200,44 @@ const AdminSalesTracking = () => {
         )}
 
         {/* Detail Table */}
-        <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #eaded6', overflow: 'hidden' }}>
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
           {loading ? (
-            <div style={{ padding: '3rem', textAlign: 'center', color: '#7b6f69' }}>Loading...</div>
+            <div className="p-12 text-center text-slate-400 font-bold text-xs uppercase tracking-wider">Loading...</div>
           ) : !data?.cashiers?.length ? (
-            <div style={{ padding: '3rem', textAlign: 'center', color: '#7b6f69' }}>No POS sales data for this period</div>
+            <div className="p-12 text-center text-slate-400 font-bold text-xs uppercase tracking-wider">No POS sales data for this period</div>
           ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
-                <thead>
-                  <tr style={{ background: '#fdf2f8', borderBottom: '1px solid #eaded6' }}>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-slate-50 border-b border-slate-200/80">
+                  <tr>
                     {['#', 'Cashier', 'Total Sales', 'Transactions', 'Items', 'Avg Trans.', 'Cash', 'Card', 'Last Sale', 'Actions'].map((h) => (
-                      <th key={h} style={{ padding: '0.75rem 0.8rem', textAlign: 'left', fontWeight: 700, color: '#7b6f69', fontSize: '0.72rem', textTransform: 'uppercase' }}>{h}</th>
+                      <th key={h} className="px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">{h}</th>
                     ))}
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-slate-100">
                   {data.cashiers.map((c, i) => (
-                    <tr key={i} style={{ borderBottom: '1px solid #f5f0ec' }}>
-                      <td style={{ padding: '0.7rem 0.8rem', color: '#7b6f69', fontWeight: 700 }}>{i + 1}</td>
-                      <td style={{ padding: '0.7rem 0.8rem' }}>
+                    <tr key={i} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-6 py-4 font-bold text-slate-400">{i + 1}</td>
+                      <td className="px-6 py-4">
                         <div>
-                          <p style={{ margin: 0, fontWeight: 700, color: '#1f1f1f' }}>{c.cashier.name}</p>
-                          <p style={{ margin: 0, fontSize: '0.72rem', color: '#7b6f69' }}>{c.cashier.email}</p>
+                          <p className="font-extrabold text-slate-900 m-0 leading-tight">{c.cashier.name}</p>
+                          <p className="text-[10px] font-bold text-slate-400 m-0 mt-1">{c.cashier.email}</p>
                         </div>
                       </td>
-                      <td style={{ padding: '0.7rem 0.8rem', fontWeight: 700, color: '#d946a0' }}>Rs. {c.totalSales.toLocaleString()}</td>
-                      <td style={{ padding: '0.7rem 0.8rem', color: '#1f1f1f' }}>{c.transactionCount}</td>
-                      <td style={{ padding: '0.7rem 0.8rem', color: '#1f1f1f' }}>{c.totalItems}</td>
-                      <td style={{ padding: '0.7rem 0.8rem', color: '#7b6f69' }}>Rs. {c.avgTransaction.toLocaleString()}</td>
-                      <td style={{ padding: '0.7rem 0.8rem', color: '#059669' }}>Rs. {c.cashSales.toLocaleString()}</td>
-                      <td style={{ padding: '0.7rem 0.8rem', color: '#7c3aed' }}>Rs. {c.cardSales.toLocaleString()}</td>
-                      <td style={{ padding: '0.7rem 0.8rem', fontSize: '0.78rem', color: '#7b6f69' }}>{c.lastSale ? new Date(c.lastSale).toLocaleDateString() : '—'}</td>
+                      <td className="px-6 py-4 font-black text-brand-fuchsia">Rs. {c.totalSales.toLocaleString()}</td>
+                      <td className="px-6 py-4 text-slate-700 font-bold">{c.transactionCount}</td>
+                      <td className="px-6 py-4 text-slate-700 font-bold">{c.totalItems}</td>
+                      <td className="px-6 py-4 text-slate-500 font-bold">Rs. {c.avgTransaction.toLocaleString()}</td>
+                      <td className="px-6 py-4 text-emerald-600 font-bold">Rs. {c.cashSales.toLocaleString()}</td>
+                      <td className="px-6 py-4 text-brand-indigo font-bold">Rs. {c.cardSales.toLocaleString()}</td>
+                      <td className="px-6 py-4 text-slate-500 font-bold text-xs">{c.lastSale ? new Date(c.lastSale).toLocaleDateString() : '—'}</td>
                       
                       {/* View Summary button */}
-                      <td style={{ padding: '0.7rem 0.8rem' }}>
+                      <td className="px-6 py-4">
                         <button
                           onClick={() => handleOpenSummary(c)}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.3rem',
-                            padding: '0.4rem 0.8rem',
-                            borderRadius: '8px',
-                            border: '1px solid #3b82f6',
-                            background: '#eff6ff',
-                            color: '#1d4ed8',
-                            fontSize: '0.75rem',
-                            fontWeight: 600,
-                            cursor: 'pointer'
-                          }}
+                          className="flex items-center gap-1.5 bg-brand-indigo/10 text-brand-indigo hover:bg-brand-indigo/15 text-[10px] font-black uppercase tracking-wider px-3.5 py-2 rounded-xl transition-all cursor-pointer shadow-xs"
                         >
                           <Eye size={12} /> Summary
                         </button>

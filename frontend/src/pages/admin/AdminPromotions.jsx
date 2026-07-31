@@ -92,7 +92,7 @@ const AdminPromotions = () => {
 
   if (loading) {
     return (
-      <DashboardLayout navItems={navItems} title="Admin Panel">
+      <DashboardLayout navItems={navItems} title="Promotions">
         <div className="flex items-center justify-center h-64">
           <div className="w-10 h-10 border-4 border-primary-blue border-t-transparent rounded-full animate-spin" />
         </div>
@@ -104,7 +104,7 @@ const AdminPromotions = () => {
   const expiredCount = promotions.filter(p => isExpired(p.endDate)).length;
 
   return (
-    <DashboardLayout navItems={navItems} title="Admin Panel">
+    <DashboardLayout navItems={navItems} title="Promotions">
       <div>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
           <div>

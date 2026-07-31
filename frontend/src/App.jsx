@@ -17,6 +17,11 @@ import Checkout from './pages/Checkout';
 import OrderConfirmation from './pages/OrderConfirmation';
 import OrdersPage from './pages/OrdersPage';
 import Profile from './pages/customer/Profile';
+import LegalPrivacy from './pages/LegalPrivacy';
+import HelpCenter from './pages/HelpCenter';
+import ShippingInfo from './pages/ShippingInfo';
+import ReturnsPolicy from './pages/ReturnsPolicy';
+
 import CustomerLoyalty from './pages/customer/CustomerLoyalty';
 import StoreOverview from './pages/storeOwner/StoreOverview';
 import StoreProducts from './pages/storeOwner/StoreProducts';
@@ -85,29 +90,30 @@ import EmployeeRepairs from './pages/employee/EmployeeRepairs';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import useSettingsStore from './store/settingsStore';
+import useAuthStore from './store/authStore';
 
 const AppLayout = ({ children }) => {
   const location = useLocation();
   const fetchSettings = useSettingsStore((s) => s.fetchSettings);
   const settings = useSettingsStore((s) => s.settings);
+  const { user } = useAuthStore();
 
   useEffect(() => {
     fetchSettings();
   }, [fetchSettings]);
 
   useEffect(() => {
-    if (settings?.logoUrl) {
-      let link = document.querySelector("link[rel~='icon']");
-      if (!link) {
-        link = document.createElement('link');
-        link.rel = 'icon';
-        document.getElementsByTagName('head')[0].appendChild(link);
-      }
-      link.href = settings.logoUrl;
+    let link = document.querySelector("link[rel~='icon']");
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.getElementsByTagName('head')[0].appendChild(link);
     }
-  }, [settings]);
+    link.href = '/favicon.png';
+  }, []);
 
   const path = location.pathname;
+  const isStaff = user && ['admin', 'manager', 'cashier', 'deliveryGuy', 'stockEmployee'].includes(user.role);
 
   // Pages that should have NO shared Navbar/Footer
   const isNoLayout =
@@ -121,9 +127,9 @@ const AppLayout = ({ children }) => {
 
   if (isNoLayout) return <>{children}</>;
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen w-full bg-slate-50">
       <Navbar />
-      <main className="flex-grow">{children}</main>
+      <main className="flex-1 w-full flex flex-col">{children}</main>
       <Footer />
     </div>
   );
@@ -144,6 +150,11 @@ function App() {
           <Route path="/stores" element={<StoreList />} />
           <Route path="/store/:id" element={<StoreDetail />} />
           <Route path="/deals" element={<Deals />} />
+          <Route path="/categories" element={<Shop />} />
+          <Route path="/privacy-policy" element={<LegalPrivacy />} />
+          <Route path="/help-center" element={<HelpCenter />} />
+          <Route path="/shipping-info" element={<ShippingInfo />} />
+          <Route path="/returns-policy" element={<ReturnsPolicy />} />
 
           {/* Customer */}
           <Route path="/cart" element={<ProtectedRoute><CartPage /></ProtectedRoute>} />

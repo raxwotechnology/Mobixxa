@@ -251,9 +251,8 @@ const ManagerLeaves = ({ navItems = managerNavGroups, title = 'Manager Dashboard
               <button
                 key={s}
                 onClick={() => setFilter(s)}
-                className={`px-4 py-2 text-sm font-medium rounded-xl transition-colors ${
-                  filter === s ? 'bg-primary-blue text-white' : 'bg-gray-100 text-muted-text hover:bg-gray-200'
-                }`}
+                className={`px-4 py-2 text-sm font-medium rounded-xl transition-colors ${filter === s ? 'bg-primary-blue text-white' : 'bg-gray-100 text-muted-text hover:bg-gray-200'
+                  }`}
               >
                 {s.charAt(0).toUpperCase() + s.slice(1)} ({s === 'all' ? leaves.length : leaves.filter(l => l.status === s).length})
               </button>
@@ -345,7 +344,7 @@ const ManagerLeaves = ({ navItems = managerNavGroups, title = 'Manager Dashboard
             <div className="p-5 space-y-4">
               <div>
                 <label className="text-xs text-muted-text block mb-1">Employee *</label>
-                <select value={leaveForm.employeeId} onChange={(e) => setLeaveForm({...leaveForm, employeeId: e.target.value})}
+                <select value={leaveForm.employeeId} onChange={(e) => setLeaveForm({ ...leaveForm, employeeId: e.target.value })}
                   className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm bg-white">
                   <option value="">Select employee</option>
                   {employees.map(e => <option key={e._id} value={e._id}>{e.name} ({e.role})</option>)}
@@ -354,7 +353,7 @@ const ManagerLeaves = ({ navItems = managerNavGroups, title = 'Manager Dashboard
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-muted-text block mb-1">Leave Type</label>
-                  <select value={leaveForm.type} onChange={(e) => setLeaveForm({...leaveForm, type: e.target.value})}
+                  <select value={leaveForm.type} onChange={(e) => setLeaveForm({ ...leaveForm, type: e.target.value })}
                     className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm bg-white">
                     <option value="casual">Casual</option>
                     <option value="sick">Sick</option>
@@ -364,7 +363,7 @@ const ManagerLeaves = ({ navItems = managerNavGroups, title = 'Manager Dashboard
                 </div>
                 <div>
                   <label className="text-xs text-muted-text block mb-1">Status</label>
-                  <select value={leaveForm.status} onChange={(e) => setLeaveForm({...leaveForm, status: e.target.value})}
+                  <select value={leaveForm.status} onChange={(e) => setLeaveForm({ ...leaveForm, status: e.target.value })}
                     className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm bg-white">
                     <option value="approved">Approved</option>
                     <option value="pending">Pending</option>
@@ -374,18 +373,18 @@ const ManagerLeaves = ({ navItems = managerNavGroups, title = 'Manager Dashboard
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-muted-text block mb-1">Start Date *</label>
-                  <input type="date" value={leaveForm.startDate} onChange={(e) => setLeaveForm({...leaveForm, startDate: e.target.value})}
+                  <input type="date" value={leaveForm.startDate} onChange={(e) => setLeaveForm({ ...leaveForm, startDate: e.target.value })}
                     className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm" />
                 </div>
                 <div>
                   <label className="text-xs text-muted-text block mb-1">End Date *</label>
-                  <input type="date" value={leaveForm.endDate} onChange={(e) => setLeaveForm({...leaveForm, endDate: e.target.value})}
+                  <input type="date" value={leaveForm.endDate} onChange={(e) => setLeaveForm({ ...leaveForm, endDate: e.target.value })}
                     className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm" />
                 </div>
               </div>
               <div>
                 <label className="text-xs text-muted-text block mb-1">Reason</label>
-                <input value={leaveForm.reason} onChange={(e) => setLeaveForm({...leaveForm, reason: e.target.value})}
+                <input value={leaveForm.reason} onChange={(e) => setLeaveForm({ ...leaveForm, reason: e.target.value })}
                   className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm" placeholder="Reason for leave" />
               </div>
               <button onClick={handleAddLeave} className="w-full py-2.5 bg-amber-500 text-white rounded-xl font-semibold">

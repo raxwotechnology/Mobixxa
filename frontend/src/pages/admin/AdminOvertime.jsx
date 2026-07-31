@@ -151,7 +151,7 @@ const AdminOvertime = () => {
 
   if (loading) {
     return (
-      <DashboardLayout navItems={navItems} title="Admin Panel">
+      <DashboardLayout navItems={navItems} title="Overtime">
         <div className="flex items-center justify-center h-64">
           <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
         </div>
@@ -160,7 +160,7 @@ const AdminOvertime = () => {
   }
 
   return (
-    <DashboardLayout navItems={navItems} title="Admin Panel">
+    <DashboardLayout navItems={navItems} title="Overtime">
       <div>
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">

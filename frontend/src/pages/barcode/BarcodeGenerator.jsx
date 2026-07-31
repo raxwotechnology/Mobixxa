@@ -388,38 +388,44 @@ const BarcodeGenerator = () => {
 
   return (
     <DashboardLayout navItems={getNavItems()} title={dashTitle}>
-      <div className="no-print">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-dark-navy flex items-center gap-2">
-            <Barcode size={24} /> Barcode Generator
-          </h1>
-          <p className="text-muted-text text-sm mt-1">Generate print-ready barcode labels for products</p>
+      <div className="no-print animate-fade-in space-y-6">
+        {/* Header Block */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-indigo/5 rounded-full blur-3xl pointer-events-none -z-10"></div>
+          <div>
+            <div className="flex items-center gap-3 mb-1">
+              <div className="w-10 h-10 rounded-2xl bg-brand-indigo/10 flex items-center justify-center text-brand-indigo">
+                <Barcode size={20} strokeWidth={2.5} />
+              </div>
+              <h1 className="text-2xl font-black text-slate-900 m-0">Barcode Generator</h1>
+            </div>
+            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mt-2 m-0">Generate print-ready barcode labels for products</p>
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-6">
           {/* Left — Product Selection */}
           <div className="space-y-4">
-            <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm">
-              <h2 className="font-semibold text-dark-navy mb-3 flex items-center gap-2">
-                <Package size={18} /> Select Product
+            <div className="glass-card rounded-[2rem] p-6">
+              <h2 className="text-sm font-black text-slate-800 mb-4 uppercase tracking-wider flex items-center gap-2">
+                <Package size={16} /> Select Product
               </h2>
-              <div className="relative mb-3">
-                <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <div className="relative mb-4">
+                <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder="Search by name, SKU, or barcode..."
-                  className="w-full border border-card-border rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full bg-white border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all"
                 />
               </div>
 
-              <div className="max-h-72 overflow-y-auto space-y-2">
+              <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
                 {loading ? (
-                  <div className="text-center py-6 text-muted-text text-sm">Loading products...</div>
+                  <div className="text-center py-8 text-slate-400 font-bold text-xs uppercase tracking-wider">Loading products...</div>
                 ) : filteredProducts.length === 0 ? (
-                  <div className="text-center py-6 text-muted-text text-sm">No products found</div>
+                  <div className="text-center py-8 text-slate-400 font-bold text-xs uppercase tracking-wider">No products found</div>
                 ) : (
                   filteredProducts.slice(0, 30).map(product => (
                     <div
@@ -427,20 +433,20 @@ const BarcodeGenerator = () => {
                       onClick={() => { setSelectedProduct(product); setGenerated(false); }}
                       className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${
                         selectedProduct?._id === product._id
-                          ? 'border-blue-300 bg-blue-50 shadow-sm'
-                          : 'border-transparent hover:bg-gray-50'
+                          ? 'border-brand-indigo/30 bg-brand-indigo/5 shadow-xs'
+                          : 'border-transparent hover:bg-slate-50'
                       }`}
                     >
-                      <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+                      <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center overflow-hidden flex-shrink-0">
                         {product.images?.[0] ? (
                           <img src={product.images[0]} alt="" className="w-full h-full object-cover" />
                         ) : (
-                          <Package size={18} className="text-gray-400" />
+                          <Package size={16} className="text-slate-400" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-dark-navy truncate">{product.name}</p>
-                        <p className="text-xs text-muted-text">
+                        <p className="text-xs font-bold text-slate-800 truncate m-0">{product.name}</p>
+                        <p className="text-[10px] text-slate-450 font-semibold m-0 mt-0.5">
                           SKU: {product.sku || 'N/A'} • Rs. {product.price?.toFixed(2)}
                         </p>
                       </div>
@@ -454,43 +460,43 @@ const BarcodeGenerator = () => {
           {/* Right — Settings & Preview */}
           <div className="space-y-4">
             {/* Label Settings */}
-            <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm">
-              <h2 className="font-semibold text-dark-navy mb-3 flex items-center gap-2">
-                <Store size={18} /> Label Settings
+            <div className="glass-card rounded-[2rem] p-6">
+              <h2 className="text-sm font-black text-slate-800 mb-4 uppercase tracking-wider flex items-center gap-2">
+                <Store size={16} /> Label Settings
               </h2>
 
               {selectedProduct ? (
                 <div className="space-y-4">
                   {/* Product Info */}
-                  <div className="bg-blue-50 rounded-xl p-4">
-                    <p className="font-semibold text-dark-navy">{selectedProduct.name}</p>
-                    <p className="text-sm text-muted-text mt-1">
+                  <div className="bg-brand-indigo/5 border border-brand-indigo/10 rounded-2xl p-4">
+                    <p className="font-bold text-slate-800 text-sm m-0">{selectedProduct.name}</p>
+                    <p className="text-xs text-slate-500 font-semibold m-0 mt-1">
                       SKU: {selectedProduct.sku || 'N/A'} • Price: Rs. {selectedProduct.price?.toFixed(2)}
                     </p>
-                    <p className="text-xs text-muted-text mt-1">
+                    <p className="text-[10px] text-slate-400 font-extrabold uppercase m-0 mt-1">
                       Barcode: {getBarcodeValue(selectedProduct)}
                     </p>
                   </div>
 
                   {/* Shop Name */}
                   <div>
-                    <label className="text-xs font-medium text-muted-text block mb-1">Shop Name on Label</label>
+                    <label className="text-xs font-semibold text-slate-500 block mb-1">Shop Name on Label</label>
                     <input
                       type="text"
                       value={shopName}
                       onChange={e => setShopName(e.target.value)}
-                      className="w-full border border-card-border rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      className="w-full border border-slate-200 rounded-xl py-2.5 px-3.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all bg-white"
                     />
                   </div>
 
                   {/* Printer Select Dropdown */}
                   <div>
                     <div className="flex justify-between items-center mb-1">
-                      <label className="text-xs font-medium text-muted-text block">Link Label Printer</label>
+                      <label className="text-xs font-semibold text-slate-500 block">Link Label Printer</label>
                       <button
                         type="button"
                         onClick={() => setShowPrinterModal(true)}
-                        className="text-xs font-bold text-blue-600 hover:text-indigo-700 transition-colors flex items-center gap-1"
+                        className="text-[10px] font-black uppercase tracking-wider text-brand-indigo hover:text-brand-violet transition-colors flex items-center gap-1 bg-transparent border-0 cursor-pointer p-0"
                       >
                         ⚙️ Link Printer
                       </button>
@@ -501,7 +507,7 @@ const BarcodeGenerator = () => {
                         const prt = printers.find(p => p._id === e.target.value);
                         setSelectedPrinter(prt);
                       }}
-                      className="w-full border border-card-border rounded-xl py-2.5 px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 font-semibold text-dark-navy"
+                      className="w-full border border-slate-200 rounded-xl py-2.5 px-3.5 text-xs font-semibold text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all cursor-pointer"
                     >
                       {printers.map(p => (
                         <option key={p._id} value={p._id}>
@@ -510,8 +516,8 @@ const BarcodeGenerator = () => {
                       ))}
                     </select>
                     {selectedPrinter && (
-                      <p className="text-[11px] text-emerald-600 font-medium mt-1 flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                      <p className="text-[10px] text-teal-600 font-extrabold uppercase mt-1.5 flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse"></span>
                         Linked to Printer: {selectedPrinter.name}
                       </p>
                     )}
@@ -519,38 +525,44 @@ const BarcodeGenerator = () => {
 
                   {/* Quantity */}
                   <div>
-                    <label className="text-xs font-medium text-muted-text block mb-1">Number of Labels</label>
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        className="w-9 h-9 rounded-lg border border-card-border flex items-center justify-center hover:bg-gray-50"
-                      >
-                        <Minus size={16} />
-                      </button>
-                      <input
-                        type="number"
-                        value={quantity}
-                        onChange={e => setQuantity(Math.max(1, Math.min(500, parseInt(e.target.value) || 1)))}
-                        className="w-20 text-center border border-card-border rounded-xl py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400"
-                      />
-                      <button
-                        onClick={() => setQuantity(Math.min(500, quantity + 1))}
-                        className="w-9 h-9 rounded-lg border border-card-border flex items-center justify-center hover:bg-gray-50"
-                      >
-                        <Plus size={16} />
-                      </button>
-                      {/* Quick presets */}
-                      {[12, 24, 48].map(n => (
+                    <label className="text-xs font-semibold text-slate-500 block mb-1.5">Number of Labels</label>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 p-1 rounded-xl">
                         <button
-                          key={n}
-                          onClick={() => setQuantity(n)}
-                          className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
-                            quantity === n ? 'bg-blue-600 text-white' : 'bg-gray-100 text-muted-text hover:bg-gray-200'
-                          }`}
+                          onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                          className="w-8 h-8 rounded-lg border border-slate-200 bg-white flex items-center justify-center hover:bg-slate-50 text-slate-500 cursor-pointer"
                         >
-                          {n}
+                          <Minus size={14} />
                         </button>
-                      ))}
+                        <input
+                          type="number"
+                          value={quantity}
+                          onChange={e => setQuantity(Math.max(1, Math.min(500, parseInt(e.target.value) || 1)))}
+                          className="w-16 text-center border-0 bg-transparent text-xs font-black text-slate-800 focus:outline-none"
+                        />
+                        <button
+                          onClick={() => setQuantity(Math.min(500, quantity + 1))}
+                          className="w-8 h-8 rounded-lg border border-slate-200 bg-white flex items-center justify-center hover:bg-slate-50 text-slate-500 cursor-pointer"
+                        >
+                          <Plus size={14} />
+                        </button>
+                      </div>
+                      {/* Quick presets */}
+                      <div className="flex gap-1.5 ml-2">
+                        {[12, 24, 48].map(n => (
+                          <button
+                            key={n}
+                            onClick={() => setQuantity(n)}
+                            className={`px-3 py-2 text-[10px] font-black uppercase tracking-wider rounded-lg transition-colors cursor-pointer border ${
+                              quantity === n
+                                ? 'bg-slate-900 border-slate-900 text-white shadow-xs'
+                                : 'bg-white border-slate-200 text-slate-550 hover:bg-slate-50'
+                            }`}
+                          >
+                            {n}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
 
@@ -558,16 +570,16 @@ const BarcodeGenerator = () => {
                   <button
                     onClick={handleGenerate}
                     disabled={generating}
-                    className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition-colors shadow-md disabled:opacity-50"
+                    className="w-full flex items-center justify-center gap-2 bg-brand-indigo hover:bg-brand-violet text-white font-black py-3.5 rounded-xl transition-all shadow-md text-[10px] uppercase tracking-wider disabled:opacity-50 cursor-pointer"
                   >
-                    <Barcode size={18} />
+                    <Barcode size={14} />
                     {generating ? 'Generating...' : `Generate ${quantity} Labels`}
                   </button>
                 </div>
               ) : (
-                <div className="text-center py-8 text-muted-text">
-                  <Package size={40} className="mx-auto mb-3 text-gray-300" />
-                  <p className="text-sm">Select a product from the left to get started</p>
+                <div className="text-center py-10 text-slate-400">
+                  <Package size={36} className="mx-auto mb-3 text-slate-300 animate-pulse" />
+                  <p className="text-xs font-black uppercase tracking-wider">Select a product to begin</p>
                 </div>
               )}
             </div>
@@ -575,34 +587,34 @@ const BarcodeGenerator = () => {
             {/* Single Label Preview & Assignments */}
             {selectedProduct && generated && (
               <div className="space-y-4">
-                <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm">
-                  <h2 className="font-semibold text-dark-navy mb-3">Label Preview ({selectedPrinter?.name})</h2>
+                <div className="glass-card rounded-[2rem] p-6">
+                  <h2 className="text-sm font-black text-slate-800 mb-4 uppercase tracking-wider">Label Preview ({selectedPrinter?.name})</h2>
                   <div 
-                    className="border border-gray-200 rounded-xl p-4 text-center bg-slate-50 transition-all flex flex-col justify-between items-center" 
+                    className="border border-slate-100 rounded-2xl p-4 text-center bg-slate-50 transition-all flex flex-col justify-between items-center shadow-xs" 
                     style={{ ...getPreviewDimensions(), margin: '0 auto' }}
                   >
-                    <p className="text-[9px] font-bold text-gray-700 mb-0.5">{shopName}</p>
-                    <p className="text-xs font-semibold text-dark-navy truncate w-full">{selectedProduct.name}</p>
-                    <p className="text-sm font-bold text-blue-600 my-0.5">Rs. {selectedProduct.price?.toFixed(2)}</p>
+                    <p className="text-[9px] font-black text-slate-400 mb-0.5 uppercase tracking-wider">{shopName}</p>
+                    <p className="text-xs font-black text-slate-800 truncate w-full m-0">{selectedProduct.name}</p>
+                    <p className="text-xs font-black text-brand-indigo my-0.5">Rs. {selectedProduct.price?.toFixed(2)}</p>
                     <svg className="barcode-svg mx-auto" style={{ maxWidth: '100%', height: '40px' }}></svg>
-                    <p className="text-[8px] text-gray-500 mt-0.5">SKU: {selectedProduct.sku || 'N/A'}</p>
+                    <p className="text-[8px] text-slate-450 mt-0.5 font-bold">SKU: {selectedProduct.sku || 'N/A'}</p>
                   </div>
 
                   <button
                     onClick={handlePrint}
-                    className="w-full mt-4 flex items-center justify-center gap-2 bg-dark-navy hover:bg-gray-800 text-white font-medium py-2.5 rounded-xl transition-colors shadow-sm"
+                    className="w-full mt-4 flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-black py-2.5 rounded-xl transition-all shadow-sm text-[10px] uppercase tracking-wider cursor-pointer"
                   >
-                    <Printer size={16} /> Print Active Layout ({quantity} Labels)
+                    <Printer size={13} /> Print Active Layout ({quantity} Labels)
                   </button>
                 </div>
 
                 {/* Printer Assignments & Routing */}
-                <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm space-y-4">
+                <div className="glass-card rounded-[2rem] p-6 space-y-4">
                   <div>
-                    <h3 className="font-bold text-dark-navy text-sm flex items-center gap-2">
-                      <Printer size={18} className="text-blue-600" /> Printer Assignment & Routing
+                    <h3 className="font-black text-slate-800 text-sm flex items-center gap-2 m-0 uppercase tracking-wider">
+                      <Printer size={16} className="text-brand-indigo" /> Printer Assignment & Routing
                     </h3>
-                    <p className="text-xs text-muted-text mt-1">
+                    <p className="text-xs text-slate-450 font-semibold mt-1 m-0">
                       Distribute and print the generated labels across your connected/linked printers:
                     </p>
                   </div>
@@ -611,15 +623,15 @@ const BarcodeGenerator = () => {
                     {printers.map(p => {
                       const assignedQty = printerAssignments[p._id] || 0;
                       return (
-                        <div key={p._id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl border border-card-border bg-slate-50 gap-3">
+                        <div key={p._id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-2xl border border-slate-100 bg-slate-50 gap-3">
                           <div className="min-w-0">
                             <div className="flex items-center gap-1.5">
-                              <span className="font-semibold text-sm text-dark-navy truncate">{p.name}</span>
+                              <span className="font-bold text-xs text-slate-800 truncate">{p.name}</span>
                               {p.isDefault && (
-                                <span className="text-[9px] bg-blue-100 text-blue-700 font-bold px-1.5 py-0.2 rounded uppercase">Default</span>
+                                <span className="text-[9px] bg-brand-indigo/10 text-brand-indigo font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider border border-brand-indigo/10">Default</span>
                               )}
                             </div>
-                            <p className="text-xs text-muted-text mt-0.5">
+                            <p className="text-[10px] text-slate-450 font-bold mt-0.5 m-0">
                               Connection: {p.connection} • Layout: {
                                 p.layout === '50x30' ? '50x30mm' :
                                 p.layout === '38x25' ? '38x25mm' :
@@ -632,7 +644,7 @@ const BarcodeGenerator = () => {
                             <div className="flex items-center gap-1">
                               <button
                                 onClick={() => handleUpdateAssignment(p._id, assignedQty - 1)}
-                                className="w-7 h-7 rounded bg-white border border-card-border flex items-center justify-center hover:bg-gray-100"
+                                className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-100 cursor-pointer text-slate-550"
                               >
                                 <Minus size={12} />
                               </button>
@@ -640,11 +652,11 @@ const BarcodeGenerator = () => {
                                 type="number"
                                 value={assignedQty}
                                 onChange={e => handleUpdateAssignment(p._id, e.target.value)}
-                                className="w-12 text-center border border-card-border rounded py-0.5 text-xs font-semibold bg-white"
+                                className="w-12 text-center border border-slate-200 rounded-lg py-0.5 text-xs font-black text-slate-800 bg-white"
                               />
                               <button
                                 onClick={() => handleUpdateAssignment(p._id, assignedQty + 1)}
-                                className="w-7 h-7 rounded bg-white border border-card-border flex items-center justify-center hover:bg-gray-100"
+                                className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-100 cursor-pointer text-slate-550"
                               >
                                 <Plus size={12} />
                               </button>
@@ -653,9 +665,9 @@ const BarcodeGenerator = () => {
                             <button
                               onClick={() => handlePrintForPrinter(p, assignedQty)}
                               disabled={assignedQty <= 0}
-                              className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-xs font-bold rounded-lg transition-colors shadow-sm"
+                              className="flex items-center gap-1 px-3 py-1.5 bg-brand-indigo hover:bg-brand-violet disabled:bg-slate-205 disabled:text-slate-400 disabled:cursor-not-allowed text-white text-[10px] font-black uppercase tracking-wider rounded-lg transition-colors shadow-sm cursor-pointer"
                             >
-                              <Printer size={12} /> Print ({assignedQty})
+                              <Printer size={11} /> Print ({assignedQty})
                             </button>
                           </div>
                         </div>
@@ -668,20 +680,20 @@ const BarcodeGenerator = () => {
                     const totalAssigned = Object.values(printerAssignments).reduce((a, b) => a + b, 0);
                     const diff = totalAssigned - quantity;
                     return (
-                      <div className="flex items-center justify-between text-xs pt-2 border-t border-card-border">
-                        <span className="font-medium text-muted-text">
-                          Total Assigned: <strong className={diff === 0 ? "text-emerald-600" : "text-amber-600"}>{totalAssigned}</strong> / {quantity} labels
+                      <div className="flex items-center justify-between text-[11px] pt-3.5 border-t border-slate-105 font-extrabold uppercase tracking-wider">
+                        <span className="text-slate-400">
+                          Total Assigned: <strong className={diff === 0 ? "text-teal-655" : "text-amber-600"}>{totalAssigned}</strong> / {quantity} labels
                         </span>
                         {diff === 0 ? (
-                          <span className="text-emerald-600 font-semibold flex items-center gap-1">
+                          <span className="text-teal-600 font-extrabold flex items-center gap-1">
                             ✓ All labels routed
                           </span>
                         ) : diff > 0 ? (
-                          <span className="text-amber-600 font-semibold">
+                          <span className="text-amber-650 font-extrabold">
                             ⚠️ Over-assigned (+{diff})
                           </span>
                         ) : (
-                          <span className="text-amber-600 font-semibold">
+                          <span className="text-amber-650 font-extrabold">
                             ⚠️ Under-assigned ({Math.abs(diff)} left)
                           </span>
                         )}
@@ -719,29 +731,29 @@ const BarcodeGenerator = () => {
 
       {/* Printer Manager Modal */}
       {showPrinterModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-fadeIn">
-            <div className="flex items-center justify-between p-5 border-b border-card-border bg-slate-50">
-              <h2 className="text-lg font-bold text-dark-navy flex items-center gap-2">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-fade-in">
+            <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-slate-50">
+              <h2 className="text-sm font-black text-slate-800 m-0 uppercase tracking-wider flex items-center gap-2">
                 ⚙️ Link & Manage Label Printers
               </h2>
-              <button onClick={() => setShowPrinterModal(false)} className="p-1.5 rounded-lg hover:bg-gray-200 text-gray-500 transition-colors">
+              <button onClick={() => setShowPrinterModal(false)} className="p-1.5 rounded-lg hover:bg-slate-200 text-slate-500 transition-colors border-0 cursor-pointer bg-transparent">
                 <X size={18} />
               </button>
             </div>
             
-            <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
+            <div className="p-6 space-y-5 max-h-[70vh] overflow-y-auto">
               {/* Existing Printers List */}
-              <div className="space-y-2.5">
-                <label className="text-xs font-bold text-dark-navy block">Linked Printers</label>
+              <div className="space-y-3">
+                <label className="text-xs font-black text-slate-700 uppercase tracking-wider block">Linked Printers</label>
                 {printers.length === 0 ? (
-                  <p className="text-sm text-muted-text py-2">No printers configured yet.</p>
+                  <p className="text-xs text-slate-400 font-bold py-2">No printers configured yet.</p>
                 ) : (
                   printers.map(p => (
-                    <div key={p._id} className="flex items-center justify-between p-3 rounded-xl border border-card-border bg-slate-50 text-sm">
+                    <div key={p._id} className="flex items-center justify-between p-3.5 rounded-2xl border border-slate-105 bg-slate-50 text-xs">
                       <div>
-                        <p className="font-bold text-dark-navy">{p.name}</p>
-                        <p className="text-xs text-muted-text">
+                        <p className="font-bold text-slate-800 m-0">{p.name}</p>
+                        <p className="text-[10px] text-slate-455 font-bold m-0 mt-0.5">
                           Connection: {p.connection} · Layout: {
                             p.layout === '50x30' ? '50mm x 30mm (Single)' :
                             p.layout === '38x25' ? '38mm x 25mm (Double)' :
@@ -749,21 +761,20 @@ const BarcodeGenerator = () => {
                           }
                         </p>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-3">
                         {p.isDefault ? (
-                          <span className="text-[10px] bg-emerald-100 text-emerald-700 font-bold px-2 py-0.5 rounded-md uppercase">Default</span>
+                          <span className="text-[9px] bg-teal-50 text-teal-700 border border-teal-100/60 font-black px-2 py-0.5 rounded-md uppercase tracking-wider">Default</span>
                         ) : (
                           <button
                             onClick={() => handleSetDefaultPrinter(p._id)}
-                            className="text-xs text-blue-600 hover:underline"
+                            className="text-[10px] font-black uppercase tracking-wider text-brand-indigo hover:text-brand-violet transition-colors bg-transparent border-0 cursor-pointer"
                           >
                             Set Default
                           </button>
                         )}
                         <button
                           onClick={() => handleDeleteClick(p)}
-
-                          className="p-1 text-red-500 hover:bg-red-50 rounded-lg"
+                          className="p-1.5 text-rose-500 hover:bg-rose-55 rounded-lg border-0 cursor-pointer bg-transparent transition-colors"
                         >
                           <Trash2 size={14} />
                         </button>
@@ -774,37 +785,37 @@ const BarcodeGenerator = () => {
               </div>
 
               {/* Add New Printer Form */}
-              <form onSubmit={handleAddPrinter} className="border-t border-card-border pt-4 space-y-3">
-                <label className="text-xs font-bold text-dark-navy block">Link New Label Printer</label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <form onSubmit={handleAddPrinter} className="border-t border-slate-100 pt-5 space-y-4">
+                <label className="text-xs font-black text-slate-700 uppercase tracking-wider block">Link New Label Printer</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[10px] font-bold text-gray-500 block mb-1">Printer Name</label>
+                    <label className="text-[10px] font-black uppercase text-slate-455 block mb-1">Printer Name</label>
                     <input
                       type="text"
                       required
                       placeholder="e.g. TSC TTP-244 Pro"
                       value={newPrinter.name}
                       onChange={e => setNewPrinter({ ...newPrinter, name: e.target.value })}
-                      className="w-full border border-card-border rounded-xl py-2 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400 bg-slate-50"
+                      className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all"
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] font-bold text-gray-500 block mb-1">Connection Port/Type</label>
+                    <label className="text-[10px] font-black uppercase text-slate-455 block mb-1">Connection Port/Type</label>
                     <input
                       type="text"
                       placeholder="e.g. USB001 or 192.168.1.150"
                       value={newPrinter.connection}
                       onChange={e => setNewPrinter({ ...newPrinter, connection: e.target.value })}
-                      className="w-full border border-card-border rounded-xl py-2 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400 bg-slate-50"
+                      className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="text-[10px] font-bold text-gray-500 block mb-1">Label layout / Roll Size</label>
+                  <label className="text-[10px] font-black uppercase text-slate-455 block mb-1">Label layout / Roll Size</label>
                   <select
                     value={newPrinter.layout}
                     onChange={e => setNewPrinter({ ...newPrinter, layout: e.target.value })}
-                    className="w-full border border-card-border rounded-xl py-2 px-3 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all cursor-pointer"
                   >
                     <option value="50x30">50mm x 30mm (Single Column)</option>
                     <option value="38x25">38mm x 25mm (Double Column)</option>
@@ -814,9 +825,9 @@ const BarcodeGenerator = () => {
                 </div>
                 <button
                   type="submit"
-                  className="w-full bg-blue-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+                  className="w-full bg-brand-indigo hover:bg-brand-violet text-white font-black py-3 rounded-xl text-[10px] uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer border-0"
                 >
-                  <Plus size={14} /> Add & Link Printer
+                  <Plus size={13} /> Add & Link Printer
                 </button>
               </form>
             </div>

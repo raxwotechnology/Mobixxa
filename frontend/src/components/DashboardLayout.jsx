@@ -1,47 +1,66 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, ChevronRight, LogOut, Home } from 'lucide-react';
+import { Menu, X, ChevronRight, User, Settings, LayoutDashboard, ChevronDown, LogOut } from 'lucide-react';
 import useAuthStore from '../store/authStore';
 import useSettingsStore from '../store/settingsStore';
 import { adminNavGroups, getAdminNavGroups } from '../pages/admin/adminNavItems';
 import useAdminStoreStore from '../store/adminStoreStore';
 import { getAdminStores } from '../services/api';
 import { getImageUrl } from '../utils/imageHelper';
+import NotificationBell from './NotificationBell';
 
-// ─── Shared NavLink ────────────────────────────────────────────────────────────
-const NavLink = ({ item, location, collapsed, onNavigate }) => {
+const NavLink = ({ item, location, collapsed, onNavigate, userRole }) => {
   const isRoot = item.path === '/admin' || item.path === '/manager' || item.path === '/employee';
   const isActive = isRoot
     ? location.pathname === item.path
     : location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
+
+  // Role-based active styles
+  let activeBg = 'bg-slate-900 text-emerald-400 shadow-sm font-black';
+  let activeIndicator = 'bg-emerald-400';
+  let activeIcon = 'text-emerald-400';
+
+  if (userRole === 'manager') {
+    activeBg = 'bg-blue-900/10 text-blue-700 shadow-sm font-black';
+    activeIndicator = 'bg-blue-600';
+    activeIcon = 'text-blue-600';
+  } else if (['cashier', 'deliveryGuy', 'stockEmployee', 'employee'].includes(userRole)) {
+    activeBg = 'bg-sky-900/10 text-sky-700 shadow-sm font-black';
+    activeIndicator = 'bg-sky-500';
+    activeIcon = 'text-sky-600';
+  }
 
   return (
     <Link
       to={item.path}
       onClick={onNavigate}
       title={item.label}
-      className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all group ${
+      className={`relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-extrabold transition-all group ${
         isActive
-          ? 'bg-blue-50 text-blue-600'
-          : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+          ? activeBg
+          : 'text-slate-500 hover:bg-slate-100/70 hover:text-slate-800'
       }`}
     >
+      {isActive && (
+        <span className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 ${activeIndicator} rounded-r-full shadow-xs`} />
+      )}
       <item.icon
-        size={17}
-        className={`flex-shrink-0 ${isActive ? 'text-blue-500' : 'text-slate-400 group-hover:text-slate-700'}`}
+        size={16}
+        className={`flex-shrink-0 transition-transform duration-200 group-hover:scale-110 ${
+          isActive ? activeIcon : 'text-slate-400 group-hover:text-slate-700'
+        }`}
       />
       {!collapsed && (
         <>
-          <span className="flex-1 truncate">{item.label}</span>
-          {isActive && <ChevronRight size={13} className="text-blue-400 flex-shrink-0" />}
+          <span className="flex-1 truncate tracking-tight">{item.label}</span>
+          {isActive && <ChevronRight size={13} className="opacity-80 flex-shrink-0" />}
         </>
       )}
     </Link>
   );
 };
 
-// ─── Sidebar Content ───────────────────────────────────────────────────────────
-const SidebarContent = ({ navItems, collapsed, location, onNavigate }) => {
+const SidebarContent = ({ navItems, collapsed, location, onNavigate, userRole }) => {
   const navRef = useRef(null);
 
   useEffect(() => {
@@ -61,35 +80,29 @@ const SidebarContent = ({ navItems, collapsed, location, onNavigate }) => {
 
   if (!isGrouped) {
     return (
-      <nav
-        ref={navRef}
-        onScroll={handleScroll}
-        className="p-3 space-y-0.5 flex-1 overflow-y-auto"
-      >
-        {navItems.map(item => (
-          <NavLink key={item.path} item={item} location={location} collapsed={collapsed} onNavigate={onNavigate} />
+      <nav ref={navRef} onScroll={handleScroll} className="p-3 space-y-1 flex-1 overflow-y-auto scrollbar-hide">
+        {navItems.map((item) => (
+          <NavLink key={item.path} item={item} location={location} collapsed={collapsed} onNavigate={onNavigate} userRole={userRole} />
         ))}
       </nav>
     );
   }
 
   return (
-    <nav
-      ref={navRef}
-      onScroll={handleScroll}
-      className="p-2 flex-1 overflow-y-auto"
-    >
+    <nav ref={navRef} onScroll={handleScroll} className="p-2.5 flex-1 overflow-y-auto scrollbar-hide">
       {navItems.map((group, gi) => (
-        <div key={gi} className="mb-1">
+        <div key={gi} className="mb-2">
           {!collapsed && (
-            <p className="text-[9.5px] font-bold uppercase tracking-widest text-slate-400 px-3 pt-3 pb-1 select-none">
-              {group.label}
-            </p>
+            <div className="flex items-center justify-between px-3 pt-3 pb-1">
+              <span className="text-[9.5px] font-black uppercase tracking-widest text-slate-400 select-none">
+                {group.label}
+              </span>
+            </div>
           )}
-          {collapsed && gi > 0 && <div className="border-t border-slate-100 my-1.5 mx-2" />}
+          {collapsed && gi > 0 && <div className="border-t border-slate-100 my-2 mx-2" />}
           <div className="space-y-0.5">
-            {group.items.map(item => (
-              <NavLink key={item.path} item={item} location={location} collapsed={collapsed} onNavigate={onNavigate} />
+            {group.items.map((item) => (
+              <NavLink key={item.path} item={item} location={location} collapsed={collapsed} onNavigate={onNavigate} userRole={userRole} />
             ))}
           </div>
         </div>
@@ -98,19 +111,29 @@ const SidebarContent = ({ navItems, collapsed, location, onNavigate }) => {
   );
 };
 
-// ─── Main Component ────────────────────────────────────────────────────────────
 const DashboardLayout = ({ children, navItems, title }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
+  const isStaff = user && ['admin', 'manager', 'cashier', 'deliveryGuy', 'stockEmployee'].includes(user.role);
+  const path = location.pathname;
+  const showDashboardHeader = isStaff && (
+    path.startsWith('/admin') ||
+    path.startsWith('/manager') ||
+    path.startsWith('/employee') ||
+    path.startsWith('/delivery') ||
+    path.startsWith('/barcode')
+  );
+  const headerHeightClass = showDashboardHeader ? 'top-14 sm:top-16' : 'top-[100px]';
+  const sidebarHeight = showDashboardHeader ? 'calc(100dvh - 3.5rem)' : 'calc(100vh - 100px)';
+  const mainMinHeight = showDashboardHeader ? 'calc(100dvh - 3.5rem)' : 'calc(100vh - 100px)';
   const settings = useSettingsStore((s) => s.settings);
   const fetchSettings = useSettingsStore((s) => s.fetchSettings);
   const { selectedStoreId, setSelectedStoreId } = useAdminStoreStore();
   const [stores, setStores] = useState([]);
 
-  // Dynamically filter admin nav items based on user permissions
   let finalNavItems = navItems;
   const isAdminNav = user?.role === 'admin' && (navItems === adminNavGroups || (Array.isArray(navItems) && navItems.length > 0 && navItems[0]?.label === 'Dashboard'));
   if (isAdminNav) {
@@ -124,19 +147,66 @@ const DashboardLayout = ({ children, navItems, title }) => {
     }
   }, [fetchSettings, isAdminNav, user?.role]);
 
-  // Force re-fetch settings on mount so logo is always fresh
   useEffect(() => {
     fetchSettings(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const brandName = settings?.shopName || 'Mobile Hub';
-  // Use whichever logo field is populated (logoUrl is built by settingsStore from logo path)
-  const logoSrc = getImageUrl(settings?.logoUrl || settings?.logo || '');
+  useEffect(() => {
+    if (sidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [sidebarOpen]);
 
-  // Close sidebar on route change (mobile)
+  const brandName = settings?.shopName || 'Mobile Hub';
+  const logoSrc = getImageUrl(settings?.logoUrl || settings?.logo || '') || '/logo.png';
+
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    document.addEventListener('touchstart', handleOutsideClick);
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('touchstart', handleOutsideClick);
+    };
+  }, []);
+
+  const getSettingsLink = () => {
+    if (!user) return null;
+    if (user.role === 'admin') return '/admin/settings';
+    if (user.role === 'manager') return '/manager';
+    if (['cashier', 'deliveryGuy', 'stockEmployee'].includes(user.role)) return '/employee/profile';
+    return '/profile';
+  };
+  const settingsLink = getSettingsLink();
+  const profilePath = ['cashier', 'deliveryGuy', 'stockEmployee'].includes(user?.role) ? '/employee/profile' : '/profile';
+
+  const getDashboardLink = () => {
+    if (!user) return null;
+    switch (user.role) {
+      case 'admin': return { path: '/admin', label: 'Admin Panel' };
+      case 'manager': return { path: '/manager', label: 'Dashboard' };
+      case 'cashier':
+      case 'deliveryGuy':
+      case 'stockEmployee':
+        return { path: '/employee', label: 'My Portal' };
+      default: return null;
+    }
+  };
+  const dashLink = getDashboardLink();
+
   useEffect(() => {
     setSidebarOpen(false);
+    setUserMenuOpen(false);
   }, [location.pathname]);
 
   const handleLogout = () => {
@@ -144,133 +214,197 @@ const DashboardLayout = ({ children, navItems, title }) => {
     navigate('/');
   };
 
-  const sidebarW = collapsed ? 'w-[68px]' : 'w-64';
-  const mainML   = collapsed ? 'lg:ml-[68px]' : 'lg:ml-64';
+  const sidebarW = collapsed ? 'w-[72px]' : 'w-[min(100%,16rem)] sm:w-64';
+  const mainML = collapsed ? 'lg:ml-[72px]' : 'lg:ml-64';
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
+    <div className="admin-dashboard-container min-h-[100dvh] flex flex-col bg-slate-50/70 overflow-x-hidden">
+      {showDashboardHeader && (
+        <header className="h-14 sm:h-16 bg-white/90 backdrop-blur-md border-b border-slate-200/80 flex items-center px-3 sm:px-4 md:px-6 gap-2 sm:gap-3 sticky top-0 z-50 flex-shrink-0">
+          <button
+            type="button"
+            className="lg:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors border-0 bg-transparent cursor-pointer"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            aria-label="Toggle menu"
+          >
+            {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
 
-      {/* ── Top Bar ─────────────────────────────────────────────────────────── */}
-      <header className="h-14 bg-white border-b border-slate-200 flex items-center px-4 gap-3 sticky top-0 z-50 shadow-sm flex-shrink-0">
+          <button
+            type="button"
+            className="hidden lg:flex p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer border-0 bg-transparent"
+            onClick={() => setCollapsed(!collapsed)}
+            title={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+          >
+            <Menu size={18} />
+          </button>
 
-        {/* Mobile hamburger */}
-        <button
-          className="lg:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-        >
-          {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
+          <Link
+            to={user?.role === 'admin' ? '/admin' : user?.role === 'manager' ? '/manager' : '/employee'}
+            className="flex items-center gap-2 sm:gap-3 flex-shrink-0 no-underline min-w-0"
+          >
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-brand-indigo to-brand-fuchsia p-[2px] shadow-md flex items-center justify-center flex-shrink-0">
+              {logoSrc ? (
+                <img src={logoSrc} alt="Logo" className="w-full h-full object-contain rounded-lg bg-white" />
+              ) : (
+                <span className="text-white text-xs font-black">MH</span>
+              )}
+            </div>
+            <span className="hidden sm:inline font-black text-xs sm:text-sm tracking-tight text-slate-800 bg-gradient-to-r from-brand-indigo to-brand-violet bg-clip-text text-transparent truncate max-w-[120px] md:max-w-[180px] lg:max-w-none">
+              {brandName}
+            </span>
+          </Link>
 
-        {/* Desktop collapse */}
-        <button
-          className="hidden lg:flex p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
-          onClick={() => setCollapsed(!collapsed)}
-        >
-          <Menu size={18} />
-        </button>
+          <div className="flex-1 min-w-0" />
 
-        {/* Brand */}
-        <Link to={user?.role === 'admin' ? '/admin' : user?.role === 'manager' ? '/manager' : '/employee'}
-          className="flex items-center gap-2.5 flex-shrink-0"
-        >
-          {logoSrc ? (
-            <img
-              src={logoSrc}
-              alt={brandName}
-              className="w-8 h-8 rounded-lg object-cover border border-slate-200"
-              onError={e => { e.target.style.display = 'none'; }}
-            />
-          ) : (
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-              {brandName ? brandName.charAt(0) : 'S'}
+          {user?.role === 'admin' && stores.length > 0 && (
+            <div className="hidden lg:flex items-center gap-2 bg-slate-50 border border-slate-200/60 rounded-xl px-3 py-1.5">
+              <select
+                value={selectedStoreId}
+                onChange={(e) => setSelectedStoreId(e.target.value)}
+                className="bg-transparent text-xs font-extrabold text-slate-700 focus:outline-none cursor-pointer border-0 max-w-[160px]"
+              >
+                <option value="all">Global (All Stores)</option>
+                {stores.map((s) => (
+                  <option key={s._id} value={s._id}>{s.name}</option>
+                ))}
+              </select>
             </div>
           )}
-          <span className="hidden sm:block font-bold text-slate-800 text-[15px] truncate max-w-[150px] whitespace-nowrap">
-            {brandName}
-          </span>
-        </Link>
 
-        <div className="flex-1" />
+          {title && (
+            <span className={`hidden xl:inline-flex items-center text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-xl whitespace-nowrap ${
+              user?.role === 'admin'
+                ? 'role-badge-admin'
+                : user?.role === 'manager'
+                ? 'role-badge-manager'
+                : 'role-badge-employee'
+            }`}>
+              {user?.role === 'admin' ? 'Executive' : user?.role === 'manager' ? 'Operations' : 'Staff'} • {title}
+            </span>
+          )}
 
-        {isAdminNav && user?.role === 'admin' && (
-          <div className="hidden sm:flex items-center gap-2 mr-2">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-widest">Store Context:</span>
-            <select
-              value={selectedStoreId}
-              onChange={(e) => setSelectedStoreId(e.target.value)}
-              className="border border-slate-200 rounded-xl py-1.5 px-3 text-sm font-semibold text-blue-600 bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-            >
-              <option value="all">Global (All Stores)</option>
-              {stores.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
-            </select>
+          <div className="flex items-center p-1.5 sm:p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors">
+            <NotificationBell />
           </div>
-        )}
 
-        {/* Page title chip */}
-        <span className="hidden md:inline-flex items-center text-[11px] font-bold uppercase tracking-widest bg-slate-50 text-slate-500 px-3 py-1.5 rounded-full border border-slate-200">
-          {title}
-        </span>
+          <div className="flex items-center gap-1.5 sm:gap-2.5 relative" ref={userMenuRef}>
+            <button
+              type="button"
+              onClick={() => setUserMenuOpen(!userMenuOpen)}
+              className="sm:hidden w-8 h-8 rounded-lg overflow-hidden border border-slate-200 flex-shrink-0 p-0 cursor-pointer bg-transparent"
+              aria-label="User menu"
+            >
+              {user?.avatar ? (
+                <img src={getImageUrl(user.avatar)} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-slate-900 flex items-center justify-center text-emerald-400 text-[10px] font-black">
+                  {user?.name?.charAt(0)?.toUpperCase() || 'A'}
+                </div>
+              )}
+            </button>
 
-        {/* User + logout */}
-        <div className="flex items-center gap-2">
-          <div className="hidden sm:flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5">
-            {user?.avatar ? (
-              <img
-                src={getImageUrl(user.avatar)}
-                alt="Profile"
-                className="w-7 h-7 rounded-lg object-cover border border-slate-200"
-              />
-            ) : (
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white text-xs font-bold">
-                {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+            <button
+              type="button"
+              onClick={() => setUserMenuOpen(!userMenuOpen)}
+              className="hidden sm:flex items-center gap-2 sm:gap-2.5 bg-slate-50 border border-slate-200/80 rounded-xl px-2.5 sm:px-3 py-1.5 cursor-pointer hover:bg-slate-100/70 transition-all select-none"
+            >
+              {user?.avatar ? (
+                <img src={getImageUrl(user.avatar)} alt="" className="w-7 h-7 rounded-lg object-cover border border-slate-200" />
+              ) : (
+                <div className="w-7 h-7 rounded-lg bg-slate-900 flex items-center justify-center text-emerald-400 text-[10px] font-black shadow-xs">
+                  {user?.name?.charAt(0)?.toUpperCase() || 'A'}
+                </div>
+              )}
+              <div className="text-left hidden md:block">
+                <p className="text-[11px] font-extrabold text-slate-800 leading-tight m-0 flex items-center gap-1 max-w-[120px] truncate">
+                  {user?.name}
+                  <ChevronDown size={11} className="text-slate-400 flex-shrink-0" />
+                </p>
+                <p className="text-[9px] text-slate-500 font-black uppercase tracking-wider leading-tight m-0 mt-0.5">{user?.role}</p>
+              </div>
+              <ChevronDown size={14} className="text-slate-400 md:hidden" />
+            </button>
+
+            {userMenuOpen && (
+              <div className="absolute top-full right-0 mt-2 w-[min(calc(100vw-1.5rem),14rem)] sm:w-56 bg-white border border-slate-200/80 rounded-2xl shadow-2xl z-[100] py-1 overflow-hidden animate-fade-in">
+                <div className="px-4 py-3 bg-slate-900 border-b border-slate-800 text-white">
+                  <p className="text-sm font-black text-white m-0 truncate">{user?.name}</p>
+                  <p className="text-[11px] text-slate-400 m-0 truncate">{user?.email}</p>
+                  <span className="inline-block mt-1.5 text-[9px] font-black uppercase tracking-wider bg-emerald-500 text-slate-950 px-2.5 py-0.5 rounded-full">{user?.role}</span>
+                </div>
+                <Link
+                  to={profilePath}
+                  onClick={() => setUserMenuOpen(false)}
+                  className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors font-extrabold uppercase tracking-wide no-underline"
+                >
+                  <User size={14} className="text-slate-400" /> My Profile
+                </Link>
+                {settingsLink && (
+                  <Link
+                    to={settingsLink}
+                    onClick={() => setUserMenuOpen(false)}
+                    className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors font-extrabold uppercase tracking-wide no-underline"
+                  >
+                    <Settings size={14} className="text-slate-400" /> Settings
+                  </Link>
+                )}
+                {dashLink && (
+                  <>
+                    <hr className="my-1 border-slate-100" />
+                    <Link
+                      to={dashLink.path}
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-blue-600 hover:bg-blue-50 font-black transition-colors uppercase tracking-wide no-underline"
+                    >
+                      <LayoutDashboard size={14} /> {dashLink.label}
+                    </Link>
+                  </>
+                )}
+                <hr className="my-1 border-slate-100" />
+                <button
+                  type="button"
+                  onClick={() => { setUserMenuOpen(false); handleLogout(); }}
+                  className="w-full text-left px-4 py-2.5 text-xs text-red-500 hover:bg-red-50 transition-colors flex items-center gap-2.5 font-black uppercase tracking-wide border-0 bg-transparent cursor-pointer"
+                >
+                  <LogOut size={14} /> Logout
+                </button>
               </div>
             )}
-            <div>
-              <p className="text-[12px] font-semibold text-slate-800 leading-tight">{user?.name}</p>
-              <p className="text-[10px] text-slate-400 capitalize leading-tight">{user?.role}</p>
-            </div>
           </div>
-          <button
-            onClick={handleLogout}
-            title="Logout"
-            className="p-2 rounded-xl text-red-500 hover:bg-red-50 transition-colors border border-red-100"
-          >
-            <LogOut size={17} />
-          </button>
-        </div>
-      </header>
+        </header>
+      )}
 
-      <div className="flex flex-1">
-        {/* ── Mobile Overlay ──────────────────────────────────────────────── */}
+      <div className="flex flex-1 min-w-0">
         {sidebarOpen && (
           <div
-            className="lg:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+            className="lg:hidden fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-40"
             onClick={() => setSidebarOpen(false)}
+            aria-hidden
           />
         )}
 
-        {/* ── Sidebar ─────────────────────────────────────────────────────── */}
         <aside
           className={`
-            fixed top-14 left-0 z-40
+            fixed ${headerHeightClass} left-0 z-40
             ${sidebarW}
-            bg-white border-r border-slate-200
-            flex flex-col transition-all duration-250 ease-out
+            bg-white border-r border-slate-200/80
+            flex flex-col transition-transform duration-250 ease-out shadow-sm
             ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
           `}
-          style={{ height: 'calc(100vh - 56px)' }}
+          style={{ height: sidebarHeight }}
         >
           <SidebarContent
             navItems={finalNavItems}
             collapsed={collapsed}
             location={location}
             onNavigate={() => setSidebarOpen(false)}
+            userRole={user?.role}
           />
         </aside>
 
-        {/* ── Main Content ─────────────────────────────────────────────────── */}
-        <main className={`flex-1 min-w-0 transition-all duration-250 ${mainML}`}>
-          <div className="p-4 sm:p-6 lg:p-8 min-h-[calc(100vh-56px)]">
+        <main className={`flex-1 min-w-0 transition-all duration-250 ${mainML} overflow-x-hidden`}>
+          <div className="p-3 sm:p-5 md:p-6 lg:p-8 w-full max-w-[1600px] mx-auto" style={{ minHeight: mainMinHeight }}>
             {children}
           </div>
         </main>

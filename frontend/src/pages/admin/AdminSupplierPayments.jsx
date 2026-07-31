@@ -236,7 +236,7 @@ const AdminSupplierPayments = () => {
   // Ledger View
   if (selectedSupplier) {
     return (
-      <DashboardLayout navItems={navItems} title="Admin Panel">
+      <DashboardLayout navItems={navItems} title="Supplier Payments">
         <div>
           {/* Back Button */}
           <button onClick={() => { setSelectedSupplier(null); setLedger(null); }}
@@ -529,7 +529,7 @@ const AdminSupplierPayments = () => {
 
   // Summary View
   return (
-    <DashboardLayout navItems={navItems} title="Admin Panel">
+    <DashboardLayout navItems={navItems} title="Supplier Payments">
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
           <div>

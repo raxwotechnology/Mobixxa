@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
-import { LayoutDashboard, User, Clock, Calendar, CreditCard, Mail, Phone, MapPin, Building, Save, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { User, Mail, Phone, Building, Save, Trash2 } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
 import useAuthStore from '../../store/authStore';
 import { getEmployeeNavGroups } from './employeeNav';
 import API, { uploadImage } from '../../services/api';
 import { toast } from 'react-toastify';
 import { getImageUrl } from '../../utils/imageHelper';
+import EmployeePageHeader from './EmployeePageHeader';
 
 const EmployeeProfile = () => {
   const { user, setUser } = useAuthStore();
@@ -14,7 +15,14 @@ const EmployeeProfile = () => {
   const [uploading, setUploading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const roleLabel = user?.role === 'deliveryGuy' ? 'Delivery Rider' : user?.role === 'cashier' ? 'Cashier' : user?.role;
+  const roleLabel =
+    user?.role === 'deliveryGuy'
+      ? 'Delivery Rider'
+      : user?.role === 'cashier'
+        ? 'Cashier'
+        : user?.role === 'stockEmployee'
+          ? 'Stock Employee'
+          : user?.role;
 
   const handleSavePhone = async () => {
     setSaving(true);
@@ -62,20 +70,25 @@ const EmployeeProfile = () => {
 
   return (
     <DashboardLayout navItems={getEmployeeNavGroups(user?.role)} title="Employee Portal">
-      <div className="max-w-3xl space-y-6">
-        <h1 className="text-2xl font-bold text-dark-navy">👤 My Profile</h1>
+      <div className="animate-fade-in space-y-6">
+        <EmployeePageHeader
+          badge="ACCOUNT"
+          title="My Profile"
+          subtitle="View employment details and manage personal information"
+          icon={User}
+        />
 
         {/* Profile Header */}
-        <div className="bg-gradient-to-r from-violet-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+        <div className="bg-gradient-to-r from-brand-indigo to-brand-violet rounded-3xl p-6 text-white shadow-xl relative overflow-hidden border border-brand-indigo/15">
           <div className="flex items-center gap-6 relative z-10">
-            <div className="relative group">
+            <div className="relative group cursor-pointer">
               {user?.avatar ? (
                 <>
                   <img src={getImageUrl(user.avatar)} alt="Profile" className="w-24 h-24 rounded-2xl object-cover border-4 border-white/20 shadow-md" />
                   <button
                     type="button"
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-full shadow-md z-20 transition-all hover:scale-110"
+                    className="absolute -top-2 -right-2 bg-rose-500 hover:bg-rose-600 text-white p-1.5 rounded-full shadow-md z-20 transition-all hover:scale-110 border-0 cursor-pointer"
                     title="Delete Photo"
                   >
                     <Trash2 size={12} />
@@ -92,90 +105,101 @@ const EmployeeProfile = () => {
               </label>
             </div>
             <div>
-              <h2 className="text-3xl font-bold">{user?.name}</h2>
-              <p className="text-violet-100 font-medium">{roleLabel}</p>
-              <p className="text-violet-200 text-sm mt-1">Member since {new Date(user?.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</p>
+              <h2 className="text-2xl font-black m-0 text-white leading-tight">{user?.name}</h2>
+              <p className="text-brand-indigo-100 font-bold uppercase tracking-wider text-[10px] mt-1.5 px-3 py-1 bg-white/10 rounded-full w-fit backdrop-blur-xs">{roleLabel}</p>
+              <p className="text-white/70 text-xs mt-2.5 font-medium">Member since {new Date(user?.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</p>
             </div>
           </div>
           <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
         </div>
 
         {/* Personal Info */}
-        <div className="bg-white rounded-2xl border border-card-border p-6 shadow-sm">
-          <h3 className="font-semibold text-dark-navy mb-4 flex items-center gap-2"><User size={18} /> Personal Information</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="bg-white/60 backdrop-blur-md rounded-3xl border border-white/40 p-6 shadow-sm">
+          <h3 className="text-xs font-black uppercase tracking-wider text-slate-500 mb-6 flex items-center gap-2 m-0">
+            <User size={14} className="text-slate-400" /> Personal Information
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
-              <label className="text-xs text-muted-text block mb-1">Full Name</label>
-              <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2.5 text-sm text-dark-navy">
-                <User size={14} className="text-gray-400" /> {user?.name}
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-2">Full Name</label>
+              <div className="flex items-center gap-2.5 bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-xs text-slate-700 font-bold select-none">
+                <User size={14} className="text-slate-400" /> {user?.name}
               </div>
             </div>
             <div>
-              <label className="text-xs text-muted-text block mb-1">Email</label>
-              <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2.5 text-sm text-dark-navy">
-                <Mail size={14} className="text-gray-400" /> {user?.email}
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-2">Email</label>
+              <div className="flex items-center gap-2.5 bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-xs text-slate-700 font-bold select-none">
+                <Mail size={14} className="text-slate-400" /> {user?.email}
               </div>
             </div>
             <div>
-              <label className="text-xs text-muted-text block mb-1">Phone</label>
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-2">Phone</label>
               <div className="flex gap-2">
-                <div className="flex items-center gap-2 flex-1">
-                  <Phone size={14} className="text-gray-400 ml-3" />
-                  <input value={phone} onChange={(e) => setPhone(e.target.value)}
-                    className="flex-1 border border-card-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" placeholder="+94 7X XXX XXXX" />
+                <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-1 flex-1 shadow-xs">
+                  <Phone size={14} className="text-slate-400 ml-1.5 shrink-0" />
+                  <input
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="w-full bg-transparent border-0 py-2.5 px-2 text-xs font-bold text-slate-700 focus:outline-none"
+                    placeholder="+94 7X XXX XXXX"
+                  />
                 </div>
-                <button onClick={handleSavePhone} disabled={saving}
-                  className="bg-primary-blue text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-emerald-600 disabled:opacity-50 flex items-center gap-1">
+                <button
+                  onClick={handleSavePhone}
+                  disabled={saving}
+                  className="bg-brand-indigo hover:bg-brand-violet text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider disabled:opacity-50 flex items-center gap-1.5 border-0 transition-all cursor-pointer shadow-md"
+                >
                   <Save size={14} /> {saving ? '...' : 'Save'}
                 </button>
               </div>
             </div>
             <div>
-              <label className="text-xs text-muted-text block mb-1">Role</label>
-              <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2.5 text-sm text-dark-navy">
-                <Building size={14} className="text-gray-400" /> {roleLabel}
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-2">Role</label>
+              <div className="flex items-center gap-2.5 bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-xs text-slate-700 font-bold select-none">
+                <Building size={14} className="text-slate-400" /> {roleLabel}
               </div>
             </div>
           </div>
         </div>
 
         {/* Employment Info */}
-        <div className="bg-white rounded-2xl border border-card-border p-6 shadow-sm">
-          <h3 className="font-semibold text-dark-navy mb-4 flex items-center gap-2"><Building size={18} /> Employment Details</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="bg-white/60 backdrop-blur-md rounded-3xl border border-white/40 p-6 shadow-sm">
+          <h3 className="text-xs font-black uppercase tracking-wider text-slate-500 mb-6 flex items-center gap-2 m-0">
+            <Building size={14} className="text-slate-400" /> Employment Details
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
-              <label className="text-xs text-muted-text block mb-1">Department</label>
-              <div className="bg-gray-50 rounded-lg px-3 py-2.5 text-sm text-dark-navy">
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-2">Department</label>
+              <div className="bg-slate-50 border border-slate-100 rounded-xl px-4 py-3.5 text-xs text-slate-700 font-bold select-none">
                 {user?.employeeInfo?.department || '—'}
               </div>
             </div>
             <div>
-              <label className="text-xs text-muted-text block mb-1">Joined</label>
-              <div className="bg-gray-50 rounded-lg px-3 py-2.5 text-sm text-dark-navy">
-                {user?.employeeInfo?.joinDate ? new Date(user.employeeInfo.joinDate).toLocaleDateString() : '—'}
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-2">Joined Date</label>
+              <div className="bg-slate-50 border border-slate-100 rounded-xl px-4 py-3.5 text-xs text-slate-700 font-bold select-none">
+                {user?.employeeInfo?.joinDate ? new Date(user.employeeInfo.joinDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '—'}
               </div>
             </div>
             <div>
-              <label className="text-xs text-muted-text block mb-1">EPF Number</label>
-              <div className="bg-gray-50 rounded-lg px-3 py-2.5 text-sm text-dark-navy">
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-2">EPF Number</label>
+              <div className="bg-slate-50 border border-slate-100 rounded-xl px-4 py-3.5 text-xs text-slate-700 font-bold select-none">
                 {user?.employeeInfo?.epfNo || '—'}
               </div>
             </div>
             <div>
-              <label className="text-xs text-muted-text block mb-1">ETF Number</label>
-              <div className="bg-gray-50 rounded-lg px-3 py-2.5 text-sm text-dark-navy">
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-2">ETF Number</label>
+              <div className="bg-slate-50 border border-slate-100 rounded-xl px-4 py-3.5 text-xs text-slate-700 font-bold select-none">
                 {user?.employeeInfo?.etfNo || '—'}
               </div>
             </div>
             <div>
-              <label className="text-xs text-muted-text block mb-1">Bank</label>
-              <div className="bg-gray-50 rounded-lg px-3 py-2.5 text-sm text-dark-navy">
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-2">Bank Name</label>
+              <div className="bg-slate-50 border border-slate-100 rounded-xl px-4 py-3.5 text-xs text-slate-700 font-bold select-none">
                 {user?.employeeInfo?.bankName || '—'}
               </div>
             </div>
             <div>
-              <label className="text-xs text-muted-text block mb-1">Account Number</label>
-              <div className="bg-gray-50 rounded-lg px-3 py-2.5 text-sm text-dark-navy">
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-2">Account Number</label>
+              <div className="bg-slate-50 border border-slate-100 rounded-xl px-4 py-3.5 text-xs text-slate-700 font-bold select-none">
                 {user?.employeeInfo?.bankAccount ? `****${user.employeeInfo.bankAccount.slice(-4)}` : '—'}
               </div>
             </div>
@@ -187,8 +211,8 @@ const EmployeeProfile = () => {
          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
            <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl border border-slate-100 p-6 space-y-4">
              <div className="text-center space-y-2">
-               <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-2 text-xl">
-                 ⚠️
+               <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                 <Trash2 size={20} />
                </div>
                <h3 className="font-extrabold text-slate-900 text-lg">Delete Profile Photo</h3>
                <p className="text-sm text-slate-500">Are you sure you want to permanently delete your profile photo?</p>

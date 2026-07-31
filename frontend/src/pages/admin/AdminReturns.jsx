@@ -136,27 +136,33 @@ const AdminReturns = () => {
   };
 
   return (
-    <DashboardLayout navItems={navItems} title="Admin Panel">
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <DashboardLayout navItems={navItems} title="Returns">
+      <div className="animate-fade-in space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-indigo/5 rounded-full blur-3xl pointer-events-none -z-10"></div>
           <div>
-            <h1 className="text-2xl font-bold text-dark-navy">Returns</h1>
-            <p className="text-muted-text text-sm mt-1">Pending / Approved / Rejected return requests</p>
+            <div className="flex items-center gap-2.5 mb-1">
+              <span className="inline-flex items-center gap-1.5 bg-brand-indigo/10 text-brand-indigo text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg border border-brand-indigo/15">
+                Sales & Operations
+              </span>
+            </div>
+            <h1 className="text-2xl font-black text-slate-900 m-0">Returns</h1>
+            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mt-2 m-0">Pending / Approved / Rejected return requests</p>
           </div>
-          <div className="flex items-center gap-2">
-            <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="border border-card-border rounded-lg px-2 py-1 text-xs" />
-            <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="border border-card-border rounded-lg px-2 py-1 text-xs" />
-            <button onClick={handleExport} className="px-3 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold">Export PDF</button>
+          <div className="flex items-center gap-3 bg-white/40 backdrop-blur-sm border border-white/40 p-2 rounded-2xl shadow-sm">
+            <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="bg-white/80 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm" />
+            <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="bg-white/80 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm" />
+            <button onClick={handleExport} className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[10px] uppercase tracking-wider font-black transition-all shadow-md">Export PDF</button>
           </div>
         </div>
 
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-2 flex-wrap mb-6 bg-white/40 backdrop-blur-sm p-2 rounded-2xl border border-white/40 shadow-sm w-fit">
           {['all', 'requested', 'approved', 'rejected', 'on_hold', 'resolved'].map((s) => (
             <button
               key={s}
               onClick={() => setFilter(s)}
-              className={`px-4 py-2 text-sm font-semibold rounded-xl transition-colors ${
-                filter === s ? 'bg-primary-blue text-white' : 'bg-white border border-card-border text-muted-text hover:bg-gray-50'
+              className={`px-4 py-2.5 text-[10px] uppercase font-black tracking-wider rounded-xl transition-all ${
+                filter === s ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-white hover:text-slate-900'
               }`}
             >
               {s.replaceAll('_', ' ')}
@@ -166,55 +172,55 @@ const AdminReturns = () => {
 
         {loading ? (
           <div className="flex items-center justify-center h-64">
-            <div className="w-10 h-10 border-4 border-primary-blue border-t-transparent rounded-full animate-spin" />
+            <div className="w-10 h-10 border-4 border-brand-indigo border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-card-border shadow-sm overflow-hidden">
+          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-gray-50">
-                    <th className="text-left px-6 py-3 font-medium text-muted-text">RMA</th>
-                    <th className="text-left px-6 py-3 font-medium text-muted-text">Order</th>
-                    <th className="text-left px-6 py-3 font-medium text-muted-text">Customer</th>
-                    <th className="text-left px-6 py-3 font-medium text-muted-text">Order Details</th>
-                    <th className="text-left px-6 py-3 font-medium text-muted-text">Return Reason</th>
-                    <th className="text-left px-6 py-3 font-medium text-muted-text">Status</th>
-                    <th className="text-left px-6 py-3 font-medium text-muted-text">Actions</th>
+                  <tr className="bg-slate-50 border-b border-slate-100">
+                    <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">RMA</th>
+                    <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Order</th>
+                    <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Customer</th>
+                    <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Order Details</th>
+                    <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Return Reason</th>
+                    <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Status</th>
+                    <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-card-border">
+                <tbody className="divide-y divide-slate-100">
                   {filtered.map((r) => (
-                    <tr key={r._id}>
-                      <td className="px-6 py-3.5 font-medium text-dark-navy">{r.holdBillNo}</td>
-                      <td className="px-6 py-3.5 text-muted-text">#{String(r.orderId?._id || r.orderId).slice(-8).toUpperCase()}</td>
-                      <td className="px-6 py-3.5 text-muted-text">{r.customerId?.name || '—'}</td>
-                      <td className="px-6 py-3.5 text-muted-text">
+                    <tr key={r._id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-6 py-4 font-black text-slate-800">{r.holdBillNo}</td>
+                      <td className="px-6 py-4 font-mono text-xs font-bold text-slate-500">#{String(r.orderId?._id || r.orderId).slice(-8).toUpperCase()}</td>
+                      <td className="px-6 py-4 font-bold text-slate-800">{r.customerId?.name || '—'}</td>
+                      <td className="px-6 py-4 font-bold text-slate-600">
                         {(r.items || []).map((it) => `${it.orderItemName} x${it.qty}`).join(', ') || '—'}
                       </td>
-                      <td className="px-6 py-3.5 text-muted-text">
+                      <td className="px-6 py-4 text-slate-600 font-medium">
                         {(r.items || []).map((it) => it.reason).filter(Boolean).join(', ') || r.notes || '—'}
                       </td>
-                      <td className="px-6 py-3.5">
-                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${statusColors[r.status] || 'bg-gray-100 text-gray-600'}`}>
+                      <td className="px-6 py-4">
+                        <span className={`text-[9px] uppercase tracking-wider font-black px-2.5 py-1 rounded-full ${statusColors[r.status] || 'bg-slate-100 text-slate-600'}`}>
                           {r.status}
                         </span>
                       </td>
-                      <td className="px-6 py-3.5">
+                      <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           {['requested', 'approved', 'on_hold'].includes(r.status) && (
                             <>
                               <button
                                 type="button"
                                 onClick={() => openApproveModal(r)}
-                                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                                className="px-3 py-1.5 rounded-lg text-[9px] uppercase tracking-wider font-black bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-all"
                               >
                                 Approve
                               </button>
                               <button
                                 type="button"
                                 onClick={() => openRejectModal(r)}
-                                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-50 text-red-700 hover:bg-red-100"
+                                className="px-3 py-1.5 rounded-lg text-[9px] uppercase tracking-wider font-black bg-rose-50 text-rose-700 hover:bg-rose-100 transition-all"
                               >
                                 Reject
                               </button>
@@ -223,7 +229,7 @@ const AdminReturns = () => {
                           <button
                             type="button"
                             onClick={() => openDeleteModal(r)}
-                            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-50 text-rose-700 hover:bg-rose-100"
+                            className="px-3 py-1.5 rounded-lg text-[9px] uppercase tracking-wider font-black bg-slate-100 text-rose-600 hover:bg-rose-50 transition-all"
                           >
                             Delete
                           </button>
@@ -233,7 +239,7 @@ const AdminReturns = () => {
                   ))}
                   {filtered.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="px-6 py-10 text-center text-muted-text">No returns found</td>
+                      <td colSpan={7} className="px-6 py-12 text-center font-black text-[11px] uppercase tracking-wider text-slate-400">No returns found</td>
                     </tr>
                   )}
                 </tbody>
@@ -245,52 +251,54 @@ const AdminReturns = () => {
 
       {/* Approve Resolution Modal */}
       {modalType === 'approve' && activeReturn && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-100 p-6 space-y-5">
-            <div className="text-center space-y-2">
-              <div className="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-2 text-xl">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => { setActiveReturn(null); setModalType(''); }}>
+          <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col border border-slate-100" onClick={(e) => e.stopPropagation()}>
+            <div className="px-6 py-6 border-b border-slate-100 flex flex-col items-center justify-center text-center bg-white/80 backdrop-blur-md">
+              <div className="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-4 text-xl border border-emerald-100 shadow-sm">
                 ✓
               </div>
-              <h3 className="font-extrabold text-slate-900 text-lg">Approve Return Request</h3>
-              <p className="text-sm text-slate-500">
-                Resolution for <span className="font-semibold text-slate-800">{activeReturn.holdBillNo}</span> ({activeReturn.customerId?.name || 'Customer'})
+              <h3 className="font-black text-slate-900 text-xl">Approve Return Request</h3>
+              <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mt-2">
+                Resolution for <span className="text-slate-800">{activeReturn.holdBillNo}</span> ({activeReturn.customerId?.name || 'Customer'})
               </p>
             </div>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                  Resolution Method
-                </label>
-                <select
-                  value={resolution}
-                  onChange={(e) => setResolution(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-medium text-slate-800 transition-all"
-                >
-                  <option value="exchange">Exchange Product (Default)</option>
-                  <option value="store_credit">Store Credit</option>
-                  <option value="upgrade">Upgrade Product</option>
-                </select>
+            <div className="p-6 bg-slate-50/50">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2">
+                    Resolution Method
+                  </label>
+                  <select
+                    value={resolution}
+                    onChange={(e) => setResolution(e.target.value)}
+                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo font-bold text-slate-800 transition-all shadow-sm cursor-pointer"
+                  >
+                    <option value="exchange">Exchange Product (Default)</option>
+                    <option value="store_credit">Store Credit</option>
+                    <option value="upgrade">Upgrade Product</option>
+                  </select>
+                </div>
               </div>
-            </div>
 
-            <div className="flex gap-3 justify-center pt-2">
-              <button
-                type="button"
-                disabled={submitting}
-                onClick={() => { setActiveReturn(null); setModalType(''); }}
-                className="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold hover:bg-slate-50 text-slate-600 transition-colors disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={submitting}
-                onClick={submitApprove}
-                className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold shadow-md transition-colors disabled:opacity-50"
-              >
-                {submitting ? 'Approving...' : 'Approve'}
-              </button>
+              <div className="flex gap-3 justify-center pt-8">
+                <button
+                  type="button"
+                  disabled={submitting}
+                  onClick={() => { setActiveReturn(null); setModalType(''); }}
+                  className="flex-1 py-3 rounded-xl bg-slate-100 text-[10px] uppercase tracking-wider font-black hover:bg-slate-200 text-slate-700 transition-all disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={submitting}
+                  onClick={submitApprove}
+                  className="flex-1 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[10px] uppercase tracking-wider font-black shadow-lg shadow-slate-900/20 transition-all disabled:opacity-50"
+                >
+                  {submitting ? 'Approving...' : 'Approve Return'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -298,51 +306,53 @@ const AdminReturns = () => {
 
       {/* Reject Reason Modal */}
       {modalType === 'reject' && activeReturn && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-100 p-6 space-y-5">
-            <div className="text-center space-y-2">
-              <div className="w-12 h-12 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-2 text-xl">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => { setActiveReturn(null); setModalType(''); }}>
+          <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col border border-slate-100" onClick={(e) => e.stopPropagation()}>
+            <div className="px-6 py-6 border-b border-slate-100 flex flex-col items-center justify-center text-center bg-white/80 backdrop-blur-md">
+              <div className="w-12 h-12 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mb-4 text-xl border border-rose-100 shadow-sm">
                 ✕
               </div>
-              <h3 className="font-extrabold text-slate-900 text-lg">Reject Return Request</h3>
-              <p className="text-sm text-slate-500">
-                Reason for rejecting <span className="font-semibold text-slate-800">{activeReturn.holdBillNo}</span>
+              <h3 className="font-black text-slate-900 text-xl">Reject Return Request</h3>
+              <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mt-2">
+                Reason for rejecting <span className="text-slate-800">{activeReturn.holdBillNo}</span>
               </p>
             </div>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                  Rejection Reason
-                </label>
-                <textarea
-                  required
-                  rows={3}
-                  value={rejectReason}
-                  onChange={(e) => setRejectReason(e.target.value)}
-                  placeholder="Provide a clear reason..."
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 font-medium text-slate-800 transition-all resize-none"
-                />
+            <div className="p-6 bg-slate-50/50">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2">
+                    Rejection Reason
+                  </label>
+                  <textarea
+                    required
+                    rows={3}
+                    value={rejectReason}
+                    onChange={(e) => setRejectReason(e.target.value)}
+                    placeholder="Provide a clear reason..."
+                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 font-bold text-slate-800 transition-all shadow-sm resize-none"
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="flex gap-3 justify-center pt-2">
-              <button
-                type="button"
-                disabled={submitting}
-                onClick={() => { setActiveReturn(null); setModalType(''); }}
-                className="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold hover:bg-slate-50 text-slate-600 transition-colors disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={submitting}
-                onClick={submitReject}
-                className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-bold shadow-md transition-colors disabled:opacity-50"
-              >
-                {submitting ? 'Rejecting...' : 'Reject'}
-              </button>
+              <div className="flex gap-3 justify-center pt-8">
+                <button
+                  type="button"
+                  disabled={submitting}
+                  onClick={() => { setActiveReturn(null); setModalType(''); }}
+                  className="flex-1 py-3 rounded-xl bg-slate-100 text-[10px] uppercase tracking-wider font-black hover:bg-slate-200 text-slate-700 transition-all disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={submitting}
+                  onClick={submitReject}
+                  className="flex-1 py-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-[10px] uppercase tracking-wider font-black shadow-lg shadow-rose-500/20 transition-all disabled:opacity-50"
+                >
+                  {submitting ? 'Rejecting...' : 'Confirm Reject'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

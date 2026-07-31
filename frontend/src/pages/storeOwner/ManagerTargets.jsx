@@ -116,23 +116,30 @@ const ManagerTargets = () => {
 
   return (
     <DashboardLayout navItems={navItems} title="Manager Dashboard">
-      <div>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
+      <div className="animate-fade-in space-y-6">
+        {/* Operations Control Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-indigo/5 rounded-full blur-3xl pointer-events-none -z-10"></div>
           <div>
-            <h1 className="text-2xl font-bold text-dark-navy">🎯 Employee Targets</h1>
-            <p className="text-muted-text text-sm mt-1">{targets.length} targets • {completedCount} completed • Rs. {totalBonus.toLocaleString()} bonus</p>
+            <div className="flex items-center gap-3 mb-1">
+              <div className="w-10 h-10 rounded-2xl bg-brand-indigo/10 flex items-center justify-center text-brand-indigo">
+                <Target size={20} strokeWidth={2.5} />
+              </div>
+              <h1 className="text-2xl font-black text-slate-900 m-0">Employee Targets</h1>
+            </div>
+            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mt-2 m-0">Current period: {targets.length} targets assigned, {completedCount} completed</p>
           </div>
-          <div className="flex gap-2 items-center">
+          <div className="flex flex-wrap items-center gap-3">
             <select value={filterMonth} onChange={(e) => setFilterMonth(Number(e.target.value))}
-              className="border border-card-border rounded-xl py-2 px-3 text-sm bg-white">
+              className="bg-white/80 border border-slate-200 rounded-xl py-2 px-3.5 text-xs font-bold text-slate-700 outline-none cursor-pointer focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo">
               {Array.from({length: 12}, (_, i) => <option key={i+1} value={i+1}>{new Date(0, i).toLocaleString('default', {month: 'long'})}</option>)}
             </select>
             <select value={filterYear} onChange={(e) => setFilterYear(Number(e.target.value))}
-              className="border border-card-border rounded-xl py-2 px-3 text-sm bg-white">
+              className="bg-white/80 border border-slate-200 rounded-xl py-2 px-3.5 text-xs font-bold text-slate-700 outline-none cursor-pointer focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo">
               {[2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
             </select>
-            <button onClick={() => setShowModal(true)} className="flex items-center gap-2 bg-primary-blue text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-emerald-600 shadow-lg shadow-emerald-200 text-sm">
-              <Plus size={18} /> Assign Target
+            <button onClick={() => setShowModal(true)} className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
+              <Plus size={14} /> Assign Target
             </button>
           </div>
         </div>
@@ -149,9 +156,8 @@ const ManagerTargets = () => {
                     <p className="font-semibold text-dark-navy">{t.employeeId?.name || 'Employee'}</p>
                     <p className="text-xs text-muted-text">{t.employeeId?.role}</p>
                   </div>
-                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-                    isCompleted ? 'bg-emerald-100 text-emerald-700' : t.status === 'missed' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'
-                  }`}>
+                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${isCompleted ? 'bg-emerald-100 text-emerald-700' : t.status === 'missed' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'
+                    }`}>
                     {isCompleted ? '✅ Done' : t.status === 'missed' ? '❌ Missed' : '🔄 Active'}
                   </span>
                   <button onClick={() => handleDeleteClick(t)} className="ml-2 text-red-500 hover:text-red-700 p-1 rounded-md hover:bg-red-50">
@@ -204,7 +210,7 @@ const ManagerTargets = () => {
             <form onSubmit={handleCreate} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-dark-navy mb-1">Employee *</label>
-                <select required value={form.employeeId} onChange={(e) => setForm({...form, employeeId: e.target.value})}
+                <select required value={form.employeeId} onChange={(e) => setForm({ ...form, employeeId: e.target.value })}
                   className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm">
                   <option value="">Select employee</option>
                   {employees.map(e => <option key={e._id} value={e._id}>{e.name} ({e.role})</option>)}
@@ -213,25 +219,25 @@ const ManagerTargets = () => {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-dark-navy mb-1">Target Type *</label>
-                  <select value={form.targetType} onChange={(e) => setForm({...form, targetType: e.target.value})}
+                  <select value={form.targetType} onChange={(e) => setForm({ ...form, targetType: e.target.value })}
                     className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm">
                     {TARGET_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-dark-navy mb-1">Target Value *</label>
-                  <input type="number" required min="1" value={form.targetValue} onChange={(e) => setForm({...form, targetValue: e.target.value})}
+                  <input type="number" required min="1" value={form.targetValue} onChange={(e) => setForm({ ...form, targetValue: e.target.value })}
                     className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm" />
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-dark-navy mb-1">Bonus Amount (Rs.)</label>
-                <input type="number" min="0" value={form.bonusAmount} onChange={(e) => setForm({...form, bonusAmount: e.target.value})}
+                <input type="number" min="0" value={form.bonusAmount} onChange={(e) => setForm({ ...form, bonusAmount: e.target.value })}
                   placeholder="0" className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-dark-navy mb-1">Description / Notes (optional)</label>
-                <textarea value={form.notes} onChange={(e) => setForm({...form, notes: e.target.value})}
+                <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })}
                   placeholder="Additional details about this target..." className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm resize-none" rows="2" />
               </div>
               <div className="flex gap-3">

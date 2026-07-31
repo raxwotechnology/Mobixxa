@@ -138,75 +138,81 @@ const ManagerEmployees = ({ navItems = managerNavGroups, title = 'Manager Dashbo
 
   return (
     <DashboardLayout navItems={navItems} title={title}>
-      <div>
-        <div className="flex items-center justify-between mb-6">
+      <div className="animate-fade-in space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-indigo/5 rounded-full blur-3xl pointer-events-none -z-10"></div>
           <div>
-            <h1 className="text-2xl font-bold text-dark-navy">👨🏻‍👩🏻‍👦🏻‍👦🏻 Employees</h1>
-            <p className="text-muted-text text-sm mt-1">{employees.length} staff members</p>
+            <div className="flex items-center gap-2.5 mb-1">
+              <span className="inline-flex items-center gap-1.5 bg-brand-indigo/10 text-brand-indigo text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg border border-brand-indigo/15">
+                Staff & Roles
+              </span>
+            </div>
+            <h1 className="text-2xl font-black text-slate-900 m-0">Employees Registry</h1>
+            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mt-2 m-0">{employees.length} registered staff members</p>
           </div>
           <div className="flex gap-2 flex-wrap">
             <button onClick={openCreate}
-              className="flex items-center gap-2 bg-primary-blue hover:bg-emerald-600 text-white font-medium px-5 py-2.5 rounded-xl transition-colors shadow-md text-sm">
-              <UserPlus size={16} /> Add Employee
+              className="bg-slate-900 hover:bg-slate-800 text-white text-[10px] uppercase tracking-wider font-black px-4 py-2.5 rounded-xl transition-all shadow-md flex items-center gap-2">
+              <UserPlus size={14} /> Add Employee
             </button>
           </div>
         </div>
 
         <div className="relative mb-6">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             placeholder="Search employees..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full sm:w-96 border border-card-border rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue"
+            className="w-full sm:w-96 bg-white/80 border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm"
           />
         </div>
 
         {filtered.length === 0 && (
-          <div className="text-center py-16 bg-white rounded-2xl border border-card-border">
-            <Users size={48} className="mx-auto text-gray-300 mb-3" />
-            <h3 className="font-semibold text-dark-navy">No employees found</h3>
-            <p className="text-muted-text text-sm mt-1">Click "Add Employee" to register your first staff member</p>
+          <div className="text-center py-16 bg-white rounded-3xl border border-slate-100 shadow-sm">
+            <Users size={48} className="mx-auto text-slate-300 mb-3" />
+            <h3 className="font-black text-slate-700 text-sm uppercase tracking-wider">No employees found</h3>
+            <p className="text-slate-400 text-xs mt-1">Click "Add Employee" to register your first staff member</p>
           </div>
         )}
 
         <div className="grid gap-4">
           {filtered.map((emp) => (
-            <div key={emp._id} className="bg-white rounded-2xl border border-card-border p-5 shadow-sm">
+            <div key={emp._id} className="bg-white/60 backdrop-blur-md rounded-3xl border border-white/40 p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-indigo to-brand-violet flex items-center justify-center text-white font-black text-lg shadow-sm">
                     {emp.name?.charAt(0)?.toUpperCase()}
                   </div>
                   <div>
-                    <h3 className="font-semibold text-dark-navy text-sm">{emp.name}</h3>
-                    <p className="text-xs text-muted-text">{emp.email}</p>
-                    {emp.phone && <p className="text-xs text-muted-text">📞 {emp.phone}</p>}
+                    <h3 className="font-black text-slate-800 text-sm m-0">{emp.name}</h3>
+                    <p className="text-xs text-slate-400 font-bold m-0 mt-0.5">{emp.email}</p>
+                    {emp.phone && <p className="text-[11px] text-slate-500 font-semibold m-0 mt-1 flex items-center gap-1">📞 {emp.phone}</p>}
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${roleColors[emp.role] || 'bg-gray-100 text-gray-600'}`}>
+                <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+                  <span className={`text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-lg border ${roleColors[emp.role] || 'bg-slate-100 text-slate-600 border-slate-200'}`}>
                     {emp.role === 'deliveryGuy' ? 'Delivery Rider' : emp.role === 'stockEmployee' ? 'Stock Employee' : emp.role === 'cashier' ? 'Cashier' : emp.role}
                   </span>
                   {emp.assignedStore?.name && (
-                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">🏪 {emp.assignedStore.name}</span>
+                    <span className="text-[10px] uppercase font-black tracking-wider bg-slate-50 border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg">🏪 {emp.assignedStore.name}</span>
                   )}
-                  <div className="flex gap-1">
-                    <button onClick={() => openEdit(emp)} className="p-2 rounded-lg hover:bg-emerald-50 text-muted-text hover:text-primary-blue transition-colors" title="Edit">
-                      <Edit3 size={16} />
+                  <div className="flex gap-1.5 border-l border-slate-150 pl-3">
+                    <button onClick={() => openEdit(emp)} className="p-2 rounded-xl bg-slate-50 border border-slate-200/60 hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition-colors" title="Edit">
+                      <Edit3 size={14} />
                     </button>
-                    <button onClick={() => handleDeleteClick(emp)} className="p-2 rounded-lg hover:bg-red-50 text-red-500 hover:text-red-700 transition-colors" title="Delete">
-                      <Trash2 size={16} />
+                    <button onClick={() => handleDeleteClick(emp)} className="p-2 rounded-xl bg-rose-50 border border-rose-100 hover:bg-rose-100 text-rose-500 hover:text-rose-700 transition-colors" title="Delete">
+                      <Trash2 size={14} />
                     </button>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs text-muted-text">
-                <span>💰 Rs. {(emp.employeeInfo?.salary || 0).toLocaleString()}</span>
-                <span>🏢 {emp.employeeInfo?.department || '—'}</span>
-                <span>🏦 {emp.employeeInfo?.bankName || '—'} {emp.employeeInfo?.bankBranch ? `(${emp.employeeInfo.bankBranch})` : ''}</span>
-                <span>📋 EPF: {emp.employeeInfo?.epfNo || '—'}</span>
+              <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3 text-[11px] text-slate-500 font-bold border-t border-slate-100/60 pt-4">
+                <span className="flex items-center gap-1 text-slate-600">💰 Rs. {(emp.employeeInfo?.salary || 0).toLocaleString()}</span>
+                <span className="flex items-center gap-1">🏢 {emp.employeeInfo?.department || '—'}</span>
+                <span className="flex items-center gap-1">🏦 {emp.employeeInfo?.bankName || '—'} {emp.employeeInfo?.bankBranch ? `(${emp.employeeInfo.bankBranch})` : ''}</span>
+                <span className="flex items-center gap-1">📋 EPF: {emp.employeeInfo?.epfNo || '—'}</span>
               </div>
             </div>
           ))}
@@ -229,27 +235,27 @@ const ManagerEmployees = ({ navItems = managerNavGroups, title = 'Manager Dashbo
                   <div className="grid grid-cols-2 gap-3">
                     <div className="col-span-2">
                       <label className="text-xs text-muted-text block mb-1">Full Name *</label>
-                      <input required value={newForm.name} onChange={(e) => setNewForm({...newForm, name: e.target.value})}
+                      <input required value={newForm.name} onChange={(e) => setNewForm({ ...newForm, name: e.target.value })}
                         className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" placeholder="John Doe" />
                     </div>
                     <div>
                       <label className="text-xs text-muted-text block mb-1">Email *</label>
-                      <input required type="email" value={newForm.email} onChange={(e) => setNewForm({...newForm, email: e.target.value})}
+                      <input required type="email" value={newForm.email} onChange={(e) => setNewForm({ ...newForm, email: e.target.value })}
                         className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" placeholder="john@example.com" />
                     </div>
                     <div>
                       <label className="text-xs text-muted-text block mb-1">Password {editingId ? '(Leave blank to keep same)' : '*'}</label>
-                      <input required={!editingId} type="password" value={newForm.password} onChange={(e) => setNewForm({...newForm, password: e.target.value})}
+                      <input required={!editingId} type="password" value={newForm.password} onChange={(e) => setNewForm({ ...newForm, password: e.target.value })}
                         className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" placeholder={editingId ? '••••••••' : 'Min 6 characters'} />
                     </div>
                     <div>
                       <label className="text-xs text-muted-text block mb-1">Phone</label>
-                      <input value={newForm.phone} onChange={(e) => setNewForm({...newForm, phone: e.target.value})}
+                      <input value={newForm.phone} onChange={(e) => setNewForm({ ...newForm, phone: e.target.value })}
                         className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" placeholder="+94 7X XXX XXXX" />
                     </div>
                     <div>
                       <label className="text-xs text-muted-text block mb-1">Role *</label>
-                      <select value={newForm.role} onChange={(e) => setNewForm({...newForm, role: e.target.value})}
+                      <select value={newForm.role} onChange={(e) => setNewForm({ ...newForm, role: e.target.value })}
                         className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue bg-white">
                         <option value="cashier">Cashier</option>
                         <option value="deliveryGuy">Delivery Rider</option>
@@ -266,12 +272,12 @@ const ManagerEmployees = ({ navItems = managerNavGroups, title = 'Manager Dashbo
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-xs text-muted-text block mb-1">Monthly Salary (LKR)</label>
-                      <input type="number" value={newForm.salary} onChange={(e) => setNewForm({...newForm, salary: e.target.value})}
+                      <input type="number" value={newForm.salary} onChange={(e) => setNewForm({ ...newForm, salary: e.target.value })}
                         className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" placeholder="45000" />
                     </div>
                     <div>
                       <label className="text-xs text-muted-text block mb-1">Department</label>
-                      <input value={newForm.department} onChange={(e) => setNewForm({...newForm, department: e.target.value})}
+                      <input value={newForm.department} onChange={(e) => setNewForm({ ...newForm, department: e.target.value })}
                         className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" placeholder="Sales / Logistics" />
                     </div>
                   </div>
@@ -283,27 +289,27 @@ const ManagerEmployees = ({ navItems = managerNavGroups, title = 'Manager Dashbo
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-xs text-muted-text block mb-1">Bank Name</label>
-                      <input value={newForm.bankName} onChange={(e) => setNewForm({...newForm, bankName: e.target.value})}
+                      <input value={newForm.bankName} onChange={(e) => setNewForm({ ...newForm, bankName: e.target.value })}
                         className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" placeholder="Bank of Ceylon" />
                     </div>
                     <div>
                       <label className="text-xs text-muted-text block mb-1">Bank Branch</label>
-                      <input value={newForm.bankBranch} onChange={(e) => setNewForm({...newForm, bankBranch: e.target.value})}
+                      <input value={newForm.bankBranch} onChange={(e) => setNewForm({ ...newForm, bankBranch: e.target.value })}
                         className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" placeholder="Colombo Main" />
                     </div>
                     <div>
                       <label className="text-xs text-muted-text block mb-1">Account Number</label>
-                      <input value={newForm.bankAccount} onChange={(e) => setNewForm({...newForm, bankAccount: e.target.value})}
+                      <input value={newForm.bankAccount} onChange={(e) => setNewForm({ ...newForm, bankAccount: e.target.value })}
                         className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" placeholder="XXXX XXXX XXXX" />
                     </div>
                     <div>
                       <label className="text-xs text-muted-text block mb-1">EPF Number</label>
-                      <input value={newForm.epfNo} onChange={(e) => setNewForm({...newForm, epfNo: e.target.value})}
+                      <input value={newForm.epfNo} onChange={(e) => setNewForm({ ...newForm, epfNo: e.target.value })}
                         className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" placeholder="EPF-XXXXX" />
                     </div>
                     <div className="col-span-2">
                       <label className="text-xs text-muted-text block mb-1">ETF Number</label>
-                      <input value={newForm.etfNo} onChange={(e) => setNewForm({...newForm, etfNo: e.target.value})}
+                      <input value={newForm.etfNo} onChange={(e) => setNewForm({ ...newForm, etfNo: e.target.value })}
                         className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" placeholder="ETF-XXXXX" />
                     </div>
                   </div>

@@ -52,10 +52,19 @@ const ManagerPerformance = () => {
 
   return (
     <DashboardLayout navItems={navItems} title="Manager Dashboard">
-      <div>
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-dark-navy">📊 Employee Performance</h1>
-          <p className="text-muted-text text-sm mt-1">Current month performance overview</p>
+      <div className="animate-fade-in space-y-6">
+        {/* Operations Control Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-indigo/5 rounded-full blur-3xl pointer-events-none -z-10"></div>
+          <div>
+            <div className="flex items-center gap-3 mb-1">
+              <div className="w-10 h-10 rounded-2xl bg-brand-indigo/10 flex items-center justify-center text-brand-indigo">
+                <BarChart3 size={20} strokeWidth={2.5} />
+              </div>
+              <h1 className="text-2xl font-black text-slate-900 m-0">Employee Performance</h1>
+            </div>
+            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mt-2 m-0">Current month performance overview</p>
+          </div>
         </div>
 
         {/* Employee Selection */}
@@ -64,15 +73,13 @@ const ManagerPerformance = () => {
             <button
               key={emp._id}
               onClick={() => handleSelectEmployee(emp._id)}
-              className={`p-4 rounded-2xl border text-center transition-all ${
-                selectedEmployee === emp._id
+              className={`p-4 rounded-2xl border text-center transition-all ${selectedEmployee === emp._id
                   ? 'border-primary-blue bg-emerald-50 shadow-md'
                   : 'border-card-border bg-white hover:border-emerald-200 hover:bg-emerald-50/50'
-              }`}
+                }`}
             >
-              <div className={`w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center text-white font-bold ${
-                selectedEmployee === emp._id ? 'bg-primary-blue' : 'bg-gray-300'
-              }`}>
+              <div className={`w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center text-white font-bold ${selectedEmployee === emp._id ? 'bg-primary-blue' : 'bg-gray-300'
+                }`}>
                 {emp.name?.charAt(0)?.toUpperCase()}
               </div>
               <p className="text-sm font-semibold text-dark-navy truncate">{emp.name?.split(' ')[0]}</p>

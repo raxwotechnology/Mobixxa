@@ -5,6 +5,7 @@ import { getEmployeeNavGroups } from './employeeNav';
 import { getMyOvertime } from '../../services/api';
 import useAuthStore from '../../store/authStore';
 import { toast } from 'react-toastify';
+import EmployeePageHeader, { EmployeeStatCard, EmployeeLoading, EmployeeTableWrap } from './EmployeePageHeader';
 
 const EmployeeOvertime = () => {
   const user = useAuthStore((s) => s.user);
@@ -18,7 +19,7 @@ const EmployeeOvertime = () => {
         setLoading(true);
         const res = await getMyOvertime();
         setData(res.data);
-      } catch (err) {
+      } catch {
         toast.error('Failed to load OT records');
       } finally {
         setLoading(false);
@@ -30,9 +31,7 @@ const EmployeeOvertime = () => {
   if (loading) {
     return (
       <DashboardLayout navItems={navItems} title="Employee Portal">
-        <div className="flex items-center justify-center h-64">
-          <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-        </div>
+        <EmployeeLoading />
       </DashboardLayout>
     );
   }
@@ -42,82 +41,65 @@ const EmployeeOvertime = () => {
 
   return (
     <DashboardLayout navItems={navItems} title="Employee Portal">
-      <div>
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-dark-navy">⏰ My Overtime</h1>
-          <p className="text-muted-text text-sm mt-1">View your overtime records and payments</p>
+      <div className="animate-fade-in space-y-6">
+        <EmployeePageHeader
+          badge="PAYROLL & OT"
+          title="My Overtime"
+          subtitle="Track overtime hours and payout approvals"
+          icon={Clock}
+        />
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <EmployeeStatCard label="Total OT Hours" value={`${summary.totalHours.toFixed(1)}h`} icon={Clock} />
+          <EmployeeStatCard label="Total OT Pay" value={`Rs. ${summary.totalAmount.toLocaleString()}`} icon={DollarSign} />
+          <EmployeeStatCard label="Paid Amount" value={`Rs. ${summary.paidAmount.toLocaleString()}`} color="text-emerald-600" icon={CheckCircle} iconBg="bg-emerald-50 border-emerald-100/60" iconColor="text-emerald-600" />
+          <EmployeeStatCard label="Pending Amount" value={`Rs. ${summary.pendingAmount.toLocaleString()}`} color="text-amber-600" icon={DollarSign} iconBg="bg-amber-50 border-amber-100/60" iconColor="text-amber-600" />
         </div>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center mb-2">
-              <Clock size={16} className="text-white" />
-            </div>
-            <p className="text-2xl font-bold text-dark-navy">{summary.totalHours.toFixed(1)}h</p>
-            <p className="text-xs text-muted-text mt-1">Total OT Hours</p>
+        <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+          <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-100">
+            <h2 className="font-black text-slate-900 text-xs sm:text-sm m-0 uppercase tracking-wider">OT Records ({summary.recordCount})</h2>
+            <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-slate-400 mt-1 m-0">Breakdown of overtime hours worked per date</p>
           </div>
-          <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center mb-2">
-              <DollarSign size={16} className="text-white" />
-            </div>
-            <p className="text-2xl font-bold text-dark-navy">Rs. {summary.totalAmount.toLocaleString()}</p>
-            <p className="text-xs text-muted-text mt-1">Total OT Pay</p>
-          </div>
-          <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center mb-2">
-              <CheckCircle size={16} className="text-white" />
-            </div>
-            <p className="text-2xl font-bold text-green-600">Rs. {summary.paidAmount.toLocaleString()}</p>
-            <p className="text-xs text-muted-text mt-1">Paid</p>
-          </div>
-          <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mb-2">
-              <DollarSign size={16} className="text-white" />
-            </div>
-            <p className="text-2xl font-bold text-amber-600">Rs. {summary.pendingAmount.toLocaleString()}</p>
-            <p className="text-xs text-muted-text mt-1">Pending</p>
-          </div>
-        </div>
-
-        {/* Records Table */}
-        <div className="bg-white rounded-2xl border border-card-border shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-card-border">
-            <h2 className="font-semibold text-dark-navy">OT Records ({summary.recordCount})</h2>
-          </div>
-          <div className="overflow-x-auto">
+          <EmployeeTableWrap>
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-card-border bg-gray-50/50">
-                  <th className="text-left py-3 px-4 text-muted-text text-xs uppercase font-semibold">Date</th>
-                  <th className="text-right py-3 px-4 text-muted-text text-xs uppercase font-semibold">Hours</th>
-                  <th className="text-right py-3 px-4 text-muted-text text-xs uppercase font-semibold">Rate/Hr</th>
-                  <th className="text-right py-3 px-4 text-muted-text text-xs uppercase font-semibold">Amount</th>
-                  <th className="text-center py-3 px-4 text-muted-text text-xs uppercase font-semibold">Status</th>
-                  <th className="text-left py-3 px-4 text-muted-text text-xs uppercase font-semibold">Description</th>
+                <tr className="bg-slate-50 border-b border-slate-100">
+                  <th className="px-4 sm:px-6 py-3 sm:py-4 text-[10px] uppercase font-black tracking-wider text-slate-500 text-left">Date</th>
+                  <th className="px-4 sm:px-6 py-3 sm:py-4 text-[10px] uppercase font-black tracking-wider text-slate-500 text-right">Hours</th>
+                  <th className="px-4 sm:px-6 py-3 sm:py-4 text-[10px] uppercase font-black tracking-wider text-slate-500 text-right">Rate/Hr</th>
+                  <th className="px-4 sm:px-6 py-3 sm:py-4 text-[10px] uppercase font-black tracking-wider text-slate-500 text-right">Amount</th>
+                  <th className="px-4 sm:px-6 py-3 sm:py-4 text-[10px] uppercase font-black tracking-wider text-slate-500 text-center">Status</th>
+                  <th className="px-4 sm:px-6 py-3 sm:py-4 text-[10px] uppercase font-black tracking-wider text-slate-500 text-left">Description</th>
                 </tr>
               </thead>
-              <tbody>
-                {records.map(r => (
-                  <tr key={r._id} className="border-b border-gray-50 hover:bg-gray-50/50">
-                    <td className="py-3 px-4 font-medium">{new Date(r.date).toLocaleDateString()}</td>
-                    <td className="py-3 px-4 text-right">{r.hours}h</td>
-                    <td className="py-3 px-4 text-right">Rs. {r.ratePerHour}</td>
-                    <td className="py-3 px-4 text-right font-bold">Rs. {r.totalAmount.toLocaleString()}</td>
-                    <td className="py-3 px-4 text-center">
-                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${r.status === 'paid' ? 'bg-green-100 text-green-700' : r.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
-                        {r.status === 'paid' ? '✅ Paid' : r.status === 'rejected' ? '❌ Rejected' : '⏳ Pending'}
+              <tbody className="divide-y divide-slate-100">
+                {records.map((r) => (
+                  <tr key={r._id} className="hover:bg-slate-50/50 transition-colors">
+                    <td className="px-4 sm:px-6 py-3 sm:py-4 font-black text-slate-900 whitespace-nowrap">
+                      {new Date(r.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                    </td>
+                    <td className="px-4 sm:px-6 py-3 sm:py-4 text-right font-bold text-slate-700">{r.hours}h</td>
+                    <td className="px-4 sm:px-6 py-3 sm:py-4 text-right font-bold text-slate-700">Rs. {r.ratePerHour}</td>
+                    <td className="px-4 sm:px-6 py-3 sm:py-4 text-right font-black text-slate-900 whitespace-nowrap">Rs. {r.totalAmount.toLocaleString()}</td>
+                    <td className="px-4 sm:px-6 py-3 sm:py-4 text-center">
+                      <span className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full ${r.status === 'paid' ? 'bg-emerald-100 text-emerald-700' : r.status === 'rejected' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'}`}>
+                        {r.status === 'paid' ? 'Paid' : r.status === 'rejected' ? 'Rejected' : 'Pending'}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-xs text-muted-text">{r.description || '—'}</td>
+                    <td className="px-4 sm:px-6 py-3 sm:py-4 text-xs text-slate-500 font-medium">{r.description || '—'}</td>
                   </tr>
                 ))}
                 {records.length === 0 && (
-                  <tr><td colSpan={6} className="py-12 text-center text-muted-text">No overtime records yet</td></tr>
+                  <tr>
+                    <td colSpan={6} className="py-12 text-center font-black text-slate-400 text-[11px] uppercase tracking-wider">
+                      No overtime records yet
+                    </td>
+                  </tr>
                 )}
               </tbody>
             </table>
-          </div>
+          </EmployeeTableWrap>
         </div>
       </div>
     </DashboardLayout>

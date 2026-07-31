@@ -1,76 +1,134 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { getDeals } from '../services/api';
+import { getDeals, getCategories } from '../services/api';
 import ProductCard from '../components/ProductCard';
 
 const Deals = () => {
   const [deals, setDeals] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [loading, setLoading] = useState(true);
+  const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
-    const fetchDeals = async () => {
+    const fetchData = async () => {
       try {
-        const res = await getDeals();
-        setDeals(res.data);
+        const [dealsRes, catsRes] = await Promise.all([getDeals(), getCategories()]);
+        setDeals(dealsRes.data);
+        setCategories(catsRes.data);
       } catch (err) {
         console.error(err);
       } finally {
         setLoading(false);
       }
     };
-    fetchDeals();
+    fetchData();
   }, []);
 
+  // Midnight flash sale countdown
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const now = new Date();
+      const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+      const difference = +midnight - +now;
+      
+      let time = { hours: 0, minutes: 0, seconds: 0 };
+      if (difference > 0) {
+        time = {
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          timeMinutes: Math.floor((difference / 1000 / 60) % 60),
+          timeSeconds: Math.floor((difference / 1000) % 60)
+        };
+        time.minutes = time.timeMinutes;
+        time.seconds = time.timeSeconds;
+      }
+      return time;
+    };
+
+    setTimeLeft(calculateTimeLeft());
+    const timer = setInterval(() => {
+      setTimeLeft(calculateTimeLeft());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const filteredDeals = selectedCategory
+    ? deals.filter((product) => {
+        const catId = typeof product.category === 'object' ? product.category?._id : product.category;
+        return catId === selectedCategory;
+      })
+    : deals;
+
   return (
-    <div>
+    <div className="bg-slate-50/50 min-h-screen">
       {/* Banner */}
-      <div className="bg-gradient-to-r from-orange-500 to-amber-500 py-10">
-        <div className="base-container text-center">
+      <div className="relative overflow-hidden bg-gradient-to-r from-brand-indigo via-brand-violet to-brand-fuchsia py-14 shadow-inner">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_60%)] pointer-events-none" />
+        <div className="base-container text-center relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <span className="text-5xl mb-4 block">🔥</span>
-            <h1 className="text-3xl md:text-4xl font-bold text-white mt-0 mb-2">Deals of the Day</h1>
-            <p className="text-white/80 m-0 text-lg">Grab these incredible offers before they expire!</p>
+            <span className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white border border-white/20 mb-3 animate-pulse">
+              ⚡ Exclusive Promotions ⚡
+            </span>
+            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight mt-0 mb-3">Mega Deals & Offers</h1>
+            <p className="text-white/85 m-0 text-sm md:text-base font-medium max-w-xl mx-auto">
+              Grab these authentic tech products at unbeatable promotional prices before they run out!
+            </p>
+
+            {/* Countdown timer wrapper */}
+            <div className="flex justify-center items-center gap-3 mt-6">
+              <span className="text-white/75 text-[10px] font-black uppercase tracking-wider mr-1">OFFERS EXPIRE IN:</span>
+              <div className="flex gap-2">
+                <div className="bg-white/15 backdrop-blur-md px-3 py-2 rounded-xl text-white font-extrabold text-xs md:text-sm border border-white/20 shadow-sm min-w-[44px]">
+                  {String(timeLeft.hours).padStart(2, '0')}h
+                </div>
+                <div className="bg-white/15 backdrop-blur-md px-3 py-2 rounded-xl text-white font-extrabold text-xs md:text-sm border border-white/20 shadow-sm min-w-[44px]">
+                  {String(timeLeft.minutes || 0).padStart(2, '0')}m
+                </div>
+                <div className="bg-white/15 backdrop-blur-md px-3 py-2 rounded-xl text-white font-extrabold text-xs md:text-sm border border-white/20 shadow-sm min-w-[44px]">
+                  {String(timeLeft.seconds || 0).padStart(2, '0')}s
+                </div>
+              </div>
+            </div>
           </motion.div>
         </div>
       </div>
 
-      {/* Products */}
+      {/* Main Container */}
       <div className="base-container py-10">
+
+
+        {/* Listings */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="bg-white border border-card-border rounded-2xl overflow-hidden animate-pulse">
-                <div className="aspect-square bg-gray-200" />
-                <div className="p-4 space-y-3">
-                  <div className="h-4 bg-gray-200 rounded w-3/4" />
-                  <div className="h-3 bg-gray-200 rounded w-1/2" />
-                  <div className="h-5 bg-gray-200 rounded w-1/3" />
-                </div>
-              </div>
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 animate-pulse">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="bg-white border border-slate-100 rounded-3xl overflow-hidden shadow-sm h-80" />
             ))}
           </div>
         ) : deals.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {deals.map((product, i) => (
               <motion.div
                 key={product._id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.08, duration: 0.4 }}
+                transition={{ delay: i * 0.04, duration: 0.4 }}
               >
                 <ProductCard product={product} />
               </motion.div>
             ))}
           </div>
         ) : (
-          <div className="text-center py-16">
-            <p className="text-5xl mb-4">😊</p>
-            <h3 className="text-xl font-bold text-dark-navy mb-2 mt-0">No Deals Right Now</h3>
-            <p className="text-muted-text">Check back later for exciting offers!</p>
+          <div className="glass-card rounded-[2rem] p-16 text-center border border-slate-200/60 max-w-lg mx-auto shadow-sm">
+            <span className="text-5xl block mb-4">✨</span>
+            <h3 className="text-lg font-black text-slate-800 mb-2 mt-0">No Active Deals</h3>
+            <p className="text-slate-450 text-sm m-0 font-semibold">
+              There are no current active deals under this category. Check back soon for new flash sales!
+            </p>
           </div>
         )}
       </div>

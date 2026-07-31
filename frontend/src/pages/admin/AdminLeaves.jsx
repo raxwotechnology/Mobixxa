@@ -325,7 +325,7 @@ const AdminLeaves = () => {
 
   if (loading) {
     return (
-      <DashboardLayout navItems={navItems} title="Admin Panel">
+      <DashboardLayout navItems={navItems} title="Leaves">
         <div className="flex items-center justify-center h-64">
           <div className="w-10 h-10 border-4 border-primary-blue border-t-transparent rounded-full animate-spin" />
         </div>
@@ -334,136 +334,159 @@ const AdminLeaves = () => {
   }
 
   return (
-    <DashboardLayout navItems={navItems} title="Admin Panel">
+    <DashboardLayout navItems={navItems} title="Leaves">
       <div>
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-dark-navy mb-2">🌴 Leave Management & Policies</h1>
-            <p className="text-muted-text text-sm">Configure leaf policies and track employee leave requests</p>
+            <div className="flex items-center gap-2.5 mb-1">
+              <span className="inline-flex items-center gap-1.5 bg-brand-indigo/10 text-brand-indigo text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg border border-brand-indigo/15">
+                USER & EMPLOYEE MANAGEMENT
+              </span>
+            </div>
+            <h1 className="text-2xl font-black text-slate-900 m-0">Leave Management</h1>
+            <p className="text-slate-400 text-xs font-bold mt-1 m-0">Configure leave policies and track employee leave requests</p>
           </div>
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap items-center bg-white border border-slate-200 p-2 rounded-2xl shadow-sm">
             {activeTab === 'requests' && (
               <>
-                <button onClick={() => setShowAddLeaveModal(true)} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors">
-                  <Calendar size={16} /> Add Leave
+                <button onClick={() => setShowAddLeaveModal(true)} className="flex items-center gap-2 bg-brand-indigo hover:bg-indigo-700 text-white text-[11px] font-black uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all shadow-sm shadow-brand-indigo/20">
+                  <Calendar size={14} /> Add Leave
                 </button>
-                <button onClick={exportExcel} className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors">
-                  <FileSpreadsheet size={16} /> Export Excel
+                <button onClick={exportExcel} className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 text-emerald-700 text-[11px] font-black uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all shadow-sm">
+                  <FileSpreadsheet size={14} /> Excel
                 </button>
-                <button onClick={exportPDF} className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors">
-                  <FileText size={16} /> Export PDF
+                <button onClick={exportPDF} className="flex items-center gap-2 bg-rose-50 border border-rose-200 hover:bg-rose-100 text-rose-700 text-[11px] font-black uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all shadow-sm">
+                  <FileText size={14} /> PDF
                 </button>
               </>
             )}
             {activeTab === 'leave-policies' && (
-              <button onClick={openCreateLeave} className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors flex items-center gap-2">
-                <Plus size={16} /> Create Leave Policy
+              <button onClick={openCreateLeave} className="bg-brand-indigo hover:bg-indigo-700 text-white text-[11px] font-black uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all shadow-sm shadow-brand-indigo/20 flex items-center gap-2">
+                <Plus size={14} /> Create Policy
               </button>
             )}
           </div>
         </div>
 
         {/* Tab switcher */}
-        <div className="flex border-b border-card-border mb-6 gap-6">
+        {/* Tab switcher */}
+        <div className="flex border-b border-slate-200 mb-6 gap-8">
           <button
             onClick={() => setActiveTab('requests')}
-            className={`pb-3 font-semibold text-sm transition-all border-b-2 ${
-              activeTab === 'requests' ? 'border-primary-blue text-primary-blue' : 'border-transparent text-muted-text hover:text-dark-navy'
+            className={`pb-3 text-[11px] font-black uppercase tracking-wider transition-all border-b-2 ${
+              activeTab === 'requests' ? 'border-brand-indigo text-brand-indigo' : 'border-transparent text-slate-400 hover:text-slate-700'
             }`}
           >
             📋 Leave Requests
           </button>
           <button
             onClick={() => setActiveTab('leave-policies')}
-            className={`pb-3 font-semibold text-sm transition-all border-b-2 ${
-              activeTab === 'leave-policies' ? 'border-primary-blue text-primary-blue' : 'border-transparent text-muted-text hover:text-dark-navy'
+            className={`pb-3 text-[11px] font-black uppercase tracking-wider transition-all border-b-2 ${
+              activeTab === 'leave-policies' ? 'border-brand-indigo text-brand-indigo' : 'border-transparent text-slate-400 hover:text-slate-700'
             }`}
           >
             🌴 Leave Policies
           </button>
           <button
             onClick={() => setActiveTab('assign-policies')}
-            className={`pb-3 font-semibold text-sm transition-all border-b-2 ${
-              activeTab === 'assign-policies' ? 'border-primary-blue text-primary-blue' : 'border-transparent text-muted-text hover:text-dark-navy'
+            className={`pb-3 text-[11px] font-black uppercase tracking-wider transition-all border-b-2 ${
+              activeTab === 'assign-policies' ? 'border-brand-indigo text-brand-indigo' : 'border-transparent text-slate-400 hover:text-slate-700'
             }`}
           >
-            👤 Assign Leave Policies
+            👤 Assign Policies
           </button>
         </div>
 
         {activeTab === 'requests' && (
           <>
             {/* Request My Leave form */}
-            <form onSubmit={handleCreateLeaveRequest} className="bg-white rounded-2xl border border-card-border p-4 shadow-sm mb-6">
-              <h2 className="text-sm font-semibold text-dark-navy mb-3">Request My Leave</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                <select
-                  value={requestForm.leaveType}
-                  onChange={(e) => setRequestForm((prev) => ({ ...prev, leaveType: e.target.value }))}
-                  className="px-3 py-2.5 rounded-xl border border-card-border text-sm"
-                >
-                  {['annual', 'sick', 'casual', 'maternity', 'paternity', 'unpaid'].map((t) => (
-                    <option key={t} value={t}>{t}</option>
-                  ))}
-                </select>
-                <input
-                  type="date"
-                  value={requestForm.startDate}
-                  onChange={(e) => setRequestForm((prev) => ({ ...prev, startDate: e.target.value }))}
-                  className="px-3 py-2.5 rounded-xl border border-card-border text-sm"
-                />
-                <input
-                  type="date"
-                  value={requestForm.endDate}
-                  onChange={(e) => setRequestForm((prev) => ({ ...prev, endDate: e.target.value }))}
-                  className="px-3 py-2.5 rounded-xl border border-card-border text-sm"
-                />
-                <button
-                  type="submit"
-                  disabled={requesting}
-                  className="px-4 py-2.5 rounded-xl bg-primary-blue text-white text-sm font-semibold disabled:opacity-60"
-                >
-                  {requesting ? 'Submitting...' : 'Submit Leave'}
-                </button>
+            {/* Request My Leave form */}
+            <form onSubmit={handleCreateLeaveRequest} className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm mb-6 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-1.5 h-full bg-brand-indigo"></div>
+              <h2 className="text-lg font-black text-slate-900 mb-4">Request My Leave</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Leave Type</label>
+                  <select
+                    value={requestForm.leaveType}
+                    onChange={(e) => setRequestForm((prev) => ({ ...prev, leaveType: e.target.value }))}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all cursor-pointer"
+                  >
+                    {['annual', 'sick', 'casual', 'maternity', 'paternity', 'unpaid'].map((t) => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Start Date</label>
+                  <input
+                    type="date"
+                    value={requestForm.startDate}
+                    onChange={(e) => setRequestForm((prev) => ({ ...prev, startDate: e.target.value }))}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">End Date</label>
+                  <input
+                    type="date"
+                    value={requestForm.endDate}
+                    onChange={(e) => setRequestForm((prev) => ({ ...prev, endDate: e.target.value }))}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all"
+                  />
+                </div>
+                <div className="flex items-end">
+                  <button
+                    type="submit"
+                    disabled={requesting}
+                    className="w-full h-[42px] rounded-xl bg-brand-indigo hover:bg-indigo-700 text-white text-[11px] uppercase tracking-wider font-black shadow-lg shadow-brand-indigo/20 transition-all disabled:opacity-60 flex items-center justify-center"
+                  >
+                    {requesting ? 'Submitting...' : 'Submit Request'}
+                  </button>
+                </div>
               </div>
-              <textarea
-                value={requestForm.reason}
-                onChange={(e) => setRequestForm((prev) => ({ ...prev, reason: e.target.value }))}
-                rows={2}
-                placeholder="Reason"
-                className="mt-3 w-full px-3 py-2.5 rounded-xl border border-card-border text-sm"
-              />
+              <div className="mt-4">
+                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Reason</label>
+                <textarea
+                  value={requestForm.reason}
+                  onChange={(e) => setRequestForm((prev) => ({ ...prev, reason: e.target.value }))}
+                  rows={2}
+                  placeholder="Provide a reason for your leave..."
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all resize-none"
+                />
+              </div>
             </form>
 
             {/* Stats */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-              <div className="bg-white rounded-2xl border border-card-border p-4 shadow-sm text-center">
-                <p className="text-2xl font-bold text-amber-600">{leaves.filter(l => l.status === 'pending').length}</p>
-                <p className="text-xs text-muted-text">Pending</p>
+              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm text-center flex flex-col justify-center items-center">
+                <p className="text-3xl font-black text-amber-500 mb-1">{leaves.filter(l => l.status === 'pending').length}</p>
+                <p className="text-[10px] uppercase font-black tracking-wider text-slate-400">Pending</p>
               </div>
-              <div className="bg-white rounded-2xl border border-card-border p-4 shadow-sm text-center">
-                <p className="text-2xl font-bold text-emerald-600">{leaves.filter(l => l.status === 'approved').length}</p>
-                <p className="text-xs text-muted-text">Approved</p>
+              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm text-center flex flex-col justify-center items-center">
+                <p className="text-3xl font-black text-emerald-500 mb-1">{leaves.filter(l => l.status === 'approved').length}</p>
+                <p className="text-[10px] uppercase font-black tracking-wider text-slate-400">Approved</p>
               </div>
-              <div className="bg-white rounded-2xl border border-card-border p-4 shadow-sm text-center">
-                <p className="text-2xl font-bold text-red-500">{leaves.filter(l => l.status === 'rejected').length}</p>
-                <p className="text-xs text-muted-text">Rejected</p>
+              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm text-center flex flex-col justify-center items-center">
+                <p className="text-3xl font-black text-rose-500 mb-1">{leaves.filter(l => l.status === 'rejected').length}</p>
+                <p className="text-[10px] uppercase font-black tracking-wider text-slate-400">Rejected</p>
               </div>
-              <div className="bg-white rounded-2xl border border-card-border p-4 shadow-sm text-center">
-                <p className="text-2xl font-bold text-dark-navy">{leaves.filter(l => l.status === 'approved').reduce((s, l) => s + (l.totalDays || 0), 0)}</p>
-                <p className="text-xs text-muted-text">Total Days Used</p>
+              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm text-center flex flex-col justify-center items-center">
+                <p className="text-3xl font-black text-slate-900 mb-1">{leaves.filter(l => l.status === 'approved').reduce((s, l) => s + (l.totalDays || 0), 0)}</p>
+                <p className="text-[10px] uppercase font-black tracking-wider text-slate-400">Total Days Used</p>
               </div>
             </div>
 
             {/* Filters */}
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+            {/* Filters */}
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-6 bg-white border border-slate-200 p-2 rounded-2xl shadow-sm">
               <div className="flex flex-wrap gap-2">
                 {['all', 'pending', 'approved', 'rejected'].map((s) => (
                   <button
                     key={s}
                     onClick={() => setFilter(s)}
-                    className={`px-4 py-2 text-sm font-medium rounded-xl transition-colors ${
-                      filter === s ? 'bg-primary-blue text-white' : 'bg-gray-100 text-muted-text hover:bg-gray-200'
+                    className={`px-4 py-2 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all ${
+                      filter === s ? 'bg-slate-800 text-white shadow-md shadow-slate-800/20' : 'bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-700'
                     }`}
                   >
                     {s.charAt(0).toUpperCase() + s.slice(1)} ({s === 'all' ? leaves.length : leaves.filter(l => l.status === s).length})
@@ -475,7 +498,7 @@ const AdminLeaves = () => {
                 <select
                   value={roleFilter}
                   onChange={(e) => setRoleFilter(e.target.value)}
-                  className="px-3 py-2 bg-white border border-card-border rounded-xl text-sm outline-none"
+                  className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[11px] font-black uppercase tracking-wider text-slate-600 outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all cursor-pointer"
                 >
                   <option value="all">All Roles</option>
                   <option value="cashier">Cashier</option>
@@ -486,7 +509,7 @@ const AdminLeaves = () => {
                 <select
                   value={deptFilter}
                   onChange={(e) => setDeptFilter(e.target.value)}
-                  className="px-3 py-2 bg-white border border-card-border rounded-xl text-sm outline-none"
+                  className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[11px] font-black uppercase tracking-wider text-slate-600 outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all cursor-pointer"
                 >
                   <option value="all">All Departments</option>
                   {departments.map(dept => (
@@ -497,48 +520,83 @@ const AdminLeaves = () => {
             </div>
 
             {filtered.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-card-border p-12 text-center text-muted-text">
-                <Calendar size={40} className="mx-auto mb-3 text-gray-300" />
-                <p>No leave requests found</p>
+              <div className="bg-white rounded-3xl border border-slate-100 p-16 text-center shadow-sm flex flex-col items-center justify-center">
+                <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4 border border-slate-100">
+                  <Calendar size={32} className="text-slate-300" />
+                </div>
+                <h3 className="text-lg font-black text-slate-800 mb-1">No Leave Requests</h3>
+                <p className="text-sm font-bold text-slate-400">There are no leave requests matching your filters.</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {filtered.map((leave) => (
-                  <div key={leave._id} className="bg-white rounded-2xl border border-card-border p-5 shadow-sm">
+                  <div key={leave._id} className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
+                    <div className={`absolute top-0 left-0 w-1.5 h-full ${
+                      leave.status === 'pending' ? 'bg-amber-400' :
+                      leave.status === 'approved' ? 'bg-emerald-400' : 'bg-rose-400'
+                    }`}></div>
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center text-white font-bold text-sm">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-indigo to-brand-violet flex items-center justify-center text-white font-black text-lg shadow-md shadow-brand-indigo/20">
                           {leave.employeeId?.name?.charAt(0)?.toUpperCase() || '?'}
                         </div>
                         <div>
-                          <h3 className="font-semibold text-dark-navy text-sm">{leave.employeeId?.name}</h3>
-                          <p className="text-xs text-muted-text">{leave.employeeId?.role} • {leave.leaveType} leave</p>
+                          <h3 className="font-black text-slate-900 text-base">{leave.employeeId?.name}</h3>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-[10px] uppercase font-black tracking-wider text-slate-400">{leave.employeeId?.role}</span>
+                            <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                            <span className="text-[10px] uppercase font-black tracking-wider text-slate-600">{leave.leaveType} leave</span>
+                          </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2">
-                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${statusColors[leave.status]}`}>
+                      <div className="flex items-center gap-3">
+                        <span className={`text-[10px] uppercase font-black tracking-widest px-3 py-1.5 rounded-lg border ${
+                          leave.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-200' :
+                          leave.status === 'approved' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' :
+                          'bg-rose-50 text-rose-600 border-rose-200'
+                        }`}>
                           {leave.status}
                         </span>
                         {leave.status === 'pending' && (
-                          <>
-                            <button onClick={() => handleApprove(leave._id)} className="p-2 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors">
-                              <Check size={16} />
+                          <div className="flex gap-2">
+                            <button onClick={() => handleApprove(leave._id)} className="w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white border border-emerald-100 hover:border-emerald-500 transition-all shadow-sm">
+                              <Check size={16} strokeWidth={3} />
                             </button>
-                            <button onClick={() => handleReject(leave._id)} className="p-2 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-colors">
-                              <X size={16} />
+                            <button onClick={() => handleReject(leave._id)} className="w-8 h-8 flex items-center justify-center rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white border border-rose-100 hover:border-rose-500 transition-all shadow-sm">
+                              <X size={16} strokeWidth={3} />
                             </button>
-                          </>
+                          </div>
                         )}
                       </div>
                     </div>
 
-                    <div className="mt-3 flex flex-wrap gap-4 text-xs text-muted-text">
-                      <span className="flex items-center gap-1"><Calendar size={12} /> {new Date(leave.startDate).toLocaleDateString()} — {new Date(leave.endDate).toLocaleDateString()}</span>
-                      <span className="flex items-center gap-1"><Clock size={12} /> {leave.totalDays} day{leave.totalDays > 1 ? 's' : ''}</span>
+                    <div className="mt-5 flex flex-wrap gap-6 border-t border-slate-100 pt-5">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-md bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-200">
+                          <Calendar size={12} />
+                        </div>
+                        <span className="text-xs font-bold text-slate-600">{new Date(leave.startDate).toLocaleDateString()} — {new Date(leave.endDate).toLocaleDateString()}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-md bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-200">
+                          <Clock size={12} />
+                        </div>
+                        <span className="text-xs font-bold text-slate-600">{leave.totalDays} day{leave.totalDays > 1 ? 's' : ''}</span>
+                      </div>
                     </div>
-                    {leave.reason && <p className="text-xs text-muted-text mt-2 bg-gray-50 rounded-lg p-2">{leave.reason}</p>}
-                    {leave.rejectionReason && <p className="text-xs text-red-500 mt-2 bg-red-50 rounded-lg p-2">Rejected: {leave.rejectionReason}</p>}
+                    {leave.reason && (
+                      <div className="mt-4 bg-slate-50 rounded-xl p-3 border border-slate-100">
+                        <p className="text-[10px] uppercase font-black tracking-wider text-slate-400 mb-1">Reason</p>
+                        <p className="text-sm font-semibold text-slate-700">{leave.reason}</p>
+                      </div>
+                    )}
+                    {leave.rejectionReason && (
+                      <div className="mt-4 bg-rose-50 rounded-xl p-3 border border-rose-100">
+                        <p className="text-[10px] uppercase font-black tracking-wider text-rose-400 mb-1">Rejection Reason</p>
+                        <p className="text-sm font-semibold text-rose-700">{leave.rejectionReason}</p>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -557,38 +615,38 @@ const AdminLeaves = () => {
                 No leave policies found. Click "Create Leave Policy" to add one.
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {leavePolicies.map(p => (
-                  <div key={p._id} className="bg-white rounded-2xl border border-card-border p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden flex flex-col justify-between">
+                  <div key={p._id} className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden flex flex-col justify-between group">
                     {p.isDefault && (
-                      <div className="absolute top-0 right-0 bg-emerald-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-wider">
-                        Default
+                      <div className="absolute top-0 right-0 bg-emerald-50 text-emerald-600 border-b border-l border-emerald-100 text-[9px] font-black px-3 py-1.5 rounded-bl-xl uppercase tracking-wider shadow-sm">
+                        System Default
                       </div>
                     )}
                     <div>
-                      <h3 className="font-bold text-dark-navy text-lg mb-4 pr-16">{p.name}</h3>
-                      <div className="space-y-2.5 text-sm text-gray-600 mb-6">
-                        <div className="flex justify-between border-b border-gray-50 pb-1.5">
-                          <span>🌴 Annual Leaves</span>
-                          <span className="font-semibold text-dark-navy">{p.annualLeaves} days</span>
+                      <h3 className="font-black text-slate-800 text-lg mb-5 pr-16">{p.name}</h3>
+                      <div className="space-y-3 text-sm text-slate-600 mb-6">
+                        <div className="flex justify-between items-center border-b border-slate-50 pb-2">
+                          <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">🌴 Annual Leaves</span>
+                          <span className="font-black text-slate-800">{p.annualLeaves} days</span>
                         </div>
-                        <div className="flex justify-between border-b border-gray-50 pb-1.5">
-                          <span>🤒 Sick Leaves</span>
-                          <span className="font-semibold text-dark-navy">{p.sickLeaves} days</span>
+                        <div className="flex justify-between items-center border-b border-slate-50 pb-2">
+                          <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">🤒 Sick Leaves</span>
+                          <span className="font-black text-slate-800">{p.sickLeaves} days</span>
                         </div>
-                        <div className="flex justify-between border-b border-gray-50 pb-1.5">
-                          <span>🏖️ Casual Leaves</span>
-                          <span className="font-semibold text-dark-navy">{p.casualLeaves} days</span>
+                        <div className="flex justify-between items-center border-b border-slate-50 pb-2">
+                          <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">🏖️ Casual Leaves</span>
+                          <span className="font-black text-slate-800">{p.casualLeaves} days</span>
                         </div>
-                        <div className="flex justify-between border-b border-gray-50 pb-1.5">
-                          <span>💸 Excess Leave Penalty</span>
-                          <span className="font-semibold text-red-500">Rs. {p.deductionPerExcessLeave.toLocaleString()} / day</span>
+                        <div className="flex justify-between items-center border-b border-slate-50 pb-2">
+                          <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">💸 Excess Penalty</span>
+                          <span className="font-black text-rose-500">Rs. {p.deductionPerExcessLeave.toLocaleString()} / day</span>
                         </div>
                       </div>
                     </div>
-                    <div className="flex gap-2 border-t border-gray-50 pt-4 mt-auto">
-                      <button onClick={() => openEditLeave(p)} className="flex-1 bg-gray-50 hover:bg-gray-100 text-gray-700 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors border border-gray-200"><Edit2 size={12} /> Edit</button>
-                      <button onClick={() => handlePolicyDeleteClick(p)} className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors border border-red-100"><Trash2 size={12} /> Delete</button>
+                    <div className="flex gap-3 border-t border-slate-100 pt-5 mt-auto opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => openEditLeave(p)} className="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-700 py-2.5 rounded-xl text-[10px] uppercase tracking-wider font-black flex items-center justify-center gap-1.5 transition-all border border-slate-200"><Edit2 size={12} /> Edit</button>
+                      <button onClick={() => handlePolicyDeleteClick(p)} className="flex-1 bg-rose-50 hover:bg-rose-100 text-rose-600 py-2.5 rounded-xl text-[10px] uppercase tracking-wider font-black flex items-center justify-center gap-1.5 transition-all border border-rose-200"><Trash2 size={12} /> Delete</button>
                     </div>
                   </div>
                 ))}
@@ -599,34 +657,34 @@ const AdminLeaves = () => {
 
         {activeTab === 'assign-policies' && (
           <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row justify-between sm:items-center bg-white p-5 rounded-2xl border border-card-border shadow-sm gap-4">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center bg-white p-6 rounded-2xl border border-slate-200 shadow-sm gap-4">
               <div>
-                <h3 className="font-bold text-dark-navy">Bulk Policy Assignment</h3>
-                <p className="text-xs text-muted-text">Assign leave policies to all employees at once</p>
+                <h3 className="font-black text-slate-800 text-lg">Bulk Policy Assignment</h3>
+                <p className="text-xs font-bold text-slate-500 mt-1">Assign leave policies to all employees at once</p>
               </div>
               <button
                 onClick={() => openAssignModal(null)}
-                className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4.5 py-2.5 rounded-xl transition-colors shadow-sm"
+                className="bg-brand-indigo hover:bg-indigo-700 text-white text-[11px] font-black uppercase tracking-wider px-5 py-3 rounded-xl transition-all shadow-sm shadow-brand-indigo/20"
               >
                 Bulk Assign to All
               </button>
             </div>
 
-            <div className="bg-white rounded-2xl border border-card-border shadow-sm overflow-hidden">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-gray-50 border-b border-card-border">
-                      <th className="text-left px-6 py-4 font-semibold text-dark-navy">Employee</th>
-                      <th className="text-left px-6 py-4 font-semibold text-dark-navy">Role</th>
-                      <th className="text-left px-6 py-4 font-semibold text-dark-navy">Leave Policy</th>
-                      <th className="text-center px-6 py-4 font-semibold text-dark-navy">Action</th>
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-slate-50 text-[10px] uppercase font-black tracking-wider text-slate-500 border-b border-slate-200">
+                    <tr>
+                      <th className="px-6 py-4">Employee</th>
+                      <th className="px-6 py-4">Role</th>
+                      <th className="px-6 py-4">Leave Policy</th>
+                      <th className="px-6 py-4 text-center">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-card-border">
+                  <tbody className="divide-y divide-slate-100">
                     {employees.filter(e => e.role !== 'customer').length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="text-center py-12 text-muted-text">
+                        <td colSpan={4} className="text-center py-12 text-slate-400 font-bold">
                           No employees found
                         </td>
                       </tr>
@@ -635,16 +693,16 @@ const AdminLeaves = () => {
                         const lp = leavePolicies.find(p => p._id === (emp.employeeInfo?.leavePolicyId?._id || emp.employeeInfo?.leavePolicyId));
                         
                         return (
-                          <tr key={emp._id} className="hover:bg-slate-50 transition-colors">
-                            <td className="px-6 py-4 font-medium text-dark-navy">{emp.name}</td>
-                            <td className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">{emp.role}</td>
+                          <tr key={emp._id} className="hover:bg-slate-50/50 transition-colors">
+                            <td className="px-6 py-4 font-bold text-slate-800">{emp.name}</td>
+                            <td className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-wider">{emp.role}</td>
                             <td className="px-6 py-4">
                               {lp ? (
-                                <span className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-xs font-semibold border border-emerald-100">
+                                <span className="bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-lg text-[10px] uppercase font-black tracking-wider border border-emerald-100">
                                   {lp.name}
                                 </span>
                               ) : (
-                                <span className="text-xs text-muted-text bg-gray-100 px-3 py-1 rounded-full border border-gray-200">
+                                <span className="text-[10px] uppercase font-black tracking-wider text-slate-400 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
                                   System Default
                                 </span>
                               )}
@@ -652,7 +710,7 @@ const AdminLeaves = () => {
                             <td className="px-6 py-4 text-center">
                               <button
                                 onClick={() => openAssignModal(emp)}
-                                className="text-xs font-semibold bg-primary-blue hover:bg-blue-700 text-white px-4 py-2 rounded-xl transition-colors shadow-sm"
+                                className="text-[10px] font-black uppercase tracking-wider bg-brand-indigo hover:bg-indigo-700 text-white px-4 py-2 rounded-xl transition-all shadow-sm shadow-brand-indigo/20"
                               >
                                 Assign Policy
                               </button>
@@ -671,26 +729,33 @@ const AdminLeaves = () => {
 
       {/* Add Leave Record Modal */}
       {showAddLeaveModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
-            <div className="flex items-center justify-between p-5 border-b border-card-border">
-              <h2 className="text-lg font-bold text-dark-navy flex items-center gap-2"><Calendar size={20} className="text-amber-500" /> Create Leave</h2>
-              <button onClick={() => setShowAddLeaveModal(false)} className="p-1.5 rounded-lg hover:bg-gray-100"><X size={18} /></button>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col border border-slate-100">
+            <div className="px-6 py-5 border-b border-slate-100 flex flex-col items-center justify-center text-center bg-white/80 backdrop-blur-md relative">
+              <button onClick={() => setShowAddLeaveModal(false)} className="absolute right-4 top-4 p-2 rounded-full hover:bg-slate-100 text-slate-400 transition-colors">
+                <X size={16} />
+              </button>
+              <div className="w-12 h-12 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center mb-3 border border-amber-100 shadow-sm">
+                <Calendar size={24} />
+              </div>
+              <h3 className="font-black text-slate-900 text-xl">Create Leave</h3>
+              <p className="text-xs font-bold text-slate-500 mt-1">Add a manual leave record for an employee</p>
             </div>
-            <div className="p-5 space-y-4">
+            
+            <div className="p-6 bg-slate-50/50 space-y-4">
               <div>
-                <label className="text-xs text-muted-text block mb-1">Employee *</label>
+                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Employee *</label>
                 <select value={leaveForm.employeeId} onChange={(e) => setLeaveForm({...leaveForm, employeeId: e.target.value})}
-                  className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm bg-white">
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm cursor-pointer">
                   <option value="">Select employee</option>
                   {employees.map(e => <option key={e._id} value={e._id}>{e.name} ({e.role})</option>)}
                 </select>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-muted-text block mb-1">Leave Type</label>
+                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Leave Type</label>
                   <select value={leaveForm.type} onChange={(e) => setLeaveForm({...leaveForm, type: e.target.value})}
-                    className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm bg-white">
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm cursor-pointer">
                     <option value="casual">Casual</option>
                     <option value="sick">Sick</option>
                     <option value="annual">Annual</option>
@@ -698,34 +763,39 @@ const AdminLeaves = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs text-muted-text block mb-1">Status</label>
+                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Status</label>
                   <select value={leaveForm.status} onChange={(e) => setLeaveForm({...leaveForm, status: e.target.value})}
-                    className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm bg-white">
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm cursor-pointer">
                     <option value="approved">Approved</option>
                     <option value="pending">Pending</option>
                   </select>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-muted-text block mb-1">Start Date *</label>
+                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Start Date *</label>
                   <input type="date" value={leaveForm.startDate} onChange={(e) => setLeaveForm({...leaveForm, startDate: e.target.value})}
-                    className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm" />
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm" />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-text block mb-1">End Date *</label>
+                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">End Date *</label>
                   <input type="date" value={leaveForm.endDate} onChange={(e) => setLeaveForm({...leaveForm, endDate: e.target.value})}
-                    className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm" />
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm" />
                 </div>
               </div>
               <div>
-                <label className="text-xs text-muted-text block mb-1">Reason</label>
+                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Reason</label>
                 <input value={leaveForm.reason} onChange={(e) => setLeaveForm({...leaveForm, reason: e.target.value})}
-                  className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm" placeholder="Reason for leave" />
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm" placeholder="Reason for leave" />
               </div>
-              <button onClick={handleAddLeave} className="w-full py-2.5 bg-amber-500 text-white rounded-xl font-semibold">
-                Create Leave
-              </button>
+              <div className="flex gap-3 pt-4">
+                <button type="button" onClick={() => setShowAddLeaveModal(false)} className="flex-1 py-3 rounded-xl bg-slate-100 text-[11px] uppercase tracking-wider font-black hover:bg-slate-200 text-slate-700 transition-all">
+                  Cancel
+                </button>
+                <button onClick={handleAddLeave} className="flex-1 py-3 rounded-xl bg-brand-indigo hover:bg-indigo-700 text-white text-[11px] uppercase tracking-wider font-black shadow-lg shadow-brand-indigo/20 transition-all">
+                  Create Leave
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -733,89 +803,91 @@ const AdminLeaves = () => {
 
       {/* Leave Policy Modal */}
       {showLeaveModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-fadeIn">
-            <div className="flex items-center justify-between p-5 border-b border-card-border bg-slate-50">
-              <h2 className="text-lg font-bold text-dark-navy flex items-center gap-2">
-                🌴 {editingLeavePolicyId ? 'Edit Leave Policy' : 'Create Leave Policy'}
-              </h2>
-              <button onClick={() => setShowLeaveModal(false)} className="p-1.5 rounded-lg hover:bg-gray-200 text-gray-500 transition-colors">
-                <X size={18} />
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col border border-slate-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div className="px-6 py-5 border-b border-slate-100 flex flex-col items-center justify-center text-center bg-white/80 backdrop-blur-md relative sticky top-0 z-10">
+              <button onClick={() => setShowLeaveModal(false)} className="absolute right-4 top-4 p-2 rounded-full hover:bg-slate-100 text-slate-400 transition-colors">
+                <X size={16} />
               </button>
+              <div className="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-3 border border-emerald-100 shadow-sm text-xl">
+                🌴
+              </div>
+              <h3 className="font-black text-slate-900 text-xl">{editingLeavePolicyId ? 'Edit Leave Policy' : 'Create Leave Policy'}</h3>
             </div>
-            <form onSubmit={handleSaveLeavePolicy} className="p-5 space-y-4">
+            
+            <form onSubmit={handleSaveLeavePolicy} className="p-6 bg-slate-50/50 space-y-4">
               <div>
-                <label className="text-xs font-bold text-dark-navy block mb-1">Policy Name *</label>
+                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Policy Name *</label>
                 <input
                   type="text"
                   required
                   value={leavePolicyForm.name}
                   onChange={(e) => setLeavePolicyForm({ ...leavePolicyForm, name: e.target.value })}
                   placeholder="e.g., Executive Leave Policy"
-                  className="w-full border border-card-border rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm"
                 />
               </div>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-dark-navy block mb-1">Annual (Days)</label>
+                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Annual</label>
                   <input
                     type="number"
                     min="0"
                     value={leavePolicyForm.annualLeaves}
                     onChange={(e) => setLeavePolicyForm({ ...leavePolicyForm, annualLeaves: parseInt(e.target.value) || 0 })}
-                    className="w-full border border-card-border rounded-xl px-3.5 py-2.5 text-sm"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-dark-navy block mb-1">Sick (Days)</label>
+                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Sick</label>
                   <input
                     type="number"
                     min="0"
                     value={leavePolicyForm.sickLeaves}
                     onChange={(e) => setLeavePolicyForm({ ...leavePolicyForm, sickLeaves: parseInt(e.target.value) || 0 })}
-                    className="w-full border border-card-border rounded-xl px-3.5 py-2.5 text-sm"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-dark-navy block mb-1">Casual (Days)</label>
+                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Casual</label>
                   <input
                     type="number"
                     min="0"
                     value={leavePolicyForm.casualLeaves}
                     onChange={(e) => setLeavePolicyForm({ ...leavePolicyForm, casualLeaves: parseInt(e.target.value) || 0 })}
-                    className="w-full border border-card-border rounded-xl px-3.5 py-2.5 text-sm"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm"
                   />
                 </div>
               </div>
               <div>
-                <label className="text-xs font-bold text-dark-navy block mb-1">Deduction Per Excess Leave (Rs.)</label>
+                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Deduction Per Excess Leave (Rs.)</label>
                 <input
                   type="number"
                   min="0"
                   value={leavePolicyForm.deductionPerExcessLeave}
                   onChange={(e) => setLeavePolicyForm({ ...leavePolicyForm, deductionPerExcessLeave: parseFloat(e.target.value) || 0 })}
                   placeholder="e.g., 1000"
-                  className="w-full border border-card-border rounded-xl px-3.5 py-2.5 text-sm"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm"
                 />
               </div>
-              <div className="flex items-center gap-2 pt-2">
+              <div className="flex items-center gap-3 pt-2 bg-slate-100 p-3 rounded-xl border border-slate-200">
                 <input
                   type="checkbox"
                   id="leaveDefault"
                   checked={leavePolicyForm.isDefault}
                   onChange={(e) => setLeavePolicyForm({ ...leavePolicyForm, isDefault: e.target.checked })}
-                  className="w-4 h-4 rounded text-primary-blue focus:ring-primary-blue"
+                  className="w-4 h-4 rounded text-brand-indigo focus:ring-brand-indigo accent-brand-indigo cursor-pointer"
                 />
-                <label htmlFor="leaveDefault" className="text-sm font-semibold text-dark-navy cursor-pointer select-none">
+                <label htmlFor="leaveDefault" className="text-xs font-black text-slate-700 cursor-pointer select-none">
                   Set as system default leave policy
                 </label>
               </div>
-              <div className="flex gap-3 pt-3">
-                <button type="submit" className="flex-1 bg-primary-blue hover:bg-blue-700 text-white py-2.5 rounded-xl font-bold transition-colors">
-                  {editingLeavePolicyId ? 'Update Policy' : 'Create Policy'}
-                </button>
-                <button type="button" onClick={() => setShowLeaveModal(false)} className="flex-1 border border-card-border hover:bg-gray-50 py-2.5 rounded-xl font-semibold text-muted-text">
+              <div className="flex gap-3 pt-4">
+                <button type="button" onClick={() => setShowLeaveModal(false)} className="flex-1 py-3 rounded-xl bg-slate-100 text-[11px] uppercase tracking-wider font-black hover:bg-slate-200 text-slate-700 transition-all">
                   Cancel
+                </button>
+                <button type="submit" className="flex-1 py-3 rounded-xl bg-brand-indigo hover:bg-indigo-700 text-white text-[11px] uppercase tracking-wider font-black shadow-lg shadow-brand-indigo/20 transition-all">
+                  {editingLeavePolicyId ? 'Update Policy' : 'Create Policy'}
                 </button>
               </div>
             </form>
@@ -825,27 +897,29 @@ const AdminLeaves = () => {
 
       {/* Assign Policies Modal */}
       {showAssignModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-fadeIn">
-            <div className="flex items-center justify-between p-5 border-b border-card-border bg-slate-50">
-              <h2 className="text-lg font-bold text-dark-navy flex items-center gap-1.5">
-                👤 Assign Leave Policy
-              </h2>
-              <button onClick={() => setShowAssignModal(false)} className="p-1.5 rounded-lg hover:bg-gray-200 text-gray-500 transition-colors">
-                <X size={18} />
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col border border-slate-100">
+            <div className="px-6 py-5 border-b border-slate-100 flex flex-col items-center justify-center text-center bg-white/80 backdrop-blur-md relative">
+              <button onClick={() => setShowAssignModal(false)} className="absolute right-4 top-4 p-2 rounded-full hover:bg-slate-100 text-slate-400 transition-colors">
+                <X size={16} />
               </button>
+              <div className="w-12 h-12 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mb-3 border border-blue-100 shadow-sm text-xl">
+                👤
+              </div>
+              <h3 className="font-black text-slate-900 text-xl">Assign Policy</h3>
             </div>
-            <form onSubmit={handleSaveAssignment} className="p-5 space-y-4">
-              <div>
-                <label className="text-xs font-bold text-muted-text uppercase block mb-1">Employee</label>
-                <p className="font-bold text-dark-navy text-base">{assignForm.employeeName}</p>
+            
+            <form onSubmit={handleSaveAssignment} className="p-6 bg-slate-50/50 space-y-4">
+              <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                <label className="text-[10px] uppercase font-black tracking-wider text-slate-400 block mb-1">Employee</label>
+                <p className="font-black text-slate-900 text-lg">{assignForm.employeeName}</p>
               </div>
               <div>
-                <label className="text-xs font-bold text-dark-navy block mb-1">Assign Leave Policy</label>
+                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Select Leave Policy</label>
                 <select
                   value={assignForm.leavePolicyId}
                   onChange={(e) => setAssignForm({ ...assignForm, leavePolicyId: e.target.value })}
-                  className="w-full border border-card-border rounded-xl px-3.5 py-2.5 text-sm bg-white"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm cursor-pointer"
                 >
                   <option value="">System Default</option>
                   {leavePolicies.map(p => (
@@ -855,12 +929,12 @@ const AdminLeaves = () => {
                   ))}
                 </select>
               </div>
-              <div className="flex gap-3 pt-3">
-                <button type="submit" className="flex-1 bg-primary-blue hover:bg-blue-700 text-white py-2.5 rounded-xl font-bold transition-colors">
-                  Save Changes
-                </button>
-                <button type="button" onClick={() => setShowAssignModal(false)} className="flex-1 border border-card-border hover:bg-gray-50 py-2.5 rounded-xl font-semibold text-muted-text">
+              <div className="flex gap-3 pt-4">
+                <button type="button" onClick={() => setShowAssignModal(false)} className="flex-1 py-3 rounded-xl bg-slate-100 text-[11px] uppercase tracking-wider font-black hover:bg-slate-200 text-slate-700 transition-all">
                   Cancel
+                </button>
+                <button type="submit" className="flex-1 py-3 rounded-xl bg-brand-indigo hover:bg-indigo-700 text-white text-[11px] uppercase tracking-wider font-black shadow-lg shadow-brand-indigo/20 transition-all">
+                  Save Changes
                 </button>
               </div>
             </form>

@@ -256,15 +256,18 @@ const AdminPhones = () => {
     <DashboardLayout navItems={navItems} title="Mobile Inventory">
       <div className="animate-fade-in">
         {/* Tabs */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-dark-navy flex items-center gap-2">
-              <Smartphone className="text-primary-blue" /> Mobile Phones
-            </h1>
-            <p className="text-muted-text text-sm mt-1">{products.length} devices in inventory</p>
+            <div className="flex items-center gap-2.5 mb-1">
+              <span className="inline-flex items-center gap-1.5 bg-brand-indigo/10 text-brand-indigo text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg border border-brand-indigo/15">
+                <Smartphone size={11} /> Business Management
+              </span>
+            </div>
+            <h1 className="text-2xl font-black text-slate-900 m-0">Mobile Phones</h1>
+            <p className="text-slate-400 text-xs font-bold mt-1 m-0">{products.length} devices in inventory</p>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide max-w-full">
               {[
                 { id: 'phones', label: '📱 Phones' }, 
                 { id: 'suppliers', label: '🏭 Suppliers' },
@@ -275,8 +278,8 @@ const AdminPhones = () => {
                 <button
                   key={t.id}
                   onClick={() => setActiveTab(t.id)}
-                  className={`px-4 py-2 text-sm font-semibold rounded-xl transition-colors ${
-                    activeTab === t.id ? 'bg-primary-blue text-white' : 'bg-white border border-card-border text-muted-text hover:bg-gray-50'
+                  className={`px-4 py-2.5 text-[10px] uppercase tracking-wider font-black rounded-xl transition-all whitespace-nowrap ${
+                    activeTab === t.id ? 'bg-slate-800 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700'
                   }`}
                 >
                   {t.label}
@@ -284,8 +287,8 @@ const AdminPhones = () => {
               ))}
             </div>
             {activeTab === 'phones' && (
-              <button onClick={openCreate} className="flex items-center gap-2 bg-primary-blue text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-emerald-600 shadow-lg shadow-emerald-200 transition-all">
-                <Plus size={18} /> Add New Phone
+              <button onClick={openCreate} className="flex shrink-0 items-center gap-2 bg-gradient-to-r from-brand-indigo to-brand-violet text-white px-5 py-2.5 rounded-xl font-black text-[11px] uppercase tracking-wider hover:opacity-95 shadow-lg shadow-brand-indigo/20 transition-all">
+                <Plus size={16} /> Add New Phone
               </button>
             )}
           </div>
@@ -328,20 +331,20 @@ const AdminPhones = () => {
           <div>
             <div className="flex flex-col sm:flex-row gap-4 mb-6">
               <div className="relative flex-1">
-                <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
                   placeholder="Search by name, model, IMEI..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full border border-card-border rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  className="w-full bg-white border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm"
                 />
               </div>
               <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
                 <button
                   onClick={() => setBrandFilter('all')}
-                  className={`px-4 py-2 text-xs font-bold rounded-full whitespace-nowrap transition-all ${
-                    brandFilter === 'all' ? 'bg-primary-blue text-white shadow-md' : 'bg-white border border-card-border text-muted-text hover:bg-gray-50'
+                  className={`px-5 py-3 text-[10px] uppercase tracking-wider font-black rounded-xl whitespace-nowrap transition-all ${
+                    brandFilter === 'all' ? 'bg-slate-800 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700'
                   }`}
                 >
                   All Brands
@@ -350,8 +353,8 @@ const AdminPhones = () => {
                   <button
                     key={brand}
                     onClick={() => setBrandFilter(brand)}
-                    className={`px-4 py-2 text-xs font-bold rounded-full whitespace-nowrap transition-all ${
-                      brandFilter === brand ? 'bg-primary-blue text-white shadow-md' : 'bg-white border border-card-border text-muted-text hover:bg-gray-50'
+                    className={`px-5 py-3 text-[10px] uppercase tracking-wider font-black rounded-xl whitespace-nowrap transition-all ${
+                      brandFilter === brand ? 'bg-slate-800 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700'
                     }`}
                   >
                     {brand}
@@ -360,115 +363,116 @@ const AdminPhones = () => {
               </div>
             </div>
 
-        <div className="bg-white rounded-2xl border border-card-border shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-gray-50">
-                  <th className="text-left px-6 py-3 font-medium text-muted-text">Device Details</th>
-                  <th className="text-left px-6 py-3 font-medium text-muted-text">Specs</th>
-                  <th className="text-left px-6 py-3 font-medium text-muted-text">Price & Stock</th>
-                  <th className="text-left px-6 py-3 font-medium text-muted-text">Supplier</th>
-                  <th className="text-left px-6 py-3 font-medium text-muted-text">Status</th>
-                  <th className="text-right px-6 py-3 font-medium text-muted-text">Actions</th>
+                <tr className="bg-slate-50 border-b border-slate-100">
+                  <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Device Details</th>
+                  <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Specs</th>
+                  <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Price & Stock</th>
+                  <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Supplier</th>
+                  <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Status</th>
+                  <th className="text-right px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-card-border">
+              <tbody className="divide-y divide-slate-100">
                 {filtered.map((product) => {
                   const isExpanded = expandedProduct === product._id;
                   return (
                     <React.Fragment key={product._id}>
-                      <tr className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-3.5">
-                          <div className="flex items-center gap-3">
+                      <tr className="hover:bg-slate-50/80 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-4">
                             <button
                               onClick={() => setExpandedProduct(isExpanded ? null : product._id)}
-                              className="p-1 rounded hover:bg-gray-100 text-gray-400"
+                              className="p-1 rounded hover:bg-slate-200 text-slate-400 transition-colors"
                             >
                               {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                             </button>
-                            <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center text-primary-blue overflow-hidden">
+                            <div className="w-12 h-12 rounded-xl bg-slate-100 border-2 border-slate-200 flex items-center justify-center text-slate-400 overflow-hidden shadow-sm shrink-0">
                               {(product.productLink || product.images?.[0]) ? (
                                 <img 
                                   src={getImageUrl(product.productLink || product.images?.[0])} 
-                                  className="w-full h-full object-cover rounded-lg" 
+                                  className="w-full h-full object-cover" 
                                   alt="" 
                                   onError={(e) => handleImageError(e, 'Phone')}
                                 />
                               ) : <Smartphone size={20} />}
                             </div>
                             <div>
-                              <div className="font-bold text-dark-navy">{product.name}</div>
-                              <div className="text-[10px] text-muted-text flex items-center gap-2">
-                                <span className="bg-gray-100 px-1.5 py-0.5 rounded uppercase font-bold">{product.brand || 'No Brand'}</span>
-                                <span>{product.modelNumber || '-'}</span>
+                              <div className="font-extrabold text-slate-800 text-sm mb-1">{product.name}</div>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="bg-slate-100 border border-slate-200/60 text-slate-600 px-2 py-0.5 rounded-md text-[10px] uppercase font-black tracking-wider">{product.brand || 'No Brand'}</span>
+                                <span className="text-[11px] font-bold text-slate-400">{product.modelNumber || '-'}</span>
                               </div>
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-3.5">
-                          <div className="flex flex-wrap gap-1">
-                            {product.ram && <span className="bg-indigo-50 text-primary-blue text-[10px] px-1.5 py-0.5 rounded flex items-center gap-1"><Cpu size={10} /> {product.ram}</span>}
-                            {product.storage && <span className="bg-indigo-50 text-primary-blue text-[10px] px-1.5 py-0.5 rounded flex items-center gap-1"><HardDrive size={10} /> {product.storage}</span>}
-                            {product.condition && <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase ${product.condition === 'new' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>{product.condition}</span>}
+                        <td className="px-6 py-4">
+                          <div className="flex flex-wrap gap-2">
+                            {product.ram && <span className="bg-brand-indigo/10 border border-brand-indigo/20 text-brand-indigo text-[10px] uppercase tracking-wider font-black px-2 py-1 rounded-md flex items-center gap-1.5"><Cpu size={10} /> {product.ram}</span>}
+                            {product.storage && <span className="bg-brand-indigo/10 border border-brand-indigo/20 text-brand-indigo text-[10px] uppercase tracking-wider font-black px-2 py-1 rounded-md flex items-center gap-1.5"><HardDrive size={10} /> {product.storage}</span>}
+                            {product.condition && <span className={`text-[10px] uppercase tracking-wider font-black px-2 py-1 rounded-md border ${product.condition === 'new' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-amber-50 text-amber-600 border-amber-200'}`}>{product.condition}</span>}
                           </div>
                         </td>
-                        <td className="px-6 py-3.5">
-                          <div className="font-bold text-dark-navy">Rs. {Number(product.price || 0).toLocaleString()}</div>
+                        <td className="px-6 py-4">
+                          <div className="font-extrabold text-slate-800 mb-1">Rs. {Number(product.price || 0).toLocaleString()}</div>
                           {Number(product.minPrice || 0) > 0 && (
-                            <div className="text-[10px] font-bold text-red-600 bg-red-50 border border-red-100 px-2 py-0.5 rounded-full mt-1 inline-block">
+                            <div className="text-[9px] uppercase tracking-wider font-black text-rose-600 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-md mb-1 inline-block">
                               Min Rs. {Number(product.minPrice || 0).toLocaleString()}
                             </div>
                           )}
-                          <div className="text-xs text-muted-text">Stock: <span className={`font-bold ${product.stock <= 5 ? 'text-red-500' : 'text-emerald-500'}`}>{product.stock}</span></div>
+                          <div className="text-[11px] font-bold text-slate-400">Stock: <span className={`font-black ${product.stock <= 5 ? 'text-rose-500' : 'text-emerald-500'}`}>{product.stock}</span></div>
                         </td>
-                        <td className="px-6 py-3.5 text-xs">
-                          <div className="font-medium text-dark-navy">{product.supplierId?.name || '—'}</div>
-                          <div className="text-[10px] text-muted-text">{product.supplierId?.company || ''}</div>
+                        <td className="px-6 py-4">
+                          <div className="font-bold text-slate-700 text-xs mb-0.5">{product.supplierId?.name || '—'}</div>
+                          <div className="text-[10px] font-bold text-slate-400">{product.supplierId?.company || ''}</div>
                         </td>
-                        <td className="px-6 py-3.5">
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${product.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600'}`}>{product.status.toUpperCase()}</span>
+                        <td className="px-6 py-4">
+                          <span className={`text-[9px] uppercase tracking-wider font-black px-2.5 py-1 rounded-lg border ${product.status === 'active' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>{product.status}</span>
                         </td>
-                        <td className="px-6 py-3.5 text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            <button onClick={() => openEdit(product)} className="p-2 rounded-lg hover:bg-indigo-50 text-primary-blue transition-colors" title="Edit Device"><Edit2 size={16} /></button>
-                            <button onClick={() => handleDeleteClick(product)} className="p-2 rounded-lg hover:bg-red-50 text-red-500 transition-colors" title="Delete"><Trash2 size={16} /></button>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <button onClick={() => openEdit(product)} className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-brand-indigo transition-colors" title="Edit Device"><Edit2 size={16} /></button>
+                            <button onClick={() => handleDeleteClick(product)} className="p-2 rounded-xl hover:bg-rose-50 text-slate-400 hover:text-rose-500 transition-colors" title="Delete"><Trash2 size={16} /></button>
                           </div>
                         </td>
                       </tr>
                       {isExpanded && (
                         <tr>
-                          <td colSpan={6} className="px-12 py-4 bg-gray-50/50">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                              <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                                <h4 className="text-xs font-bold text-dark-navy mb-3 flex items-center gap-1"><Cpu size={12} /> Hardware & Specs</h4>
-                                <div className="space-y-2 text-xs">
-                                  <div className="flex justify-between"><span>RAM:</span> <span className="font-bold">{product.ram || '-'}</span></div>
-                                  <div className="flex justify-between"><span>Storage:</span> <span className="font-bold">{product.storage || '-'}</span></div>
-                                  <div className="flex justify-between"><span>Color:</span> <span className="font-bold">{product.color || '-'}</span></div>
-                                  <div className="flex justify-between"><span>Condition:</span> <span className="font-bold uppercase text-emerald-600">{product.condition}</span></div>
+                          <td colSpan={6} className="px-6 py-6 bg-slate-50/50 text-xs border-y border-slate-100/50 relative overflow-hidden">
+                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-brand-indigo/20"></div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                                <h4 className="font-black text-slate-400 uppercase tracking-widest mb-4 text-[10px] flex items-center gap-2"><Cpu size={12} className="text-brand-indigo"/> Hardware & Specs</h4>
+                                <div className="space-y-3">
+                                  <div className="flex justify-between items-center"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">RAM</span> <span className="font-extrabold text-slate-800">{product.ram || '-'}</span></div>
+                                  <div className="flex justify-between items-center"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Storage</span> <span className="font-extrabold text-slate-800">{product.storage || '-'}</span></div>
+                                  <div className="flex justify-between items-center"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Color</span> <span className="font-extrabold text-slate-800">{product.color || '-'}</span></div>
+                                  <div className="flex justify-between items-center"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Condition</span> <span className="font-black uppercase text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 text-[10px] tracking-wider">{product.condition}</span></div>
                                 </div>
                               </div>
-                              <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                                <h4 className="text-xs font-bold text-dark-navy mb-3 flex items-center gap-1"><ShieldCheck size={12} /> Warranty & Identity</h4>
-                                <div className="space-y-2 text-xs">
-                                  <div className="flex justify-between"><span>Warranty:</span> <span className="font-bold">{product.warranty || '-'}</span></div>
-                                  <div className="flex justify-between"><span>IMEI(s):</span> <span className="font-mono text-[10px]">{product.imei?.join(', ') || '-'}</span></div>
-                                  <div className="flex justify-between"><span>Model No:</span> <span className="font-bold">{product.modelNumber || '-'}</span></div>
-                                  {product.sku && <div className="flex justify-between items-center"><span>SKU:</span> <span className="font-mono font-bold bg-indigo-50 text-primary-blue px-2 py-0.5 rounded">{product.sku}</span></div>}
-                                  {product.barcode && <div className="flex justify-between"><span>Barcode:</span> <span className="font-mono text-[10px]">{product.barcode}</span></div>}
+                              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                                <h4 className="font-black text-slate-400 uppercase tracking-widest mb-4 text-[10px] flex items-center gap-2"><ShieldCheck size={12} className="text-brand-indigo"/> Warranty & Identity</h4>
+                                <div className="space-y-3">
+                                  <div className="flex justify-between items-center"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Warranty</span> <span className="font-extrabold text-slate-800">{product.warranty || '-'}</span></div>
+                                  <div className="flex justify-between items-center"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">IMEI(s)</span> <span className="font-mono text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">{product.imei?.join(', ') || '-'}</span></div>
+                                  <div className="flex justify-between items-center"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Model No</span> <span className="font-extrabold text-slate-800">{product.modelNumber || '-'}</span></div>
+                                  {product.sku && <div className="flex justify-between items-center"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">SKU</span> <span className="font-mono font-bold bg-brand-indigo/10 text-brand-indigo px-2 py-0.5 rounded border border-brand-indigo/20">{product.sku}</span></div>}
+                                  {product.barcode && <div className="flex justify-between items-center"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Barcode</span> <span className="font-mono text-[10px] font-bold text-slate-500">{product.barcode}</span></div>}
                                 </div>
                               </div>
-                              <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                                <h4 className="text-xs font-bold text-dark-navy mb-3 flex items-center gap-1"><Tag size={12} /> Commercial Info</h4>
-                                <div className="space-y-2 text-xs">
-                                  <div className="flex justify-between"><span>Purchase Price:</span> <span className="font-bold">Rs. {Number(product.avgCost || 0).toLocaleString()}</span></div>
-                                  <div className="flex justify-between"><span>Profit Est:</span> <span className="font-bold text-emerald-600">Rs. {(product.price - (product.avgCost || 0)).toLocaleString()}</span></div>
-                                  <div className="flex justify-between"><span>Store:</span> <span className="font-bold">{product.storeId?.name || '-'}</span></div>
+                              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                                <h4 className="font-black text-slate-400 uppercase tracking-widest mb-4 text-[10px] flex items-center gap-2"><Tag size={12} className="text-brand-indigo"/> Commercial Info</h4>
+                                <div className="space-y-3">
+                                  <div className="flex justify-between items-center"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Purchase Price</span> <span className="font-extrabold text-slate-800">Rs. {Number(product.avgCost || 0).toLocaleString()}</span></div>
+                                  <div className="flex justify-between items-center"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Profit Est</span> <span className="font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Rs. {(product.price - (product.avgCost || 0)).toLocaleString()}</span></div>
+                                  <div className="flex justify-between items-center"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Store</span> <span className="font-extrabold text-slate-800">{product.storeId?.name || '-'}</span></div>
                                   {product.productLink && (
-                                    <div className="flex justify-between mt-2 pt-2 border-t border-gray-100">
-                                      <span>Link:</span> 
-                                      <a href={product.productLink} target="_blank" rel="noopener noreferrer" className="text-primary-blue hover:underline font-bold truncate max-w-[150px]">
+                                    <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-100">
+                                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Link</span> 
+                                      <a href={product.productLink} target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase font-black tracking-wider text-brand-indigo hover:text-brand-violet transition-colors truncate max-w-[150px]">
                                         View External
                                       </a>
                                     </div>
@@ -491,37 +495,37 @@ const AdminPhones = () => {
 
         {/* Specialized Mobile Add/Edit Modal */}
         {showModal && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowModal(false)}>
-            <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[92vh] overflow-hidden shadow-2xl flex flex-col" onClick={(e) => e.stopPropagation()}>
-              <div className="px-8 py-5 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-white to-indigo-50/30">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowModal(false)}>
+            <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[92vh] overflow-hidden shadow-2xl flex flex-col border border-slate-100" onClick={(e) => e.stopPropagation()}>
+              <div className="px-8 py-5 border-b border-slate-100 flex items-center justify-between bg-white/80 backdrop-blur-md">
                 <div>
-                  <h2 className="text-xl font-bold text-dark-navy">{editingId ? 'Edit Mobile Device' : 'Register New Mobile Device'}</h2>
-                  <p className="text-xs text-muted-text mt-0.5">Enter technical specifications and stock details</p>
+                  <h2 className="text-xl font-black text-slate-900">{editingId ? 'Edit Mobile Device' : 'Register New Mobile Device'}</h2>
+                  <p className="text-xs font-bold text-slate-400 mt-0.5">Enter technical specifications and stock details</p>
                 </div>
-                <button onClick={() => setShowModal(false)} className="p-2 rounded-xl hover:bg-red-50 text-gray-400 hover:text-red-500 transition-all"><X size={22} /></button>
+                <button onClick={() => setShowModal(false)} className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"><X size={22} /></button>
               </div>
 
               <form onSubmit={handleSubmit} className="p-8 overflow-y-auto space-y-8">
                 {/* Section 1: Basic Identity */}
-                <div className="space-y-4">
-                  <h3 className="text-sm font-bold text-primary-blue flex items-center gap-2 border-b border-indigo-50 pb-2">
+                <div className="space-y-5">
+                  <h3 className="text-xs font-black text-brand-indigo uppercase tracking-widest flex items-center gap-2 border-b border-slate-100 pb-3">
                     <Smartphone size={16} /> Basic Identity
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="md:col-span-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Product Display Name *</label>
-                      <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm focus:bg-white focus:ring-2 focus:ring-primary-blue transition-all" placeholder="e.g. Samsung Galaxy S24 Ultra" />
+                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Product Display Name *</label>
+                      <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" placeholder="e.g. Samsung Galaxy S24 Ultra" />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Brand / Manufacturer *</label>
-                      <input required value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm focus:bg-white focus:ring-2 focus:ring-primary-blue transition-all" placeholder="e.g. Apple, Samsung, Xiaomi" />
+                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Brand / Manufacturer *</label>
+                      <input required value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" placeholder="e.g. Apple, Samsung, Xiaomi" />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Model Number</label>
-                      <input value={form.modelNumber} onChange={(e) => setForm({ ...form, modelNumber: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm focus:bg-white focus:ring-2 focus:ring-primary-blue transition-all" placeholder="e.g. SM-S928B" />
+                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Model Number</label>
+                      <input value={form.modelNumber} onChange={(e) => setForm({ ...form, modelNumber: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" placeholder="e.g. SM-S928B" />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Category *</label>
+                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Category *</label>
                       <input 
                         list="category-suggestions"
                         required
@@ -536,7 +540,7 @@ const AdminPhones = () => {
                             getNextSku(catId).then(({ data }) => setAutoSku(data.sku || '')).catch(() => {});
                           }
                         }}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm" 
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" 
                       />
                       <datalist id="category-suggestions">
                         {categories.map((c) => <option key={c._id} value={c.name} />)}
@@ -544,18 +548,18 @@ const AdminPhones = () => {
                     </div>
                     {!editingId && autoSku && (
                       <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Auto SKU / Item Code</label>
+                        <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Auto SKU / Item Code</label>
                         <div className="flex items-center gap-2">
-                          <div className="flex-1 bg-indigo-50 border border-indigo-100 rounded-xl py-2.5 px-4 text-sm font-bold text-primary-blue tracking-wider">
+                          <div className="flex-1 bg-brand-indigo/10 border border-brand-indigo/20 rounded-xl py-2.5 px-4 text-sm font-black text-brand-indigo tracking-wider">
                             {autoSku}
                           </div>
-                          <span className="text-[10px] bg-emerald-50 text-emerald-600 border border-emerald-100 px-2 py-1 rounded-lg font-semibold">✓ Auto</span>
+                          <span className="text-[10px] bg-emerald-50 text-emerald-600 border border-emerald-200 px-2.5 py-1.5 rounded-lg font-black uppercase tracking-wider">✓ Auto</span>
                         </div>
-                        <p className="text-[10px] text-muted-text mt-1">Auto-assigned on save</p>
+                        <p className="text-[10px] font-bold text-slate-400 mt-1">Auto-assigned on save</p>
                       </div>
                     )}
                     <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Store Assignment *</label>
+                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Store Assignment *</label>
                       <input 
                         list="store-suggestions"
                         required
@@ -567,17 +571,17 @@ const AdminPhones = () => {
                           const existing = stores.find(s => s.name.toLowerCase() === val.toLowerCase());
                           setForm({ ...form, storeId: existing ? existing._id : val });
                         }}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm disabled:opacity-50" 
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all disabled:opacity-50" 
                       />
                       <datalist id="store-suggestions">
                         {stores.map((s) => <option key={s._id} value={s.name} />)}
                       </datalist>
                       {selectedStoreId === 'all' && !form.storeId && (
-                        <p className="text-[10px] text-red-500 mt-1">Please select a store to register this device</p>
+                        <p className="text-[10px] font-bold text-rose-500 mt-1">Please select a store to register this device</p>
                       )}
                     </div>
                     <div className="md:col-span-3">
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Primary Product Image URL (External Link) *</label>
+                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Primary Product Image URL (External Link) *</label>
                       <div className="flex gap-4">
                         <div className="flex-1">
                           <input 
@@ -593,28 +597,28 @@ const AdminPhones = () => {
                                 }
                                 setForm({ ...form, productLink: val });
                             }}
-                            className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm focus:bg-white focus:ring-2 focus:ring-primary-blue transition-all" 
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" 
                             placeholder="Paste the direct image link here (e.g. https://example.com/phone.jpg)" 
                           />
                           {form.productLink && !isDirectImageUrl(form.productLink) ? (
-                            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mt-2 space-y-2">
-                              <p className="text-[11px] text-amber-700 font-bold flex items-center gap-1">
+                            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mt-2 space-y-2">
+                              <p className="text-[11px] text-amber-700 font-black uppercase tracking-wider flex items-center gap-1">
                                 ⚠️ Not a Direct Image Link
                               </p>
-                              <p className="text-[10px] text-amber-600 leading-relaxed">
+                              <p className="text-[10px] font-bold text-amber-600 leading-relaxed">
                                 This link leads to a <strong>web page</strong>, not an image file. To fix this:
                               </p>
-                              <ul className="text-[10px] text-amber-600 list-disc ml-4 space-y-1">
+                              <ul className="text-[10px] font-bold text-amber-600 list-disc ml-4 space-y-1">
                                 <li><strong>For Unsplash/Websites:</strong> Right-click the image on the site and select <strong>"Copy image address"</strong>.</li>
                                 <li><strong>For Google Drive:</strong> Use: Share → Change to "Anyone with link" → Copy link.</li>
                               </ul>
                             </div>
                           ) : (
-                            <p className="text-[10px] text-muted-text mt-1">This link will be used as the primary display image.</p>
+                            <p className="text-[10px] font-bold text-slate-400 mt-1.5">This link will be used as the primary display image.</p>
                           )}
                         </div>
                         {form.productLink && (
-                          <div className="w-20 h-20 rounded-xl border-2 border-indigo-100 overflow-hidden shadow-sm flex-shrink-0 bg-gray-50">
+                          <div className="w-20 h-20 rounded-xl border-2 border-brand-indigo/20 overflow-hidden shadow-sm flex-shrink-0 bg-slate-50">
                             <img 
                               src={getImageUrl(form.productLink)} 
                               alt="Preview" 
@@ -630,66 +634,66 @@ const AdminPhones = () => {
                 </div>
 
                 {/* Section 2: Technical Specifications */}
-                <div className="space-y-4">
-                  <h3 className="text-sm font-bold text-primary-blue flex items-center gap-2 border-b border-indigo-50 pb-2">
+                <div className="space-y-5">
+                  <h3 className="text-xs font-black text-brand-indigo uppercase tracking-widest flex items-center gap-2 border-b border-slate-100 pb-3">
                     <Cpu size={16} /> Technical Specifications
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">RAM Capacity</label>
-                      <input value={form.ram} onChange={(e) => setForm({ ...form, ram: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm" placeholder="e.g. 8GB, 12GB" />
+                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">RAM Capacity</label>
+                      <input value={form.ram} onChange={(e) => setForm({ ...form, ram: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" placeholder="e.g. 8GB, 12GB" />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Internal Storage</label>
-                      <input value={form.storage} onChange={(e) => setForm({ ...form, storage: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm" placeholder="e.g. 128GB, 256GB" />
+                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Internal Storage</label>
+                      <input value={form.storage} onChange={(e) => setForm({ ...form, storage: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" placeholder="e.g. 128GB, 256GB" />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Color</label>
-                      <input value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm" placeholder="e.g. Titanium Gray" />
+                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Color</label>
+                      <input value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" placeholder="e.g. Titanium Gray" />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Condition *</label>
-                      <select value={form.condition} onChange={(e) => setForm({ ...form, condition: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm">
+                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Condition *</label>
+                      <select value={form.condition} onChange={(e) => setForm({ ...form, condition: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all cursor-pointer">
                         <option value="new">Brand New</option>
                         <option value="used">Pre-Owned / Used</option>
                         <option value="refurbished">Refurbished</option>
                       </select>
                     </div>
                     <div className="md:col-span-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">IMEI Numbers <span className="text-[10px] font-normal">(Comma separated for bulk stock)</span></label>
-                      <textarea rows={2} value={form.imei} onChange={(e) => setForm({ ...form, imei: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm resize-none" placeholder="Enter IMEI numbers..." />
+                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">IMEI Numbers <span className="font-bold text-slate-400 normal-case">(Comma separated for bulk stock)</span></label>
+                      <textarea rows={2} value={form.imei} onChange={(e) => setForm({ ...form, imei: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all resize-none" placeholder="Enter IMEI numbers..." />
                     </div>
                     <div className="md:col-span-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Warranty Details</label>
-                      <textarea rows={2} value={form.warranty} onChange={(e) => setForm({ ...form, warranty: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm resize-none" placeholder="e.g. 1 Year Company Warranty" />
+                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Warranty Details</label>
+                      <textarea rows={2} value={form.warranty} onChange={(e) => setForm({ ...form, warranty: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all resize-none" placeholder="e.g. 1 Year Company Warranty" />
                     </div>
                   </div>
                 </div>
 
                 {/* Section 3: Pricing & Inventory */}
-                <div className="space-y-4">
-                  <h3 className="text-sm font-bold text-primary-blue flex items-center gap-2 border-b border-indigo-50 pb-2">
+                <div className="space-y-5">
+                  <h3 className="text-xs font-black text-brand-indigo uppercase tracking-widest flex items-center gap-2 border-b border-slate-100 pb-3">
                     <Tag size={16} /> Pricing & Supplier Info
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Selling Price *</label>
-                      <input type="number" required value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm font-bold text-indigo-700" placeholder="0.00" />
+                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Selling Price *</label>
+                      <input type="number" required value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-black text-brand-indigo focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" placeholder="0.00" />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Minimum Price</label>
-                      <input type="number" min="0" value={form.minPrice} onChange={(e) => setForm({ ...form, minPrice: e.target.value })} className="w-full bg-red-50 border border-red-100 rounded-xl py-3 px-4 text-sm font-bold text-red-700" placeholder="Cannot sell below" />
+                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Minimum Price</label>
+                      <input type="number" min="0" value={form.minPrice} onChange={(e) => setForm({ ...form, minPrice: e.target.value })} className="w-full bg-rose-50 border border-rose-200 rounded-xl py-3 px-4 text-sm font-black text-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all" placeholder="Cannot sell below" />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Purchase/Cost Price</label>
-                      <input type="number" value={form.purchasePrice} onChange={(e) => setForm({ ...form, purchasePrice: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm" placeholder="0.00" />
+                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Purchase/Cost Price</label>
+                      <input type="number" value={form.purchasePrice} onChange={(e) => setForm({ ...form, purchasePrice: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" placeholder="0.00" />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Stock Quantity *</label>
-                      <input type="number" required value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm" placeholder="0" />
+                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Stock Quantity *</label>
+                      <input type="number" required value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-extrabold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" placeholder="0" />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Supplier</label>
+                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Supplier</label>
                       <input 
                         list="supplier-suggestions"
                         placeholder="Search or select supplier"
@@ -703,7 +707,7 @@ const AdminPhones = () => {
                             setForm({ ...form, supplierId: existing ? existing._id : val });
                           }
                         }}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm" 
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" 
                       />
                       <datalist id="supplier-suggestions">
                         <option value="None" />
@@ -714,23 +718,23 @@ const AdminPhones = () => {
                 </div>
 
                 {/* Section 4: Product Images */}
-                <div className="space-y-4">
-                  <h3 className="text-sm font-bold text-primary-blue flex items-center gap-2 border-b border-indigo-50 pb-2">
+                <div className="space-y-5">
+                  <h3 className="text-xs font-black text-brand-indigo uppercase tracking-widest flex items-center gap-2 border-b border-slate-100 pb-3">
                     <ImageIcon size={16} /> Product Images
                   </h3>
 
                   {/* Uploaded previews */}
-                  <div className="flex flex-wrap gap-3">
+                  <div className="flex flex-wrap gap-4">
                     {/* Show productLink as the first image if it exists */}
                     {form.productLink && (
                       <div className="relative group">
                         <img
                           src={getImageUrl(form.productLink)}
                           alt="Main"
-                          className="w-20 h-20 object-cover rounded-xl border-2 border-primary-blue shadow-sm"
+                          className="w-24 h-24 object-cover rounded-xl border-2 border-brand-indigo shadow-md"
                           onError={(e) => handleImageError(e, 'Phone')}
                         />
-                        <span className="absolute top-1 left-1 bg-primary-blue text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">LINK</span>
+                        <span className="absolute top-2 left-2 bg-brand-indigo text-white text-[9px] uppercase tracking-wider font-black px-2 py-0.5 rounded-md shadow-sm">LINK</span>
                       </div>
                     )}
                     
@@ -739,26 +743,26 @@ const AdminPhones = () => {
                           <img
                             src={getImageUrl(url)}
                             alt={`img-${i}`}
-                            className="w-20 h-20 object-cover rounded-xl border-2 border-indigo-100 shadow-sm"
+                            className="w-24 h-24 object-cover rounded-xl border-2 border-slate-200 shadow-sm transition-all group-hover:border-slate-300"
                             onError={(e) => handleImageError(e, 'Image')}
                           />
                           <button
                             type="button"
                             onClick={() => setUploadedImages(prev => prev.filter(u => u !== url))}
-                            className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="absolute -top-2 -right-2 w-6 h-6 bg-rose-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-rose-600 shadow-sm shadow-rose-500/30 scale-90 group-hover:scale-100"
                           >
-                            <X size={11} />
+                            <X size={12} />
                           </button>
                         </div>
                       ))}
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex gap-3">
                     <input 
                       id="secondary-image-input"
                       type="text" 
                       placeholder="Add another secondary image URL..." 
-                      className="flex-1 bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm focus:bg-white focus:ring-2 focus:ring-primary-blue transition-all"
+                      className="flex-1 bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                           e.preventDefault();
@@ -774,19 +778,19 @@ const AdminPhones = () => {
                         addImageUrl(input.value.trim());
                         input.value = '';
                       }}
-                      className="bg-indigo-50 text-primary-blue font-bold px-4 rounded-xl hover:bg-indigo-100 transition-all"
+                      className="bg-brand-indigo/10 text-brand-indigo font-black text-[10px] uppercase tracking-wider px-6 rounded-xl hover:bg-brand-indigo/20 transition-all border border-brand-indigo/20"
                     >
-                      Add
+                      Add Image
                     </button>
                   </div>
                 </div>
 
-                <div className="flex gap-4 pt-4">
-                  <button type="submit" disabled={saving} className="flex-1 bg-primary-blue text-white py-4 rounded-2xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all disabled:opacity-50">
-                    {saving ? 'Processing...' : editingId ? 'Update Device Record' : 'Register Device'}
-                  </button>
-                  <button type="button" onClick={() => setShowModal(false)} className="px-8 border border-gray-200 rounded-2xl font-bold text-gray-500 hover:bg-gray-50 transition-all">
+                <div className="flex gap-4 pt-4 border-t border-slate-100">
+                  <button type="button" onClick={() => setShowModal(false)} className="px-8 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl font-black text-[11px] uppercase tracking-wider transition-all">
                     Cancel
+                  </button>
+                  <button type="submit" disabled={saving} className="flex-1 bg-gradient-to-r from-brand-indigo to-brand-violet text-white py-4 rounded-2xl font-black text-[11px] uppercase tracking-wider hover:opacity-95 shadow-lg shadow-brand-indigo/20 transition-all disabled:opacity-50">
+                    {saving ? 'Processing...' : editingId ? 'Update Device Record' : 'Register Device'}
                   </button>
                 </div>
               </form>

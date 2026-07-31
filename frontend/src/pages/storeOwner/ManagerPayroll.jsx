@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Calculator, Send, FileText, CreditCard, Download } from 'lucide-react';
+import { Calculator, Send, FileText, CreditCard, Download, Landmark } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
 import { getEmployees, calculateSalary, processSalaryPayment, getPayrollReport, downloadPaysheet } from '../../services/api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
@@ -98,63 +98,76 @@ const ManagerPayroll = ({ navItems = managerNavGroups, title = 'Manager Dashboar
 
   return (
     <DashboardLayout navItems={navItems} title={title}>
-      <div>
-        <h1 className="text-2xl font-bold text-dark-navy mb-2">💰 Payroll Management</h1>
-        <p className="text-muted-text text-sm mb-6">Process salaries with Sri Lankan EPF/ETF compliance</p>
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/80 backdrop-blur-md p-6 rounded-3xl border border-slate-100 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-brand-indigo/10 to-brand-violet/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
+          
+          <div className="relative">
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-brand-indigo/10 flex items-center justify-center text-brand-indigo">
+                <span className="text-lg">💰</span>
+              </div>
+              Payroll Management
+            </h1>
+            <p className="text-sm font-bold text-slate-500 mt-1">Process salaries with Sri Lankan EPF/ETF compliance</p>
+          </div>
+        </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6">
-          <button onClick={() => setTab('process')} className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-colors ${tab === 'process' ? 'bg-primary-blue text-white' : 'bg-gray-100 text-muted-text hover:bg-gray-200'}`}><Calculator size={16} /> Process Salary</button>
-          <button onClick={() => { setTab('report'); handleFetchReport(); }} className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-colors ${tab === 'report' ? 'bg-primary-blue text-white' : 'bg-gray-100 text-muted-text hover:bg-gray-200'}`}><FileText size={16} /> Monthly Report</button>
-          <button onClick={() => { setTab('epf'); handleFetchReport(); }} className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-colors ${tab === 'epf' ? 'bg-primary-blue text-white' : 'bg-gray-100 text-muted-text hover:bg-gray-200'}`}><CreditCard size={16} /> EPF/ETF Summary</button>
+        <div className="flex gap-2 bg-slate-100/50 p-1.5 rounded-2xl w-max">
+          <button onClick={() => setTab('process')} className={`flex items-center gap-2 px-6 py-2.5 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all duration-300 ${tab === 'process' ? 'bg-white text-brand-indigo shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 transparent border border-transparent'}`}><Calculator size={14} strokeWidth={2.5} /> Process Salary</button>
+          <button onClick={() => { setTab('report'); handleFetchReport(); }} className={`flex items-center gap-2 px-6 py-2.5 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all duration-300 ${tab === 'report' ? 'bg-white text-brand-indigo shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 transparent border border-transparent'}`}><FileText size={14} strokeWidth={2.5} /> Monthly Report</button>
+          <button onClick={() => { setTab('epf'); handleFetchReport(); }} className={`flex items-center gap-2 px-6 py-2.5 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all duration-300 ${tab === 'epf' ? 'bg-white text-brand-indigo shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 transparent border border-transparent'}`}><CreditCard size={14} strokeWidth={2.5} /> EPF/ETF Summary</button>
         </div>
 
         {tab === 'process' && (
           <div className="grid lg:grid-cols-2 gap-6">
             {/* Salary Form */}
-            <div className="bg-white rounded-2xl border border-card-border p-6 shadow-sm">
-              <h2 className="font-semibold text-dark-navy mb-4">Calculate Salary</h2>
-              <div className="space-y-4">
+            <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm">
+              <h2 className="text-lg font-black text-slate-900 mb-5 flex items-center gap-2">
+                <Calculator size={18} className="text-brand-indigo" strokeWidth={2.5} /> Calculate Salary
+              </h2>
+              <div className="space-y-5">
                 <div className="relative text-left">
-                  <label className="text-xs text-muted-text block mb-1">Employee</label>
+                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Employee</label>
                   <div
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="w-full border border-card-border rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue bg-white flex items-center justify-between cursor-pointer"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo flex items-center justify-between cursor-pointer shadow-sm hover:border-brand-indigo/50 transition-colors"
                   >
                     {(() => {
                       const selectedEmp = employees.find(e => e._id === selected);
                       return (
-                        <span className={selectedEmp ? "font-semibold text-dark-navy" : "text-gray-400"}>
+                        <span className={selectedEmp ? "text-slate-800" : "text-slate-400"}>
                           {selectedEmp
                             ? `${selectedEmp.name} (${selectedEmp.role}) — Rs. ${(selectedEmp.employeeInfo?.salary || 0).toLocaleString()}`
                             : "Select employee"}
                         </span>
                       );
                     })()}
-                    <span className="text-gray-400 text-xs">▼</span>
+                    <span className="text-slate-400 text-xs">▼</span>
                   </div>
 
                   {isDropdownOpen && (
                     <>
                       <div className="fixed inset-0 z-40" onClick={() => setIsDropdownOpen(false)}></div>
-                      <div className="absolute left-0 right-0 mt-1.5 p-2 bg-white border border-card-border rounded-2xl shadow-xl z-50 animate-fadeIn">
+                      <div className="absolute left-0 right-0 mt-2 p-2 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 animate-in fade-in zoom-in-95 duration-200">
                         <input
                           type="text"
                           placeholder="Search by name or role..."
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
-                          className="w-full border border-card-border rounded-xl py-2 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-primary-blue mb-2"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 mb-2 font-medium"
                           onClick={(e) => e.stopPropagation()}
                           autoFocus
                         />
-                        <div className="max-h-60 overflow-y-auto space-y-1">
+                        <div className="max-h-60 overflow-y-auto space-y-1 custom-scrollbar pr-1">
                           {(() => {
                             const filteredEmployees = employees.filter(e =>
                               (e.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
                               (e.role || '').toLowerCase().includes(searchTerm.toLowerCase())
                             );
                             if (filteredEmployees.length === 0) {
-                              return <div className="text-center py-4 text-xs text-muted-text">No employees found</div>;
+                              return <div className="text-center py-4 text-xs font-bold text-slate-400">No employees found</div>;
                             }
                             return filteredEmployees.map((e) => (
                               <div
@@ -164,14 +177,14 @@ const ManagerPayroll = ({ navItems = managerNavGroups, title = 'Manager Dashboar
                                   setIsDropdownOpen(false);
                                   setSearchTerm('');
                                 }}
-                                className={`p-2.5 rounded-lg cursor-pointer transition-all text-left ${
+                                className={`p-3 rounded-xl cursor-pointer transition-all text-left ${
                                   selected === e._id
-                                    ? 'bg-primary-blue text-white font-semibold'
-                                    : 'hover:bg-gray-50 text-dark-navy'
+                                    ? 'bg-brand-indigo text-white font-semibold shadow-md'
+                                    : 'hover:bg-slate-50 text-slate-700'
                                 }`}
                               >
-                                <div className="text-xs font-semibold">{e.name}</div>
-                                <div className={`text-[10px] mt-0.5 ${selected === e._id ? 'text-blue-100' : 'text-muted-text'}`}>
+                                <div className="text-sm font-bold">{e.name}</div>
+                                <div className={`text-[10px] font-black uppercase tracking-wider mt-1 ${selected === e._id ? 'text-indigo-200' : 'text-slate-500'}`}>
                                   {e.role} • Rs. {(e.employeeInfo?.salary || 0).toLocaleString()}
                                 </div>
                               </div>
@@ -182,58 +195,81 @@ const ManagerPayroll = ({ navItems = managerNavGroups, title = 'Manager Dashboar
                     </>
                   )}
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div><label className="text-xs text-muted-text block mb-1">Month</label>
-                    <select value={month} onChange={(e) => setMonth(Number(e.target.value))} className="w-full border border-card-border rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Month</label>
+                    <select value={month} onChange={(e) => setMonth(Number(e.target.value))} className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo shadow-sm cursor-pointer">
                       {Array.from({length: 12}, (_, i) => <option key={i+1} value={i+1}>{new Date(2000, i).toLocaleString('en', {month: 'long'})}</option>)}
-                    </select></div>
-                  <div><label className="text-xs text-muted-text block mb-1">Year</label>
-                    <input type="number" value={year} onChange={(e) => setYear(Number(e.target.value))} className="w-full border border-card-border rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" /></div>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Year</label>
+                    <input type="number" value={year} onChange={(e) => setYear(Number(e.target.value))} className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo shadow-sm" />
+                  </div>
                 </div>
-                <div className="grid grid-cols-3 gap-3">
-                  <div><label className="text-xs text-muted-text block mb-1">Allowances</label><input type="number" value={allowances} onChange={(e) => setAllowances(Number(e.target.value))} className="w-full border border-card-border rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" /></div>
-                  <div><label className="text-xs text-muted-text block mb-1">Bonuses</label><input type="number" value={bonuses} onChange={(e) => setBonuses(Number(e.target.value))} className="w-full border border-card-border rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" /></div>
-                  <div><label className="text-xs text-muted-text block mb-1">Deductions</label><input type="number" value={deductions} onChange={(e) => setDeductions(Number(e.target.value))} className="w-full border border-card-border rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" /></div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Allowances</label>
+                    <input type="number" value={allowances} onChange={(e) => setAllowances(Number(e.target.value))} className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo shadow-sm" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Bonuses</label>
+                    <input type="number" value={bonuses} onChange={(e) => setBonuses(Number(e.target.value))} className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo shadow-sm" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Deductions</label>
+                    <input type="number" value={deductions} onChange={(e) => setDeductions(Number(e.target.value))} className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo shadow-sm" />
+                  </div>
                 </div>
-                <button onClick={handleCalculate} className="w-full bg-amber-500 hover:bg-amber-600 text-white font-medium py-2.5 rounded-xl transition-colors flex items-center justify-center gap-2"><Calculator size={18} /> Calculate Preview</button>
+                <button onClick={handleCalculate} className="w-full bg-slate-900 hover:bg-slate-800 text-white text-[11px] uppercase tracking-wider font-black py-3 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 group mt-2">
+                  <Calculator size={14} className="group-hover:rotate-12 transition-transform" /> Calculate Preview
+                </button>
               </div>
             </div>
 
             {/* Preview Card */}
-            <div className="bg-white rounded-2xl border border-card-border p-6 shadow-sm">
-              <h2 className="font-semibold text-dark-navy mb-4">Salary Preview</h2>
+            <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-brand-indigo/5 rounded-bl-[100px] pointer-events-none -z-10"></div>
+              <h2 className="text-lg font-black text-slate-900 mb-5 relative z-10 flex items-center gap-2">
+                 Salary Preview
+              </h2>
               {!preview ? (
-                <div className="text-center py-12 text-muted-text"><CreditCard size={40} className="mx-auto mb-3 text-gray-300" /><p className="text-sm">Select an employee and calculate to see preview</p></div>
+                <div className="text-center py-16 text-slate-400 relative z-10">
+                  <CreditCard size={48} strokeWidth={1} className="mx-auto mb-4 text-slate-200" />
+                  <p className="text-sm font-bold">Select an employee and calculate to see preview</p>
+                </div>
               ) : (
-                <div className="space-y-3">
-                  <div className="bg-emerald-50 rounded-xl p-4 mb-4">
-                    <p className="text-sm text-muted-text">Employee</p>
-                    <p className="font-bold text-dark-navy text-lg">{preview.employeeName}</p>
-                    <p className="text-xs text-muted-text">{month}/{year}</p>
+                <div className="space-y-4 relative z-10">
+                  <div className="bg-emerald-50 rounded-2xl p-5 border border-emerald-100 mb-2">
+                    <p className="text-[10px] font-black uppercase tracking-wider text-emerald-600 mb-1">Employee</p>
+                    <p className="font-black text-slate-900 text-xl">{preview.employeeName}</p>
+                    <p className="text-[10px] font-bold text-emerald-700 font-mono tracking-widest">{month}/{year}</p>
                   </div>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between"><span className="text-muted-text">Basic Salary</span><span className="font-medium">Rs. {preview.basicSalary.toLocaleString()}</span></div>
-                    {preview.allowances > 0 && <div className="flex justify-between"><span className="text-muted-text">Allowances</span><span className="text-emerald-600">+ Rs. {preview.allowances.toLocaleString()}</span></div>}
-                    {preview.bonuses > 0 && <div className="flex justify-between"><span className="text-muted-text">Bonuses</span><span className="text-emerald-600">+ Rs. {preview.bonuses.toLocaleString()}</span></div>}
-                    <hr className="border-card-border" />
-                    <div className="flex justify-between font-medium"><span>Gross Salary</span><span>Rs. {preview.grossSalary.toLocaleString()}</span></div>
-                    <hr className="border-card-border" />
-                    <div className="flex justify-between text-red-500"><span>EPF Employee (8%)</span><span>- Rs. {preview.epfEmployee.toLocaleString()}</span></div>
-                    {preview.otherDeductions > 0 && <div className="flex justify-between text-red-500"><span>Other Deductions</span><span>- Rs. {preview.otherDeductions.toLocaleString()}</span></div>}
-                    {preview.attendanceDeductions > 0 && <div className="flex justify-between text-red-500"><span>Attendance Deductions</span><span>- Rs. {preview.attendanceDeductions.toLocaleString()}</span></div>}
-                    <hr className="border-card-border" />
-                    <div className="flex justify-between text-lg font-bold"><span className="text-dark-navy">Net Salary</span><span className="text-primary-blue">Rs. {preview.netSalary.toLocaleString()}</span></div>
-                    <hr className="border-card-border" />
+                  <div className="space-y-3 text-sm bg-slate-50/50 rounded-2xl p-5 border border-slate-100">
+                    <div className="flex justify-between items-center"><span className="text-[11px] font-black uppercase tracking-wider text-slate-500">Basic Salary</span><span className="font-black text-slate-900 text-base">Rs. {preview.basicSalary.toLocaleString()}</span></div>
+                    {preview.allowances > 0 && <div className="flex justify-between items-center"><span className="text-[11px] font-black uppercase tracking-wider text-slate-500">Allowances</span><span className="font-black text-emerald-600">+ Rs. {preview.allowances.toLocaleString()}</span></div>}
+                    {preview.bonuses > 0 && <div className="flex justify-between items-center"><span className="text-[11px] font-black uppercase tracking-wider text-slate-500">Bonuses</span><span className="font-black text-emerald-600">+ Rs. {preview.bonuses.toLocaleString()}</span></div>}
+                    <div className="h-px bg-slate-200 w-full my-2"></div>
+                    <div className="flex justify-between items-center"><span className="text-[11px] font-black uppercase tracking-wider text-slate-500">Gross Salary</span><span className="font-black text-slate-900 text-base">Rs. {preview.grossSalary.toLocaleString()}</span></div>
+                    <div className="h-px bg-slate-200 w-full my-2"></div>
+                    <div className="flex justify-between items-center"><span className="text-[11px] font-black uppercase tracking-wider text-slate-500">EPF Employee (8%)</span><span className="font-black text-rose-500">- Rs. {preview.epfEmployee.toLocaleString()}</span></div>
+                    {preview.otherDeductions > 0 && <div className="flex justify-between items-center"><span className="text-[11px] font-black uppercase tracking-wider text-slate-500">Other Deductions</span><span className="font-black text-rose-500">- Rs. {preview.otherDeductions.toLocaleString()}</span></div>}
+                    {preview.attendanceDeductions > 0 && <div className="flex justify-between items-center"><span className="text-[11px] font-black uppercase tracking-wider text-slate-500">Attendance Deductions</span><span className="font-black text-rose-500">- Rs. {preview.attendanceDeductions.toLocaleString()}</span></div>}
+                    <div className="h-px bg-slate-200 w-full my-2"></div>
+                    <div className="flex justify-between items-end mt-4"><span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Net Salary</span><span className="text-3xl font-black tracking-tight text-emerald-600">Rs. {preview.netSalary.toLocaleString()}</span></div>
+                    
                     {/* EPF/ETF Breakdown */}
-                    <div className="bg-amber-50 rounded-xl p-3 space-y-2">
-                      <p className="text-xs font-semibold text-amber-800">🏛️ Statutory Contributions (Employer)</p>
-                      <div className="flex justify-between text-xs"><span className="text-amber-700">EPF Employer (12%)</span><span className="font-bold text-amber-800">Rs. {preview.epfEmployer.toLocaleString()}</span></div>
-                      <div className="flex justify-between text-xs"><span className="text-amber-700">ETF Employer (3%)</span><span className="font-bold text-amber-800">Rs. {preview.etfEmployer.toLocaleString()}</span></div>
-                      <hr className="border-amber-200" />
-                      <div className="flex justify-between text-xs font-bold"><span className="text-amber-800">Total Employer Cost</span><span className="text-amber-900">Rs. {(preview.grossSalary + preview.epfEmployer + preview.etfEmployer).toLocaleString()}</span></div>
+                    <div className="bg-amber-50/50 rounded-xl p-4 mt-6 border border-amber-100/50">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-amber-700 mb-3 flex items-center gap-1.5"><Landmark size={12} /> Statutory Contributions (Employer)</p>
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center"><span className="text-[10px] font-black tracking-wider text-amber-600 uppercase">EPF Employer (12%)</span><span className="font-black text-amber-800">Rs. {preview.epfEmployer.toLocaleString()}</span></div>
+                        <div className="flex justify-between items-center"><span className="text-[10px] font-black tracking-wider text-amber-600 uppercase">ETF Employer (3%)</span><span className="font-black text-amber-800">Rs. {preview.etfEmployer.toLocaleString()}</span></div>
+                      </div>
+                      <div className="h-px bg-amber-200/50 w-full my-3"></div>
+                      <div className="flex justify-between items-center"><span className="text-[11px] font-black tracking-wider text-amber-800 uppercase">Total Employer Cost</span><span className="font-black text-amber-900 text-base">Rs. {(preview.grossSalary + preview.epfEmployer + preview.etfEmployer).toLocaleString()}</span></div>
                     </div>
                   </div>
-                  <button onClick={handleProcess} className="w-full bg-primary-blue hover:bg-emerald-600 text-white font-medium py-2.5 rounded-xl transition-colors flex items-center justify-center gap-2 mt-4"><Send size={18} /> Process & Send Notification</button>
+                  <button onClick={handleProcess} className="w-full bg-brand-indigo hover:bg-indigo-700 text-white text-[11px] uppercase tracking-wider font-black py-4 rounded-xl transition-all shadow-lg shadow-brand-indigo/20 flex items-center justify-center gap-2 mt-4 hover:shadow-xl hover:-translate-y-0.5"><Send size={14} /> Process & Send Notification</button>
                 </div>
               )}
             </div>
@@ -241,42 +277,54 @@ const ManagerPayroll = ({ navItems = managerNavGroups, title = 'Manager Dashboar
         )}
 
         {tab === 'report' && (
-          <div className="bg-white rounded-2xl border border-card-border shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-card-border flex items-center justify-between">
-              <div><h2 className="font-semibold text-dark-navy">Payroll Report — {month}/{year}</h2>{report && <span className="text-sm text-muted-text">{report.count} records</span>}</div>
-              {report?.payrolls?.length > 0 && <button onClick={exportCSV} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors"><Download size={16} /> Export CSV</button>}
+          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <div>
+                <h2 className="text-lg font-black text-slate-900 tracking-tight">Payroll Report — {month}/{year}</h2>
+                {report && <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 mt-1 block">{report.count} records generated</span>}
+              </div>
+              {report?.payrolls?.length > 0 && <button onClick={exportCSV} className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-[11px] uppercase tracking-wider font-black px-4 py-2.5 rounded-xl transition-all shadow-md hover:shadow-lg"><Download size={14} strokeWidth={2.5} /> Export CSV</button>}
             </div>
             {!report || report.payrolls.length === 0 ? (
-              <div className="text-center py-12 text-muted-text"><FileText size={40} className="mx-auto mb-3 text-gray-300" /><p className="text-sm">No payroll records for this month</p></div>
+              <div className="text-center py-20 text-slate-400">
+                <FileText size={48} strokeWidth={1} className="mx-auto mb-4 text-slate-200" />
+                <p className="text-sm font-bold">No payroll records for this month</p>
+              </div>
             ) : (
               <>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead><tr className="bg-gray-50">
-                      <th className="text-left px-5 py-3 font-medium text-muted-text">Employee</th>
-                      <th className="text-right px-3 py-3 font-medium text-muted-text">Basic</th>
-                      <th className="text-right px-3 py-3 font-medium text-muted-text">Gross</th>
-                      <th className="text-right px-3 py-3 font-medium text-red-500">EPF 8%</th>
-                      <th className="text-right px-3 py-3 font-medium text-amber-600">EPF 12%</th>
-                      <th className="text-right px-3 py-3 font-medium text-amber-600">ETF 3%</th>
-                      <th className="text-right px-3 py-3 font-medium text-primary-blue">Net</th>
-                      <th className="text-center px-3 py-3 font-medium text-muted-text">Status</th>
-                      <th className="text-right px-5 py-3 font-medium text-muted-text">Paysheet</th>
-                    </tr></thead>
-                    <tbody className="divide-y divide-card-border">
+                  <table className="w-full text-sm text-left">
+                    <thead className="bg-slate-50 text-[10px] uppercase font-black tracking-wider text-slate-500 border-b border-slate-200">
+                      <tr>
+                        <th className="px-6 py-5">Employee</th>
+                        <th className="px-4 py-5 text-right">Basic</th>
+                        <th className="px-4 py-5 text-right">Gross</th>
+                        <th className="px-4 py-5 text-right text-rose-500">EPF 8%</th>
+                        <th className="px-4 py-5 text-right text-amber-600">EPF 12%</th>
+                        <th className="px-4 py-5 text-right text-amber-600">ETF 3%</th>
+                        <th className="px-4 py-5 text-right text-brand-indigo">Net</th>
+                        <th className="px-4 py-5 text-center">Status</th>
+                        <th className="px-6 py-5 text-right">Paysheet</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
                       {report.payrolls.map(p => (
-                        <tr key={p._id} className="hover:bg-gray-50">
-                          <td className="px-5 py-3 font-medium text-dark-navy">{p.employeeId?.name}</td>
-                          <td className="px-3 py-3 text-right">Rs. {p.basicSalary?.toLocaleString()}</td>
-                          <td className="px-3 py-3 text-right font-medium">Rs. {p.grossSalary?.toLocaleString()}</td>
-                          <td className="px-3 py-3 text-right text-red-500">Rs. {p.epfEmployee?.toLocaleString()}</td>
-                          <td className="px-3 py-3 text-right text-amber-600">Rs. {p.epfEmployer?.toLocaleString()}</td>
-                          <td className="px-3 py-3 text-right text-amber-600">Rs. {p.etfEmployer?.toLocaleString()}</td>
-                          <td className="px-3 py-3 text-right font-bold text-primary-blue">Rs. {p.netSalary?.toLocaleString()}</td>
-                          <td className="px-3 py-3 text-center"><span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700">{p.status}</span></td>
-                          <td className="px-5 py-3 text-right">
-                            <button onClick={() => handleDownloadPaysheet(p)} className="inline-flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-dark-navy px-3 py-1.5 rounded-lg text-xs font-semibold">
-                              <Download size={14} /> PDF
+                        <tr key={p._id} className="hover:bg-slate-50/50 transition-colors">
+                          <td className="px-6 py-4 font-black text-slate-800">{p.employeeId?.name}</td>
+                          <td className="px-4 py-4 text-right font-bold text-slate-600">Rs. {p.basicSalary?.toLocaleString()}</td>
+                          <td className="px-4 py-4 text-right font-black text-slate-900">Rs. {p.grossSalary?.toLocaleString()}</td>
+                          <td className="px-4 py-4 text-right font-bold text-rose-500">Rs. {p.epfEmployee?.toLocaleString()}</td>
+                          <td className="px-4 py-4 text-right font-bold text-amber-600">Rs. {p.epfEmployer?.toLocaleString()}</td>
+                          <td className="px-4 py-4 text-right font-bold text-amber-600">Rs. {p.etfEmployer?.toLocaleString()}</td>
+                          <td className="px-4 py-4 text-right font-black text-emerald-600 tracking-tight text-base">Rs. {p.netSalary?.toLocaleString()}</td>
+                          <td className="px-4 py-4 text-center">
+                            <span className="text-[10px] uppercase font-black tracking-wider px-3 py-1.5 rounded-lg border bg-emerald-50 text-emerald-600 border-emerald-100">
+                              {p.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <button onClick={() => handleDownloadPaysheet(p)} className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-[10px] uppercase tracking-wider font-black transition-colors border border-slate-200/50">
+                              <Download size={12} strokeWidth={2.5} /> PDF
                             </button>
                           </td>
                         </tr>
@@ -285,12 +333,12 @@ const ManagerPayroll = ({ navItems = managerNavGroups, title = 'Manager Dashboar
                   </table>
                 </div>
                 {/* Totals */}
-                <div className="px-6 py-4 border-t border-card-border bg-emerald-50 grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">
-                  <div><p className="text-muted-text">Total Gross</p><p className="font-bold text-dark-navy">Rs. {report.totals.totalGross.toLocaleString()}</p></div>
-                  <div><p className="text-muted-text">Total Net</p><p className="font-bold text-primary-blue">Rs. {report.totals.totalNet.toLocaleString()}</p></div>
-                  <div><p className="text-muted-text">EPF Employee</p><p className="font-bold text-red-500">Rs. {report.totals.totalEPFEmployee.toLocaleString()}</p></div>
-                  <div><p className="text-muted-text">EPF Employer</p><p className="font-bold text-amber-600">Rs. {report.totals.totalEPFEmployer.toLocaleString()}</p></div>
-                  <div><p className="text-muted-text">ETF Employer</p><p className="font-bold text-amber-600">Rs. {report.totals.totalETF.toLocaleString()}</p></div>
+                <div className="px-6 py-5 border-t border-slate-100 bg-slate-50/50 grid grid-cols-2 sm:grid-cols-5 gap-4">
+                  <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm"><p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">Total Gross</p><p className="font-black text-slate-900 text-lg tracking-tight">Rs. {report.totals.totalGross.toLocaleString()}</p></div>
+                  <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm"><p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">Total Net</p><p className="font-black text-emerald-600 text-lg tracking-tight">Rs. {report.totals.totalNet.toLocaleString()}</p></div>
+                  <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm"><p className="text-[10px] font-black uppercase tracking-wider text-rose-500 mb-1">EPF Employee</p><p className="font-black text-rose-600 text-lg tracking-tight">Rs. {report.totals.totalEPFEmployee.toLocaleString()}</p></div>
+                  <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm"><p className="text-[10px] font-black uppercase tracking-wider text-amber-600 mb-1">EPF Employer</p><p className="font-black text-amber-600 text-lg tracking-tight">Rs. {report.totals.totalEPFEmployer.toLocaleString()}</p></div>
+                  <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm"><p className="text-[10px] font-black uppercase tracking-wider text-amber-600 mb-1">ETF Employer</p><p className="font-black text-amber-600 text-lg tracking-tight">Rs. {report.totals.totalETF.toLocaleString()}</p></div>
                 </div>
               </>
             )}
@@ -300,87 +348,103 @@ const ManagerPayroll = ({ navItems = managerNavGroups, title = 'Manager Dashboar
         {tab === 'epf' && (
           <div className="space-y-6">
             {/* EPF/ETF Info Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="bg-gradient-to-br from-red-400 to-blue-500 rounded-2xl p-5 text-white shadow-lg">
-                <p className="text-red-100 text-xs mb-1">EPF Employee (8%)</p>
-                <p className="text-2xl font-bold">Rs. {(report?.totals?.totalEPFEmployee || 0).toLocaleString()}</p>
-                <p className="text-red-100 text-xs mt-2">Deducted from employee salary</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-rose-50 rounded-bl-[100px] pointer-events-none -z-10 group-hover:scale-110 transition-transform"></div>
+                <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">EPF Employee (8%)</p>
+                <p className="text-3xl font-black text-slate-900 tracking-tight">Rs. {(report?.totals?.totalEPFEmployee || 0).toLocaleString()}</p>
+                <p className="text-[10px] font-bold text-rose-500 mt-3 uppercase tracking-wider bg-rose-50 w-max px-2 py-1 rounded-md">Deducted from employee salary</p>
               </div>
-              <div className="bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl p-5 text-white shadow-lg">
-                <p className="text-amber-100 text-xs mb-1">EPF Employer (12%)</p>
-                <p className="text-2xl font-bold">Rs. {(report?.totals?.totalEPFEmployer || 0).toLocaleString()}</p>
-                <p className="text-amber-100 text-xs mt-2">Contributed by employer</p>
+              <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-50 rounded-bl-[100px] pointer-events-none -z-10 group-hover:scale-110 transition-transform"></div>
+                <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">EPF Employer (12%)</p>
+                <p className="text-3xl font-black text-slate-900 tracking-tight">Rs. {(report?.totals?.totalEPFEmployer || 0).toLocaleString()}</p>
+                <p className="text-[10px] font-bold text-amber-600 mt-3 uppercase tracking-wider bg-amber-50 w-max px-2 py-1 rounded-md">Contributed by employer</p>
               </div>
-              <div className="bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl p-5 text-white shadow-lg">
-                <p className="text-emerald-100 text-xs mb-1">ETF Employer (3%)</p>
-                <p className="text-2xl font-bold">Rs. {(report?.totals?.totalETF || 0).toLocaleString()}</p>
-                <p className="text-emerald-100 text-xs mt-2">Employment Trust Fund</p>
+              <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-bl-[100px] pointer-events-none -z-10 group-hover:scale-110 transition-transform"></div>
+                <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">ETF Employer (3%)</p>
+                <p className="text-3xl font-black text-slate-900 tracking-tight">Rs. {(report?.totals?.totalETF || 0).toLocaleString()}</p>
+                <p className="text-[10px] font-bold text-emerald-600 mt-3 uppercase tracking-wider bg-emerald-50 w-max px-2 py-1 rounded-md">Employment Trust Fund</p>
               </div>
             </div>
 
             {/* Total Employer Liability */}
-            <div className="bg-white rounded-2xl border border-card-border p-6 shadow-sm">
-              <h2 className="font-semibold text-dark-navy mb-3">📊 Total Employer Liability</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
-                <div className="bg-gray-50 rounded-xl p-4 text-center">
-                  <p className="text-muted-text text-xs">Total Gross</p>
-                  <p className="text-lg font-bold text-dark-navy">Rs. {(report?.totals?.totalGross || 0).toLocaleString()}</p>
+            <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm">
+              <h2 className="text-lg font-black text-slate-900 mb-5 flex items-center gap-2">
+                 📊 Total Employer Liability
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100">
+                  <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">Total Gross</p>
+                  <p className="text-xl font-black text-slate-900 tracking-tight">Rs. {(report?.totals?.totalGross || 0).toLocaleString()}</p>
                 </div>
-                <div className="bg-amber-50 rounded-xl p-4 text-center">
-                  <p className="text-amber-700 text-xs">EPF (8%+12%)</p>
-                  <p className="text-lg font-bold text-amber-800">Rs. {((report?.totals?.totalEPFEmployee || 0) + (report?.totals?.totalEPFEmployer || 0)).toLocaleString()}</p>
+                <div className="bg-amber-50 rounded-2xl p-5 border border-amber-100">
+                  <p className="text-[10px] font-black uppercase tracking-wider text-amber-600 mb-1">EPF (8%+12%)</p>
+                  <p className="text-xl font-black text-amber-900 tracking-tight">Rs. {((report?.totals?.totalEPFEmployee || 0) + (report?.totals?.totalEPFEmployer || 0)).toLocaleString()}</p>
                 </div>
-                <div className="bg-emerald-50 rounded-xl p-4 text-center">
-                  <p className="text-emerald-700 text-xs">ETF (3%)</p>
-                  <p className="text-lg font-bold text-emerald-800">Rs. {(report?.totals?.totalETF || 0).toLocaleString()}</p>
+                <div className="bg-emerald-50 rounded-2xl p-5 border border-emerald-100">
+                  <p className="text-[10px] font-black uppercase tracking-wider text-emerald-600 mb-1">ETF (3%)</p>
+                  <p className="text-xl font-black text-emerald-900 tracking-tight">Rs. {(report?.totals?.totalETF || 0).toLocaleString()}</p>
                 </div>
-                <div className="bg-violet-50 rounded-xl p-4 text-center">
-                  <p className="text-violet-700 text-xs">Total Cost to Company</p>
-                  <p className="text-lg font-bold text-violet-800">Rs. {((report?.totals?.totalGross || 0) + (report?.totals?.totalEPFEmployer || 0) + (report?.totals?.totalETF || 0)).toLocaleString()}</p>
+                <div className="bg-brand-indigo/5 rounded-2xl p-5 border border-brand-indigo/10">
+                  <p className="text-[10px] font-black uppercase tracking-wider text-brand-indigo mb-1">Total Cost to Company</p>
+                  <p className="text-xl font-black text-indigo-900 tracking-tight">Rs. {((report?.totals?.totalGross || 0) + (report?.totals?.totalEPFEmployer || 0) + (report?.totals?.totalETF || 0)).toLocaleString()}</p>
                 </div>
               </div>
             </div>
 
             {/* Chart */}
             {chartData.length > 0 && (
-              <div className="bg-white rounded-2xl border border-card-border p-6 shadow-sm">
-                <h2 className="font-semibold text-dark-navy mb-4">📈 Salary & Contributions Breakdown</h2>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 10 }} />
-                    <Tooltip formatter={(v) => `Rs. ${v.toLocaleString()}`} />
-                    <Legend />
-                    <Bar dataKey="net" fill="#10b981" name="Net Salary" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="epfEmp" fill="#ef4444" name="EPF 8%" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="epfEmployer" fill="#f59e0b" name="EPF 12%" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="etf" fill="#06b6d4" name="ETF 3%" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+              <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm">
+                <h2 className="text-lg font-black text-slate-900 mb-5 flex items-center gap-2">
+                  📈 Salary & Contributions Breakdown
+                </h2>
+                <div className="h-[350px] w-full mt-4">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                      <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748b', fontWeight: 600 }} axisLine={false} tickLine={false} dy={10} />
+                      <YAxis tick={{ fontSize: 11, fill: '#64748b', fontWeight: 600 }} axisLine={false} tickLine={false} dx={-10} tickFormatter={(val) => `Rs.${val/1000}k`} />
+                      <Tooltip 
+                        contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)', padding: '16px', fontWeight: 'bold', fontSize: '12px' }}
+                        cursor={{fill: '#f8fafc'}}
+                        formatter={(v) => `Rs. ${v.toLocaleString()}`} 
+                      />
+                      <Legend wrapperStyle={{ paddingTop: '20px', fontSize: '11px', fontWeight: 'bold', color: '#64748b' }} />
+                      <Bar dataKey="net" fill="#10b981" name="Net Salary" radius={[6, 6, 0, 0]} maxBarSize={40} />
+                      <Bar dataKey="epfEmp" fill="#f43f5e" name="EPF 8%" radius={[6, 6, 0, 0]} maxBarSize={40} />
+                      <Bar dataKey="epfEmployer" fill="#f59e0b" name="EPF 12%" radius={[6, 6, 0, 0]} maxBarSize={40} />
+                      <Bar dataKey="etf" fill="#0ea5e9" name="ETF 3%" radius={[6, 6, 0, 0]} maxBarSize={40} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             )}
 
             {/* Sri Lankan Compliance Info */}
-            <div className="bg-blue-50 rounded-2xl p-6 border border-blue-200">
-              <h3 className="font-semibold text-blue-800 mb-3">🇱🇰 Sri Lankan Statutory Compliance</h3>
-              <div className="grid sm:grid-cols-3 gap-4 text-sm text-blue-700">
-                <div>
-                  <p className="font-medium mb-1">EPF (Employees' Provident Fund)</p>
-                  <p className="text-xs">Employee: 8% of gross salary</p>
-                  <p className="text-xs">Employer: 12% of gross salary</p>
-                  <p className="text-xs mt-1 text-blue-500">Total: 20% goes to EPF</p>
+            <div className="bg-brand-indigo/5 rounded-3xl p-6 border border-brand-indigo/10 relative overflow-hidden">
+              <div className="absolute -right-4 -bottom-4 opacity-5 pointer-events-none">
+                <Landmark size={150} />
+              </div>
+              <h3 className="text-sm font-black text-brand-indigo mb-4 uppercase tracking-wider flex items-center gap-2">🇱🇰 Sri Lankan Statutory Compliance</h3>
+              <div className="grid sm:grid-cols-3 gap-6 relative z-10">
+                <div className="bg-white/60 backdrop-blur-sm p-4 rounded-2xl border border-white">
+                  <p className="font-black text-slate-800 mb-2">EPF (Employees' Provident Fund)</p>
+                  <p className="text-xs font-bold text-slate-600 mb-1">Employee: <span className="text-rose-500">8%</span> of gross salary</p>
+                  <p className="text-xs font-bold text-slate-600 mb-2">Employer: <span className="text-amber-600">12%</span> of gross salary</p>
+                  <p className="text-[10px] font-black uppercase tracking-wider mt-2 text-brand-indigo bg-brand-indigo/10 px-2 py-1 rounded w-max">Total: 20% goes to EPF</p>
                 </div>
-                <div>
-                  <p className="font-medium mb-1">ETF (Employees' Trust Fund)</p>
-                  <p className="text-xs">Employer: 3% of gross salary</p>
-                  <p className="text-xs mt-1 text-blue-500">Entirely employer-borne</p>
+                <div className="bg-white/60 backdrop-blur-sm p-4 rounded-2xl border border-white">
+                  <p className="font-black text-slate-800 mb-2">ETF (Employees' Trust Fund)</p>
+                  <p className="text-xs font-bold text-slate-600 mb-2">Employer: <span className="text-emerald-600">3%</span> of gross salary</p>
+                  <p className="text-[10px] font-black uppercase tracking-wider mt-2 text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-1 rounded w-max">Entirely employer-borne</p>
                 </div>
-                <div>
-                  <p className="font-medium mb-1">Payment Deadlines</p>
-                  <p className="text-xs">EPF: Before 15th of next month</p>
-                  <p className="text-xs">ETF: Before 15th of next month</p>
-                  <p className="text-xs mt-1 text-blue-500">Penalties for late payments apply</p>
+                <div className="bg-white/60 backdrop-blur-sm p-4 rounded-2xl border border-white">
+                  <p className="font-black text-slate-800 mb-2">Payment Deadlines</p>
+                  <p className="text-xs font-bold text-slate-600 mb-1">EPF: Before 15th of next month</p>
+                  <p className="text-xs font-bold text-slate-600 mb-2">ETF: Before 15th of next month</p>
+                  <p className="text-[10px] font-black uppercase tracking-wider mt-2 text-rose-500 bg-rose-50 border border-rose-100 px-2 py-1 rounded w-max">Penalties for late payments apply</p>
                 </div>
               </div>
             </div>
