@@ -1,8 +1,13 @@
 const mongoose = require('mongoose');
 
+let isConnected = false;
+
 const connectDB = async () => {
+  if (isConnected || mongoose.connection.readyState === 1) {
+    return;
+  }
+
   try {
-    // Prefer MONGO_URI (full connection string) over individual DB_USER/DB_PASSWORD/DB_NAME
     let atlasUri = process.env.MONGO_URI;
 
     if (!atlasUri) {
@@ -15,14 +20,15 @@ const connectDB = async () => {
     }
 
     if (!atlasUri) {
-      throw new Error('Missing MongoDB configuration. Set MONGO_URI (or DB_USER, DB_PASSWORD, DB_NAME).');
+      console.error('Missing MongoDB configuration. Set MONGO_URI.');
+      return;
     }
 
     const conn = await mongoose.connect(atlasUri);
+    isConnected = !!conn.connections[0].readyState;
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
-    console.error(`Error: ${error.message}`);
-    process.exit(1);
+    console.error(`MongoDB connection error: ${error.message}`);
   }
 };
 
