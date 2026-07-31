@@ -5,10 +5,17 @@ const path = require('path');
 const fs = require('fs');
 const connectDB = require('./config/db');
 
-dotenv.config();
-connectDB();
-
 const app = express();
+
+// Ensure DB connection for incoming requests
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+  } catch (err) {
+    console.error('Database connection error:', err);
+  }
+  next();
+});
 
 // Ensure uploads directory exists (safely for serverless read-only environments)
 try {
