@@ -104,7 +104,7 @@ const Home = () => {
             transition={{ duration: 0.7, delay: 0.2 }}
           >
             <div className="relative">
-              <div className="w-80 h-80 md:w-96 md:h-96 rounded-full overflow-hidden shadow-[0_15px_45px_rgba(99,102,241,0.25)] border-4 border-brand-indigo/35 bg-white/5 p-1 backdrop-blur-sm flex items-center justify-center">
+              <div className="w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 rounded-full overflow-hidden shadow-[0_15px_45px_rgba(99,102,241,0.25)] border-4 border-brand-indigo/35 bg-white/5 p-1 backdrop-blur-sm flex items-center justify-center mx-auto">
                 <img
                   src={getImageUrl(settings?.logoUrl) || '/logo.png'}
                   alt={settings?.shopName || 'Shop Logo'}

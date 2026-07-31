@@ -2529,3 +2529,89 @@ body {
 .admin-dashboard-container .group-hover\:text-brand-fuchsia:hover {
   color: #ec4899 !important;
 }
+
+/* =======================================================
+   MOBILE, TABLET & SMALL SCREEN RESPONSIVE OPTIMIZATIONS
+   ======================================================= */
+@media (max-width: 640px) {
+  /* Prevent horizontal scroll on small mobile screens */
+  html, body, #root {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+  }
+
+  /* Make base containers responsive with touch-friendly spacing */
+  .base-container {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+  /* POS Screen Mobile Layout Stack */
+  .pos-screen {
+    height: auto !important;
+    min-height: 100dvh !important;
+    overflow-y: auto !important;
+  }
+
+  .pos-topbar {
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+    padding: 0.6rem 0.75rem !important;
+    height: auto !important;
+  }
+
+  .pos-topbar-right {
+    width: 100% !important;
+    justify-content: space-between !important;
+    overflow-x: auto !important;
+    padding-bottom: 2px !important;
+  }
+
+  .pos-main {
+    flex-direction: column !important;
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  .pos-products-panel {
+    width: 100% !important;
+    flex: none !important;
+    border-right: none !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+  }
+
+  .pos-product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)) !important;
+    gap: 0.5rem !important;
+    padding: 0.75rem !important;
+    max-height: 50vh !important;
+    overflow-y: auto !important;
+  }
+
+  .pos-cart-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    border-left: none !important;
+    border-top: 2px solid #e2e8f0 !important;
+    flex: none !important;
+  }
+
+  /* Make data tables responsive with horizontal scroll */
+  table {
+    display: block !important;
+    overflow-x: auto !important;
+    max-width: 100% !important;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .pos-product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
+  }
+
+  .pos-cart-panel {
+    min-width: 280px !important;
+    max-width: 340px !important;
+  }
+}

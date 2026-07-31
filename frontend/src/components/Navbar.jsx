@@ -207,18 +207,18 @@ const Navbar = () => {
       </div>
 
       {/* Main Nav */}
-      <div className="base-container py-3 flex items-center justify-between gap-4">
+      <div className="base-container py-3 flex items-center justify-between gap-2 sm:gap-4">
         {/* Logo */}
-        <Link to="/" className="text-2xl font-black text-slate-900 flex-shrink-0 flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-indigo via-brand-violet to-brand-fuchsia p-[2px] shadow-[0_8px_20px_-4px_rgba(99,102,241,0.4)] group-hover:scale-105 transition-transform duration-300">
+        <Link to="/" className="text-xl sm:text-2xl font-black text-slate-900 flex-shrink-0 flex items-center gap-2 sm:gap-3 group max-w-[180px] xs:max-w-[240px] sm:max-w-none">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-brand-indigo via-brand-violet to-brand-fuchsia p-[2px] shadow-[0_8px_20px_-4px_rgba(99,102,241,0.4)] group-hover:scale-105 transition-transform duration-300 flex-shrink-0">
             <img
               src={brandLogoUrl}
               alt={brandName}
-              className="w-full h-full rounded-[14px] object-cover bg-white"
+              className="w-full h-full rounded-[10px] sm:rounded-[14px] object-cover bg-white"
               onError={(e) => { e.target.onerror = null; e.target.src = '/logo.png'; }}
             />
           </div>
-          <span className="tracking-tight font-black text-2xl bg-gradient-to-r from-brand-indigo via-brand-violet to-brand-fuchsia bg-clip-text text-transparent whitespace-nowrap drop-shadow-sm">
+          <span className="tracking-tight font-black text-sm xs:text-base sm:text-xl md:text-2xl bg-gradient-to-r from-brand-indigo via-brand-violet to-brand-fuchsia bg-clip-text text-transparent truncate drop-shadow-sm">
             {brandName}
           </span>
         </Link>
