@@ -15,10 +15,11 @@ app.get('/health', (req, res) => {
 app.use(async (req, res, next) => {
   try {
     await connectDB();
+    next();
   } catch (err) {
     console.error('Database connection error:', err);
+    next();
   }
-  next();
 });
 
 // Ensure uploads directory exists (safely for serverless read-only environments)

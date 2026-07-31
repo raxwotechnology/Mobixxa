@@ -27,10 +27,11 @@ app.use(cors({
 app.use(async (req, res, next) => {
   try {
     await connectDB();
+    next();
   } catch (err) {
     console.error('Database connection error:', err);
+    next();
   }
-  next();
 });
 
 app.get('/health', (req, res) => {
