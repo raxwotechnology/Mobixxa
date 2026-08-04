@@ -3,6 +3,7 @@ import { CheckCircle, XCircle, ChevronDown, ChevronUp, ShoppingBag } from 'lucid
 import DashboardLayout from '../../components/DashboardLayout';
 import { getStoreOrders, updateOrderStatus, assignDeliveryGuy, getAvailableDeliveryGuys } from '../../services/api';
 import useCurrencyStore from '../../store/currencyStore';
+import { sendWhatsAppInvoice } from '../../utils/whatsappHelper';
 import { toast } from 'react-toastify';
 import { managerNavGroups as navItems } from './managerNavItems';
 
@@ -231,6 +232,12 @@ const StoreOrders = () => {
                       <td className="px-6 py-4.5 text-slate-450 font-bold text-xs">{new Date(order.createdAt).toLocaleDateString()}</td>
                       <td className="px-6 py-4.5 text-right">
                         <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); sendWhatsAppInvoice(order); }}
+                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-100 text-emerald-700 hover:bg-emerald-100 text-[10px] font-black uppercase tracking-wider transition-colors cursor-pointer"
+                          >
+                            💬 WhatsApp
+                          </button>
                           {order.orderStatus === 'pending' && (
                             <button
                               onClick={(e) => { e.stopPropagation(); handleStatusUpdate(order._id, 'confirmed'); }}

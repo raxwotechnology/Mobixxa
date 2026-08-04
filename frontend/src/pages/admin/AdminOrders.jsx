@@ -19,6 +19,7 @@ import { toast } from 'react-toastify';
 import { adminNavGroups as navItems } from './adminNavItems';
 import useAdminStoreStore from '../../store/adminStoreStore';
 import { exportToPDF, exportToExcel } from '../../utils/exportUtils';
+import { sendWhatsAppInvoice } from '../../utils/whatsappHelper';
 
 const statusColors = {
   pending: 'bg-amber-100 text-amber-700',
@@ -469,6 +470,14 @@ const AdminOrders = () => {
                             >
                               <MessageSquare size={14} className="text-purple-500" />
                               Trigger SMS
+                            </button>
+
+                            <button
+                              onClick={() => { sendWhatsAppInvoice(order); setActionMenuId(null); }}
+                              className="w-full px-4 py-2 hover:bg-emerald-50 text-emerald-700 font-bold flex items-center gap-2"
+                            >
+                              <span className="text-sm">💬</span>
+                              WhatsApp Invoice
                             </button>
 
                             {order.orderStatus === 'pending' && (

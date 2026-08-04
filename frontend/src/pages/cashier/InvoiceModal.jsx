@@ -4,6 +4,7 @@ import JsBarcode from 'jsbarcode';
 import { getImageUrl } from '../../utils/imageHelper';
 import useSettingsStore from '../../store/settingsStore';
 import { sendInvoiceReceipt } from '../../services/api';
+import { sendWhatsAppInvoice } from '../../utils/whatsappHelper';
 import { toast } from 'react-toastify';
 
 const InvoiceModal = ({ isOpen, onClose, order, onNewSale }) => {
@@ -596,6 +597,23 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale }) => {
             Send Invoice / Receipt
           </h4>
           
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px', alignItems: 'center' }}>
+            <input 
+              type="text" 
+              placeholder="WhatsApp Number (e.g., 0771234567)" 
+              value={smsRecipient}
+              onChange={(e) => setSmsRecipient(e.target.value)}
+              style={{ fontSize: '12px', padding: '8px 12px', border: '1px solid #10b981', borderRadius: '8px', background: '#fff', color: '#1e293b' }}
+            />
+            <button 
+              type="button"
+              onClick={() => sendWhatsAppInvoice({ ...order, customerPhone: smsRecipient || order.customerPhone }, brandName, brandPhone)}
+              style={{ padding: '8px 14px', fontSize: '12px', fontWeight: 'bold', background: '#10b981', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', items: 'center', gap: '4px' }}
+            >
+              💬 WhatsApp Invoice
+            </button>
+          </div>
+
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px', alignItems: 'center' }}>
             <input 
               type="text" 
