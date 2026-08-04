@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, Package, ShoppingBag, Users, UsersRound, Clock,
   Calendar, Target, BarChart3, RotateCcw, Barcode,
-  Wallet, Monitor, Globe, TrendingUp, Wrench, ShieldCheck,
+  Wallet, Monitor, Globe, TrendingUp, Wrench, ShieldCheck, Smartphone,
 } from 'lucide-react';
 
 const managerNavGroups = [
