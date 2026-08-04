@@ -738,6 +738,74 @@ const cancelMyOrder = async (req, res, next) => {
   }
 };
 
+const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+// @desc    Public IMEI warranty lookup
+// @route   GET /api/orders/warranty-check/:imei
+// @access  Public
+const checkWarrantyByImei = async (req, res, next) => {
+  try {
+    const rawImei = String(req.params.imei || '').trim();
+    if (!rawImei) {
+      return res.json({
+        found: false,
+        message: 'IMEI or Serial number is required'
+      });
+    }
+
+    const safeRegex = new RegExp(escapeRegex(rawImei), 'i');
+
+    const order = await Order.findOne({
+      $or: [
+        { 'items.imei': rawImei },
+        { 'items.imei': { $regex: safeRegex } },
+        { invoiceNumber: { $regex: safeRegex } },
+        { quotationNumber: { $regex: safeRegex } }
+      ]
+    }).populate('storeId', 'name address phone').populate('userId', 'name email phone');
+
+    if (!order) {
+      return res.json({
+        found: false,
+        message: 'No warranty record found for this IMEI / Serial number'
+      });
+    }
+
+    const matchedItem = order.items?.find(item => 
+      Array.isArray(item.imei) && item.imei.some(i => String(i).toLowerCase() === rawImei.toLowerCase())
+    ) || order.items?.[0] || {};
+
+    const purchaseDate = order.createdAt ? new Date(order.createdAt) : new Date();
+    const warrantyMonths = matchedItem?.warrantyMonths || 12;
+    
+    const expiryDate = new Date(purchaseDate);
+    expiryDate.setMonth(expiryDate.getMonth() + warrantyMonths);
+
+    const now = new Date();
+    const isExpired = now > expiryDate;
+    const diffTime = expiryDate.getTime() - now.getTime();
+    const daysRemaining = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+
+    res.json({
+      found: true,
+      imei: rawImei,
+      productName: matchedItem?.name || 'Smart Mobile Device',
+      invoiceNumber: order.invoiceNumber || order.quotationNumber || `INV-${order._id.toString().slice(-6).toUpperCase()}`,
+      purchaseDate,
+      warrantyMonths,
+      expiryDate,
+      isExpired,
+      daysRemaining,
+      customerName: order.customerName || order.userId?.name || 'Valued Customer',
+      storeName: order.storeId?.name || 'Max Durakathana',
+      storePhone: order.storeId?.phone || '+94 11 255 5000',
+    });
+  } catch (error) {
+    console.error('Error in checkWarrantyByImei:', error);
+    res.status(500).json({ found: false, message: 'Server error checking warranty' });
+  }
+};
+
 module.exports = {
   createOrder,
   getMyOrders,
@@ -751,4 +819,5 @@ module.exports = {
   kokoNotify,
   getStoreOrders,
   cancelMyOrder,
+  checkWarrantyByImei,
 };

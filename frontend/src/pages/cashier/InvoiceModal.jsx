@@ -230,8 +230,17 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale }) => {
                   {order.items?.map((item, idx) => (
                     <tr key={idx} style={{ borderBottom: '1px solid #e2e8f0' }}>
                       <td style={{ padding: '10px', fontSize: '12px', color: '#334155' }}>
-                        <div style={{ fontWeight: 600 }}>{item.name}</div>
-                        {item.warranty && <div style={{ fontSize: '10px', color: '#64748b', fontStyle: 'italic', marginTop: '2px' }}>Warranty: {item.warranty}</div>}
+                        <div style={{ fontWeight: 700 }}>{item.name}</div>
+                        {(item.imei?.length > 0 || item.imeiNumber) && (
+                          <div style={{ fontSize: '11px', color: '#2563eb', fontWeight: 800, marginTop: '2px' }}>
+                            IMEI / S/N: {Array.isArray(item.imei) ? item.imei.join(', ') : (item.imei || item.imeiNumber)}
+                          </div>
+                        )}
+                        {(item.warranty || item.warrantyMonths) && (
+                          <div style={{ fontSize: '10px', color: '#64748b', fontStyle: 'italic', marginTop: '1px' }}>
+                            Warranty: {item.warranty || `${item.warrantyMonths || 12} Months`}
+                          </div>
+                        )}
                       </td>
                       <td style={{ padding: '10px', textAlign: 'center', fontSize: '12px', color: '#334155' }}>{item.quantity}</td>
                       <td style={{ padding: '10px', textAlign: 'right', fontSize: '12px', color: '#334155' }}>Rs. {item.price.toLocaleString()}</td>
@@ -440,9 +449,14 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale }) => {
                       <span style={{ textAlign: 'right', color: '#555' }}>{item.price.toFixed(2)}</span>
                       <span style={{ textAlign: 'right', fontWeight: 600, color: '#111' }}>{(item.price * item.quantity).toFixed(2)}</span>
                     </div>
-                    {showWarranty && item.warranty && (
+                    {(item.imei?.length > 0 || item.imeiNumber) && (
+                      <div style={{ fontSize: '9.5px', color: '#000', fontWeight: 800, marginTop: '1px' }}>
+                        IMEI: {Array.isArray(item.imei) ? item.imei.join(', ') : (item.imei || item.imeiNumber)}
+                      </div>
+                    )}
+                    {showWarranty && (item.warranty || item.warrantyMonths) && (
                       <div style={{ fontSize: '9px', color: '#666', fontStyle: 'italic', marginTop: '1px' }}>
-                        Warranty: {item.warranty}
+                        Warranty: {item.warranty || `${item.warrantyMonths || 12} Months`}
                       </div>
                     )}
                   </div>

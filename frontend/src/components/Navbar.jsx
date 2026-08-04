@@ -15,6 +15,7 @@ const buildFeatureIndex = (role) => {
     { label: 'Shop', path: '/shop', roles: ['customer', 'guest'], keywords: ['products', 'buy', 'items'] },
     { label: 'Deals', path: '/deals', roles: ['customer', 'guest'], keywords: ['offers', 'discounts', 'sale'] },
     { label: 'Stores', path: '/stores', roles: ['customer', 'guest'], keywords: ['shops', 'branches'] },
+    { label: 'Warranty Check', path: '/warranty-check', roles: ['customer', 'guest'], keywords: ['warranty', 'imei', 'serial', 'check'] },
     { label: 'Orders', path: '/orders', roles: ['customer'], keywords: ['my orders', 'history', 'tracking'] },
     { label: 'Wishlist', path: '/wishlist', roles: ['customer'], keywords: ['favorites', 'saved'] },
     { label: 'Loyalty & Rewards', path: '/loyalty', roles: ['customer'], keywords: ['points', 'rewards', 'store credit'] },

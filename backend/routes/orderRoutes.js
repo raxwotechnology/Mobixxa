@@ -13,10 +13,12 @@ const {
   kokoNotify,
   getStoreOrders,
   cancelMyOrder,
+  checkWarrantyByImei,
 } = require('../controllers/orderController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 
-// Public IPN callbacks (no auth)
+// Public routes (no auth)
+router.get('/warranty-check/:imei', checkWarrantyByImei);
 router.post('/payhere-notify', payHereNotify);
 router.post('/koko-notify', kokoNotify);
 

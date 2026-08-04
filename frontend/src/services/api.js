@@ -122,6 +122,7 @@ export const getStoreOrders = () => API.get('/orders/store');
 export const updateOrderStatus = (id, data) => API.put(`/orders/${id}/status`, data);
 export const getPayHereHash = (orderId) => API.post(`/orders/${orderId}/payhere-hash`);
 export const getPosPayHereHash = (data) => API.post('/orders/pos/payhere-hash', data);
+export const checkWarrantyByImei = (imei) => API.get(`/orders/warranty-check/${encodeURIComponent(imei)}`);
 export const requestOrderPaymentOtp = (orderId) => API.post(`/orders/${orderId}/payment-otp/request`);
 export const verifyOrderPaymentOtp = (orderId, data) => API.post(`/orders/${orderId}/payment-otp/verify`, data);
 export const cancelMyOrder = (orderId, data) => API.put(`/orders/${orderId}/cancel`, data);

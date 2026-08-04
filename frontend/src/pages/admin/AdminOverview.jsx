@@ -21,15 +21,15 @@ const AdminOverview = () => {
       setLoading(true);
       try {
         const storeParam = selectedStoreId !== 'all' ? selectedStoreId : undefined;
-        const [statsRes, storesRes, finRes] = await Promise.all([
+        const [statsRes, storesRes, finRes] = await Promise.allSettled([
           getAdminStats(storeParam),
           getStores(),
           getFinancialDashboard({ period: 'monthly', storeId: storeParam })
         ]);
 
-        setStats(statsRes.data);
-        setStores(storesRes.data.stores || storesRes.data);
-        setFinancials(finRes.data);
+        if (statsRes.status === 'fulfilled') setStats(statsRes.value.data);
+        if (storesRes.status === 'fulfilled') setStores(storesRes.value.data.stores || storesRes.value.data);
+        if (finRes.status === 'fulfilled') setFinancials(finRes.value.data);
       } catch (err) {
         console.error('Dashboard Fetch Error:', err);
       } finally {

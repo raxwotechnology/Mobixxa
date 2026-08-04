@@ -21,6 +21,7 @@ import LegalPrivacy from './pages/LegalPrivacy';
 import HelpCenter from './pages/HelpCenter';
 import ShippingInfo from './pages/ShippingInfo';
 import ReturnsPolicy from './pages/ReturnsPolicy';
+import WarrantyCheck from './pages/WarrantyCheck';
 
 import CustomerLoyalty from './pages/customer/CustomerLoyalty';
 import StoreOverview from './pages/storeOwner/StoreOverview';
@@ -58,6 +59,7 @@ import AdminSuppliers from './pages/admin/AdminSuppliers';
 import AdminPhones from './pages/admin/AdminPhones';
 import AdminGRN from './pages/admin/AdminGRN';
 import AdminSalesTracking from './pages/admin/AdminSalesTracking';
+import AdminWarranty from './pages/admin/AdminWarranty';
 
 
 import AdminPredictions from './pages/admin/AdminPredictions';
@@ -155,6 +157,7 @@ function App() {
           <Route path="/help-center" element={<HelpCenter />} />
           <Route path="/shipping-info" element={<ShippingInfo />} />
           <Route path="/returns-policy" element={<ReturnsPolicy />} />
+          <Route path="/warranty-check" element={<WarrantyCheck />} />
 
           {/* Customer */}
           <Route path="/cart" element={<ProtectedRoute><CartPage /></ProtectedRoute>} />
@@ -178,6 +181,7 @@ function App() {
           <Route path="/manager/inventory" element={<ProtectedRoute roles={['manager']}><Navigate to="/manager/products" replace /></ProtectedRoute>} />
           <Route path="/manager/supplier-payments" element={<ProtectedRoute roles={['manager']}><ManagerSupplierPayments /></ProtectedRoute>} />
           <Route path="/manager/repairs" element={<ProtectedRoute roles={['manager']}><ManagerRepairs /></ProtectedRoute>} />
+          <Route path="/manager/warranty" element={<ProtectedRoute roles={['manager']}><AdminWarranty /></ProtectedRoute>} />
 
           {/* Admin */}
           <Route path="/admin" element={<ProtectedRoute roles={['admin']}><AdminOverview /></ProtectedRoute>} />
@@ -189,6 +193,7 @@ function App() {
           <Route path="/admin/categories" element={<ProtectedRoute roles={['admin']} permission="products"><AdminCategories /></ProtectedRoute>} />
           <Route path="/admin/products" element={<ProtectedRoute roles={['admin']} permission="products"><AdminProducts /></ProtectedRoute>} />
           <Route path="/admin/orders" element={<ProtectedRoute roles={['admin']} permission="sales"><AdminOrders /></ProtectedRoute>} />
+          <Route path="/admin/warranty" element={<ProtectedRoute roles={['admin']} permission="sales"><AdminWarranty /></ProtectedRoute>} />
           <Route path="/admin/returns" element={<ProtectedRoute roles={['admin']} permission="sales"><AdminReturns /></ProtectedRoute>} />
           <Route path="/admin/vouchers" element={<ProtectedRoute roles={['admin']} permission="sales"><AdminVouchers /></ProtectedRoute>} />
           <Route path="/admin/reports" element={<ProtectedRoute roles={['admin']} permission="reports"><AdminReports /></ProtectedRoute>} />

@@ -178,6 +178,7 @@ const Footer = () => {
             <ul className="space-y-3.5 text-slate-400 text-sm p-0 m-0 list-none font-medium">
               {[
                 { label: "Help Center", path: "/help-center" },
+                { label: "Warranty Check", path: "/warranty-check" },
                 { label: "Track Order", path: "/orders" },
                 { label: "Shipping Info", path: "/shipping-info" },
                 { label: "Returns & Exchange", path: "/returns-policy" },

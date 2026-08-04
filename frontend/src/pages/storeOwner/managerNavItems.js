@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, Package, ShoppingBag, Users, UsersRound, Clock,
   Calendar, Target, BarChart3, RotateCcw, Barcode,
-  Wallet, Monitor, Globe, TrendingUp, Wrench,
+  Wallet, Monitor, Globe, TrendingUp, Wrench, ShieldCheck,
 } from 'lucide-react';
 
 const managerNavGroups = [
@@ -26,6 +26,7 @@ const managerNavGroups = [
     items: [
       { path: '/manager/products', label: 'Products',  icon: Package },
       { path: '/manager/orders',   label: 'Orders',    icon: ShoppingBag },
+      { path: '/manager/warranty', label: 'IMEI Warranty', icon: ShieldCheck },
       { path: '/manager/returns',  label: 'Returns',   icon: RotateCcw },
       { path: '/manager/repairs',  label: 'Device Repairs', icon: Wrench },
     ],

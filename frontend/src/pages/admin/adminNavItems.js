@@ -2,7 +2,7 @@ import {
   LayoutDashboard, Users, Store, Tag, ShoppingBag, Monitor,
   Ticket, BarChart3, DollarSign, Wallet, Package, Gift,
   CreditCard, UserCog, UsersRound, RotateCcw, Barcode, TrendingUp, Brain,
-  Clock, Target, Settings, ChevronRight, Globe, History, Landmark, FileText, Smartphone, Wrench,
+  Clock, Target, Settings, ChevronRight, Globe, History, Landmark, FileText, Smartphone, Wrench, ShieldCheck,
 
 } from 'lucide-react';
 
@@ -42,6 +42,7 @@ const adminNavGroups = [
     label: 'Sales & Operations',
     items: [
       { path: '/admin/orders',         label: 'Orders',         icon: ShoppingBag },
+      { path: '/admin/warranty',       label: 'IMEI Warranty',  icon: ShieldCheck },
       { path: '/admin/returns',        label: 'Returns',        icon: RotateCcw },
       { path: '/pos',                  label: 'POS Terminal',   icon: Monitor },
       { path: '/admin/repairs',        label: 'Device Repairs', icon: Wrench },

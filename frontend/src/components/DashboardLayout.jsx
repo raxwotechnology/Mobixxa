@@ -60,7 +60,7 @@ const NavLink = ({ item, location, collapsed, onNavigate, userRole }) => {
   );
 };
 
-const SidebarContent = ({ navItems, collapsed, location, onNavigate, userRole }) => {
+const SidebarContent = ({ navItems = [], collapsed, location, onNavigate, userRole }) => {
   const navRef = useRef(null);
 
   useEffect(() => {
@@ -76,12 +76,13 @@ const SidebarContent = ({ navItems, collapsed, location, onNavigate, userRole })
     sessionStorage.setItem('sidebar-scroll-top', e.target.scrollTop);
   };
 
-  const isGrouped = navItems.length > 0 && navItems[0]?.items;
+  const safeNavItems = Array.isArray(navItems) ? navItems : [];
+  const isGrouped = safeNavItems.length > 0 && safeNavItems[0]?.items;
 
   if (!isGrouped) {
     return (
       <nav ref={navRef} onScroll={handleScroll} className="p-3 space-y-1 flex-1 overflow-y-auto scrollbar-hide">
-        {navItems.map((item) => (
+        {safeNavItems.map((item) => (
           <NavLink key={item.path} item={item} location={location} collapsed={collapsed} onNavigate={onNavigate} userRole={userRole} />
         ))}
       </nav>
@@ -90,7 +91,7 @@ const SidebarContent = ({ navItems, collapsed, location, onNavigate, userRole })
 
   return (
     <nav ref={navRef} onScroll={handleScroll} className="p-2.5 flex-1 overflow-y-auto scrollbar-hide">
-      {navItems.map((group, gi) => (
+      {safeNavItems.map((group, gi) => (
         <div key={gi} className="mb-2">
           {!collapsed && (
             <div className="flex items-center justify-between px-3 pt-3 pb-1">
@@ -135,7 +136,10 @@ const DashboardLayout = ({ children, navItems, title }) => {
   const [stores, setStores] = useState([]);
 
   let finalNavItems = navItems;
-  const isAdminNav = user?.role === 'admin' && (navItems === adminNavGroups || (Array.isArray(navItems) && navItems.length > 0 && navItems[0]?.label === 'Dashboard'));
+  if (!finalNavItems && (user?.role === 'admin' || location.pathname.startsWith('/admin'))) {
+    finalNavItems = adminNavGroups;
+  }
+  const isAdminNav = user?.role === 'admin' && (finalNavItems === adminNavGroups || (Array.isArray(finalNavItems) && finalNavItems.length > 0 && finalNavItems[0]?.label === 'Dashboard'));
   if (isAdminNav) {
     finalNavItems = getAdminNavGroups(user);
   }

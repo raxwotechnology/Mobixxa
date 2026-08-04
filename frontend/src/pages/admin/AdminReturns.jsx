@@ -2,8 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import DashboardLayout from '../../components/DashboardLayout';
 import { adminNavGroups as navItems } from './adminNavItems';
 import { toast } from 'react-toastify';
-import { approveCustomerReturn, deleteCustomerReturn, exportCustomerReturnsReport, getCustomerReturns, rejectCustomerReturn } from '../../services/api';
+import { approveCustomerReturn, createCustomerReturn, deleteCustomerReturn, exportCustomerReturnsReport, getCustomerReturns, getReturnOrder, rejectCustomerReturn } from '../../services/api';
 import DeleteConfirmationModal from '../../components/DeleteConfirmationModal';
+import useAuthStore from '../../store/authStore';
+import { managerNavGroups } from '../storeOwner/managerNavItems';
+import { RotateCcw, Search } from 'lucide-react';
 
 const statusColors = {
   requested: 'bg-amber-100 text-amber-700',
@@ -14,11 +17,22 @@ const statusColors = {
 };
 
 const AdminReturns = () => {
+  const { user } = useAuthStore();
+  const navItemsToUse = user?.role === 'manager' ? managerNavGroups : navItems;
+
   const [returns, setReturns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+
+  // Return Creation States
+  const [orderId, setOrderId] = useState('');
+  const [order, setOrder] = useState(null);
+  const [loadingOrder, setLoadingOrder] = useState(false);
+  const [createSubmitting, setCreateSubmitting] = useState(false);
+  const [items, setItems] = useState([]);
+  const [notes, setNotes] = useState('');
 
   // Custom Modal States
   const [activeReturn, setActiveReturn] = useState(null);
@@ -44,6 +58,59 @@ const AdminReturns = () => {
   };
 
   useEffect(() => { fetchReturns(); }, []);
+
+  const lookupOrder = async () => {
+    if (!orderId.trim()) return;
+    setLoadingOrder(true);
+    try {
+      const { data } = await getReturnOrder(orderId.trim());
+      setOrder(data);
+      const base = (data.items || []).map((i) => ({
+        productId: i.productId,
+        name: i.name,
+        soldQty: i.quantity,
+        qty: 0,
+        condition: 'good',
+        reason: '',
+      }));
+      setItems(base);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to load order');
+      setOrder(null);
+      setItems([]);
+    } finally {
+      setLoadingOrder(false);
+    }
+  };
+
+  const submitReturn = async (e) => {
+    e.preventDefault();
+    if (!order?._id) {
+      toast.error('Lookup an order first');
+      return;
+    }
+    const payloadItems = items
+      .filter((i) => Number(i.qty) > 0)
+      .map((i) => ({ productId: i.productId, qty: Number(i.qty), condition: i.condition, reason: i.reason }));
+    if (payloadItems.length === 0) {
+      toast.error('Select at least one item to return');
+      return;
+    }
+    setCreateSubmitting(true);
+    try {
+      await createCustomerReturn({ orderId: order._id, items: payloadItems, notes });
+      toast.success('Return request submitted');
+      setOrderId('');
+      setOrder(null);
+      setItems([]);
+      setNotes('');
+      fetchReturns();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to submit return');
+    } finally {
+      setCreateSubmitting(false);
+    }
+  };
 
   const filtered = useMemo(
     () => (filter === 'all' ? returns : returns.filter((r) => r.status === filter)),
@@ -136,7 +203,7 @@ const AdminReturns = () => {
   };
 
   return (
-    <DashboardLayout navItems={navItems} title="Returns">
+    <DashboardLayout navItems={navItemsToUse} title="Returns">
       <div className="animate-fade-in space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-brand-indigo/5 rounded-full blur-3xl pointer-events-none -z-10"></div>
@@ -146,7 +213,7 @@ const AdminReturns = () => {
                 Sales & Operations
               </span>
             </div>
-            <h1 className="text-2xl font-black text-slate-900 m-0">Returns</h1>
+            <h1 className="text-2xl font-black text-slate-900 m-0">Customer Returns</h1>
             <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mt-2 m-0">Pending / Approved / Rejected return requests</p>
           </div>
           <div className="flex items-center gap-3 bg-white/40 backdrop-blur-sm border border-white/40 p-2 rounded-2xl shadow-sm">
@@ -154,6 +221,56 @@ const AdminReturns = () => {
             <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="bg-white/80 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm" />
             <button onClick={handleExport} className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[10px] uppercase tracking-wider font-black transition-all shadow-md">Export PDF</button>
           </div>
+        </div>
+
+        {/* Order Search & Return Request Creation */}
+        <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
+          <h2 className="text-sm font-black text-slate-800 mb-4 uppercase tracking-wider">Search Order & Create Return Request</h2>
+          <div className="flex flex-col sm:flex-row gap-3 items-end mb-4">
+            <div className="flex-1">
+              <label className="block text-xs font-semibold text-slate-500 mb-1">Order ID / Invoice Number *</label>
+              <input value={orderId} onChange={(e) => setOrderId(e.target.value)} placeholder="Enter Order ID or Invoice No..." className="w-full border border-slate-200 rounded-2xl py-3 px-4 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all" />
+            </div>
+            <button onClick={lookupOrder} disabled={loadingOrder} className="bg-brand-indigo hover:bg-brand-violet text-white font-extrabold px-6 py-3 rounded-2xl text-xs uppercase tracking-wider transition-all shadow-md shadow-brand-indigo/20 disabled:opacity-50 cursor-pointer">
+              {loadingOrder ? 'Searching...' : 'Lookup Order'}
+            </button>
+          </div>
+
+          {order && (
+            <form onSubmit={submitReturn} className="space-y-4 pt-4 border-t border-slate-100">
+              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-xs font-medium text-slate-700">
+                <p className="font-extrabold text-slate-900 m-0">Order Summary: #{String(order._id).slice(-8).toUpperCase()}</p>
+                <p className="m-0 text-slate-500 mt-1">Customer: {order.customerName || order.userId?.name || 'Walk-in'}</p>
+              </div>
+
+              <div className="space-y-3">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Select Items to Return</label>
+                {items.map((it, idx) => (
+                  <div key={idx} className="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex flex-col md:flex-row gap-3 items-start md:items-center justify-between text-xs">
+                    <div className="font-bold text-slate-800 flex-1">{it.name} <span className="text-slate-400 font-medium">(Sold: {it.soldQty})</span></div>
+                    <div className="flex gap-2 items-center w-full md:w-auto">
+                      <input type="number" min="0" max={it.soldQty} value={it.qty} onChange={(e) => { const next = [...items]; next[idx].qty = e.target.value; setItems(next); }} className="w-20 border border-slate-200 rounded-xl p-2 font-bold text-center" placeholder="Qty" />
+                      <select value={it.condition} onChange={(e) => { const next = [...items]; next[idx].condition = e.target.value; setItems(next); }} className="border border-slate-200 rounded-xl p-2 font-bold">
+                        <option value="good">Good Condition</option>
+                        <option value="damaged">Damaged</option>
+                        <option value="defective">Defective</option>
+                      </select>
+                      <input type="text" value={it.reason} onChange={(e) => { const next = [...items]; next[idx].reason = e.target.value; setItems(next); }} placeholder="Reason..." className="border border-slate-200 rounded-xl p-2 flex-1 md:w-48 font-medium" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Additional Notes</label>
+                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Add any extra details..." className="w-full border border-slate-200 rounded-2xl p-3 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-brand-indigo" rows={2} />
+              </div>
+
+              <button type="submit" disabled={createSubmitting} className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-6 py-3 rounded-2xl text-xs uppercase tracking-wider transition-all shadow-md cursor-pointer">
+                {createSubmitting ? 'Submitting...' : 'Submit Return Request'}
+              </button>
+            </form>
+          )}
         </div>
 
         <div className="flex gap-2 flex-wrap mb-6 bg-white/40 backdrop-blur-sm p-2 rounded-2xl border border-white/40 shadow-sm w-fit">
