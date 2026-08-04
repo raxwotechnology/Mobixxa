@@ -28,10 +28,11 @@ const AdminTradeIn = () => {
   const fetchTradeIns = async () => {
     try {
       setLoading(true);
-      const { data } = await getTradeIns();
-      setTradeIns(data || []);
+      const res = await getTradeIns();
+      setTradeIns(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
-      toast.error('Failed to load trade-in records');
+      console.error('Failed to load trade-in records:', err);
+      setTradeIns([]);
     } finally {
       setLoading(false);
     }

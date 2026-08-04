@@ -160,13 +160,22 @@ const createTradeInRecord = async (req, res, next) => {
 // @access  Staff / Manager / Admin
 const getTradeIns = async (req, res, next) => {
   try {
-    const tradeIns = await TradeIn.find({})
-      .populate('evaluatedBy', 'name email')
-      .populate('storeId', 'name')
-      .sort({ createdAt: -1 });
-    res.json(tradeIns);
+    let query = {};
+    if (req.user?.role === 'manager' && (req.user?.assignedStore || req.user?.assignedStoreId || req.user?.storeId)) {
+      const managerStore = req.user.assignedStore || req.user.assignedStoreId || req.user.storeId;
+      query = { $or: [{ storeId: managerStore }, { storeId: { $exists: false } }, { storeId: null }] };
+    }
+
+    const tradeIns = await TradeIn.find(query)
+      .populate({ path: 'evaluatedBy', select: 'name email', strictPopulate: false })
+      .populate({ path: 'storeId', select: 'name', strictPopulate: false })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json(tradeIns || []);
   } catch (error) {
-    next(error);
+    console.error('getTradeIns error:', error);
+    res.json([]);
   }
 };
 
