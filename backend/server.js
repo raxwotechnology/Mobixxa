@@ -5,6 +5,11 @@ const path = require('path');
 const fs = require('fs');
 const connectDB = require('./config/db');
 
+dotenv.config({ path: path.join(__dirname, '.env') });
+
+// Initialize DB connection
+connectDB();
+
 const app = express();
 
 app.get('/health', (req, res) => {
