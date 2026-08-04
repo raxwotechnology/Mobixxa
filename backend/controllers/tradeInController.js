@@ -1,5 +1,7 @@
 const TradeIn = require('../models/TradeIn');
 const Product = require('../models/Product');
+const Category = require('../models/Category');
+const Store = require('../models/Store');
 
 // Predefined phone market reference prices for Sri Lanka (LKR)
 const POPULAR_MODELS = [
@@ -186,20 +188,46 @@ const convertToRefurbishedStock = async (req, res, next) => {
       return next(new Error('Trade-in record not found'));
     }
 
-    const sellingPrice = req.body.sellingPrice || Math.round(tradeIn.finalValuationPrice * 1.2);
+    const sellingPrice = Number(req.body.sellingPrice) || Math.round(tradeIn.finalValuationPrice * 1.2);
+
+    // Find category ID
+    let categoryObj = await Category.findOne({ name: { $regex: /Smart|Phone|Mobile/i } });
+    if (!categoryObj) {
+      categoryObj = await Category.findOne({});
+    }
+
+    // Find store ID
+    let validStoreId = tradeIn.storeId || req.user?.assignedStore || req.user?.assignedStoreId || req.user?.storeId;
+    if (!validStoreId) {
+      const defaultStore = await Store.findOne({});
+      validStoreId = defaultStore ? defaultStore._id : null;
+    }
+
+    if (!categoryObj || !validStoreId) {
+      res.status(400);
+      return next(new Error('Valid Store or Category not found to add refurbished product stock'));
+    }
+
+    const slug = `pre-owned-${tradeIn.brand}-${tradeIn.modelName}-${Date.now()}`.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
     const product = await Product.create({
+      storeId: validStoreId,
+      categoryId: categoryObj._id,
       name: `[Pre-Owned] ${tradeIn.brand} ${tradeIn.modelName}`,
+      slug: slug,
       description: `Refurbished / Pre-owned device. Condition: ${tradeIn.grade}. Tested & Certified. Includes 3-Month Store Warranty. IMEI: ${tradeIn.imeiNumber || 'Included'}`,
       price: sellingPrice,
-      originalPrice: tradeIn.baseEstimatedPrice || sellingPrice,
+      mrp: tradeIn.baseEstimatedPrice || sellingPrice,
+      unit: 'Unit',
+      buyingPrice: tradeIn.finalValuationPrice,
       costPrice: tradeIn.finalValuationPrice,
       stock: 1,
-      category: 'Smart & Feecher Phone',
+      category: categoryObj.name,
       brand: tradeIn.brand,
+      condition: 'refurbished',
+      warranty: '3 Months Store Warranty',
       isRefurbished: true,
-      imeiList: tradeIn.imeiNumber ? [tradeIn.imeiNumber] : [],
-      storeId: tradeIn.storeId || req.user?.assignedStore,
+      imei: tradeIn.imeiNumber ? [tradeIn.imeiNumber] : [],
     });
 
     tradeIn.status = 'added_to_refurbished_stock';
