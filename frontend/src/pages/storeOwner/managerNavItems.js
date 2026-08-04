@@ -28,6 +28,7 @@ const managerNavGroups = [
       { path: '/manager/orders',   label: 'Orders',    icon: ShoppingBag },
       { path: '/manager/warranty', label: 'IMEI Warranty', icon: ShieldCheck },
       { path: '/manager/returns',  label: 'Returns',   icon: RotateCcw },
+      { path: '/admin/trade-in',   label: 'Phone Trade-In', icon: Smartphone },
       { path: '/manager/repairs',  label: 'Device Repairs', icon: Wrench },
     ],
   },

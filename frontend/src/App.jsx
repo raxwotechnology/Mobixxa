@@ -60,6 +60,7 @@ import AdminPhones from './pages/admin/AdminPhones';
 import AdminGRN from './pages/admin/AdminGRN';
 import AdminSalesTracking from './pages/admin/AdminSalesTracking';
 import AdminWarranty from './pages/admin/AdminWarranty';
+import AdminTradeIn from './pages/admin/AdminTradeIn';
 
 
 import AdminPredictions from './pages/admin/AdminPredictions';
@@ -195,6 +196,7 @@ function App() {
           <Route path="/admin/orders" element={<ProtectedRoute roles={['admin']} permission="sales"><AdminOrders /></ProtectedRoute>} />
           <Route path="/admin/warranty" element={<ProtectedRoute roles={['admin']} permission="sales"><AdminWarranty /></ProtectedRoute>} />
           <Route path="/admin/returns" element={<ProtectedRoute roles={['admin']} permission="sales"><AdminReturns /></ProtectedRoute>} />
+          <Route path="/admin/trade-in" element={<ProtectedRoute roles={['admin', 'manager']}><AdminTradeIn /></ProtectedRoute>} />
           <Route path="/admin/vouchers" element={<ProtectedRoute roles={['admin']} permission="sales"><AdminVouchers /></ProtectedRoute>} />
           <Route path="/admin/reports" element={<ProtectedRoute roles={['admin']} permission="reports"><AdminReports /></ProtectedRoute>} />
           <Route path="/admin/settings" element={<ProtectedRoute roles={['admin']} permission="settings"><AdminSettings /></ProtectedRoute>} />

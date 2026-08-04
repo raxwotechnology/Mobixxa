@@ -44,6 +44,7 @@ const adminNavGroups = [
       { path: '/admin/orders',         label: 'Orders',         icon: ShoppingBag },
       { path: '/admin/warranty',       label: 'IMEI Warranty',  icon: ShieldCheck },
       { path: '/admin/returns',        label: 'Returns',        icon: RotateCcw },
+      { path: '/admin/trade-in',       label: 'Phone Trade-In', icon: Smartphone },
       { path: '/pos',                  label: 'POS Terminal',   icon: Monitor },
       { path: '/admin/repairs',        label: 'Device Repairs', icon: Wrench },
       { path: '/admin/reloads',        label: 'Reloads & Bills', icon: Smartphone },

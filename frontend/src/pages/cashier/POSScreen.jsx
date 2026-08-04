@@ -44,6 +44,7 @@ import { toast } from 'react-toastify';
 import { getImageUrl, handleImageError } from '../../utils/imageHelper';
 import ReloadModal from './ReloadModal';
 import CustomerHistoryModal from './CustomerHistoryModal';
+import TradeInModal from './TradeInModal';
 
 const POSScreen = () => {
   const navigate = useNavigate();
@@ -114,6 +115,7 @@ const POSScreen = () => {
   const [quickAddForm, setQuickAddForm] = useState({ name: '', price: '', stock: 10, categoryId: '' });
   const [showReloadModal, setShowReloadModal] = useState(false);
   const [showCustomerHistory, setShowCustomerHistory] = useState(false);
+  const [showTradeInModal, setShowTradeInModal] = useState(false);
 
   // Cashier Verification Lockscreen States
   const [isUnlocked, setIsUnlocked] = useState(!!user);
@@ -1504,6 +1506,10 @@ const POSScreen = () => {
           <button className="pos-topbar-btn" onClick={() => setShowReturnModal(true)} title="Return / Exchange" style={{ background: '#fef2f2', color: '#991b1b', borderColor: '#fee2e2' }}>
             <RefreshCw size={18} />
             <span className="pos-topbar-btn-text">Return</span>
+          </button>
+          <button className="pos-topbar-btn" onClick={() => setShowTradeInModal(true)} title="Used Phone Trade-In Estimator" style={{ background: '#e0f2fe', color: '#0369a1', borderColor: '#bae6fd', fontWeight: 'bold' }}>
+            <Smartphone size={18} />
+            <span className="pos-topbar-btn-text">Trade-In</span>
           </button>
           <div className="pos-topbar-cashier">
             <div className="pos-topbar-avatar" style={{ overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -3160,6 +3166,15 @@ const POSScreen = () => {
         isOpen={showCustomerHistory}
         onClose={() => setShowCustomerHistory(false)}
         phone={pos.customerPhone}
+      />
+
+      <TradeInModal
+        isOpen={showTradeInModal}
+        onClose={() => setShowTradeInModal(false)}
+        onApplyDiscount={(amount, label) => {
+          pos.setDiscount(amount, 'fixed');
+          toast.success(`Trade-In discount of LKR ${amount.toLocaleString()} applied to cart! 📱`);
+        }}
       />
     </div>
 

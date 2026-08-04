@@ -219,6 +219,13 @@ export const deleteAttendancePolicy = (id) => API.delete(`/hr/policies/attendanc
 export const assignPoliciesToEmployee = (data) => API.post('/hr/policies/assign', data);
 export const assignPoliciesToAllEmployees = (data) => API.post('/hr/policies/assign-all', data);
 
+// Trade-In & Refurbish Estimator
+export const calculateTradeInValuation = (data) => API.post('/trade-in/calculate', data);
+export const createTradeInRecord = (data) => API.post('/trade-in', data);
+export const getTradeIns = () => API.get('/trade-in');
+export const getPopularTradeInModels = () => API.get('/trade-in/models');
+export const convertToRefurbishedStock = (id, data) => API.post(`/trade-in/${id}/add-to-inventory`, data);
+
 // Breaks
 export const startBreak = (data) => API.post('/hr/breaks/start', data);
 export const endBreak = () => API.post('/hr/breaks/end');

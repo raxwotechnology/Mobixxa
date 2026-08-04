@@ -88,6 +88,7 @@ app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/pos', require('./routes/posRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/stock', require('./routes/stockRoutes'));
+app.use('/api/trade-in', require('./routes/tradeInRoutes'));
 app.use('/api/accounts', require('./routes/accountRoutes'));
 app.use('/api/hp', require('./routes/hpRoutes'));
 app.use('/api/loyalty', require('./routes/loyaltyRoutes'));
