@@ -19,6 +19,7 @@ import { toast } from 'react-toastify';
 import { adminNavGroups as navItems } from './adminNavItems';
 import useAdminStoreStore from '../../store/adminStoreStore';
 import { exportToPDF, exportToExcel } from '../../utils/exportUtils';
+import { sendWhatsAppInvoice } from '../../utils/whatsappHelper';
 
 const statusColors = {
   pending: 'bg-amber-100 text-amber-700',
@@ -429,7 +430,15 @@ const AdminOrders = () => {
                       <td className="px-6 py-4 text-slate-500 font-medium text-xs whitespace-nowrap">{new Date(order.createdAt).toLocaleDateString()}</td>
                       
                       {/* Context actions menu */}
-                      <td className="px-6 py-3.5 text-right relative" onClick={(e) => e.stopPropagation()}>
+                      <td className="px-6 py-3.5 text-right relative flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          onClick={() => sendWhatsAppInvoice(order)}
+                          className="px-2.5 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer"
+                          title="Send WhatsApp Digital Invoice"
+                        >
+                          <span>💬</span> WhatsApp
+                        </button>
+
                         <button
                           onClick={() => setActionMenuId(actionMenuId === order._id ? null : order._id)}
                           className="p-1 rounded-lg hover:bg-gray-100 text-muted-text transition-all"
@@ -461,6 +470,14 @@ const AdminOrders = () => {
                             >
                               <Printer size={14} className="text-teal-500" />
                               Re-print Receipt
+                            </button>
+
+                            <button
+                              onClick={() => { sendWhatsAppInvoice(order); setActionMenuId(null); }}
+                              className="w-full px-4 py-2 hover:bg-emerald-50 text-emerald-700 font-bold flex items-center gap-2"
+                            >
+                              <span className="text-sm">💬</span>
+                              WhatsApp Invoice
                             </button>
 
                             <button
