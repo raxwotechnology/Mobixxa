@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import useAuthStore from '../store/authStore';
 import useSettingsStore from '../store/settingsStore';
 import { loginUser } from '../services/api';
+import { getImageUrl } from '../utils/imageHelper';
 import { toast } from 'react-toastify';
 
 const Login = () => {
@@ -15,7 +16,7 @@ const Login = () => {
   const { login, user, isAuthenticated, logout } = useAuthStore();
   const settings = useSettingsStore((s) => s.settings);
   const brandName = settings?.shopName || 'Mobile Hub';
-  const brandLogoUrl = settings?.logoUrl;
+  const brandLogoUrl = getImageUrl(settings?.logoUrl || settings?.logo || '') || '/logo.png';
   const navigate = useNavigate();
 
   const submitHandler = async (e) => {
@@ -53,8 +54,15 @@ const Login = () => {
           initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
         >
           <div className="text-center mb-6">
-            <Link to="/" className="text-3xl font-extrabold inline-flex items-center gap-2 mb-4">
-              {brandLogoUrl && <img src={brandLogoUrl} alt={brandName} className="w-9 h-9 rounded-xl object-cover border border-slate-100" />}
+            <Link to="/" className="text-3xl font-extrabold inline-flex items-center gap-2.5 mb-4">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-indigo via-brand-violet to-brand-fuchsia p-[2px] shadow-sm flex items-center justify-center flex-shrink-0">
+                <img
+                  src={brandLogoUrl}
+                  alt={brandName}
+                  className="w-full h-full rounded-[10px] object-cover bg-white"
+                  onError={(e) => { e.target.onerror = null; e.target.src = '/logo.png'; }}
+                />
+              </div>
               <span className="bg-gradient-to-r from-brand-indigo via-brand-violet to-brand-fuchsia bg-clip-text text-transparent font-black">{brandName}</span>
             </Link>
             <h1 className="text-2xl font-black text-slate-800 mt-0 mb-2">Already Signed In</h1>
@@ -95,8 +103,15 @@ const Login = () => {
         initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
       >
         <div className="text-center mb-8">
-          <Link to="/" className="text-3xl font-extrabold inline-flex items-center gap-2 mb-4">
-            {brandLogoUrl && <img src={brandLogoUrl} alt={brandName} className="w-9 h-9 rounded-xl object-cover border border-slate-100" />}
+          <Link to="/" className="text-3xl font-extrabold inline-flex items-center gap-2.5 mb-4">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-indigo via-brand-violet to-brand-fuchsia p-[2px] shadow-sm flex items-center justify-center flex-shrink-0">
+              <img
+                src={brandLogoUrl}
+                alt={brandName}
+                className="w-full h-full rounded-[10px] object-cover bg-white"
+                onError={(e) => { e.target.onerror = null; e.target.src = '/logo.png'; }}
+              />
+            </div>
             <span className="bg-gradient-to-r from-brand-indigo via-brand-violet to-brand-fuchsia bg-clip-text text-transparent font-black">{brandName}</span>
           </Link>
           <h1 className="text-2xl font-black text-slate-800 mt-0 mb-2">Welcome Back</h1>

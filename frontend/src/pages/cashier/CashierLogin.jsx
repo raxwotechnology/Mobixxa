@@ -4,6 +4,7 @@ import { ShoppingCart, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { loginUser } from '../../services/api';
 import useAuthStore from '../../store/authStore';
 import useSettingsStore from '../../store/settingsStore';
+import { getImageUrl } from '../../utils/imageHelper';
 import { toast } from 'react-toastify';
 
 const CashierLogin = () => {
@@ -16,7 +17,7 @@ const CashierLogin = () => {
   const { login } = useAuthStore();
   const settings = useSettingsStore((s) => s.settings);
   const brandName = settings?.shopName || 'Mobile Hub';
-  const brandLogoUrl = settings?.logoUrl;
+  const brandLogoUrl = getImageUrl(settings?.logoUrl || settings?.logo || '') || '/logo.png';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -50,7 +51,12 @@ const CashierLogin = () => {
         <div className="pos-login-branding">
           <div className="pos-login-brand-content">
             <div className="pos-login-logo">
-              {brandLogoUrl ? <img src={brandLogoUrl} alt={brandName} className="w-12 h-12 rounded-xl object-cover" /> : <ShoppingCart size={40} />}
+              <img
+                src={brandLogoUrl}
+                alt={brandName}
+                className="w-12 h-12 rounded-xl object-cover"
+                onError={(e) => { e.target.onerror = null; e.target.src = '/logo.png'; }}
+              />
             </div>
             <h1>{brandName}</h1>
             <p className="pos-login-tagline">Tech & Smart POS</p>
