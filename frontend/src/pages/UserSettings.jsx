@@ -138,9 +138,11 @@ const UserSettings = () => {
             return (
               <button
                 key={tab.id}
+                type="button"
                 onClick={() => setActiveTab(tab.id)}
+                style={active ? { backgroundColor: THEME_ACCENTS[accent]?.primary || '#6366f1', color: '#ffffff', boxShadow: `0 8px 20px -4px ${(THEME_ACCENTS[accent]?.primary || '#6366f1')}60` } : {}}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
-                  active ? 'bg-slate-900 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'
+                  active ? 'text-white font-black shadow-md' : 'text-slate-600 hover:bg-slate-50'
                 }`}
               >
                 <Icon size={18} className={active ? 'text-white' : tab.color} />

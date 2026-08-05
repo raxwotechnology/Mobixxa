@@ -13,38 +13,46 @@ import NotificationBell from './NotificationBell';
 const NavLink = ({ item, location, collapsed, onNavigate, userRole }) => {
   const { accent } = useThemeStore();
   const themeConfig = THEME_ACCENTS[accent] || THEME_ACCENTS.indigo;
+  const primaryColor = themeConfig.primary || '#6366f1';
 
   const isRoot = item.path === '/admin' || item.path === '/manager' || item.path === '/employee';
   const isActive = isRoot
     ? location.pathname === item.path
     : location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
 
-  const activeBg = themeConfig.activeBg || 'bg-indigo-600 text-white shadow-md font-black';
-  const activeIndicator = themeConfig.activeIndicator || 'bg-indigo-600';
-  const activeIcon = themeConfig.activeIcon || 'text-white';
-
   return (
     <Link
       to={item.path}
       onClick={onNavigate}
       title={item.label}
-      className={`relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-extrabold transition-all group ${isActive
-          ? activeBg
-          : 'text-slate-500 hover:bg-slate-100/70 hover:text-slate-800'
-        }`}
+      style={
+        isActive
+          ? {
+              backgroundColor: primaryColor,
+              color: '#ffffff',
+              boxShadow: `0 10px 22px -5px ${primaryColor}80`,
+            }
+          : {}
+      }
+      className={`relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-black transition-all group ${
+        isActive
+          ? 'text-white shadow-lg'
+          : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
+      }`}
     >
       {isActive && (
-        <span className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 ${activeIndicator} rounded-r-full shadow-xs`} />
+        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-white rounded-r-full shadow-xs" />
       )}
       <item.icon
         size={16}
-        className={`flex-shrink-0 transition-transform duration-200 group-hover:scale-110 ${isActive ? activeIcon : 'text-slate-400 group-hover:text-slate-700'
-          }`}
+        className={`flex-shrink-0 transition-transform duration-200 group-hover:scale-110 ${
+          isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-700 dark:text-slate-400'
+        }`}
       />
       {!collapsed && (
         <>
           <span className="flex-1 truncate tracking-tight">{item.label}</span>
-          {isActive && <ChevronRight size={13} className="opacity-80 flex-shrink-0" />}
+          {isActive && <ChevronRight size={13} className="opacity-90 flex-shrink-0 text-white" />}
         </>
       )}
     </Link>

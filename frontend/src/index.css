@@ -2497,55 +2497,6 @@ body {
 
 .admin-dashboard-container .hover\:bg-slate-100:hover,
 .admin-dashboard-container .hover\:bg-slate-50:hover {
-  background-color: rgba(99, 102, 241, 0.06) !important;
-}
-
-/* --- Clean Borders --- */
-.admin-dashboard-container .border-slate-100,
-.admin-dashboard-container .border-slate-200,
-.admin-dashboard-container .border-slate-200\/80 {
-  border-color: rgba(99, 102, 241, 0.15) !important;
-}
-
-/* --- Clean Text --- */
-.admin-dashboard-container .text-slate-400 {
-  color: #a78bfa !important;
-}
-
-.admin-dashboard-container .text-slate-500 {
-  color: #6366f1 !important;
-}
-
-.admin-dashboard-container .text-slate-600 {
-  color: #4f46e5 !important;
-}
-
-.admin-dashboard-container .hover\:text-slate-900:hover,
-.admin-dashboard-container .hover\:text-slate-800:hover {
-  color: #6366f1 !important;
-}
-
-/* --- Navigation Links --- */
-.admin-dashboard-container .bg-gradient-to-r.from-brand-indigo\/15 {
-  background-image: linear-gradient(to right, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.08)) !important;
-}
-
-.admin-dashboard-container .text-brand-indigo {
-  color: #6366f1 !important;
-}
-
-.admin-dashboard-container .bg-brand-fuchsia {
-  background-color: #ec4899 !important;
-}
-
-.admin-dashboard-container .text-brand-fuchsia {
-  color: #ec4899 !important;
-}
-
-.admin-dashboard-container .group-hover\:text-brand-fuchsia:hover {
-  color: #ec4899 !important;
-}
-
 /* =======================================================
    MOBILE, TABLET & SMALL SCREEN RESPONSIVE OPTIMIZATIONS
    ======================================================= */
