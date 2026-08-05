@@ -95,6 +95,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import useSettingsStore from './store/settingsStore';
 import useAuthStore from './store/authStore';
+import useThemeStore from './store/themeStore';
 
 const AppLayout = ({ children }) => {
   const location = useLocation();
@@ -141,6 +142,10 @@ const AppLayout = ({ children }) => {
 
 
 function App() {
+  useEffect(() => {
+    useThemeStore.getState().applyThemeToDocument();
+  }, []);
+
   return (
     <Router>
       <AppLayout>

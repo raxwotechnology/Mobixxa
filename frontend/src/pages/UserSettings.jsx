@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { User, Lock, Palette, Bell, Shield, Key, CheckCircle, RefreshCw, Smartphone, Mail, Globe, Save, Moon, Sun } from 'lucide-react';
+import { User, Lock, Palette, Bell, CheckCircle, Save, Moon, Sun } from 'lucide-react';
 import DashboardLayout from '../components/DashboardLayout';
 import useAuthStore from '../store/authStore';
 import useThemeStore, { THEME_ACCENTS } from '../store/themeStore';
@@ -9,27 +9,17 @@ import { toast } from 'react-toastify';
 import { adminNavGroups } from './admin/adminNavItems';
 import { managerNavGroups } from './storeOwner/managerNavItems';
 
-const AVATAR_PRESETS = [
-  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
-  'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
-  'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150',
-  'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150',
-];
-
 const UserSettings = () => {
   const { user, login } = useAuthStore();
   const { currency, setCurrency } = useCurrencyStore();
-  const { accent, mode, notifications, setAccent, setMode, toggleNotificationPref } = useThemeStore();
+  const { accent, mode, notifications, setAccent, setMode, toggleNotificationPref, applyThemeToDocument } = useThemeStore();
 
-  const [activeTab, setActiveTab] = useState('security'); // 'profile', 'security', 'theme', 'notifications'
+  const [activeTab, setActiveTab] = useState('security'); // 'security', 'theme', 'profile', 'notifications'
 
   // Profile Form
   const [name, setName] = useState(user?.name || '');
   const [phone, setPhone] = useState(user?.phone || '');
   const [email, setEmail] = useState(user?.email || '');
-  const [avatar, setAvatar] = useState(user?.avatar || '');
   const [savingProfile, setSavingProfile] = useState(false);
 
   // Security / Password Form
@@ -43,14 +33,14 @@ const UserSettings = () => {
       setName(user.name || '');
       setPhone(user.phone || '');
       setEmail(user.email || '');
-      setAvatar(user.avatar || '');
     }
+    applyThemeToDocument();
   }, [user]);
 
   const getNavGroups = () => {
     if (user?.role === 'admin') return adminNavGroups;
     if (user?.role === 'manager') return managerNavGroups;
-    return null; // For Customer, Cashier, Delivery
+    return null;
   };
 
   const navGroups = getNavGroups();
@@ -59,7 +49,7 @@ const UserSettings = () => {
     e.preventDefault();
     try {
       setSavingProfile(true);
-      const { data } = await updateProfile({ name, phone, avatar });
+      const { data } = await updateProfile({ name, phone });
       login(data, data.token);
       toast.success('Profile details updated successfully! 👤');
     } catch (err) {
@@ -101,17 +91,18 @@ const UserSettings = () => {
     }
   };
 
+  const handleSelectAccent = (key, name) => {
+    setAccent(key);
+    toast.success(`Theme color changed to ${name}! 🎨`);
+  };
+
   const content = (
     <div className="max-w-6xl mx-auto p-4 sm:p-6 space-y-6">
       {/* Header */}
       <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-brand-indigo via-brand-violet to-brand-fuchsia p-[2px] shadow-lg flex-shrink-0">
-            <img
-              src={avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'}
-              alt={name}
-              className="w-full h-full rounded-[14px] object-cover bg-white"
-            />
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-brand-indigo via-brand-violet to-brand-fuchsia p-[2px] shadow-lg flex-shrink-0 flex items-center justify-center font-black text-xl text-white">
+            {name ? name.charAt(0).toUpperCase() : 'U'}
           </div>
           <div>
             <h1 className="text-xl sm:text-2xl font-black text-slate-900">{name || 'User Account'}</h1>
@@ -255,7 +246,8 @@ const UserSettings = () => {
                     return (
                       <button
                         key={key}
-                        onClick={() => setAccent(key)}
+                        type="button"
+                        onClick={() => handleSelectAccent(key, config.name)}
                         className={`p-4 rounded-2xl border transition-all text-left flex items-center justify-between cursor-pointer ${
                           isSelected ? 'border-indigo-600 bg-indigo-50/50 shadow-md ring-2 ring-indigo-500/20' : 'border-slate-200 hover:border-slate-300'
                         }`}
@@ -279,6 +271,7 @@ const UserSettings = () => {
                 <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Display Layout Mode</label>
                 <div className="flex gap-4">
                   <button
+                    type="button"
                     onClick={() => setMode('light')}
                     className={`flex-1 p-4 rounded-2xl border text-center transition-all cursor-pointer ${
                       mode === 'light' ? 'border-indigo-600 bg-indigo-50/50 font-black text-slate-900' : 'border-slate-200 text-slate-600'
@@ -287,6 +280,7 @@ const UserSettings = () => {
                     ☀️ Light Clean Mode
                   </button>
                   <button
+                    type="button"
                     onClick={() => setMode('dark')}
                     className={`flex-1 p-4 rounded-2xl border text-center transition-all cursor-pointer ${
                       mode === 'dark' ? 'border-indigo-600 bg-slate-900 text-white font-black' : 'border-slate-200 text-slate-600'
@@ -302,6 +296,7 @@ const UserSettings = () => {
                 <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Default Currency Preference</label>
                 <div className="flex gap-4">
                   <button
+                    type="button"
                     onClick={() => setCurrency('LKR')}
                     className={`flex-1 p-3 rounded-xl border text-center font-bold text-xs cursor-pointer ${
                       currency === 'LKR' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-slate-200 text-slate-600'
@@ -310,6 +305,7 @@ const UserSettings = () => {
                     LKR 🇱🇰 (Sri Lankan Rupee)
                   </button>
                   <button
+                    type="button"
                     onClick={() => setCurrency('USD')}
                     className={`flex-1 p-3 rounded-xl border text-center font-bold text-xs cursor-pointer ${
                       currency === 'USD' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-slate-200 text-slate-600'
@@ -322,33 +318,14 @@ const UserSettings = () => {
             </div>
           )}
 
-          {/* TAB 3: PROFILE DETAILS & AVATAR */}
+          {/* TAB 3: PROFILE DETAILS */}
           {activeTab === 'profile' && (
             <form onSubmit={handleUpdateProfile} className="space-y-6">
               <div>
                 <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
                   <User className="text-emerald-500" size={20} /> Personal Profile Details
                 </h3>
-                <p className="text-xs text-slate-500 mt-1">Update your display name, contact phone, and avatar image</p>
-              </div>
-
-              {/* Avatar Preset Chooser */}
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-700">Choose Profile Avatar Preset</label>
-                <div className="flex items-center gap-3 overflow-x-auto py-2">
-                  {AVATAR_PRESETS.map((url, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => setAvatar(url)}
-                      className={`w-12 h-12 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 cursor-pointer ${
-                        avatar === url ? 'border-emerald-500 ring-2 ring-emerald-500/30 scale-110' : 'border-transparent opacity-70 hover:opacity-100'
-                      }`}
-                    >
-                      <img src={url} alt="Avatar option" className="w-full h-full object-cover" />
-                    </button>
-                  ))}
-                </div>
+                <p className="text-xs text-slate-500 mt-1">Update your display name and contact phone number</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg">

@@ -5,6 +5,8 @@ const THEME_ACCENTS = {
   indigo: {
     name: 'Indigo & Violet (Default)',
     primary: '#6366f1',
+    secondary: '#8b5cf6',
+    accent: '#ec4899',
     gradient: 'from-indigo-600 via-violet-600 to-fuchsia-600',
     bgLight: 'bg-indigo-50',
     textPrimary: 'text-indigo-600',
@@ -13,6 +15,8 @@ const THEME_ACCENTS = {
   emerald: {
     name: 'Emerald & Teal (Fresh)',
     primary: '#0d9488',
+    secondary: '#14b8a6',
+    accent: '#06b6d4',
     gradient: 'from-emerald-600 via-teal-600 to-cyan-600',
     bgLight: 'bg-teal-50',
     textPrimary: 'text-teal-600',
@@ -21,6 +25,8 @@ const THEME_ACCENTS = {
   sapphire: {
     name: 'Sapphire & Cyan (Corporate Tech)',
     primary: '#0284c7',
+    secondary: '#2563eb',
+    accent: '#4f46e5',
     gradient: 'from-sky-600 via-blue-600 to-indigo-600',
     bgLight: 'bg-sky-50',
     textPrimary: 'text-sky-600',
@@ -29,6 +35,8 @@ const THEME_ACCENTS = {
   amber: {
     name: 'Amber & Luxury Gold (Executive)',
     primary: '#d97706',
+    secondary: '#ea580c',
+    accent: '#ca8a04',
     gradient: 'from-amber-500 via-orange-600 to-yellow-600',
     bgLight: 'bg-amber-50',
     textPrimary: 'text-amber-600',
@@ -37,6 +45,8 @@ const THEME_ACCENTS = {
   rose: {
     name: 'Rose & Cyberpunk Pink (Vibrant)',
     primary: '#e11d48',
+    secondary: '#db2777',
+    accent: '#c026d3',
     gradient: 'from-rose-600 via-pink-600 to-fuchsia-600',
     bgLight: 'bg-rose-50',
     textPrimary: 'text-rose-600',
@@ -82,7 +92,10 @@ const useThemeStore = create(
         }
 
         const themeConfig = THEME_ACCENTS[accent] || THEME_ACCENTS.indigo;
+        root.style.setProperty('--color-brand-indigo', themeConfig.primary);
+        root.style.setProperty('--color-brand-violet', themeConfig.secondary || themeConfig.primary);
         root.style.setProperty('--user-theme-primary', themeConfig.primary);
+        root.setAttribute('data-user-accent', accent);
       },
     }),
     {
