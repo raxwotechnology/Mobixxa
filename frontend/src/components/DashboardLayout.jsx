@@ -314,7 +314,7 @@ const DashboardLayout = ({ children, navItems, title }) => {
               {user?.avatar ? (
                 <img src={getImageUrl(user.avatar)} alt="" className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full bg-slate-900 flex items-center justify-center text-emerald-400 text-[10px] font-black">
+                <div style={{ backgroundColor: primaryColor }} className="w-full h-full flex items-center justify-center text-white text-[10px] font-black">
                   {user?.name?.charAt(0)?.toUpperCase() || 'A'}
                 </div>
               )}
@@ -328,7 +328,7 @@ const DashboardLayout = ({ children, navItems, title }) => {
               {user?.avatar ? (
                 <img src={getImageUrl(user.avatar)} alt="" className="w-7 h-7 rounded-lg object-cover border border-slate-200" />
               ) : (
-                <div className="w-7 h-7 rounded-lg bg-slate-900 flex items-center justify-center text-emerald-400 text-[10px] font-black shadow-xs">
+                <div style={{ backgroundColor: primaryColor }} className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-[10px] font-black shadow-xs">
                   {user?.name?.charAt(0)?.toUpperCase() || 'A'}
                 </div>
               )}
@@ -337,31 +337,31 @@ const DashboardLayout = ({ children, navItems, title }) => {
                   {user?.name}
                   <ChevronDown size={11} className="text-slate-400 flex-shrink-0" />
                 </p>
-                <p className="text-[9px] text-slate-500 font-black uppercase tracking-wider leading-tight m-0 mt-0.5">{user?.role}</p>
+                <p style={{ color: primaryColor }} className="text-[9px] font-black uppercase tracking-wider leading-tight m-0 mt-0.5">{user?.role}</p>
               </div>
               <ChevronDown size={14} className="text-slate-400 md:hidden" />
             </button>
 
             {userMenuOpen && (
               <div className="absolute top-full right-0 mt-2 w-[min(calc(100vw-1.5rem),14rem)] sm:w-56 bg-white border border-slate-200/80 rounded-2xl shadow-2xl z-[100] py-1 overflow-hidden animate-fade-in">
-                <div className="px-4 py-3 bg-slate-900 border-b border-slate-800 text-white">
+                <div style={{ backgroundColor: primaryColor }} className="px-4 py-3 text-white">
                   <p className="text-sm font-black text-white m-0 truncate">{user?.name}</p>
-                  <p className="text-[11px] text-slate-400 m-0 truncate">{user?.email}</p>
-                  <span className="inline-block mt-1.5 text-[9px] font-black uppercase tracking-wider bg-emerald-500 text-slate-950 px-2.5 py-0.5 rounded-full">{user?.role}</span>
+                  <p className="text-[11px] text-white/80 m-0 truncate">{user?.email}</p>
+                  <span className="inline-block mt-1.5 text-[9px] font-black uppercase tracking-wider bg-white/20 text-white border border-white/30 px-2.5 py-0.5 rounded-full">{user?.role}</span>
                 </div>
                 <Link
                   to="/settings"
                   onClick={() => setUserMenuOpen(false)}
                   className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors font-extrabold uppercase tracking-wide no-underline"
                 >
-                  <User size={14} className="text-slate-400" /> My Profile
+                  <User size={14} style={{ color: primaryColor }} /> My Profile
                 </Link>
                 <Link
                   to="/settings"
                   onClick={() => setUserMenuOpen(false)}
                   className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors font-extrabold uppercase tracking-wide no-underline"
                 >
-                  <Settings size={14} className="text-slate-400" /> Settings & Customizer
+                  <Settings size={14} style={{ color: primaryColor }} /> Settings & Customizer
                 </Link>
                 {dashLink && (
                   <>
@@ -369,7 +369,8 @@ const DashboardLayout = ({ children, navItems, title }) => {
                     <Link
                       to={dashLink.path}
                       onClick={() => setUserMenuOpen(false)}
-                      className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-blue-600 hover:bg-blue-50 font-black transition-colors uppercase tracking-wide no-underline"
+                      style={{ color: primaryColor }}
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-xs hover:bg-slate-50 font-black transition-colors uppercase tracking-wide no-underline"
                     >
                       <LayoutDashboard size={14} /> {dashLink.label}
                     </Link>
