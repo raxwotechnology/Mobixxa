@@ -57,6 +57,7 @@ import AdminBarcodes from './pages/admin/AdminBarcodes';
 import AdminSupplierPayments from './pages/admin/AdminSupplierPayments';
 import AdminSuppliers from './pages/admin/AdminSuppliers';
 import AdminPhones from './pages/admin/AdminPhones';
+import AdminGRN from './pages/admin/AdminGRN';
 import AdminSalesTracking from './pages/admin/AdminSalesTracking';
 import AdminWarranty from './pages/admin/AdminWarranty';
 import AdminTradeIn from './pages/admin/AdminTradeIn';
