@@ -57,10 +57,10 @@ import AdminBarcodes from './pages/admin/AdminBarcodes';
 import AdminSupplierPayments from './pages/admin/AdminSupplierPayments';
 import AdminSuppliers from './pages/admin/AdminSuppliers';
 import AdminPhones from './pages/admin/AdminPhones';
-import AdminGRN from './pages/admin/AdminGRN';
 import AdminSalesTracking from './pages/admin/AdminSalesTracking';
 import AdminWarranty from './pages/admin/AdminWarranty';
 import AdminTradeIn from './pages/admin/AdminTradeIn';
+import UserSettings from './pages/UserSettings';
 
 
 import AdminPredictions from './pages/admin/AdminPredictions';
@@ -167,6 +167,7 @@ function App() {
           <Route path="/order-confirmation/:id" element={<ProtectedRoute><OrderConfirmation /></ProtectedRoute>} />
           <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><UserSettings /></ProtectedRoute>} />
           <Route path="/loyalty" element={<ProtectedRoute><CustomerLoyalty /></ProtectedRoute>} />
 
           {/* Manager */}

@@ -157,10 +157,7 @@ const Navbar = () => {
   const isCustomer = !user || user.role === 'customer';
   const getSettingsLink = () => {
     if (!user) return null;
-    if (user.role === 'admin') return '/admin/settings';
-    if (user.role === 'manager') return '/manager';
-    if (['cashier', 'deliveryGuy', 'stockEmployee'].includes(user.role)) return '/employee/profile';
-    return '/profile';
+    return '/settings';
   };
   const settingsLink = getSettingsLink();
   const navLinks = [

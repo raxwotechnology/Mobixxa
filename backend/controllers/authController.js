@@ -286,7 +286,19 @@ const updateProfile = async (req, res) => {
       }
       user.email = emailValidation.normalizedEmail;
     }
-    if (req.body.password) { user.password = req.body.password; }
+    if (req.body.newPassword || req.body.password) {
+      const newPwd = req.body.newPassword || req.body.password;
+      if (req.body.currentPassword) {
+        const isMatch = await user.matchPassword(req.body.currentPassword);
+        if (!isMatch) {
+          return fail(res, 400, 'Current password is incorrect');
+        }
+      }
+      if (newPwd.length < 6) {
+        return fail(res, 400, 'New password must be at least 6 characters');
+      }
+      user.password = newPwd;
+    }
     if (req.body.addresses) { user.addresses = req.body.addresses; }
     if (req.body.avatar !== undefined) { user.avatar = req.body.avatar; }
 
