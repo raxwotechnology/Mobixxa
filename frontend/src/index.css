@@ -37,24 +37,15 @@
   --color-teal-600: #475569;
   --color-teal-700: #334155;
 
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+}
 
-  /* Executive Admin Theme Tokens (Slate, Emerald, Gold) */
-  --color-admin-slate: #0f172a;
-  --color-admin-emerald: #059669;
-  --color-admin-gold: #d97706;
-
-  /* Operations Manager Theme Tokens (Sapphire, Amber, Teal) */
-  --color-manager-sapphire: #1e3a8a;
-  --color-manager-amber: #d97706;
-
-  /* Staff Workspace Theme Tokens (Oceanic Cyan, Indigo) */
-  --color-employee-cyan: #0284c7;
-  --color-employee-indigo: #4338ca;
+*, body, button, input, select, textarea, h1, h2, h3, h4, h5, h6, p, span, div, table, th, td, a {
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif !important;
 }
 
 body {
-  font-family: var(--font-sans);
+  font-family: var(--font-sans) !important;
   background-color: var(--color-light-bg);
   color: var(--color-dark-navy);
   -webkit-font-smoothing: antialiased;
