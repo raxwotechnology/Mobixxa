@@ -2449,54 +2449,15 @@ body {
 
 /* =======================================================
    ADMIN DASHBOARD STYLING OVERRIDES
-   Matches the Storefront (Mobixa) Indigo & Purple Theme
+   Binds cleanly to the User's Active Theme Customizer
    ======================================================= */
 
-/* --- Primary Active Buttons and Filter Tabs --- */
-.admin-dashboard-container .bg-slate-900 {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
-  color: #ffffff !important;
-  border: none !important;
-}
-
-.admin-dashboard-container .hover\:bg-slate-800:hover {
-  background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
-  color: #ffffff !important;
-}
-
+.admin-dashboard-container .bg-slate-900,
 .admin-dashboard-container .bg-slate-800 {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+  background: var(--user-theme-primary, #6366f1) !important;
   color: #ffffff !important;
   border: none !important;
 }
-
-/* --- Focus and Shadows --- */
-.admin-dashboard-container .focus\:ring-slate-900:focus {
-  --tw-ring-color: #6366f1 !important;
-}
-
-.admin-dashboard-container .shadow-slate-900\/10 {
-  box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.2), 0 4px 6px -4px rgba(139, 92, 246, 0.1) !important;
-}
-
-.admin-dashboard-container .shadow-slate-900\/20 {
-  box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3), 0 4px 6px -4px rgba(139, 92, 246, 0.2) !important;
-}
-
-/* --- Clean Backgrounds: Soft Indigo-Purple Tint --- */
-.admin-dashboard-container,
-.admin-dashboard-container .bg-slate-50,
-.admin-dashboard-container .bg-slate-50\/70,
-.admin-dashboard-container .bg-slate-50\/50 {
-  background-color: #f8fafc !important;
-}
-
-.admin-dashboard-container .bg-slate-100 {
-  background-color: #f1f5f9 !important;
-}
-
-.admin-dashboard-container .hover\:bg-slate-100:hover,
-.admin-dashboard-container .hover\:bg-slate-50:hover {
 /* =======================================================
    MOBILE, TABLET & SMALL SCREEN RESPONSIVE OPTIMIZATIONS
    ======================================================= */
