@@ -28,20 +28,18 @@ const NavLink = ({ item, location, collapsed, onNavigate, userRole }) => {
       to={item.path}
       onClick={onNavigate}
       title={item.label}
-      className={`relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-extrabold transition-all group ${
-        isActive
+      className={`relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-extrabold transition-all group ${isActive
           ? activeBg
           : 'text-slate-500 hover:bg-slate-100/70 hover:text-slate-800'
-      }`}
+        }`}
     >
       {isActive && (
         <span className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 ${activeIndicator} rounded-r-full shadow-xs`} />
       )}
       <item.icon
         size={16}
-        className={`flex-shrink-0 transition-transform duration-200 group-hover:scale-110 ${
-          isActive ? activeIcon : 'text-slate-400 group-hover:text-slate-700'
-        }`}
+        className={`flex-shrink-0 transition-transform duration-200 group-hover:scale-110 ${isActive ? activeIcon : 'text-slate-400 group-hover:text-slate-700'
+          }`}
       />
       {!collapsed && (
         <>
@@ -140,7 +138,7 @@ const DashboardLayout = ({ children, navItems, title }) => {
   useEffect(() => {
     fetchSettings();
     if (isAdminNav && user?.role === 'admin') {
-      getAdminStores().then((res) => setStores(res.data)).catch(() => {});
+      getAdminStores().then((res) => setStores(res.data)).catch(() => { });
     }
   }, [fetchSettings, isAdminNav, user?.role]);
 
@@ -275,13 +273,12 @@ const DashboardLayout = ({ children, navItems, title }) => {
           )}
 
           {title && (
-            <span className={`hidden xl:inline-flex items-center text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-xl whitespace-nowrap ${
-              user?.role === 'admin'
+            <span className={`hidden xl:inline-flex items-center text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-xl whitespace-nowrap ${user?.role === 'admin'
                 ? 'role-badge-admin'
                 : user?.role === 'manager'
-                ? 'role-badge-manager'
-                : 'role-badge-employee'
-            }`}>
+                  ? 'role-badge-manager'
+                  : 'role-badge-employee'
+              }`}>
               {user?.role === 'admin' ? 'Executive' : user?.role === 'manager' ? 'Operations' : 'Staff'} • {title}
             </span>
           )}

@@ -76,9 +76,19 @@ body {
 
 /* Live Pulse Animation */
 @keyframes livePulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(1.15); }
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.4;
+    transform: scale(1.15);
+  }
 }
+
 .pulse-live-dot {
   animation: livePulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
@@ -90,12 +100,14 @@ body {
   border: 1px solid rgba(52, 211, 153, 0.3);
   font-weight: 800;
 }
+
 .role-badge-manager {
   background: rgba(30, 58, 138, 0.1);
   color: #2563eb;
   border: 1px solid rgba(37, 99, 235, 0.2);
   font-weight: 800;
 }
+
 .role-badge-employee {
   background: rgba(2, 132, 199, 0.1);
   color: #0284c7;
@@ -103,28 +115,19 @@ body {
   font-weight: 800;
 }
 
-/* Admin Command Banner */
-.admin-command-banner {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #064e3b 100%);
-  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.3);
-}
-
-/* Manager Command Banner */
-.manager-command-banner {
-  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #d97706 100%);
-  box-shadow: 0 10px 25px -5px rgba(30, 58, 138, 0.25);
-}
-
-/* Employee Command Banner */
+/* Admin, Manager, and Employee Command Banners */
+.admin-command-banner,
+.manager-command-banner,
 .employee-command-banner {
-  background: linear-gradient(135deg, #0f172a 0%, #0369a1 50%, #4338ca 100%);
-  box-shadow: 0 10px 25px -5px rgba(3, 105, 161, 0.25);
+  background: linear-gradient(135deg, #0f172a 0%, var(--user-theme-primary, #6366f1) 60%, var(--user-theme-secondary, #8b5cf6) 100%) !important;
+  box-shadow: 0 10px 25px -5px var(--user-theme-primary, #6366f1)40;
 }
 
 /* Enterprise Metric Card Hover Effect */
 .enterprise-card {
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 .enterprise-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.08);
@@ -2455,10 +2458,12 @@ body {
   color: #ffffff !important;
   border: none !important;
 }
+
 .admin-dashboard-container .hover\:bg-slate-800:hover {
   background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
   color: #ffffff !important;
 }
+
 .admin-dashboard-container .bg-slate-800 {
   background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
   color: #ffffff !important;
@@ -2469,9 +2474,11 @@ body {
 .admin-dashboard-container .focus\:ring-slate-900:focus {
   --tw-ring-color: #6366f1 !important;
 }
+
 .admin-dashboard-container .shadow-slate-900\/10 {
   box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.2), 0 4px 6px -4px rgba(139, 92, 246, 0.1) !important;
 }
+
 .admin-dashboard-container .shadow-slate-900\/20 {
   box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3), 0 4px 6px -4px rgba(139, 92, 246, 0.2) !important;
 }
@@ -2483,9 +2490,11 @@ body {
 .admin-dashboard-container .bg-slate-50\/50 {
   background-color: #f8fafc !important;
 }
+
 .admin-dashboard-container .bg-slate-100 {
   background-color: #f1f5f9 !important;
 }
+
 .admin-dashboard-container .hover\:bg-slate-100:hover,
 .admin-dashboard-container .hover\:bg-slate-50:hover {
   background-color: rgba(99, 102, 241, 0.06) !important;
@@ -2502,12 +2511,15 @@ body {
 .admin-dashboard-container .text-slate-400 {
   color: #a78bfa !important;
 }
+
 .admin-dashboard-container .text-slate-500 {
   color: #6366f1 !important;
 }
+
 .admin-dashboard-container .text-slate-600 {
   color: #4f46e5 !important;
 }
+
 .admin-dashboard-container .hover\:text-slate-900:hover,
 .admin-dashboard-container .hover\:text-slate-800:hover {
   color: #6366f1 !important;
@@ -2517,15 +2529,19 @@ body {
 .admin-dashboard-container .bg-gradient-to-r.from-brand-indigo\/15 {
   background-image: linear-gradient(to right, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.08)) !important;
 }
+
 .admin-dashboard-container .text-brand-indigo {
   color: #6366f1 !important;
 }
+
 .admin-dashboard-container .bg-brand-fuchsia {
   background-color: #ec4899 !important;
 }
+
 .admin-dashboard-container .text-brand-fuchsia {
   color: #ec4899 !important;
 }
+
 .admin-dashboard-container .group-hover\:text-brand-fuchsia:hover {
   color: #ec4899 !important;
 }
@@ -2534,8 +2550,11 @@ body {
    MOBILE, TABLET & SMALL SCREEN RESPONSIVE OPTIMIZATIONS
    ======================================================= */
 @media (max-width: 640px) {
+
   /* Prevent horizontal scroll on small mobile screens */
-  html, body, #root {
+  html,
+  body,
+  #root {
     overflow-x: hidden !important;
     max-width: 100vw !important;
   }
@@ -2614,4 +2633,4 @@ body {
     min-width: 280px !important;
     max-width: 340px !important;
   }
-}
+}

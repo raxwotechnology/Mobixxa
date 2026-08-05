@@ -104,7 +104,10 @@ const useThemeStore = create(
         const themeConfig = THEME_ACCENTS[accent] || THEME_ACCENTS.indigo;
         root.style.setProperty('--color-brand-indigo', themeConfig.primary);
         root.style.setProperty('--color-brand-violet', themeConfig.secondary || themeConfig.primary);
+        root.style.setProperty('--color-brand-fuchsia', themeConfig.accent || themeConfig.primary);
         root.style.setProperty('--user-theme-primary', themeConfig.primary);
+        root.style.setProperty('--user-theme-secondary', themeConfig.secondary || themeConfig.primary);
+        root.style.setProperty('--user-theme-accent', themeConfig.accent || themeConfig.primary);
         root.setAttribute('data-user-accent', accent);
       },
     }),
