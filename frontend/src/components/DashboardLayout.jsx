@@ -121,6 +121,10 @@ const SidebarContent = ({ navItems = [], collapsed, location, onNavigate, userRo
 };
 
 const DashboardLayout = ({ children, navItems, title }) => {
+  const { accent } = useThemeStore();
+  const themeConfig = THEME_ACCENTS[accent] || THEME_ACCENTS.indigo;
+  const primaryColor = themeConfig.primary || '#6366f1';
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
