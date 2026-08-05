@@ -24,7 +24,85 @@ const AdminVouchers = () => {
   const [search, setSearch] = useState('');
   const [copiedId, setCopiedId] = useState(null);
   const [printQty, setPrintQty] = useState({});
+  const [selectedVoucherForPreview, setSelectedVoucherForPreview] = useState(null);
+  const [showVoucherPreviewModal, setShowVoucherPreviewModal] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
   const settings = useSettingsStore((s) => s.settings);
+
+  const openPreview = (v) => {
+    setSelectedVoucherForPreview(v);
+    setShowVoucherPreviewModal(true);
+  };
+
+  const exportVoucherPDF = (v, qty = 1) => {
+    try {
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const siteName = settings?.shopName || 'Mobile Hub';
+      const discountText = v.type === 'percentage' ? `${v.value}% OFF` : `Rs. ${v.value} OFF`;
+      const expiryText = v.expiresAt ? new Date(v.expiresAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'No Expiry';
+
+      let y = 15;
+      for (let i = 0; i < qty; i++) {
+        if (y > 230) {
+          doc.addPage();
+          y = 15;
+        }
+
+        // Outer voucher card border
+        doc.setDrawColor(217, 70, 160);
+        doc.setLineWidth(0.8);
+        doc.roundedRect(20, y, 170, 72, 4, 4, 'D');
+
+        // Title & Shop Name
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(16);
+        doc.setTextColor(31, 31, 31);
+        doc.text(siteName.toUpperCase(), 105, y + 10, { align: 'center' });
+
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.text('OFFICIAL DISCOUNT VOUCHER', 105, y + 15, { align: 'center' });
+
+        // Discount Badge Box
+        doc.setFillColor(217, 70, 160);
+        doc.roundedRect(30, y + 19, 150, 15, 3, 3, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(16);
+        doc.setTextColor(255, 255, 255);
+        doc.text(discountText, 105, y + 29, { align: 'center' });
+
+        // Voucher Code Box
+        doc.setFillColor(249, 250, 251);
+        doc.setDrawColor(217, 70, 160);
+        doc.roundedRect(50, y + 38, 110, 12, 2, 2, 'DF');
+        doc.setFont('courier', 'bold');
+        doc.setFontSize(14);
+        doc.setTextColor(217, 70, 160);
+        doc.text(v.code, 105, y + 46, { align: 'center' });
+
+        // Details Footer
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(100, 100, 100);
+        doc.text(`Min Order: Rs. ${v.minOrderAmount || 0}`, 30, y + 58);
+        doc.text(`Expires: ${expiryText}`, 180, y + 58, { align: 'right' });
+
+        if (v.description) {
+          doc.setFontSize(8);
+          doc.setTextColor(120, 120, 120);
+          doc.text(`"${v.description}"`, 105, y + 65, { align: 'center' });
+        }
+
+        y += 82;
+      }
+
+      doc.save(`Voucher_${v.code}_${qty}x.pdf`);
+      toast.success(`Exported ${qty} voucher(s) as PDF`);
+    } catch (err) {
+      toast.error('Failed to export PDF');
+    }
+  };
 
   const printVoucher = (v) => {
     const siteName = settings?.shopName || 'Mobile Hub';
@@ -138,9 +216,6 @@ const AdminVouchers = () => {
       toast.error(err.response?.data?.message || 'Failed to save voucher');
     }
   };
-
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState(null);
 
   const handleDeleteClick = (v) => {
     setItemToDelete({ id: v._id, name: v.code });
@@ -290,7 +365,7 @@ const AdminVouchers = () => {
                       className="w-10 text-center text-xs border-none outline-none bg-transparent"
                       title="Print qty"
                     />
-                    <button onClick={() => printVoucher(v)} className="p-1.5 rounded-lg hover:bg-indigo-50 text-indigo-600 transition-colors" title="Print Voucher">
+                    <button onClick={() => openPreview(v)} className="p-1.5 rounded-lg hover:bg-indigo-50 text-indigo-600 transition-colors cursor-pointer border-0" title="Live Preview & Export Voucher">
                       <Printer size={16} />
                     </button>
                   </div>
@@ -402,6 +477,119 @@ const AdminVouchers = () => {
                 <button type="button" onClick={() => setShowModal(false)} className="flex-1 border border-card-border py-2.5 rounded-xl font-semibold text-muted-text hover:bg-gray-50 text-sm">Cancel</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Live Voucher Preview & Export Modal */}
+      {showVoucherPreviewModal && selectedVoucherForPreview && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-fade-in">
+          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100 relative text-center">
+            <button
+              onClick={() => setShowVoucherPreviewModal(false)}
+              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 bg-slate-100 rounded-full cursor-pointer transition-colors"
+            >
+              <X size={16} />
+            </button>
+
+            <div className="w-12 h-12 rounded-2xl bg-pink-50 text-pink-600 flex items-center justify-center mx-auto mb-2">
+              <Ticket size={24} />
+            </div>
+            <h3 className="text-lg font-black text-slate-900 m-0">Live Voucher Preview</h3>
+            <p className="text-xs text-slate-500 font-semibold mt-0.5">
+              Preview discount voucher ticket & export options
+            </p>
+
+            {/* Voucher Card Container */}
+            <div className="my-5 p-5 bg-gradient-to-br from-pink-50 via-purple-50 to-white border-2 border-dashed border-pink-400 rounded-3xl relative overflow-hidden shadow-inner text-center">
+              <div className="absolute top-[-30px] right-[-30px] w-24 h-24 bg-pink-500/10 rounded-full pointer-events-none" />
+              <div className="absolute bottom-[-20px] left-[-20px] w-20 h-20 bg-purple-500/10 rounded-full pointer-events-none" />
+
+              <p className="text-sm font-black text-slate-900 uppercase tracking-widest m-0">
+                {settings?.shopName || 'Mobile Hub'}
+              </p>
+              <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest mt-0.5 m-0 mb-3">
+                Official Discount Voucher
+              </p>
+
+              <div className="bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-2xl py-3 px-5 shadow-md mb-3">
+                <p className="text-2xl font-black tracking-wider m-0">
+                  {selectedVoucherForPreview.type === 'percentage'
+                    ? `${selectedVoucherForPreview.value}% OFF`
+                    : `Rs. ${selectedVoucherForPreview.value} OFF`}
+                </p>
+              </div>
+
+              <div className="bg-white/90 border border-dashed border-pink-400 rounded-xl p-2.5 mb-3 flex items-center justify-center gap-2">
+                <span className="font-mono text-xl font-black text-pink-600 tracking-widest">
+                  {selectedVoucherForPreview.code}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => copyCode(selectedVoucherForPreview.code, selectedVoucherForPreview._id)}
+                  className="p-1 rounded-lg hover:bg-pink-100 text-pink-600 transition-colors border-0 bg-transparent cursor-pointer"
+                >
+                  {copiedId === selectedVoucherForPreview._id ? <Check size={16} /> : <Copy size={16} />}
+                </button>
+              </div>
+
+              <div className="flex justify-between items-center text-xs font-bold text-slate-600 px-1 mb-2">
+                <span>Min Order: Rs. {selectedVoucherForPreview.minOrderAmount || 0}</span>
+                <span>
+                  Expires:{' '}
+                  {selectedVoucherForPreview.expiresAt
+                    ? new Date(selectedVoucherForPreview.expiresAt).toLocaleDateString()
+                    : 'Never'}
+                </span>
+              </div>
+
+              {selectedVoucherForPreview.description && (
+                <p className="text-xs text-slate-500 font-medium italic m-0">
+                  "{selectedVoucherForPreview.description}"
+                </p>
+              )}
+            </div>
+
+            {/* Quantity Selector */}
+            <div className="flex items-center justify-between bg-slate-50 border border-slate-200/80 rounded-2xl p-3 mb-5">
+              <span className="text-xs font-bold text-slate-700">Print / Export Quantity:</span>
+              <div className="flex items-center gap-1.5">
+                {[1, 2, 5, 10].map(qty => (
+                  <button
+                    key={qty}
+                    type="button"
+                    onClick={() => setPrintQty(prev => ({ ...prev, [selectedVoucherForPreview._id]: qty }))}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all border-0 cursor-pointer ${
+                      (printQty[selectedVoucherForPreview._id] || 1) === qty
+                        ? 'bg-slate-900 text-white shadow-xs'
+                        : 'bg-white text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    {qty}x
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => exportVoucherPDF(selectedVoucherForPreview, printQty[selectedVoucherForPreview._id] || 1)}
+                className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black py-3 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer border-0"
+              >
+                <FileText size={15} /> Export PDF
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  printVoucher(selectedVoucherForPreview);
+                }}
+                className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-black py-3 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer border-0"
+              >
+                <Printer size={15} /> Instant Print
+              </button>
+            </div>
           </div>
         </div>
       )}
