@@ -8,6 +8,7 @@ import useAdminStoreStore from '../store/adminStoreStore';
 import { getAdminStores } from '../services/api';
 import { getImageUrl } from '../utils/imageHelper';
 import useThemeStore, { THEME_ACCENTS } from '../store/themeStore';
+import NotificationBell from './NotificationBell';
 
 const NavLink = ({ item, location, collapsed, onNavigate, userRole }) => {
   const { accent } = useThemeStore();
