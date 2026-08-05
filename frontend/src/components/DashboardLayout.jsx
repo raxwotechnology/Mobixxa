@@ -14,6 +14,7 @@ const NavLink = ({ item, location, collapsed, onNavigate, userRole }) => {
   const { accent } = useThemeStore();
   const themeConfig = THEME_ACCENTS[accent] || THEME_ACCENTS.indigo;
   const primaryColor = themeConfig.primary || '#6366f1';
+  const [isHovered, setIsHovered] = useState(false);
 
   const isRoot = item.path === '/admin' || item.path === '/manager' || item.path === '/employee';
   const isActive = isRoot
@@ -24,20 +25,27 @@ const NavLink = ({ item, location, collapsed, onNavigate, userRole }) => {
     <Link
       to={item.path}
       onClick={onNavigate}
-      title={item.label}
+      title={collapsed ? item.label : undefined}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       style={
         isActive
           ? {
               backgroundColor: primaryColor,
               color: '#ffffff',
-              boxShadow: `0 10px 22px -5px ${primaryColor}80`,
+              boxShadow: `0 10px 22px -5px ${primaryColor}70`,
+            }
+          : isHovered
+          ? {
+              backgroundColor: `${primaryColor}18`,
+              color: primaryColor,
             }
           : {}
       }
       className={`relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-black transition-all group ${
         isActive
           ? 'text-white shadow-lg'
-          : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
+          : 'text-slate-600'
       }`}
     >
       {isActive && (
@@ -45,8 +53,9 @@ const NavLink = ({ item, location, collapsed, onNavigate, userRole }) => {
       )}
       <item.icon
         size={16}
+        style={!isActive && isHovered ? { color: primaryColor } : {}}
         className={`flex-shrink-0 transition-transform duration-200 group-hover:scale-110 ${
-          isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-700 dark:text-slate-400'
+          isActive ? 'text-white' : 'text-slate-400'
         }`}
       />
       {!collapsed && (
@@ -282,10 +291,10 @@ const DashboardLayout = ({ children, navItems, title }) => {
 
           {title && (
             <span className={`hidden xl:inline-flex items-center text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-xl whitespace-nowrap ${user?.role === 'admin'
-                ? 'role-badge-admin'
-                : user?.role === 'manager'
-                  ? 'role-badge-manager'
-                  : 'role-badge-employee'
+              ? 'role-badge-admin'
+              : user?.role === 'manager'
+                ? 'role-badge-manager'
+                : 'role-badge-employee'
               }`}>
               {user?.role === 'admin' ? 'Executive' : user?.role === 'manager' ? 'Operations' : 'Staff'} • {title}
             </span>
