@@ -7,28 +7,20 @@ import { adminNavGroups, getAdminNavGroups } from '../pages/admin/adminNavItems'
 import useAdminStoreStore from '../store/adminStoreStore';
 import { getAdminStores } from '../services/api';
 import { getImageUrl } from '../utils/imageHelper';
-import NotificationBell from './NotificationBell';
+import useThemeStore, { THEME_ACCENTS } from '../store/themeStore';
 
 const NavLink = ({ item, location, collapsed, onNavigate, userRole }) => {
+  const { accent } = useThemeStore();
+  const themeConfig = THEME_ACCENTS[accent] || THEME_ACCENTS.indigo;
+
   const isRoot = item.path === '/admin' || item.path === '/manager' || item.path === '/employee';
   const isActive = isRoot
     ? location.pathname === item.path
     : location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
 
-  // Role-based active styles
-  let activeBg = 'bg-slate-900 text-emerald-400 shadow-sm font-black';
-  let activeIndicator = 'bg-emerald-400';
-  let activeIcon = 'text-emerald-400';
-
-  if (userRole === 'manager') {
-    activeBg = 'bg-blue-900/10 text-blue-700 shadow-sm font-black';
-    activeIndicator = 'bg-blue-600';
-    activeIcon = 'text-blue-600';
-  } else if (['cashier', 'deliveryGuy', 'stockEmployee', 'employee'].includes(userRole)) {
-    activeBg = 'bg-sky-900/10 text-sky-700 shadow-sm font-black';
-    activeIndicator = 'bg-sky-500';
-    activeIcon = 'text-sky-600';
-  }
+  const activeBg = themeConfig.activeBg || 'bg-indigo-600 text-white shadow-md font-black';
+  const activeIndicator = themeConfig.activeIndicator || 'bg-indigo-600';
+  const activeIcon = themeConfig.activeIcon || 'text-white';
 
   return (
     <Link
@@ -343,21 +335,19 @@ const DashboardLayout = ({ children, navItems, title }) => {
                   <span className="inline-block mt-1.5 text-[9px] font-black uppercase tracking-wider bg-emerald-500 text-slate-950 px-2.5 py-0.5 rounded-full">{user?.role}</span>
                 </div>
                 <Link
-                  to={profilePath}
+                  to="/settings"
                   onClick={() => setUserMenuOpen(false)}
                   className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors font-extrabold uppercase tracking-wide no-underline"
                 >
                   <User size={14} className="text-slate-400" /> My Profile
                 </Link>
-                {settingsLink && (
-                  <Link
-                    to={settingsLink}
-                    onClick={() => setUserMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors font-extrabold uppercase tracking-wide no-underline"
-                  >
-                    <Settings size={14} className="text-slate-400" /> Settings
-                  </Link>
-                )}
+                <Link
+                  to="/settings"
+                  onClick={() => setUserMenuOpen(false)}
+                  className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors font-extrabold uppercase tracking-wide no-underline"
+                >
+                  <Settings size={14} className="text-slate-400" /> Settings & Customizer
+                </Link>
                 {dashLink && (
                   <>
                     <hr className="my-1 border-slate-100" />

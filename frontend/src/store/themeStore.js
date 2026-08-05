@@ -87,8 +87,18 @@ const useThemeStore = create(
 
         if (mode === 'dark') {
           root.classList.add('dark');
+          if (document.body) {
+            document.body.classList.add('dark');
+            document.body.style.backgroundColor = '#0f172a';
+            document.body.style.color = '#f8fafc';
+          }
         } else {
           root.classList.remove('dark');
+          if (document.body) {
+            document.body.classList.remove('dark');
+            document.body.style.backgroundColor = '#f8fafc';
+            document.body.style.color = '#0f172a';
+          }
         }
 
         const themeConfig = THEME_ACCENTS[accent] || THEME_ACCENTS.indigo;
