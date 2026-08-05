@@ -4,7 +4,7 @@ import JsBarcode from 'jsbarcode';
 import DashboardLayout from '../../components/DashboardLayout';
 import DeleteConfirmationModal from '../../components/DeleteConfirmationModal';
 
-import { getAdminProducts, logBarcodeGeneration, getSettings, updateSettings } from '../../services/api';
+import { getAdminProducts, getAdminStores, logBarcodeGeneration, getSettings, updateSettings } from '../../services/api';
 import useAuthStore from '../../store/authStore';
 import { toast } from 'react-toastify';
 
@@ -22,6 +22,8 @@ const DEFAULT_PRINTERS = [
 const BarcodeGenerator = () => {
   const { user } = useAuthStore();
   const [products, setProducts] = useState([]);
+  const [stores, setStores] = useState([]);
+  const [selectedStore, setSelectedStore] = useState('all');
   const [search, setSearch] = useState('');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [quantity, setQuantity] = useState(12);
@@ -29,6 +31,8 @@ const BarcodeGenerator = () => {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [generated, setGenerated] = useState(false);
+  const [showLivePreviewModal, setShowLivePreviewModal] = useState(false);
+  const modalSvgRef = useRef(null);
   const printRef = useRef(null);
 
   // Printers Configuration States
@@ -43,6 +47,7 @@ const BarcodeGenerator = () => {
 
   useEffect(() => {
     loadProducts();
+    loadStores();
     loadSettings();
   }, []);
 
@@ -54,6 +59,15 @@ const BarcodeGenerator = () => {
       toast.error('Failed to load products');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadStores = async () => {
+    try {
+      const { data } = await getAdminStores();
+      setStores(Array.isArray(data) ? data : data.stores || []);
+    } catch {
+      /* ignore if not admin */
     }
   };
 
@@ -129,11 +143,19 @@ const BarcodeGenerator = () => {
     handleSavePrinters(updated);
   };
 
-  const filteredProducts = products.filter(p =>
-    p.name?.toLowerCase().includes(search.toLowerCase()) ||
-    p.sku?.toLowerCase().includes(search.toLowerCase()) ||
-    p.barcode?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredProducts = products.filter(p => {
+    const matchesSearch = p.name?.toLowerCase().includes(search.toLowerCase()) ||
+      p.sku?.toLowerCase().includes(search.toLowerCase()) ||
+      p.barcode?.toLowerCase().includes(search.toLowerCase());
+
+    if (selectedStore === 'all' || !selectedStore) return matchesSearch;
+
+    const pStoreId = typeof p.store === 'object' ? p.store?._id : p.store;
+    const pStoreName = typeof p.store === 'object' ? p.store?.name : p.storeName;
+    const matchesStore = pStoreId === selectedStore || pStoreName === selectedStore;
+
+    return matchesSearch && matchesStore;
+  });
 
   const getBarcodeValue = (product) => {
     return product.barcode || product.sku || `ZFC-${product._id?.slice(-8).toUpperCase()}`;
@@ -152,7 +174,8 @@ const BarcodeGenerator = () => {
         printerName: selectedPrinter?.name || 'Default Printer'
       });
       setGenerated(true);
-      
+      setShowLivePreviewModal(true);
+
       // Initialize printer assignments: default printer gets the full quantity, others get 0
       const initial = {};
       printers.forEach(p => {
@@ -410,15 +433,33 @@ const BarcodeGenerator = () => {
               <h2 className="text-sm font-black text-slate-800 mb-4 uppercase tracking-wider flex items-center gap-2">
                 <Package size={16} /> Select Product
               </h2>
-              <div className="relative mb-4">
-                <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                  placeholder="Search by name, SKU, or barcode..."
-                  className="w-full bg-white border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all"
-                />
+              <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                {stores.length > 0 && (
+                  <div className="sm:w-2/5">
+                    <select
+                      value={selectedStore}
+                      onChange={e => setSelectedStore(e.target.value)}
+                      className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all cursor-pointer"
+                    >
+                      <option value="all">🏪 All Stores ({stores.length})</option>
+                      {stores.map(s => (
+                        <option key={s._id} value={s._id}>
+                          {s.name} ({s.code || s.location || 'Store'})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                <div className="flex-1 relative">
+                  <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    placeholder="Search name, SKU, or barcode..."
+                    className="w-full bg-white border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all"
+                  />
+                </div>
               </div>
 
               <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
@@ -830,6 +871,84 @@ const BarcodeGenerator = () => {
                   <Plus size={13} /> Add & Link Printer
                 </button>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Live Barcode View Preview Modal */}
+      {showLivePreviewModal && selectedProduct && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-fade-in">
+          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100 relative text-center">
+            <button
+              onClick={() => setShowLivePreviewModal(false)}
+              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 bg-slate-100 rounded-full cursor-pointer transition-colors"
+            >
+              <X size={16} />
+            </button>
+            <div className="w-12 h-12 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center mx-auto mb-3">
+              <Barcode size={24} />
+            </div>
+            <h3 className="text-lg font-black text-slate-900 m-0">Live Barcode Preview</h3>
+            <p className="text-xs text-slate-500 font-semibold mt-1">
+              Generated barcode preview for store labeling
+            </p>
+
+            <div className="my-5 p-4 bg-slate-50 rounded-2xl border border-slate-200/80 flex flex-col items-center justify-center">
+              <p className="text-xs font-black text-slate-900 uppercase tracking-wide mb-1">{shopName}</p>
+              <p className="text-sm font-bold text-slate-800 line-clamp-1 max-w-[240px] text-center mb-1">
+                {selectedProduct.name}
+              </p>
+              
+              {/* Barcode SVG container */}
+              <div className="bg-white p-2.5 rounded-xl border border-slate-200 my-2 shadow-xs">
+                <svg
+                  ref={(el) => {
+                    if (el && selectedProduct) {
+                      try {
+                        JsBarcode(el, getBarcodeValue(selectedProduct), {
+                          format: 'CODE128',
+                          width: 1.5,
+                          height: 40,
+                          displayValue: true,
+                          fontSize: 10,
+                          margin: 2
+                        });
+                      } catch (e) {}
+                    }
+                  }}
+                />
+              </div>
+
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-700 mt-1">
+                <span>SKU: {selectedProduct.sku || 'N/A'}</span>
+                <span>•</span>
+                <span className="text-emerald-600 font-black">Rs. {selectedProduct.price?.toFixed(2)}</span>
+              </div>
+              
+              {(selectedProduct.store?.name || selectedProduct.storeName) && (
+                <span className="mt-2 text-[10px] font-black uppercase tracking-wider bg-slate-200 text-slate-700 px-2.5 py-0.5 rounded-full">
+                  🏪 Store: {selectedProduct.store?.name || selectedProduct.storeName}
+                </span>
+              )}
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setShowLivePreviewModal(false);
+                  setTimeout(() => window.print(), 100);
+                }}
+                className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-black py-3 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer border-0"
+              >
+                <Printer size={15} /> Print {quantity} Labels
+              </button>
+              <button
+                onClick={() => setShowLivePreviewModal(false)}
+                className="px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer border-0"
+              >
+                Done
+              </button>
             </div>
           </div>
         </div>

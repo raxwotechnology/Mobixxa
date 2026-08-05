@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Barcode, Search, Download, Calendar, Filter, Clock, User, Package } from 'lucide-react';
+import { Barcode, Search, Download, Calendar, Filter, Clock, User, Package, Eye, X, Printer } from 'lucide-react';
+import JsBarcode from 'jsbarcode';
 import DashboardLayout from '../../components/DashboardLayout';
 import { getBarcodeLogs } from '../../services/api';
 import { toast } from 'react-toastify';
@@ -15,6 +16,7 @@ const AdminBarcodes = () => {
   const [roleFilter, setRoleFilter] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [viewingLog, setViewingLog] = useState(null);
 
   useEffect(() => {
     fetchLogs();
@@ -89,7 +91,7 @@ const AdminBarcodes = () => {
             <button
               onClick={exportCSV}
               disabled={logs.length === 0}
-              className="flex items-center gap-2 bg-dark-navy hover:bg-gray-800 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 bg-dark-navy hover:bg-gray-800 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors disabled:opacity-50 cursor-pointer border-0"
             >
               <Download size={14} /> Export CSV
             </button>
@@ -118,7 +120,7 @@ const AdminBarcodes = () => {
               <select
                 value={roleFilter}
                 onChange={e => { setRoleFilter(e.target.value); setPage(1); }}
-                className="border border-card-border rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="border border-card-border rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer"
               >
                 <option value="">All Roles</option>
                 <option value="admin">Admin</option>
@@ -146,7 +148,7 @@ const AdminBarcodes = () => {
             </div>
             <button
               onClick={handleSearch}
-              className="bg-blue-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors"
+              className="bg-blue-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors cursor-pointer border-0"
             >
               <Filter size={14} />
             </button>
@@ -183,13 +185,14 @@ const AdminBarcodes = () => {
                     <th className="text-left px-5 py-3 font-medium text-muted-text">Barcode</th>
                     <th className="text-left px-5 py-3 font-medium text-muted-text">Printer</th>
                     <th className="text-center px-5 py-3 font-medium text-muted-text">Qty</th>
+                    <th className="text-center px-5 py-3 font-medium text-muted-text">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-card-border">
                   {logs.map(log => (
                     <tr key={log._id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-5 py-3.5 whitespace-nowrap">
-                        <div className="text-dark-navy">{new Date(log.createdAt).toLocaleDateString()}</div>
+                        <div className="text-dark-navy font-semibold">{new Date(log.createdAt).toLocaleDateString()}</div>
                         <div className="text-xs text-muted-text">{new Date(log.createdAt).toLocaleTimeString()}</div>
                       </td>
                       <td className="px-5 py-3.5 font-medium text-dark-navy">{log.generatedByName}</td>
@@ -198,14 +201,22 @@ const AdminBarcodes = () => {
                           {log.generatedByRole}
                         </span>
                       </td>
-                      <td className="px-5 py-3.5 text-dark-navy max-w-48 truncate">{log.productName}</td>
+                      <td className="px-5 py-3.5 text-dark-navy font-bold max-w-48 truncate">{log.productName}</td>
                       <td className="px-5 py-3.5 font-mono text-xs text-muted-text">{log.sku || '—'}</td>
-                      <td className="px-5 py-3.5 font-mono text-xs text-muted-text">{log.barcode}</td>
+                      <td className="px-5 py-3.5 font-mono text-xs text-slate-800 font-bold">{log.barcode}</td>
                       <td className="px-5 py-3.5 text-xs text-muted-text font-medium">{log.printerName || 'Default'}</td>
                       <td className="px-5 py-3.5 text-center">
-                        <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-1 rounded-full">
+                        <span className="bg-blue-100 text-blue-700 text-xs font-black px-2.5 py-1 rounded-full">
                           {log.quantity}
                         </span>
+                      </td>
+                      <td className="px-5 py-3.5 text-center">
+                        <button
+                          onClick={() => setViewingLog(log)}
+                          className="inline-flex items-center gap-1.5 bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white text-xs font-black px-3 py-1.5 rounded-xl transition-all shadow-xs cursor-pointer border-0"
+                        >
+                          <Eye size={14} /> View
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -224,14 +235,14 @@ const AdminBarcodes = () => {
                 <button
                   onClick={() => setPage(Math.max(1, page - 1))}
                   disabled={page === 1}
-                  className="px-3 py-1.5 text-xs font-medium bg-white border border-card-border rounded-lg disabled:opacity-50 hover:bg-gray-50"
+                  className="px-3 py-1.5 text-xs font-medium bg-white border border-card-border rounded-lg disabled:opacity-50 hover:bg-gray-50 cursor-pointer"
                 >
                   Prev
                 </button>
                 <button
                   onClick={() => setPage(Math.min(totalPages, page + 1))}
                   disabled={page === totalPages}
-                  className="px-3 py-1.5 text-xs font-medium bg-white border border-card-border rounded-lg disabled:opacity-50 hover:bg-gray-50"
+                  className="px-3 py-1.5 text-xs font-medium bg-white border border-card-border rounded-lg disabled:opacity-50 hover:bg-gray-50 cursor-pointer"
                 >
                   Next
                 </button>
@@ -240,6 +251,90 @@ const AdminBarcodes = () => {
           )}
         </div>
       </div>
+
+      {/* Barcode View Detail Modal */}
+      {viewingLog && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-fade-in">
+          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100 relative text-center">
+            <button
+              onClick={() => setViewingLog(null)}
+              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 bg-slate-100 rounded-full cursor-pointer transition-colors"
+            >
+              <X size={16} />
+            </button>
+            <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-3">
+              <Barcode size={24} />
+            </div>
+            <h3 className="text-lg font-black text-slate-900 m-0">Barcode Details</h3>
+            <p className="text-xs text-slate-500 font-semibold mt-1">
+              Generated by {viewingLog.generatedByName} ({viewingLog.generatedByRole})
+            </p>
+
+            <div className="my-5 p-4 bg-slate-50 rounded-2xl border border-slate-200/80 flex flex-col items-center justify-center">
+              <p className="text-xs font-black text-slate-900 uppercase tracking-wide mb-1">Mobile Hub</p>
+              <p className="text-sm font-bold text-slate-800 line-clamp-1 max-w-[240px] text-center mb-1">
+                {viewingLog.productName}
+              </p>
+              
+              {/* Barcode SVG container */}
+              <div className="bg-white p-3 rounded-xl border border-slate-200 my-2 shadow-xs">
+                <svg
+                  ref={(el) => {
+                    if (el && viewingLog.barcode) {
+                      try {
+                        JsBarcode(el, viewingLog.barcode, {
+                          format: 'CODE128',
+                          width: 1.6,
+                          height: 45,
+                          displayValue: true,
+                          fontSize: 11,
+                          margin: 2
+                        });
+                      } catch (e) {}
+                    }
+                  }}
+                />
+              </div>
+
+              <div className="w-full grid grid-cols-2 gap-2 text-left bg-white p-3 rounded-xl border border-slate-200/60 mt-2 text-xs">
+                <div>
+                  <span className="text-[10px] font-extrabold uppercase text-slate-400 block">SKU</span>
+                  <span className="font-mono font-bold text-slate-800">{viewingLog.sku || 'N/A'}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] font-extrabold uppercase text-slate-400 block">Quantity</span>
+                  <span className="font-bold text-blue-600">{viewingLog.quantity} Labels</span>
+                </div>
+                <div>
+                  <span className="text-[10px] font-extrabold uppercase text-slate-400 block">Printer</span>
+                  <span className="font-semibold text-slate-700">{viewingLog.printerName || 'Default'}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] font-extrabold uppercase text-slate-400 block">Date</span>
+                  <span className="font-semibold text-slate-700">{new Date(viewingLog.createdAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  window.print();
+                }}
+                className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-black py-3 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer border-0"
+              >
+                <Printer size={15} /> Print Sticker
+              </button>
+              <button
+                onClick={() => setViewingLog(null)}
+                className="px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer border-0"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 };
