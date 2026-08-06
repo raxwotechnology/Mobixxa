@@ -191,8 +191,9 @@ const authUser = async (req, res) => {
       return fail(res, 400, 'Email and password are required');
     }
 
-    const normalizedEmail = email.trim().toLowerCase();
-    const user = await User.findOne({ email: normalizedEmail }).populate('assignedStore', 'name');
+    const trimmedEmail = email.trim();
+    const emailRegex = new RegExp('^\\s*' + trimmedEmail.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '\\s*$', 'i');
+    const user = await User.findOne({ email: { $regex: emailRegex } }).populate('assignedStore', 'name');
 
     if (!user) {
       return fail(res, 401, 'Invalid email or password');

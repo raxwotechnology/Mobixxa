@@ -384,13 +384,16 @@ const updateEmployee = async (req, res, next) => {
     if (!employee) { res.status(404); return next(new Error('Employee not found')); }
 
     if (req.body.name) employee.name = req.body.name;
-    if (req.body.email && req.body.email !== employee.email) {
-      const emailExists = await User.findOne({ email: req.body.email });
-      if (emailExists) {
-        res.status(400);
-        return next(new Error('Email is already taken by another user'));
+    if (req.body.email) {
+      const normalizedEmail = req.body.email.trim().toLowerCase();
+      if (normalizedEmail !== employee.email) {
+        const emailExists = await User.findOne({ email: normalizedEmail });
+        if (emailExists) {
+          res.status(400);
+          return next(new Error('Email is already taken by another user'));
+        }
+        employee.email = normalizedEmail;
       }
-      employee.email = req.body.email;
     }
     if (req.body.password) employee.password = req.body.password;
     if (req.body.phone !== undefined) employee.phone = req.body.phone;
@@ -436,8 +439,10 @@ const addEmployee = async (req, res, next) => {
       return next(new Error('Employee role is not allowed for your account'));
     }
 
+    const normalizedEmail = email.trim().toLowerCase();
+
     // Check if email exists
-    const existing = await User.findOne({ email });
+    const existing = await User.findOne({ email: normalizedEmail });
     if (existing) {
       res.status(400);
       return next(new Error('A user with this email already exists'));
@@ -452,7 +457,7 @@ const addEmployee = async (req, res, next) => {
 
     const employee = await User.create({
       name,
-      email,
+      email: normalizedEmail,
       password,
       phone: phone || '',
       role,
