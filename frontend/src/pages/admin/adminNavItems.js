@@ -24,6 +24,7 @@ const adminNavGroups = [
       { path: '/admin/leaves',     label: 'Leaves',     icon: Clock },
       { path: '/admin/payroll',    label: 'Payroll',    icon: Landmark },
       { path: '/admin/salary-advances', label: 'Salary Advances', icon: DollarSign },
+      { path: '/admin/letters',    label: 'Letters & Documents', icon: FileText },
       { path: '/admin/targets',    label: 'Targets',    icon: Target },
     ],
   },

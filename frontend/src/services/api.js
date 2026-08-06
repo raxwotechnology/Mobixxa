@@ -255,6 +255,11 @@ export const getSalaryAdvances = (params) => API.get('/payroll/advances', { para
 export const recordSalaryAdvance = (data) => API.post('/payroll/advances', data);
 export const deleteSalaryAdvance = (id) => API.delete(`/payroll/advances/${id}`);
 
+// Letters & Documents Generator
+export const getIssuedLetters = (params) => API.get('/letters', { params });
+export const issueLetter = (data) => API.post('/letters', data);
+export const deleteLetter = (id) => API.delete(`/letters/${id}`);
+
 // Settings
 export const uploadImage = (formData) => API.post('/upload/image', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 export const uploadDocument = (formData) => API.post('/upload/document', formData, { headers: { 'Content-Type': 'multipart/form-data' } });

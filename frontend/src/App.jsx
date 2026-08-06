@@ -52,6 +52,7 @@ import AdminPromotions from './pages/admin/AdminPromotions';
 import AdminProducts from './pages/admin/AdminProducts';
 import AdminPayroll from './pages/admin/AdminPayroll';
 import AdminSalaryAdvances from './pages/admin/AdminSalaryAdvances';
+import AdminLetters from './pages/admin/AdminLetters';
 import AdminEmployees from './pages/admin/AdminEmployees';
 import AdminReturns from './pages/admin/AdminReturns';
 import AdminBarcodes from './pages/admin/AdminBarcodes';
@@ -200,6 +201,7 @@ function App() {
           <Route path="/admin/leaves" element={<ProtectedRoute roles={['admin']} permission="employees"><AdminLeaves /></ProtectedRoute>} />
           <Route path="/admin/payroll" element={<ProtectedRoute roles={['admin']} permission="employees"><AdminPayroll /></ProtectedRoute>} />
           <Route path="/admin/salary-advances" element={<ProtectedRoute roles={['admin']} permission="employees"><AdminSalaryAdvances /></ProtectedRoute>} />
+          <Route path="/admin/letters" element={<ProtectedRoute roles={['admin']} permission="employees"><AdminLetters /></ProtectedRoute>} />
           <Route path="/admin/stores" element={<ProtectedRoute roles={['admin']} permission="settings"><AdminStores /></ProtectedRoute>} />
           <Route path="/admin/categories" element={<ProtectedRoute roles={['admin']} permission="products"><AdminCategories /></ProtectedRoute>} />
           <Route path="/admin/products" element={<ProtectedRoute roles={['admin']} permission="products"><AdminProducts /></ProtectedRoute>} />

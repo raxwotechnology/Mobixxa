@@ -72,6 +72,7 @@ app.use('/api/overtime', require('../routes/overtimeRoutes'));
 app.use('/api/upload', require('../routes/uploadRoutes'));
 app.use('/api/reloads', require('../routes/reloadRoutes'));
 app.use('/api/repairs', require('../routes/repairRoutes'));
+app.use('/api/letters', require('../routes/letterRoutes'));
 
 app.get('/', (req, res) => {
   res.send('Mobile Hub API is running...');
