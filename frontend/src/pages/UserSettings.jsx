@@ -414,7 +414,7 @@ const UserSettings = () => {
   );
 
   if (navGroups) {
-    return <DashboardLayout navGroups={navGroups} activePath="/settings">{content}</DashboardLayout>;
+    return <DashboardLayout navItems={navGroups} activePath="/settings">{content}</DashboardLayout>;
   }
 
   return <div className="min-h-screen bg-slate-50/50 py-6">{content}</div>;

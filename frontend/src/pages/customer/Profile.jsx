@@ -25,7 +25,7 @@ const Profile = () => {
   };
 
   const navGroups = getNavGroups();
-  const layoutProps = navGroups ? { navGroups, activePath: '/profile' } : { navItems: defaultCustomerNavItems, activePath: '/profile' };
+  const layoutProps = navGroups ? { navItems: navGroups, activePath: '/profile' } : { navItems: defaultCustomerNavItems, activePath: '/profile' };
 
   const settings = useSettingsStore((s) => s.settings);
   const [loading, setLoading] = useState(true);
