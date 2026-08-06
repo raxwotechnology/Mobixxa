@@ -71,11 +71,11 @@ const Home = () => {
                 {settings?.shopName || 'Mobile Hub'}
               </h2>
             </div>
-            <h1 className="text-4xl md:text-6xl font-black leading-tight mb-6 mt-0 tracking-tight">
-              Premium tech and
+            <h1 className="text-4xl md:text-6xl font-semibold leading-tight mb-6 mt-0 tracking-tight">
+              Premium Tech &
               <br />
               <span className="bg-gradient-to-r from-brand-indigo via-brand-violet to-brand-cyan bg-clip-text text-transparent">
-                smart devices.
+                Smart Devices.
               </span>
             </h1>
             <p className="text-slate-400 text-lg mb-8 max-w-lg leading-relaxed font-medium">
