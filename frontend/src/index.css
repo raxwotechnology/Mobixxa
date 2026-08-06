@@ -1,31 +1,32 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --color-primary-blue: #3b82f6;
+  --color-primary-blue: #2563eb;
   --color-accent-slate: #0f172a;
   --color-dark-navy: #030712;
   --color-light-bg: #f8fafc;
   --color-card-border: #e2e8f0;
   --color-muted-text: #64748b;
 
-  /* Premium Brand Palette (Storefront Indigo, Purple & Fuchsia) */
-  --color-brand-indigo: #6366f1;
-  --color-brand-violet: #8b5cf6;
-  --color-brand-fuchsia: #ec4899;
+  /* Premium Brand Palette (Blue Theme) */
+  --color-brand-indigo: #2563eb;
+  --color-brand-violet: #3b82f6;
+  --color-brand-fuchsia: #0284c7;
   --color-brand-cyan: #06b6d4;
 
   /* Override emerald → teal to align with cool teal theme */
-  --color-emerald-50: #f0fdfa;
-  --color-emerald-100: #ccfbf1;
-  --color-emerald-200: #99f6e4;
-  --color-emerald-300: #5eead4;
-  --color-emerald-400: #2dd4bf;
-  --color-emerald-500: #14b8a6;
-  --color-emerald-600: #0d9488;
-  --color-emerald-700: #0f766e;
-  --color-emerald-800: #115e59;
-  --color-emerald-900: #134e4a;
-  --color-emerald-950: #042f2e;
+  --color-emerald-50: #eff6ff;
+  --color-emerald-100: #dbeafe;
+  --color-emerald-200: #bfdbfe;
+  --color-emerald-300: #93c5fd;
+  --color-emerald-400: #60a5fa;
+  --color-emerald-500: #3b82f6;
+  --color-emerald-600: #2563eb;
+  --color-emerald-700: #1d4ed8;
+  --color-emerald-800: #1e40af;
+  --color-emerald-900: #1e3a8a;
+  --color-emerald-950: #172554;
 
   /* Override teal → slate */
   --color-teal-50: #f8fafc;
@@ -37,11 +38,11 @@
   --color-teal-600: #475569;
   --color-teal-700: #334155;
 
-  --font-sans: 'Inter', 'Plus Jakarta Sans', 'Poppins', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Poppins', 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 *, body, button, input, select, textarea, h1, h2, h3, h4, h5, h6, p, span, div, table, th, td, a {
-  font-family: 'Inter', 'Plus Jakarta Sans', 'Poppins', system-ui, -apple-system, sans-serif !important;
+  font-family: 'Poppins', 'Inter', system-ui, -apple-system, sans-serif !important;
 }
 
 body {
