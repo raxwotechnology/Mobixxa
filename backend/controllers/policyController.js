@@ -17,19 +17,21 @@ const getLeavePolicies = async (req, res, next) => {
 // @access  Private/Admin/Manager
 const createLeavePolicy = async (req, res, next) => {
   try {
-    const { name, annualLeaves, sickLeaves, casualLeaves, deductionPerExcessLeave, isDefault } = req.body;
+    const { name, periodType, allowedLeaves, unusedLeaveBonusPerDay, annualLeaves, sickLeaves, casualLeaves, deductionPerExcessLeave, isDefault } = req.body;
     if (!name) {
       res.status(400);
       return next(new Error('Policy name is required'));
     }
 
     if (isDefault) {
-      // Remove default flag from other policies
       await LeavePolicy.updateMany({}, { isDefault: false });
     }
 
     const policy = await LeavePolicy.create({
       name,
+      periodType: periodType || 'monthly',
+      allowedLeaves: Number(allowedLeaves) || 4,
+      unusedLeaveBonusPerDay: Number(unusedLeaveBonusPerDay) || 0,
       annualLeaves: Number(annualLeaves) || 14,
       sickLeaves: Number(sickLeaves) || 7,
       casualLeaves: Number(casualLeaves) || 7,
@@ -57,6 +59,9 @@ const updateLeavePolicy = async (req, res, next) => {
     }
 
     policy.name = req.body.name || policy.name;
+    if (req.body.periodType) policy.periodType = req.body.periodType;
+    if (req.body.allowedLeaves !== undefined) policy.allowedLeaves = Number(req.body.allowedLeaves);
+    if (req.body.unusedLeaveBonusPerDay !== undefined) policy.unusedLeaveBonusPerDay = Number(req.body.unusedLeaveBonusPerDay);
     if (req.body.annualLeaves !== undefined) policy.annualLeaves = Number(req.body.annualLeaves);
     if (req.body.sickLeaves !== undefined) policy.sickLeaves = Number(req.body.sickLeaves);
     if (req.body.casualLeaves !== undefined) policy.casualLeaves = Number(req.body.casualLeaves);
