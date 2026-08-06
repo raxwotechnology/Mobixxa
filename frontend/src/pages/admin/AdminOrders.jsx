@@ -338,6 +338,17 @@ const AdminOrders = ({ navItems: propNavItems }) => {
 
   const filteredOrders = sortedOrders;
 
+  const orderColumns = [
+    { label: 'Invoice No', accessor: (row) => row.invoiceNumber || row._id.slice(-6).toUpperCase() },
+    { label: 'Customer Name', accessor: (row) => row.customerName || row.userId?.name || 'Walk-in' },
+    { label: 'Phone', accessor: (row) => row.customerPhone || row.userId?.phone || 'N/A' },
+    { label: 'Payment Method', accessor: 'paymentMethod' },
+    { label: 'Payment Status', accessor: 'paymentStatus' },
+    { label: 'Order Status', accessor: 'orderStatus' },
+    { label: 'Total Amount', accessor: (row) => `Rs. ${row.totalAmount?.toLocaleString()}` },
+    { label: 'Date', accessor: (row) => new Date(row.createdAt).toLocaleDateString() }
+  ];
+
   const pendingCount = orders.filter((o) => o.orderStatus === 'pending').length;
   const totalRevenue = orders.filter((o) => ['delivered', 'completed'].includes(o.orderStatus)).reduce((s, o) => s + o.totalAmount, 0);
 
@@ -357,7 +368,7 @@ const AdminOrders = ({ navItems: propNavItems }) => {
 
           <div className="flex items-center gap-2">
             <button
-              onClick={() => exportToExcel(filteredOrders, 'Orders_Report')}
+              onClick={() => exportToExcel(filteredOrders, orderColumns, 'Orders_Report')}
               className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs uppercase tracking-wider transition-all border-0 cursor-pointer flex items-center gap-1.5"
             >
               <Download size={14} /> Excel Export
