@@ -17,7 +17,7 @@ const adminNavGroups = [
     ],
   },
   {
-    label: 'User & Employee Management',
+    label: 'HR & Payroll Management',
     items: [
       { path: '/admin/employees',  label: 'Employees',  icon: UsersRound },
       { path: '/admin/attendance', label: 'Attendance', icon: Clock },
