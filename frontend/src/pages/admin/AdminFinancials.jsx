@@ -277,6 +277,16 @@ const AdminFinancials = () => {
       name: 'Accessories',
       Revenue: d.profitSegments?.accessories?.revenue || 0,
       Profit: d.profitSegments?.accessories?.profit || 0
+    },
+    {
+      name: 'Repairs',
+      Revenue: d.profitSegments?.repairs?.revenue || 0,
+      Profit: d.profitSegments?.repairs?.profit || 0
+    },
+    {
+      name: 'Reloads',
+      Revenue: d.profitSegments?.reloads?.revenue || 0,
+      Profit: d.profitSegments?.reloads?.profit || 0
     }
   ];
 
@@ -504,31 +514,31 @@ const AdminFinancials = () => {
                   {/* Segment margin list */}
               <div className="glass-card rounded-2xl p-6 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-brand-fuchsia/5 rounded-bl-[100px] pointer-events-none -z-10"></div>
-                <h2 className="text-lg font-black text-slate-900 mb-6 flex items-center gap-2">📊 Segment gross margins</h2>
-                <div className="space-y-4">
-                  {['mobiles', 'accessories'].map((seg) => {
+                <h2 className="text-lg font-black text-slate-900 mb-4 flex items-center gap-2">📊 Department Stream Gross Margins</h2>
+                <div className="space-y-3">
+                  {['mobiles', 'accessories', 'repairs', 'reloads'].map((seg) => {
                     const rev = d.profitSegments?.[seg]?.revenue || 0;
                     const prof = d.profitSegments?.[seg]?.profit || 0;
                     const marginPct = rev > 0 ? ((prof / rev) * 100).toFixed(1) : '0.0';
                     return (
-                      <div key={seg} className="p-5 rounded-2xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors">
-                        <h3 className="capitalize font-black text-sm text-slate-900 mb-4">{seg}</h3>
-                        <div className="grid grid-cols-2 gap-4 text-xs mb-4">
+                      <div key={seg} className="p-4 rounded-2xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                        <h3 className="capitalize font-black text-xs text-slate-900 mb-2">{seg}</h3>
+                        <div className="grid grid-cols-2 gap-2 text-xs mb-2">
                           <div>
-                            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-1">Revenue</span>
+                            <span className="text-[9px] font-black uppercase tracking-wider text-slate-500 block">Revenue</span>
                             <span className="font-bold text-slate-700">Rs. {rev.toLocaleString()}</span>
                           </div>
                           <div>
-                            <span className="text-[10px] font-black uppercase tracking-wider text-brand-fuchsia block mb-1">Profit</span>
+                            <span className="text-[9px] font-black uppercase tracking-wider text-brand-fuchsia block">Profit</span>
                             <span className="font-bold text-brand-fuchsia">Rs. {prof.toLocaleString()}</span>
                           </div>
                         </div>
                         <div>
-                          <div className="flex justify-between text-[11px] mb-2 font-bold">
-                            <span className="text-slate-500">Gross Margin</span>
+                          <div className="flex justify-between text-[10px] mb-1 font-bold">
+                            <span className="text-slate-500">Margin</span>
                             <span className="text-brand-fuchsia">{marginPct}%</span>
                           </div>
-                          <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                          <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
                             <div className="bg-brand-fuchsia h-full rounded-full transition-all duration-1000 ease-out" style={{ width: `${Math.min(marginPct, 100)}%` }} />
                           </div>
                         </div>
