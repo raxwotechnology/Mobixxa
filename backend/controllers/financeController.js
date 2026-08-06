@@ -145,24 +145,92 @@ const getFinancialDashboard = async (req, res, next) => {
 
     const series = Array.from(seriesMap.values()).sort((a, b) => a.key.localeCompare(b.key));
 
+    // Fetch Repairs and Reloads revenue/profit
+    const RepairJob = require('../models/RepairJob');
+    const ReloadLog = require('../models/ReloadLog');
+
+    const repairFilter = { ...storeFilter, status: 'delivered' };
+    if (Object.keys(dateFilter).length > 0) repairFilter.updatedAt = dateFilter;
+    const repairJobs = await RepairJob.find(repairFilter).lean();
+    const repairsRevenue = repairJobs.reduce((sum, r) => sum + (r.repairFee || 0), 0);
+    const repairsCost = repairJobs.reduce((sum, r) => sum + (r.partsUsed || []).reduce((pc, p) => pc + (p.cost || 0), 0), 0);
+    const repairsProfit = repairsRevenue - repairsCost;
+
+    const reloadFilter = { ...storeFilter, status: 'completed' };
+    if (Object.keys(dateFilter).length > 0) reloadFilter.createdAt = dateFilter;
+    const reloadLogs = await ReloadLog.find(reloadFilter).lean();
+    const reloadsRevenue = reloadLogs.reduce((sum, r) => sum + (r.amount || 0), 0);
+    const reloadsCommission = reloadLogs.reduce((sum, r) => sum + (r.commission || 0), 0);
+
+    // Payment Method Breakdown
+    const paymentMethods = {
+      cash: 0,
+      bankTransfer: 0,
+      card: 0,
+      cheque: 0,
+    };
+
+    orders.forEach(o => {
+      const pm = (o.paymentMethod || 'cash').toLowerCase();
+      const amt = o.totalAmount || 0;
+      if (pm.includes('cash')) paymentMethods.cash += amt;
+      else if (pm.includes('bank') || pm.includes('transfer')) paymentMethods.bankTransfer += amt;
+      else if (pm.includes('card') || pm.includes('online')) paymentMethods.card += amt;
+      else if (pm.includes('cheque')) paymentMethods.cheque += amt;
+      else paymentMethods.cash += amt;
+    });
+
+    repairJobs.forEach(r => {
+      const pm = (r.paymentMethod || 'cash').toLowerCase();
+      const amt = r.repairFee || 0;
+      if (pm.includes('cash')) paymentMethods.cash += amt;
+      else if (pm.includes('bank') || pm.includes('transfer')) paymentMethods.bankTransfer += amt;
+      else if (pm.includes('card')) paymentMethods.card += amt;
+      else if (pm.includes('cheque')) paymentMethods.cheque += amt;
+      else paymentMethods.cash += amt;
+    });
+
+    transactions.forEach(t => {
+      if (t.type === 'income') {
+        const pm = (t.paymentMethod || 'cash').toLowerCase();
+        const amt = t.amount || 0;
+        if (pm.includes('cash')) paymentMethods.cash += amt;
+        else if (pm.includes('bank') || pm.includes('transfer')) paymentMethods.bankTransfer += amt;
+        else if (pm.includes('card')) paymentMethods.card += amt;
+        else if (pm.includes('cheque')) paymentMethods.cheque += amt;
+        else paymentMethods.cash += amt;
+      }
+    });
+
+    const netProfitStream = (profitSegments.mobiles.profit || 0) + (profitSegments.accessories.profit || 0) + repairsProfit + reloadsCommission + manualIncome - totalExpense - totalTaxPaid;
+
     res.json({
-      totalRevenue: orderRevenue,
+      totalRevenue: orderRevenue + repairsRevenue + reloadsRevenue,
       posRevenue,
       onlineRevenue,
+      repairsRevenue,
+      repairsProfit,
+      reloadsRevenue,
+      reloadsCommission,
       totalAdditionalIncome: manualIncome,
-      totalIncome,
+      totalIncome: totalIncome + repairsRevenue + reloadsRevenue,
       totalExpense,
       totalExpenses: totalExpense + totalTaxPaid,
       totalTaxPaid,
-      profitSegments,
+      profitSegments: {
+        ...profitSegments,
+        repairs: { revenue: repairsRevenue, profit: repairsProfit },
+        reloads: { revenue: reloadsRevenue, profit: reloadsCommission },
+      },
+      paymentMethods,
       balance,
-      netProfit: balance - totalTaxPaid,
+      netProfit: netProfitStream,
       orderCount,
       totalItemsSold,
       expenseCount: transactions.filter(t => t.type === 'expense').length,
       transactionCount: transactions.length,
       series,
-      monthlyData: series, // For backward compatibility
+      monthlyData: series,
       expenseByCategory,
       incomeByCategory,
     });
