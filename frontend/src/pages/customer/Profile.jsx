@@ -8,12 +8,25 @@ import useSettingsStore from '../../store/settingsStore';
 import { getImageUrl } from '../../utils/imageHelper';
 import { Link } from 'react-router-dom';
 
-const navItems = [
+import { adminNavGroups } from '../admin/adminNavItems';
+import { managerNavGroups } from '../storeOwner/managerNavItems';
+
+const defaultCustomerNavItems = [
   { path: '/profile', label: 'My Profile', icon: User },
 ];
 
 const Profile = () => {
   const { user, login } = useAuthStore();
+  
+  const getNavGroups = () => {
+    if (user?.role === 'admin') return adminNavGroups;
+    if (user?.role === 'manager') return managerNavGroups;
+    return null;
+  };
+
+  const navGroups = getNavGroups();
+  const layoutProps = navGroups ? { navGroups, activePath: '/profile' } : { navItems: defaultCustomerNavItems, activePath: '/profile' };
+
   const settings = useSettingsStore((s) => s.settings);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -124,7 +137,7 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <DashboardLayout navItems={navItems} title="My Account">
+      <DashboardLayout {...layoutProps} title="My Account">
         <div className="flex items-center justify-center h-64">
           <div className="w-10 h-10 border-4 border-primary-blue border-t-transparent rounded-full animate-spin" />
         </div>
@@ -133,7 +146,7 @@ const Profile = () => {
   }
 
   return (
-    <DashboardLayout navItems={navItems} title="My Account">
+    <DashboardLayout {...layoutProps} title="My Account">
       <div className="max-w-3xl space-y-6 animate-fade-in">
         {/* Header Block */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden">

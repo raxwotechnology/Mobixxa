@@ -131,7 +131,8 @@ const AppLayout = ({ children }) => {
     path.startsWith('/manager') ||
     path.startsWith('/employee') ||
     path.startsWith('/delivery') ||
-    path.startsWith('/barcode');
+    path.startsWith('/barcode') ||
+    (isStaff && (path === '/settings' || path === '/profile'));
 
   if (isNoLayout) return <>{children}</>;
   return (

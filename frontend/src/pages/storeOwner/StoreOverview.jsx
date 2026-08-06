@@ -56,10 +56,10 @@ const StoreOverview = () => {
   }
 
   const statCards = [
-    { label: 'Total Products', value: stats?.totalProducts || 0, icon: Package, color: 'text-blue-700', bg: 'bg-blue-50 border-blue-100' },
-    { label: 'Total Orders', value: stats?.totalOrders || 0, icon: ShoppingBag, color: 'text-indigo-700', bg: 'bg-indigo-50 border-indigo-100' },
-    { label: 'Revenue', value: `Rs. ${(stats?.totalRevenue || 0).toLocaleString()}`, icon: DollarSign, color: 'text-amber-700', bg: 'bg-amber-50 border-amber-100' },
-    { label: 'Pending Orders', value: stats?.pendingOrders || 0, icon: Clock, color: 'text-rose-700', bg: 'bg-rose-50 border-rose-100' },
+    { label: 'Total Products', value: stats?.totalProducts || 0, icon: Package, color: 'text-blue-600', bg: 'bg-blue-50 border-blue-100', change: 'Active' },
+    { label: 'Total Orders', value: stats?.totalOrders || 0, icon: ShoppingBag, color: 'text-indigo-600', bg: 'bg-indigo-50 border-indigo-100', change: '+12.4%' },
+    { label: 'Total Revenue', value: `Rs. ${(stats?.totalRevenue || 0).toLocaleString()}`, icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-100', change: '+8.2%' },
+    { label: 'Pending Orders', value: stats?.pendingOrders || 0, icon: Clock, color: 'text-rose-600', bg: 'bg-rose-50 border-rose-100', change: 'Urgent' },
   ];
 
   const statusColors = {
@@ -104,8 +104,11 @@ const StoreOverview = () => {
                 <div className={`w-11 h-11 rounded-xl ${card.bg} border flex items-center justify-center shadow-xs`}>
                   <card.icon size={20} className={card.color} />
                 </div>
-                <span className="text-[10px] font-black uppercase tracking-wider text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md flex items-center gap-0.5 border border-blue-200">
-                  <TrendingUp size={10} /> Active
+                <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md flex items-center gap-0.5 border ${
+                  card.change === 'Active' || card.change.startsWith('+') ? 'text-emerald-700 bg-emerald-50 border-emerald-200' :
+                  card.change === 'Urgent' ? 'text-rose-700 bg-rose-50 border-rose-250 animate-pulse' : 'text-slate-600 bg-slate-50 border-slate-200'
+                }`}>
+                  <TrendingUp size={10} /> {card.change}
                 </span>
               </div>
               <div className="mt-4">
