@@ -227,10 +227,10 @@ const Navbar = () => {
             <Link
               key={link.path}
               to={link.path}
-              className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 ${
+              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
                 isActive(link.path)
-                  ? 'text-white bg-gradient-to-r from-brand-indigo via-brand-violet to-brand-fuchsia shadow-[0_4px_15px_rgba(99,102,241,0.35)] scale-[1.02]'
-                  : 'text-slate-600 hover:text-brand-indigo hover:bg-white/80 hover:shadow-sm'
+                  ? 'text-primary-blue bg-primary-blue/8 shadow-xs'
+                  : 'text-slate-600 hover:text-primary-blue hover:bg-white/80 hover:shadow-xs'
               }`}
             >
               {link.label}
@@ -239,9 +239,9 @@ const Navbar = () => {
           {dashLink && (
             <Link
               to={dashLink.path}
-              className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 ${
+              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
                 isActive(dashLink.path)
-                  ? 'text-white bg-gradient-to-r from-brand-indigo to-brand-violet shadow-[0_4px_15px_rgba(99,102,241,0.35)]'
+                  ? 'text-brand-violet bg-brand-violet/20 shadow-xs'
                   : 'text-brand-violet bg-brand-violet/10 hover:bg-brand-violet/20'
               }`}
             >
@@ -425,11 +425,11 @@ const Navbar = () => {
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <Link to="/login" className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 hover:text-brand-indigo transition-all px-4 py-2.5 rounded-xl border border-slate-200/80 hover:bg-brand-indigo/10 shadow-sm hover:shadow hover:-translate-y-0.5">
+              <Link to="/login" className="flex items-center gap-1.5 text-sm font-semibold text-slate-700 hover:text-primary-blue transition-all px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 shadow-xs hover:shadow-sm">
                 <User size={15} />
                 <span className="hidden sm:inline">Sign In</span>
               </Link>
-              <Link to="/register" className="hidden sm:flex bg-gradient-to-r from-brand-indigo via-brand-violet to-brand-fuchsia hover:opacity-95 text-white text-xs font-black uppercase tracking-wider px-6 py-2.5 rounded-xl transition-all shadow-[0_6px_20px_rgba(99,102,241,0.35)] hover:shadow-[0_8px_25px_rgba(99,102,241,0.45)] hover:-translate-y-0.5">
+              <Link to="/register" className="hidden sm:flex bg-primary-blue hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all shadow-sm hover:shadow hover:-translate-y-0.5">
                 Register
               </Link>
             </div>
