@@ -11,6 +11,7 @@ const OrderConfirmation = () => {
   const { id } = useParams();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const { convertPrice, formatPrice } = useCurrencyStore();
 
   useEffect(() => {
@@ -162,15 +163,7 @@ const OrderConfirmation = () => {
           const hours = (Date.now() - new Date(order.createdAt).getTime()) / (1000 * 60 * 60);
           return hours <= 1;
         })() && (
-          <button onClick={async () => {
-            if (!window.confirm('Cancel this order?')) return;
-            try {
-              await cancelMyOrder(order._id, { reason: 'Cancelled by customer' });
-              toast.success('Order cancelled');
-              const { data } = await getOrderById(id);
-              setOrder(data);
-            } catch (err) { toast.error(err.response?.data?.message || 'Failed'); }
-          }} className="bg-rose-500 hover:opacity-95 text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-[0_4px_12px_rgba(239,68,68,0.2)] flex items-center gap-2 cursor-pointer text-xs uppercase tracking-wider">
+          <button onClick={() => setShowCancelConfirm(true)} className="bg-rose-500 hover:opacity-95 text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-[0_4px_12px_rgba(239,68,68,0.2)] flex items-center gap-2 cursor-pointer text-xs uppercase tracking-wider">
             <XCircle size={15} /> Cancel Order
           </button>
         )}
@@ -204,6 +197,45 @@ const OrderConfirmation = () => {
           Continue Shopping
         </Link>
       </div>
+
+      {/* Custom Confirmation Modal */}
+      {showCancelConfirm && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[1000] flex items-center justify-center p-4" onClick={() => setShowCancelConfirm(false)}>
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full border border-slate-200 shadow-2xl space-y-4 animate-fade-in text-center" onClick={(e) => e.stopPropagation()}>
+            <div className="w-12 h-12 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto">
+              <XCircle size={24} />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-base font-black text-slate-800 m-0">Confirm Cancellation</h3>
+              <p className="text-xs text-slate-500 m-0 font-medium">Are you sure you want to cancel this order? This action cannot be undone.</p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowCancelConfirm(false)}
+                className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs uppercase tracking-wider cursor-pointer border-0"
+              >
+                No, Keep Order
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    setShowCancelConfirm(false);
+                    await cancelMyOrder(order._id, { reason: 'Cancelled by customer' });
+                    toast.success('Your order has been cancelled successfully! 🛑');
+                    const { data } = await getOrderById(id);
+                    setOrder(data);
+                  } catch (err) {
+                    toast.error(err.response?.data?.message || 'Failed to cancel order');
+                  }
+                }}
+                className="flex-1 px-4 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl text-xs uppercase tracking-wider cursor-pointer border-0"
+              >
+                Yes, Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

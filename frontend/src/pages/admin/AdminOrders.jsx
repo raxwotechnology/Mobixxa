@@ -70,6 +70,7 @@ const AdminOrders = ({ navItems: propNavItems }) => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [viewDetailsOrder, setViewDetailsOrder] = useState(null);
   const [viewBillOrder, setViewBillOrder] = useState(null);
+  const [cancelOrderId, setCancelOrderId] = useState(null);
 
   // Passcode Protection state for Deletion
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -184,11 +185,12 @@ const AdminOrders = ({ navItems: propNavItems }) => {
     }
   };
 
-  const handleCancel = async (orderId) => {
-    if (!window.confirm('Are you sure you want to cancel this order?')) return;
+  const confirmCancelOrder = async () => {
+    if (!cancelOrderId) return;
     try {
-      await cancelOrder(orderId, { cancellationReason: 'Cancelled by Admin' });
+      await cancelOrder(cancelOrderId, { cancellationReason: 'Cancelled by Admin' });
       toast.success('Order has been cancelled successfully! 🛑');
+      setCancelOrderId(null);
       fetchOrders();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to cancel order');
@@ -583,7 +585,7 @@ const AdminOrders = ({ navItems: propNavItems }) => {
 
                             {!['delivered', 'completed', 'cancelled'].includes(order.orderStatus) && (
                               <button
-                                onClick={() => { handleCancel(order._id); setActionMenuId(null); }}
+                                onClick={() => { setCancelOrderId(order._id); setActionMenuId(null); }}
                                 className="w-full px-4 py-2 hover:bg-slate-50 flex items-center gap-2 font-bold text-amber-600 border-0 bg-transparent text-left cursor-pointer"
                               >
                                 <XCircle size={14} /> Cancel Order
@@ -933,6 +935,34 @@ const AdminOrders = ({ navItems: propNavItems }) => {
                   <Trash2 size={15} /> Confirm & Delete Order
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Custom Cancel Order Confirmation Modal */}
+      {cancelOrderId && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[1000] flex items-center justify-center p-4" onClick={() => setCancelOrderId(null)}>
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full border border-slate-200 shadow-2xl space-y-4 animate-fade-in text-center" onClick={(e) => e.stopPropagation()}>
+            <div className="w-12 h-12 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto">
+              <XCircle size={24} />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-base font-black text-slate-800 m-0">Confirm Cancellation</h3>
+              <p className="text-xs text-slate-500 m-0 font-medium">Are you sure you want to cancel this order? This action cannot be undone.</p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setCancelOrderId(null)}
+                className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs uppercase tracking-wider cursor-pointer border-0"
+              >
+                No, Keep Order
+              </button>
+              <button
+                onClick={confirmCancelOrder}
+                className="flex-1 px-4 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl text-xs uppercase tracking-wider cursor-pointer border-0"
+              >
+                Yes, Cancel
+              </button>
             </div>
           </div>
         </div>

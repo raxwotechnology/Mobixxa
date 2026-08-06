@@ -20,6 +20,7 @@ const OrdersPage = () => {
     note: '',
   });
   const [submittingReturn, setSubmittingReturn] = useState(false);
+  const [cancelOrderId, setCancelOrderId] = useState(null);
   const { user } = useAuthStore();
   const { convertPrice, formatPrice } = useCurrencyStore();
 
@@ -68,11 +69,12 @@ const OrdersPage = () => {
     return `${mins}m left`;
   };
 
-  const handleCancel = async (orderId) => {
-    if (!window.confirm('Are you sure you want to cancel this order?')) return;
+  const confirmCancelOrder = async () => {
+    if (!cancelOrderId) return;
     try {
-      await cancelMyOrder(orderId, { reason: 'Cancelled by customer' });
+      await cancelMyOrder(cancelOrderId, { reason: 'Cancelled by customer' });
       toast.success('Your order has been cancelled successfully! 🛑');
+      setCancelOrderId(null);
       fetchOrders();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to cancel order');
@@ -282,7 +284,7 @@ const OrdersPage = () => {
                 {isCancellable(order) && (
                   <button
                     type="button"
-                    onClick={(e) => { e.preventDefault(); handleCancel(order._id); }}
+                    onClick={(e) => { e.preventDefault(); setCancelOrderId(order._id); }}
                     className="text-[10px] font-bold uppercase tracking-wide px-3.5 py-2.5 rounded-xl bg-rose-50 border border-rose-100 text-rose-600 hover:bg-rose-100 flex items-center gap-1.5 cursor-pointer transition-colors"
                   >
                     <XCircle size={13} /> Cancel Order
@@ -375,6 +377,34 @@ const OrdersPage = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Custom Cancel Order Confirmation Modal */}
+      {cancelOrderId && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[1000] flex items-center justify-center p-4" onClick={() => setCancelOrderId(null)}>
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full border border-slate-200 shadow-2xl space-y-4 animate-fade-in text-center" onClick={(e) => e.stopPropagation()}>
+            <div className="w-12 h-12 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto">
+              <XCircle size={24} />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-base font-black text-slate-800 m-0">Confirm Cancellation</h3>
+              <p className="text-xs text-slate-500 m-0 font-medium">Are you sure you want to cancel this order? This action cannot be undone.</p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setCancelOrderId(null)}
+                className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs uppercase tracking-wider cursor-pointer border-0"
+              >
+                No, Keep Order
+              </button>
+              <button
+                onClick={confirmCancelOrder}
+                className="flex-1 px-4 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl text-xs uppercase tracking-wider cursor-pointer border-0"
+              >
+                Yes, Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
