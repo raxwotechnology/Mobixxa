@@ -137,7 +137,9 @@ const DashboardLayout = ({ children, navItems, title }) => {
     path.startsWith('/manager') ||
     path.startsWith('/employee') ||
     path.startsWith('/delivery') ||
-    path.startsWith('/barcode')
+    path.startsWith('/barcode') ||
+    path === '/settings' ||
+    path === '/profile'
   );
   const headerHeightClass = showDashboardHeader ? 'top-14 sm:top-16' : 'top-[100px]';
   const sidebarHeight = showDashboardHeader ? 'calc(100dvh - 3.5rem)' : 'calc(100vh - 100px)';
