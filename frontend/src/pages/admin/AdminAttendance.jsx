@@ -10,7 +10,7 @@ import {
 } from '../../services/api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { toast } from 'react-toastify';
-import { adminNavGroups as navItems } from './adminNavItems';
+import { adminNavGroups as defaultNavItems } from './adminNavItems';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -18,7 +18,8 @@ import DeleteConfirmationModal from '../../components/DeleteConfirmationModal';
 
 const now = new Date();
 
-const AdminAttendance = () => {
+const AdminAttendance = ({ navItems: propNavItems }) => {
+  const navItems = propNavItems || defaultNavItems;
   const [records, setRecords] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);

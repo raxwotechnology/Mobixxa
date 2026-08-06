@@ -3,7 +3,7 @@ import { Calendar, Check, X, Clock, FileText, FileSpreadsheet, Plus, Edit2, Tras
 
 import DashboardLayout from '../../components/DashboardLayout';
 import { toast } from 'react-toastify';
-import { adminNavGroups as navItems } from './adminNavItems';
+import { adminNavGroups as defaultNavItems } from './adminNavItems';
 import {
   getEmployees, getLeavePolicies, createLeavePolicy, updateLeavePolicy, deleteLeavePolicy,
   assignPoliciesToEmployee, assignPoliciesToAllEmployees, adminCreateLeave, approveLeave, rejectLeave, getStoreLeaves, requestLeave
@@ -19,7 +19,8 @@ const statusColors = {
   rejected: 'bg-red-100 text-red-700',
 };
 
-const AdminLeaves = () => {
+const AdminLeaves = ({ navItems: propNavItems }) => {
+  const navItems = propNavItems || defaultNavItems;
   const [leaves, setLeaves] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);

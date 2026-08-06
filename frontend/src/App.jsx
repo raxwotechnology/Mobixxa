@@ -36,6 +36,7 @@ import ManagerPerformance from './pages/storeOwner/ManagerPerformance';
 import ManagerInventory from './pages/storeOwner/ManagerInventory';
 import ManagerSupplierPayments from './pages/storeOwner/ManagerSupplierPayments';
 import ManagerRepairs from './pages/storeOwner/ManagerRepairs';
+import { managerNavGroups } from './pages/storeOwner/managerNavItems';
 import AdminOverview from './pages/admin/AdminOverview';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminStores from './pages/admin/AdminStores';
@@ -181,16 +182,16 @@ function App() {
           {/* Manager */}
           <Route path="/manager" element={<ProtectedRoute roles={['manager']}><StoreOverview /></ProtectedRoute>} />
           <Route path="/manager/products" element={<ProtectedRoute roles={['manager']}><StoreProducts /></ProtectedRoute>} />
-          <Route path="/manager/orders" element={<ProtectedRoute roles={['manager']}><StoreOrders /></ProtectedRoute>} />
+          <Route path="/manager/orders" element={<ProtectedRoute roles={['manager']}><AdminOrders navItems={managerNavGroups} /></ProtectedRoute>} />
           <Route path="/manager/returns" element={<ProtectedRoute roles={['manager']}><ManagerReturns /></ProtectedRoute>} />
-          <Route path="/manager/employees" element={<ProtectedRoute roles={['manager']}><ManagerEmployees /></ProtectedRoute>} />
-          <Route path="/manager/attendance" element={<ProtectedRoute roles={['manager']}><ManagerAttendance /></ProtectedRoute>} />
-          <Route path="/manager/leaves" element={<ProtectedRoute roles={['manager']}><ManagerLeaves /></ProtectedRoute>} />
+          <Route path="/manager/employees" element={<ProtectedRoute roles={['manager']}><AdminEmployees navItems={managerNavGroups} /></ProtectedRoute>} />
+          <Route path="/manager/attendance" element={<ProtectedRoute roles={['manager']}><AdminAttendance navItems={managerNavGroups} /></ProtectedRoute>} />
+          <Route path="/manager/leaves" element={<ProtectedRoute roles={['manager']}><AdminLeaves navItems={managerNavGroups} /></ProtectedRoute>} />
           <Route path="/manager/targets" element={<ProtectedRoute roles={['manager']}><ManagerTargets /></ProtectedRoute>} />
           <Route path="/manager/performance" element={<ProtectedRoute roles={['manager']}><ManagerPerformance /></ProtectedRoute>} />
           <Route path="/manager/inventory" element={<ProtectedRoute roles={['manager']}><Navigate to="/manager/products" replace /></ProtectedRoute>} />
           <Route path="/manager/supplier-payments" element={<ProtectedRoute roles={['manager']}><ManagerSupplierPayments /></ProtectedRoute>} />
-          <Route path="/manager/repairs" element={<ProtectedRoute roles={['manager']}><ManagerRepairs /></ProtectedRoute>} />
+          <Route path="/manager/repairs" element={<ProtectedRoute roles={['manager']}><ManagerRepairs navItems={managerNavGroups} /></ProtectedRoute>} />
           <Route path="/manager/warranty" element={<ProtectedRoute roles={['manager']}><AdminWarranty /></ProtectedRoute>} />
 
           {/* Admin */}

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Users, Search, Plus, Edit2, Trash2, X, Eye, Phone, Mail, Building, CreditCard, Shield, FileText, UserCheck, AlertCircle, DollarSign } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
 import { getAdminUsers, createUser, updateUser, deleteUser, getAdminStores } from '../../services/api';
-import { adminNavGroups as navItems } from './adminNavItems';
+import { adminNavGroups as defaultNavItems } from './adminNavItems';
 import { toast } from 'react-toastify';
 import DeleteConfirmationModal from '../../components/DeleteConfirmationModal';
 
@@ -41,7 +41,8 @@ const roleLabels = {
   stockEmployee: 'Stock / Warehouse',
 };
 
-const AdminEmployees = () => {
+const AdminEmployees = ({ navItems: propNavItems }) => {
+  const navItems = propNavItems || defaultNavItems;
   const [employees, setEmployees] = useState([]);
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);

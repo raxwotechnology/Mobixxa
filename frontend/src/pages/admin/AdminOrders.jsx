@@ -16,7 +16,7 @@ import {
 } from '../../services/api';
 import useCurrencyStore from '../../store/currencyStore';
 import { toast } from 'react-toastify';
-import { adminNavGroups as navItems } from './adminNavItems';
+import { adminNavGroups as defaultNavItems } from './adminNavItems';
 import useAdminStoreStore from '../../store/adminStoreStore';
 import { exportToPDF, exportToExcel } from '../../utils/exportUtils';
 import { sendWhatsAppInvoice } from '../../utils/whatsappHelper';
@@ -45,7 +45,8 @@ const statusFlow = ['pending', 'confirmed', 'assigned_delivery', 'packed', 'ship
 
 const BRANDS = ['all', 'Apple', 'Samsung', 'Xiaomi', 'Oppo', 'Vivo', 'Realme', 'Huawei', 'OnePlus', 'Anker', 'JBL', 'Baseus'];
 
-const AdminOrders = () => {
+const AdminOrders = ({ navItems: propNavItems }) => {
+  const navItems = propNavItems || defaultNavItems;
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
