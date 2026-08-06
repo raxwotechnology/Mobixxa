@@ -41,7 +41,25 @@
   --font-sans: 'Poppins', 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-*, body, button, input, select, textarea, h1, h2, h3, h4, h5, h6, p, span, div, table, th, td, a {
+*,
+body,
+button,
+input,
+select,
+textarea,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+div,
+table,
+th,
+td,
+a {
   font-family: 'Poppins', 'Inter', system-ui, -apple-system, sans-serif !important;
 }
 
@@ -2450,6 +2468,7 @@ body {
   color: #ffffff !important;
   border: none !important;
 }
+
 /* =======================================================
    MOBILE, TABLET & SMALL SCREEN RESPONSIVE OPTIMIZATIONS
    ======================================================= */
@@ -2544,9 +2563,10 @@ body {
    Prevents black screen / overlay and eliminates popup tabs
    ======================================================= */
 @media print {
-  body > *:not(#voucher-print-area) {
+  body>*:not(#voucher-print-area) {
     display: none !important;
   }
+
   #voucher-print-area {
     display: block !important;
     position: fixed !important;

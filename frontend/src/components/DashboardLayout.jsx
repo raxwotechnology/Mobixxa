@@ -13,7 +13,7 @@ import NotificationBell from './NotificationBell';
 const NavLink = ({ item, location, collapsed, onNavigate, userRole }) => {
   const { accent } = useThemeStore();
   const themeConfig = THEME_ACCENTS[accent] || THEME_ACCENTS.indigo;
-  const primaryColor = themeConfig.primary || '#2563eb';
+  const primaryColor = themeConfig.primary || '#6366f1';
   const [isHovered, setIsHovered] = useState(false);
 
   const isRoot = item.path === '/admin' || item.path === '/manager' || item.path === '/employee';
@@ -31,14 +31,14 @@ const NavLink = ({ item, location, collapsed, onNavigate, userRole }) => {
       style={
         isActive
           ? {
-              backgroundColor: '#2563eb',
+              backgroundColor: primaryColor,
               color: '#ffffff',
-              boxShadow: `0 8px 20px -4px rgba(37, 99, 235, 0.4)`,
+              boxShadow: `0 8px 20px -4px ${primaryColor}70`,
             }
           : isHovered
           ? {
-              backgroundColor: `#2563eb12`,
-              color: '#2563eb',
+              backgroundColor: `${primaryColor}18`,
+              color: primaryColor,
             }
           : {}
       }
@@ -53,7 +53,7 @@ const NavLink = ({ item, location, collapsed, onNavigate, userRole }) => {
       )}
       <item.icon
         size={16}
-        style={!isActive && isHovered ? { color: '#2563eb' } : {}}
+        style={!isActive && isHovered ? { color: primaryColor } : {}}
         className={`flex-shrink-0 transition-transform duration-200 group-hover:scale-105 ${
           isActive ? 'text-white' : 'text-slate-400'
         }`}
@@ -121,9 +121,13 @@ const SidebarContent = ({ navItems = [], collapsed, location, onNavigate, userRo
 };
 
 const DashboardLayout = ({ children, navItems, title }) => {
-  const { accent } = useThemeStore();
+  const { accent, applyThemeToDocument } = useThemeStore();
   const themeConfig = THEME_ACCENTS[accent] || THEME_ACCENTS.indigo;
   const primaryColor = themeConfig.primary || '#6366f1';
+
+  useEffect(() => {
+    if (applyThemeToDocument) applyThemeToDocument();
+  }, [accent, applyThemeToDocument]);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
