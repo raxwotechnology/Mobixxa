@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { getNotifications, getUnreadCount, markNotificationRead, markAllNotificationsRead } from '../services/api';
 
 const useNotificationStore = create((set, get) => ({
   notifications: [],
@@ -8,14 +9,7 @@ const useNotificationStore = create((set, get) => ({
   fetchNotifications: async () => {
     try {
       set({ loading: true });
-      const userInfo = localStorage.getItem('userInfo');
-      if (!userInfo) return;
-      const { token } = JSON.parse(userInfo);
-      
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/notifications`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
+      const { data } = await getNotifications();
       set({ notifications: data.notifications || [], unreadCount: data.unreadCount || 0 });
     } catch (err) {
       console.error('Failed to fetch notifications:', err);
@@ -26,14 +20,7 @@ const useNotificationStore = create((set, get) => ({
 
   fetchUnreadCount: async () => {
     try {
-      const userInfo = localStorage.getItem('userInfo');
-      if (!userInfo) return;
-      const { token } = JSON.parse(userInfo);
-
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/notifications/unread-count`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
+      const { data } = await getUnreadCount();
       set({ unreadCount: data.count || 0 });
     } catch (err) {
       console.error('Failed to fetch unread count:', err);
@@ -42,15 +29,7 @@ const useNotificationStore = create((set, get) => ({
 
   markAsRead: async (id) => {
     try {
-      const userInfo = localStorage.getItem('userInfo');
-      if (!userInfo) return;
-      const { token } = JSON.parse(userInfo);
-
-      await fetch(`${import.meta.env.VITE_API_URL}/api/notifications/${id}/read`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
+      await markNotificationRead(id);
       set((state) => ({
         notifications: state.notifications.map((n) =>
           n._id === id ? { ...n, isRead: true } : n
@@ -64,15 +43,7 @@ const useNotificationStore = create((set, get) => ({
 
   markAllRead: async () => {
     try {
-      const userInfo = localStorage.getItem('userInfo');
-      if (!userInfo) return;
-      const { token } = JSON.parse(userInfo);
-
-      await fetch(`${import.meta.env.VITE_API_URL}/api/notifications/read-all`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
+      await markAllNotificationsRead();
       set((state) => ({
         notifications: state.notifications.map((n) => ({ ...n, isRead: true })),
         unreadCount: 0,
