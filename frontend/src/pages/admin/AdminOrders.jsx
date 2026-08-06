@@ -1,5 +1,5 @@
 import { useState, useEffect, Fragment } from 'react';
-import { CheckCircle, XCircle, ChevronDown, ChevronUp, MoreVertical, Printer, MessageSquare, Edit, FileText, Eye, Trash2, Package, Truck, RefreshCcw, X } from 'lucide-react';
+import { CheckCircle, XCircle, ChevronDown, ChevronUp, MoreVertical, Printer, MessageSquare, Edit, FileText, Eye, Trash2, Package, Truck, RefreshCcw, X, Download, ShieldCheck, Lock } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
 import DeleteConfirmationModal from '../../components/DeleteConfirmationModal';
 
@@ -20,6 +20,7 @@ import { adminNavGroups as navItems } from './adminNavItems';
 import useAdminStoreStore from '../../store/adminStoreStore';
 import { exportToPDF, exportToExcel } from '../../utils/exportUtils';
 import { sendWhatsAppInvoice } from '../../utils/whatsappHelper';
+import jsPDF from 'jspdf';
 
 const statusColors = {
   pending: 'bg-amber-100 text-amber-700',
@@ -63,10 +64,15 @@ const AdminOrders = () => {
   // Active action menu row ID
   const [actionMenuId, setActionMenuId] = useState(null);
 
-  // Edit Modal state
+  // Modals state
   const [showEditModal, setShowEditModal] = useState(false);
+  const [viewDetailsOrder, setViewDetailsOrder] = useState(null);
+  const [viewBillOrder, setViewBillOrder] = useState(null);
+
+  // Passcode Protection state for Deletion
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [passcode, setPasscode] = useState('');
 
   const [editForm, setEditForm] = useState({
     id: '',
@@ -149,12 +155,10 @@ const AdminOrders = () => {
     }
   };
 
-  const handleCancel = async (orderId, e) => {
-    if (e) e.stopPropagation();
-    const reason = window.prompt('Reason for cancellation (optional):');
-    if (reason === null) return;
+  const handleCancel = async (orderId) => {
+    if (!window.confirm('Are you sure you want to cancel this order?')) return;
     try {
-      await cancelOrder(orderId, { reason });
+      await cancelOrder(orderId, { cancellationReason: 'Cancelled by Admin' });
       toast.success('Order cancelled');
       fetchOrders();
     } catch (err) {
@@ -165,32 +169,27 @@ const AdminOrders = () => {
   const handleDeleteClick = (order, e) => {
     if (e) e.stopPropagation();
     setItemToDelete(order);
+    setPasscode('');
     setDeleteModalOpen(true);
+    setActionMenuId(null);
   };
 
   const handleDeleteConfirm = async () => {
-    const order = itemToDelete;
-
-    const restoreStock = !['cancelled', 'delivered', 'completed'].includes(order.orderStatus)
-      && window.confirm('Restore this order quantity back to stock before deleting?');
+    if (passcode !== '1234' && passcode !== '8888' && passcode !== '0000') {
+      toast.error('Invalid Security Passcode! Action denied.');
+      return;
+    }
     try {
-      await deleteAdminOrder(order._id, { restoreStock });
-      toast.success('Order deleted');
-      setActionMenuId(null);
-      if (expandedId === order._id) setExpandedId(null);
+      await deleteAdminOrder(itemToDelete._id);
+      toast.success('Order deleted successfully');
+      setDeleteModalOpen(false);
+      setItemToDelete(null);
+      setPasscode('');
+      if (expandedId === itemToDelete._id) setExpandedId(null);
       fetchOrders();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to delete order');
     }
-  };
-
-  const handleTriggerSMS = (order) => {
-    const phone = order.customerPhone || order.userId?.phone || 'N/A';
-    toast.success(`SMS alert successfully triggered! Message sent to ${phone}: "Your order #${order._id.slice(-8).toUpperCase()} status is now ${order.orderStatus.toUpperCase()}."`);
-  };
-
-  const handleReprintReceipt = (order) => {
-    toast.info(`Receipt for invoice #${order.invoiceNumber || order._id.slice(-8).toUpperCase()} sent to print queue.`);
   };
 
   const openLiveEdit = (order) => {
@@ -222,18 +221,83 @@ const AdminOrders = () => {
     }
   };
 
-  const exportPDFReport = () => {
-    const cols = [
-      { label: 'Invoice No', accessor: (r) => r.invoiceNumber || r._id.slice(-8).toUpperCase() },
-      { label: 'Customer', accessor: (r) => r.customerName || r.userId?.name || 'Walk-in' },
-      { label: 'Store', accessor: (r) => r.storeId?.name || 'N/A' },
-      { label: 'Total Amount', accessor: (r) => `Rs. ${r.totalAmount?.toLocaleString()}` },
-      { label: 'Payment Method', accessor: 'paymentMethod' },
-      { label: 'Payment Status', accessor: 'paymentStatus' },
-      { label: 'Order Status', accessor: 'orderStatus' },
-      { label: 'Date', accessor: (r) => new Date(r.createdAt).toLocaleDateString() }
-    ];
-    exportToPDF(filteredOrders, cols, 'Order Report');
+  const downloadInvoicePDF = (order) => {
+    try {
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const shopName = order.storeId?.name || 'Max Durakathana / SR Mobile';
+      const invNo = order.invoiceNumber || `INV-${order._id.slice(-8).toUpperCase()}`;
+
+      // Header Banner
+      doc.setFillColor(15, 23, 42); // Slate-900
+      doc.rect(0, 0, 210, 30, 'F');
+      
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(16);
+      doc.setTextColor(255, 255, 255);
+      doc.text(shopName.toUpperCase(), 15, 15);
+
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(203, 213, 225);
+      doc.text('Official Sales Invoice & Warranty Guarantee', 15, 22);
+
+      // Ref & Date
+      doc.setFontSize(9);
+      doc.setTextColor(100, 116, 139);
+      doc.text(`Invoice: ${invNo}`, 15, 40);
+      doc.text(`Date: ${new Date(order.createdAt).toLocaleDateString()}`, 195, 40, { align: 'right' });
+
+      // Customer Details
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.setTextColor(15, 23, 42);
+      doc.text(`Customer: ${order.customerName || order.userId?.name || 'Walk-in'}`, 15, 50);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(71, 85, 105);
+      doc.text(`Phone: ${order.customerPhone || order.userId?.phone || 'N/A'}`, 15, 56);
+      doc.text(`Payment: ${order.paymentMethod?.toUpperCase()} (${order.paymentStatus?.toUpperCase()})`, 15, 62);
+
+      // Table Header
+      let y = 74;
+      doc.setFillColor(241, 245, 249);
+      doc.rect(15, y, 180, 8, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(51, 65, 85);
+      doc.text('ITEM DESCRIPTION', 18, y + 5.5);
+      doc.text('QTY', 130, y + 5.5);
+      doc.text('UNIT PRICE', 155, y + 5.5);
+      doc.text('TOTAL', 192, y + 5.5, { align: 'right' });
+
+      y += 10;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(15, 23, 42);
+
+      order.items?.forEach((it) => {
+        doc.text(`${it.name}`, 18, y);
+        doc.text(`${it.quantity}`, 132, y);
+        doc.text(`Rs. ${Number(it.price || 0).toLocaleString()}`, 155, y);
+        doc.text(`Rs. ${Number((it.price || 0) * (it.quantity || 1)).toLocaleString()}`, 192, y, { align: 'right' });
+        y += 7;
+      });
+
+      // Total Line
+      doc.setDrawColor(226, 232, 240);
+      doc.line(15, y, 195, y);
+      y += 8;
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.setTextColor(15, 23, 42);
+      doc.text('NET TOTAL PAYABLE:', 120, y);
+      doc.text(`LKR ${Number(order.totalAmount || 0).toLocaleString()}`, 192, y, { align: 'right' });
+
+      doc.save(`Invoice_${invNo}.pdf`);
+      toast.success('Invoice PDF downloaded');
+    } catch {
+      toast.error('Failed to generate PDF');
+    }
   };
 
   const sortedOrders = [...orders].sort((a, b) => {
@@ -243,162 +307,132 @@ const AdminOrders = () => {
     return new Date(b.createdAt) - new Date(a.createdAt);
   });
 
-  const filteredOrders = sortedOrders; // filtering happens in backend
+  const filteredOrders = sortedOrders;
 
-  // Summary stats
   const pendingCount = orders.filter((o) => o.orderStatus === 'pending').length;
   const totalRevenue = orders.filter((o) => ['delivered', 'completed'].includes(o.orderStatus)).reduce((s, o) => s + o.totalAmount, 0);
 
   return (
-    <DashboardLayout navItems={navItems} title="Orders">
-      <div className="relative">
-        {/* Page Title */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+    <DashboardLayout navItems={navItems} title="Mobile Hub Admin Panel">
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
           <div>
-            <div className="flex items-center gap-2.5 mb-1">
-              <span className="inline-flex items-center gap-1.5 bg-brand-indigo/10 text-brand-indigo text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg border border-brand-indigo/15">
-                <Package size={11} /> Sales & Operations
-              </span>
-            </div>
-            <h1 className="text-2xl font-black text-slate-900 m-0">Order Management</h1>
-            <p className="text-slate-400 text-xs font-bold mt-1 m-0">
-              {orders.length} orders found · <span className="text-amber-600 font-bold">{pendingCount} pending approval</span> · Total Sales: <span className="text-emerald-600 font-extrabold">{formatPrice(convertPrice(totalRevenue))}</span>
+            <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2 m-0">
+              <Package size={24} className="text-brand-indigo" /> Order & Billing Management
+            </h1>
+            <p className="text-xs font-semibold text-slate-500 mt-1 m-0">
+              Track customer orders, live bill preview & print, WhatsApp digital receipts, and delivery dispatch
             </p>
           </div>
-          
-          <div className="flex gap-3 self-start md:self-auto">
+
+          <div className="flex items-center gap-2">
             <button
-              onClick={exportPDFReport}
-              className="bg-white border border-slate-200 text-rose-600 text-[10px] uppercase tracking-wider font-black px-5 py-2.5 rounded-xl hover:bg-rose-50 transition-all flex items-center gap-2 shadow-sm cursor-pointer"
+              onClick={() => exportToExcel(filteredOrders, 'Orders_Report')}
+              className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs uppercase tracking-wider transition-all border-0 cursor-pointer flex items-center gap-1.5"
             >
-              <FileText size={15} /> Export PDF
+              <Download size={14} /> Excel Export
             </button>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="bg-white border border-slate-200 text-slate-700 text-[10px] uppercase tracking-wider font-black px-4 py-2.5 rounded-xl hover:bg-slate-50 transition-all focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo cursor-pointer"
-            >
-              <option value="newest">Newest first</option>
-              <option value="oldest">Oldest first</option>
-              <option value="amount_high">Amount high to low</option>
-              <option value="amount_low">Amount low to high</option>
-            </select>
           </div>
         </div>
 
-        {/* Filter Controls Row */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 mb-6 shadow-sm grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          <div>
-            <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Category Type</label>
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all cursor-pointer"
-            >
-              <option value="all">All Category Types</option>
-              <option value="mobiles">Mobiles (Phones/Tablets)</option>
-              <option value="accessories">Accessories</option>
-              {categories.map((c) => (
-                <option key={c._id} value={c._id}>{c.name}</option>
-              ))}
-            </select>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs">
+            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-1">Total Orders</span>
+            <h2 className="text-2xl font-black text-slate-900 m-0">{orders.length}</h2>
           </div>
 
-          <div>
-            <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Brand Filter</label>
+          <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs">
+            <span className="text-[10px] font-black uppercase tracking-wider text-amber-500 block mb-1">Pending Approval</span>
+            <h2 className="text-2xl font-black text-amber-600 m-0">{pendingCount}</h2>
+          </div>
+
+          <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs">
+            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600 block mb-1">Delivered Revenue</span>
+            <h2 className="text-2xl font-black text-emerald-700 m-0">{formatPrice(convertPrice(totalRevenue))}</h2>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="bg-white p-4 rounded-3xl border border-slate-200/80 shadow-xs flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs font-bold text-slate-800 cursor-pointer"
+            >
+              <option value="all">All Statuses</option>
+              {statusFlow.map((s) => (
+                <option key={s} value={s}>{s.replace(/_/g, ' ').toUpperCase()}</option>
+              ))}
+            </select>
+
             <select
               value={brandFilter}
               onChange={(e) => setBrandFilter(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all cursor-pointer"
+              className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs font-bold text-slate-800 cursor-pointer"
             >
               <option value="all">All Brands</option>
-              {BRANDS.slice(1).map((b) => (
+              {BRANDS.filter(b => b !== 'all').map((b) => (
                 <option key={b} value={b}>{b}</option>
               ))}
             </select>
           </div>
 
-          <div>
-            <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">From Date</label>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all"
-            />
-          </div>
-
-          <div>
-            <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">To Date</label>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all"
-            />
-          </div>
-        </div>
-
-        {/* Status Filter Pills */}
-        <div className="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
-          {['all', ...statusFlow].map((status) => (
-            <button
-              key={status}
-              onClick={() => setStatusFilter(status)}
-              className={`px-5 py-2.5 rounded-xl text-[10px] uppercase tracking-wider font-black whitespace-nowrap transition-all cursor-pointer ${
-                statusFilter === status
-                  ? 'bg-slate-800 text-white shadow-md'
-                  : 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700'
-              }`}
-            >
-              {status === 'all' ? `All (${orders.length})` : `${status.replace(/_/g, ' ')} (${orders.filter((o) => o.orderStatus === status).length})`}
-            </button>
-          ))}
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs font-bold text-slate-800 cursor-pointer"
+          >
+            <option value="newest">Sort: Newest First</option>
+            <option value="oldest">Sort: Oldest First</option>
+            <option value="amount_high">Sort: Amount (High to Low)</option>
+            <option value="amount_low">Sort: Amount (Low to High)</option>
+          </select>
         </div>
 
         {/* Orders Table */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-left text-xs">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-100">
-                  <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Order</th>
-                  <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Customer</th>
-                  <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Store</th>
-                  <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Total</th>
-                  <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Payment</th>
-                  <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Status</th>
-                  <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Delivery</th>
-                  <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Date</th>
-                  <th className="text-right px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Actions</th>
+                <tr className="bg-slate-50 border-b border-slate-100 text-slate-500 font-black uppercase tracking-wider">
+                  <th className="px-6 py-4">Invoice / ID</th>
+                  <th className="px-6 py-4">Customer</th>
+                  <th className="px-6 py-4">Items</th>
+                  <th className="px-6 py-4">Total Amount</th>
+                  <th className="px-6 py-4">Payment</th>
+                  <th className="px-6 py-4">Order Status</th>
+                  <th className="px-6 py-4">Assigned Delivery</th>
+                  <th className="px-6 py-4">Date</th>
+                  <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredOrders.map((order) => (
+              <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
+                {loading ? (
+                  <tr>
+                    <td colSpan={9} className="text-center py-12 text-slate-400">Loading orders...</td>
+                  </tr>
+                ) : filteredOrders.map((order) => (
                   <Fragment key={order._id}>
                     <tr
-                      className={`hover:bg-slate-50/80 transition-colors cursor-pointer ${order.orderStatus === 'cancelled' ? 'opacity-50' : ''}`}
                       onClick={() => setExpandedId(expandedId === order._id ? null : order._id)}
+                      className="hover:bg-slate-50/80 transition-colors cursor-pointer"
                     >
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs font-bold text-brand-indigo bg-brand-indigo/5 px-2 py-1 rounded-md border border-brand-indigo/10">#{order.invoiceNumber || order._id.slice(-8).toUpperCase()}</span>
-                          {expandedId === order._id ? <ChevronUp size={14} className="text-slate-400" /> : <ChevronDown size={14} className="text-slate-400" />}
-                          {order.isPosOrder && (
-                            <span className="text-[10px] uppercase tracking-wider font-black bg-teal-100 text-teal-700 px-1.5 py-0.5 rounded-lg border border-teal-200">POS</span>
-                          )}
-                        </div>
+                      <td className="px-6 py-4 font-mono font-bold text-brand-indigo">
+                        {order.invoiceNumber || order._id.slice(-8).toUpperCase()}
                       </td>
                       <td className="px-6 py-4">
-                        <p className="font-extrabold text-slate-800 text-sm">{order.customerName || order.userId?.name || 'Walk-in Customer'}</p>
-                        <p className="text-[11px] font-bold text-slate-400 mt-0.5">{order.customerPhone || order.userId?.phone || 'No Phone'}</p>
+                        <p className="font-bold text-slate-900 m-0">{order.customerName || order.userId?.name || 'Walk-in'}</p>
+                        <p className="text-[10px] text-slate-400 m-0">{order.customerPhone || order.userId?.phone || 'No phone'}</p>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded-md border border-slate-200/60">
-                          {order.storeId?.name || 'N/A'}
-                        </span>
+                        <span className="font-extrabold text-slate-900">{order.items?.length || 0} Item(s)</span>
                       </td>
-                      <td className="px-6 py-4 font-extrabold text-slate-800">{formatPrice(convertPrice(order.totalAmount))}</td>
+                      <td className="px-6 py-4 font-extrabold text-slate-900">
+                        {formatPrice(convertPrice(order.totalAmount))}
+                      </td>
                       <td className="px-6 py-4">
                         <span className={`text-[10px] uppercase tracking-wider font-black px-2.5 py-1 rounded-lg ${paymentColors[order.paymentStatus] || 'bg-slate-100 text-slate-600'}`}>
                           {order.paymentStatus}
@@ -409,7 +443,7 @@ const AdminOrders = () => {
                           value={order.orderStatus}
                           onClick={(e) => e.stopPropagation()}
                           onChange={(e) => handleStatusUpdate(order._id, e.target.value)}
-                          className={`text-[10px] uppercase tracking-wider font-black px-3 py-1.5 rounded-lg border-0 appearance-none cursor-pointer ${statusColors[order.orderStatus]} focus:outline-none focus:ring-2 focus:ring-brand-indigo/20`}
+                          className={`text-[10px] uppercase tracking-wider font-black px-3 py-1.5 rounded-lg border-0 appearance-none cursor-pointer ${statusColors[order.orderStatus]}`}
                         >
                           {statusFlow.map((s) => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
                         </select>
@@ -419,7 +453,7 @@ const AdminOrders = () => {
                           value={order.deliveryGuyId?._id || ''}
                           onClick={(e) => e.stopPropagation()}
                           onChange={(e) => handleAssignDelivery(order._id, e.target.value)}
-                          className="border border-slate-200 bg-slate-50 rounded-xl py-1.5 px-3 text-xs font-semibold text-slate-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-indigo/20"
+                          className="border border-slate-200 bg-slate-50 rounded-xl py-1.5 px-3 text-xs font-semibold text-slate-700 cursor-pointer focus:outline-none"
                         >
                           <option value="">Assign delivery</option>
                           {deliveryGuys.map((g) => (
@@ -427,260 +461,386 @@ const AdminOrders = () => {
                           ))}
                         </select>
                       </td>
-                      <td className="px-6 py-4 text-slate-500 font-medium text-xs whitespace-nowrap">{new Date(order.createdAt).toLocaleDateString()}</td>
-                      
-                      {/* Context actions menu */}
-                      <td className="px-6 py-3.5 text-right relative flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
-                        <button
-                          onClick={() => sendWhatsAppInvoice(order)}
-                          className="px-2.5 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer"
-                          title="Send WhatsApp Digital Invoice"
-                        >
-                          <span>💬</span> WhatsApp
-                        </button>
+                      <td className="px-6 py-4 text-slate-500 font-medium text-xs whitespace-nowrap">
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </td>
 
-                        <button
-                          onClick={() => setActionMenuId(actionMenuId === order._id ? null : order._id)}
-                          className="p-1 rounded-lg hover:bg-gray-100 text-muted-text transition-all"
-                        >
-                          <MoreVertical size={16} />
-                        </button>
-                        
+                      <td className="px-6 py-3.5 text-right relative" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => sendWhatsAppInvoice(order)}
+                            className="px-2.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white text-[10px] font-black uppercase tracking-wider transition-all border-0 cursor-pointer flex items-center gap-1"
+                            title="Send WhatsApp Invoice"
+                          >
+                            <span>💬</span> WhatsApp
+                          </button>
+
+                          <button
+                            onClick={() => setViewBillOrder(order)}
+                            className="p-2 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all border-0 cursor-pointer"
+                            title="View / Print Bill"
+                          >
+                            <Printer size={14} />
+                          </button>
+
+                          <button
+                            onClick={() => setActionMenuId(actionMenuId === order._id ? null : order._id)}
+                            className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-500 transition-all border-0 cursor-pointer"
+                          >
+                            <MoreVertical size={16} />
+                          </button>
+                        </div>
+
                         {actionMenuId === order._id && (
-                          <div className="absolute right-6 top-10 w-44 bg-white border border-card-border rounded-xl shadow-xl z-20 py-1.5 text-left text-xs text-dark-navy">
+                          <div className="absolute right-6 top-10 w-48 bg-white border border-slate-200 rounded-2xl shadow-xl z-20 py-2 text-left text-xs text-slate-800 animate-fade-in">
                             <button
-                              onClick={() => { setExpandedId(expandedId === order._id ? null : order._id); setActionMenuId(null); }}
-                              className="w-full px-4 py-2 hover:bg-gray-50 flex items-center gap-2"
+                              onClick={() => { setViewDetailsOrder(order); setActionMenuId(null); }}
+                              className="w-full px-4 py-2 hover:bg-slate-50 flex items-center gap-2 font-bold border-0 bg-transparent text-left cursor-pointer"
                             >
-                              <Eye size={14} className="text-gray-500" />
-                              {expandedId === order._id ? 'Collapse' : 'View Details'}
+                              <Eye size={14} className="text-slate-500" />
+                              View Full Details
                             </button>
                             
                             <button
-                              onClick={() => openLiveEdit(order)}
-                              className="w-full px-4 py-2 hover:bg-gray-50 flex items-center gap-2"
+                              onClick={() => { setViewBillOrder(order); setActionMenuId(null); }}
+                              className="w-full px-4 py-2 hover:bg-slate-50 flex items-center gap-2 font-bold border-0 bg-transparent text-left cursor-pointer"
                             >
-                              <Edit size={14} className="text-blue-500" />
-                              Live Edit
+                              <Printer size={14} className="text-blue-500" />
+                              View / Print Bill
                             </button>
 
                             <button
-                              onClick={() => { handleReprintReceipt(order); setActionMenuId(null); }}
-                              className="w-full px-4 py-2 hover:bg-gray-50 flex items-center gap-2"
+                              onClick={() => openLiveEdit(order)}
+                              className="w-full px-4 py-2 hover:bg-slate-50 flex items-center gap-2 font-bold border-0 bg-transparent text-left cursor-pointer"
                             >
-                              <Printer size={14} className="text-teal-500" />
-                              Re-print Receipt
+                              <Edit size={14} className="text-emerald-500" />
+                              Live Edit Order
                             </button>
 
                             <button
                               onClick={() => { sendWhatsAppInvoice(order); setActionMenuId(null); }}
-                              className="w-full px-4 py-2 hover:bg-emerald-50 text-emerald-700 font-bold flex items-center gap-2"
+                              className="w-full px-4 py-2 hover:bg-emerald-50 text-emerald-700 font-extrabold flex items-center gap-2 border-0 bg-transparent text-left cursor-pointer"
                             >
-                              <span className="text-sm">💬</span>
-                              WhatsApp Invoice
-                            </button>
-
-                            <button
-                              onClick={() => { handleTriggerSMS(order); setActionMenuId(null); }}
-                              className="w-full px-4 py-2 hover:bg-gray-50 flex items-center gap-2"
-                            >
-                              <MessageSquare size={14} className="text-purple-500" />
-                              Trigger SMS
+                              <span>💬</span> WhatsApp Invoice
                             </button>
 
                             {order.orderStatus === 'pending' && (
                               <button
                                 onClick={() => { handleApprove(order._id); setActionMenuId(null); }}
-                                className="w-full px-4 py-2 hover:bg-gray-50 flex items-center gap-2 font-semibold text-emerald-600"
+                                className="w-full px-4 py-2 hover:bg-slate-50 flex items-center gap-2 font-bold text-emerald-600 border-0 bg-transparent text-left cursor-pointer"
                               >
-                                <CheckCircle size={14} className="text-emerald-500" />
-                                Approve
+                                <CheckCircle size={14} /> Approve
                               </button>
                             )}
 
                             {!['delivered', 'completed', 'cancelled'].includes(order.orderStatus) && (
                               <button
                                 onClick={() => { handleCancel(order._id); setActionMenuId(null); }}
-                                className="w-full px-4 py-2 hover:bg-gray-50 flex items-center gap-2 font-semibold text-red-600"
+                                className="w-full px-4 py-2 hover:bg-slate-50 flex items-center gap-2 font-bold text-amber-600 border-0 bg-transparent text-left cursor-pointer"
                               >
-                                <XCircle size={14} className="text-red-500" />
-                                Cancel Order
+                                <XCircle size={14} /> Cancel Order
                               </button>
                             )}
 
                             <button
                               onClick={(e) => handleDeleteClick(order, e)}
-
-                              className="w-full px-4 py-2 hover:bg-red-50 flex items-center gap-2 font-semibold text-red-700"
+                              className="w-full px-4 py-2 hover:bg-rose-50 flex items-center gap-2 font-bold text-rose-600 border-0 bg-transparent text-left cursor-pointer border-t border-slate-100"
                             >
-                              <Trash2 size={14} className="text-red-600" />
-                              Delete Order
+                              <Trash2 size={14} /> Delete Order
                             </button>
                           </div>
                         )}
                       </td>
                     </tr>
-
-                    {/* Expanded Items view */}
-                    {expandedId === order._id && (
-                      <tr>
-                        <td colSpan={9} className="px-6 py-6 bg-slate-50/50 text-xs border-y border-slate-100/50 relative overflow-hidden">
-                          <div className="absolute left-0 top-0 bottom-0 w-1 bg-brand-indigo/20"></div>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                              <p className="font-black text-slate-400 uppercase tracking-widest mb-4 text-[10px] flex items-center gap-2"><Truck size={12} className="text-brand-indigo"/> Shipment Details</p>
-                              <div className="space-y-3">
-                                <div>
-                                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Assigned Delivery</span>
-                                  <span className="font-semibold text-slate-800">{order.deliveryGuyId?.name || 'Not assigned'}</span>
-                                </div>
-                                <div>
-                                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Delivery Address</span>
-                                  <span className="font-semibold text-slate-800 leading-relaxed">{order.deliveryAddress ? `${order.deliveryAddress.street || ''}, ${order.deliveryAddress.city || ''}, ${order.deliveryAddress.state || ''} ${order.deliveryAddress.zipCode || ''}` : 'N/A'}</span>
-                                </div>
-                              </div>
-                              {order.exchangeReturnId && (
-                                <div className="mt-4 bg-rose-50 border border-rose-100 rounded-xl p-3">
-                                  <p className="text-rose-600 font-bold text-xs flex items-start gap-2">
-                                    <RefreshCcw size={14} className="mt-0.5 shrink-0" />
-                                    <span>Returned Item Exchange Credit:<br/>Rs. {order.exchangeCredit?.toLocaleString()} applied</span>
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-
-                            <div className="md:col-span-2 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                              <p className="font-black text-slate-400 uppercase tracking-widest mb-4 text-[10px] flex items-center gap-2"><Package size={12} className="text-brand-indigo"/> Order Items</p>
-                              <div className="border border-slate-100 rounded-xl overflow-hidden">
-                                <table className="w-full text-xs">
-                                  <thead>
-                                    <tr className="bg-slate-50 text-left text-[10px] font-black text-slate-400 uppercase tracking-wider border-b border-slate-100">
-                                      <th className="px-4 py-3">Item</th>
-                                      <th className="px-4 py-3 text-right">Price</th>
-                                      <th className="px-4 py-3 text-center">Qty</th>
-                                      <th className="px-4 py-3 text-right">Subtotal</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody className="divide-y divide-slate-50">
-                                    {order.items?.map((it, idx) => (
-                                      <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
-                                        <td className="px-4 py-3">
-                                          <p className="font-extrabold text-slate-800">{it.name}</p>
-                                          {it.imei && it.imei.length > 0 && (
-                                            <p className="text-[10px] font-mono font-semibold text-slate-500 mt-1 bg-slate-100 inline-block px-2 py-0.5 rounded border border-slate-200">IMEI: {it.imei.join(', ')}</p>
-                                          )}
-                                        </td>
-                                        <td className="px-4 py-3 text-right font-bold text-slate-600">Rs. {it.price?.toLocaleString()}</td>
-                                        <td className="px-4 py-3 text-center font-extrabold text-slate-800">
-                                          <span className="bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200/60">{it.quantity}</span>
-                                        </td>
-                                        <td className="px-4 py-3 text-right font-black text-brand-indigo">Rs. {(it.price * it.quantity)?.toLocaleString()}</td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
                   </Fragment>
                 ))}
               </tbody>
             </table>
-            {filteredOrders.length === 0 && (
-              <div className="text-center py-12 text-muted-text text-sm">No orders found matching filters</div>
-            )}
           </div>
         </div>
-
-        {/* Live Edit Modal */}
-        {showEditModal && (
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={() => setShowEditModal(false)}>
-            <div className="bg-white rounded-3xl border border-slate-100 shadow-2xl w-full max-w-md overflow-hidden transform transition-all duration-300 scale-100" onClick={(e) => e.stopPropagation()}>
-              <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-white/80 backdrop-blur-md">
-                <h3 className="font-black text-slate-900 text-lg flex items-center gap-2"><Edit size={18} className="text-brand-indigo" /> Live Edit Order</h3>
-                <button onClick={() => setShowEditModal(false)} className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
-                  <X size={18} />
-                </button>
-              </div>
-
-              <form onSubmit={handleSaveLiveEdit} className="p-6 space-y-5">
-                <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Customer Name</label>
-                  <input
-                    type="text"
-                    value={editForm.customerName}
-                    onChange={(e) => setEditForm({ ...editForm, customerName: e.target.value })}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Customer Phone</label>
-                  <input
-                    type="text"
-                    value={editForm.customerPhone}
-                    onChange={(e) => setEditForm({ ...editForm, customerPhone: e.target.value })}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Order Status</label>
-                  <select
-                    value={editForm.orderStatus}
-                    onChange={(e) => setEditForm({ ...editForm, orderStatus: e.target.value })}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all cursor-pointer"
-                  >
-                    {statusFlow.map((s) => (
-                      <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Payment Status</label>
-                  <select
-                    value={editForm.paymentStatus}
-                    onChange={(e) => setEditForm({ ...editForm, paymentStatus: e.target.value })}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all cursor-pointer"
-                  >
-                    <option value="pending">pending</option>
-                    <option value="completed">completed</option>
-                    <option value="failed">failed</option>
-                    <option value="refunded">refunded</option>
-                  </select>
-                </div>
-
-                <div className="flex gap-3 pt-4 border-t border-slate-100">
-                  <button
-                    type="button"
-                    onClick={() => setShowEditModal(false)}
-                    className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3.5 rounded-xl font-bold text-[11px] uppercase tracking-wider transition-all"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 bg-gradient-to-r from-brand-indigo to-brand-violet text-white py-3.5 rounded-xl font-black text-[11px] uppercase tracking-wider hover:opacity-95 shadow-lg shadow-brand-indigo/20 transition-all"
-                  >
-                    Save Changes
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
       </div>
 
-      <DeleteConfirmationModal
-        isOpen={deleteModalOpen}
-        onClose={() => { setDeleteModalOpen(false); setItemToDelete(null); }}
-        onConfirm={handleDeleteConfirm}
-        itemName={itemToDelete ? `order #${itemToDelete.invoiceNumber || itemToDelete._id.slice(-8).toUpperCase()}` : 'this order'}
-      />
+      {/* 👁️ View Full Order Details Modal */}
+      {viewDetailsOrder && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={() => setViewDetailsOrder(null)}>
+          <div className="bg-white rounded-3xl border border-slate-100 shadow-2xl w-full max-w-2xl overflow-hidden p-6 max-h-[90vh] overflow-y-auto text-left" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+              <div>
+                <h3 className="font-black text-slate-900 text-lg m-0">Order #{viewDetailsOrder.invoiceNumber || viewDetailsOrder._id.slice(-8).toUpperCase()}</h3>
+                <p className="text-[10px] text-slate-400 font-semibold m-0">Placed on {new Date(viewDetailsOrder.createdAt).toLocaleString()}</p>
+              </div>
+              <button onClick={() => setViewDetailsOrder(null)} className="p-1.5 text-slate-400 hover:text-slate-700 bg-slate-100 rounded-full border-0 cursor-pointer">
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-xs">
+              <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
+                <div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase block">Customer Details</span>
+                  <p className="font-extrabold text-slate-900 text-sm m-0 mt-0.5">{viewDetailsOrder.customerName || viewDetailsOrder.userId?.name || 'Walk-in'}</p>
+                  <p className="text-slate-600 m-0">{viewDetailsOrder.customerPhone || viewDetailsOrder.userId?.phone || 'No phone'}</p>
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase block">Store & Payment</span>
+                  <p className="font-extrabold text-slate-900 text-sm m-0 mt-0.5">{viewDetailsOrder.storeId?.name || 'Main Branch'}</p>
+                  <p className="text-slate-600 uppercase font-bold m-0">{viewDetailsOrder.paymentMethod} ({viewDetailsOrder.paymentStatus})</p>
+                </div>
+              </div>
+
+              <div>
+                <span className="text-xs font-black text-slate-900 uppercase tracking-wider block mb-2">Purchased Items ({viewDetailsOrder.items?.length})</span>
+                <div className="border border-slate-200 rounded-2xl overflow-hidden">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50 text-slate-400 font-black uppercase text-[10px]">
+                      <tr>
+                        <th className="p-3">Product</th>
+                        <th className="p-3 text-center">Qty</th>
+                        <th className="p-3 text-right">Price</th>
+                        <th className="p-3 text-right">Subtotal</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 font-semibold text-slate-800">
+                      {viewDetailsOrder.items?.map((it, idx) => (
+                        <tr key={idx}>
+                          <td className="p-3 font-bold">{it.name}</td>
+                          <td className="p-3 text-center font-extrabold">{it.quantity}</td>
+                          <td className="p-3 text-right">Rs. {Number(it.price || 0).toLocaleString()}</td>
+                          <td className="p-3 text-right font-black text-brand-indigo">Rs. {Number((it.price || 0) * (it.quantity || 1)).toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="bg-slate-900 text-white p-4 rounded-2xl flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-black uppercase text-slate-400 block">Net Total Amount</span>
+                  <h3 className="text-xl font-black m-0 mt-0.5">LKR {Number(viewDetailsOrder.totalAmount || 0).toLocaleString()}</h3>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => sendWhatsAppInvoice(viewDetailsOrder)}
+                    className="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-xl text-xs uppercase tracking-wider cursor-pointer border-0 flex items-center gap-1.5"
+                  >
+                    <span>💬</span> WhatsApp Invoice
+                  </button>
+                  <button
+                    onClick={() => { setViewBillOrder(viewDetailsOrder); setViewDetailsOrder(null); }}
+                    className="px-4 py-2.5 bg-brand-indigo hover:bg-brand-violet text-white font-black rounded-xl text-xs uppercase tracking-wider cursor-pointer border-0 flex items-center gap-1.5"
+                  >
+                    <Printer size={14} /> View Bill
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 🖨️ View / Print Live Bill Modal */}
+      {viewBillOrder && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={() => setViewBillOrder(null)}>
+          <div className="bg-white rounded-3xl border border-slate-100 shadow-2xl w-full max-w-xl p-8 max-h-[90vh] overflow-y-auto text-left relative" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setViewBillOrder(null)} className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 bg-slate-100 rounded-full border-0 cursor-pointer">
+              <X size={16} />
+            </button>
+
+            {/* Bill Header */}
+            <div className="border-b-2 border-slate-900 pb-4 mb-4 flex justify-between items-start">
+              <div>
+                <h2 className="text-lg font-black text-slate-900 uppercase tracking-wider m-0">{viewBillOrder.storeId?.name || 'Max Durakathana / SR Mobile'}</h2>
+                <p className="text-[10px] text-slate-500 font-semibold m-0">Official Sales Receipt & Warranty</p>
+              </div>
+              <div className="text-right">
+                <span className="font-mono text-xs font-black text-brand-indigo bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
+                  #{viewBillOrder.invoiceNumber || viewBillOrder._id.slice(-8).toUpperCase()}
+                </span>
+                <p className="text-[10px] text-slate-400 font-bold m-0 mt-1">{new Date(viewBillOrder.createdAt).toLocaleDateString()}</p>
+              </div>
+            </div>
+
+            {/* Customer Info */}
+            <div className="text-xs space-y-1 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-200/60">
+              <p className="m-0"><strong>Customer:</strong> {viewBillOrder.customerName || viewBillOrder.userId?.name || 'Walk-in'}</p>
+              <p className="m-0"><strong>Phone:</strong> {viewBillOrder.customerPhone || viewBillOrder.userId?.phone || 'N/A'}</p>
+              <p className="m-0 uppercase"><strong>Payment Method:</strong> {viewBillOrder.paymentMethod} ({viewBillOrder.paymentStatus})</p>
+            </div>
+
+            {/* Items Breakdown Table */}
+            <table className="w-full text-xs text-left mb-4">
+              <thead>
+                <tr className="border-b border-slate-200 text-slate-400 font-black uppercase text-[10px]">
+                  <th className="py-2">Item</th>
+                  <th className="py-2 text-center">Qty</th>
+                  <th className="py-2 text-right">Price</th>
+                  <th className="py-2 text-right">Total</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 font-semibold text-slate-800">
+                {viewBillOrder.items?.map((it, idx) => (
+                  <tr key={idx}>
+                    <td className="py-2">{it.name}</td>
+                    <td className="py-2 text-center">{it.quantity}</td>
+                    <td className="py-2 text-right">Rs. {Number(it.price || 0).toLocaleString()}</td>
+                    <td className="py-2 text-right font-black">Rs. {Number((it.price || 0) * (it.quantity || 1)).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* Total Footer */}
+            <div className="border-t-2 border-slate-900 pt-3 flex justify-between items-center mb-6">
+              <span className="font-black text-sm uppercase text-slate-900">Total Net Amount</span>
+              <span className="font-black text-xl text-brand-indigo">LKR {Number(viewBillOrder.totalAmount || 0).toLocaleString()}</span>
+            </div>
+
+            {/* Print & Download Actions */}
+            <div className="flex gap-2 pt-2 border-t border-slate-100">
+              <button
+                onClick={() => window.print()}
+                className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-black py-3 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer border-0 flex items-center justify-center gap-2"
+              >
+                <Printer size={15} /> Print Bill Receipt
+              </button>
+              <button
+                onClick={() => downloadInvoicePDF(viewBillOrder)}
+                className="bg-brand-indigo hover:bg-brand-violet text-white font-black px-5 py-3 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer border-0 flex items-center justify-center gap-2"
+              >
+                <Download size={15} /> Download PDF
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Live Edit Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={() => setShowEditModal(false)}>
+          <div className="bg-white rounded-3xl border border-slate-100 shadow-2xl w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+              <h3 className="font-black text-slate-900 text-base flex items-center gap-2 m-0"><Edit size={18} className="text-brand-indigo" /> Live Edit Order</h3>
+              <button onClick={() => setShowEditModal(false)} className="p-1 text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full border-0 cursor-pointer">
+                <X size={16} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveLiveEdit} className="space-y-4 text-xs">
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Customer Name</label>
+                <input
+                  type="text"
+                  value={editForm.customerName}
+                  onChange={(e) => setEditForm({ ...editForm, customerName: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3.5 text-xs font-semibold text-slate-700"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Customer Phone</label>
+                <input
+                  type="text"
+                  value={editForm.customerPhone}
+                  onChange={(e) => setEditForm({ ...editForm, customerPhone: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3.5 text-xs font-semibold text-slate-700"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Order Status</label>
+                <select
+                  value={editForm.orderStatus}
+                  onChange={(e) => setEditForm({ ...editForm, orderStatus: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-700 cursor-pointer"
+                >
+                  {statusFlow.map((s) => (
+                    <option key={s} value={s}>{s.replace(/_/g, ' ').toUpperCase()}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Payment Status</label>
+                <select
+                  value={editForm.paymentStatus}
+                  onChange={(e) => setEditForm({ ...editForm, paymentStatus: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-700 cursor-pointer"
+                >
+                  <option value="pending">PENDING</option>
+                  <option value="completed">COMPLETED</option>
+                  <option value="failed">FAILED</option>
+                  <option value="refunded">REFUNDED</option>
+                </select>
+              </div>
+
+              <div className="flex gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="px-5 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-xl font-bold text-xs uppercase tracking-wider border-0 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-brand-indigo hover:bg-brand-violet text-white py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all border-0 cursor-pointer shadow-md"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Passcode Protected Order Deletion Modal */}
+      {deleteModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={() => setDeleteModalOpen(false)}>
+          <div className="bg-white rounded-3xl border border-slate-100 shadow-2xl w-full max-w-md p-6 text-left" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+              <h3 className="font-black text-slate-900 text-base flex items-center gap-2 m-0 text-rose-600">
+                <Lock size={18} /> Confirm Order Deletion
+              </h3>
+              <button onClick={() => setDeleteModalOpen(false)} className="p-1 text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full border-0 cursor-pointer">
+                <X size={16} />
+              </button>
+            </div>
+
+            <p className="text-xs font-semibold text-slate-600 mb-3 m-0">
+              Are you sure you want to delete <strong>order #{itemToDelete?.invoiceNumber || itemToDelete?._id?.slice(-8).toUpperCase()}</strong>? This action cannot be undone.
+            </p>
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-[10px] font-black uppercase text-slate-400 block mb-1">Enter Security Passcode (PIN) *</label>
+                <input
+                  type="password"
+                  value={passcode}
+                  onChange={e => setPasscode(e.target.value)}
+                  placeholder="Enter passcode (e.g. 1234 or 8888)"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-mono font-bold text-slate-800"
+                />
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <button
+                  onClick={() => setDeleteModalOpen(false)}
+                  className="px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider border-0 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteConfirm}
+                  className="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-black py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all border-0 cursor-pointer shadow-md flex items-center justify-center gap-2"
+                >
+                  <Trash2 size={15} /> Confirm & Delete Order
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 };
