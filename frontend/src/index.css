@@ -37,11 +37,11 @@
   --color-teal-600: #475569;
   --color-teal-700: #334155;
 
-  --font-sans: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Poppins', 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 *, body, button, input, select, textarea, h1, h2, h3, h4, h5, h6, p, span, div, table, th, td, a {
-  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif !important;
+  font-family: 'Poppins', 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif !important;
 }
 
 body {
