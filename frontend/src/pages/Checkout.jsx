@@ -20,6 +20,11 @@ const Checkout = () => {
   const [deliveryDate, setDeliveryDate] = useState('');
   const [deliveryTime, setDeliveryTime] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('cod');
+  const [customerNic, setCustomerNic] = useState('');
+  const [guarantorName, setGuarantorName] = useState('');
+  const [guarantorPhone, setGuarantorPhone] = useState('');
+  const [guarantorNic, setGuarantorNic] = useState('');
+  const [hpInstallments, setHpInstallments] = useState(3);
   const [sendReceiptEmail, setSendReceiptEmail] = useState(false);
   const [receiptEmail, setReceiptEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -163,6 +168,21 @@ const Checkout = () => {
         sendReceiptEmail,
         receiptEmail: sendReceiptEmail ? (receiptEmail || user?.email || '') : undefined,
       };
+
+      if (paymentMethod === 'hire_purchase') {
+        if (!customerNic.trim()) {
+          toast.error('Customer NIC is required for Hire Purchase/Credit');
+          setLoading(false);
+          return;
+        }
+        orderData.hirePurchaseData = {
+          customerNic,
+          numberOfInstallments: Number(hpInstallments),
+          downPayment: Math.round(total * 0.3),
+          netTotal: total,
+          guarantors: guarantorName ? [{ name: guarantorName, phone: guarantorPhone, nic: guarantorNic }] : []
+        };
+      }
 
       const { data: order } = await createOrder(orderData);
 
@@ -490,20 +510,124 @@ const Checkout = () => {
                 { id: 'cod', label: 'Cash on Delivery', icon: '💵', desc: 'Pay when your order arrives' },
                 { id: 'payhere', label: 'PayHere Gateway', icon: '💳', desc: 'Secure online payment (Visa / Master / LANKAQR)' },
                 { id: 'koko', label: 'Koko (3 Installments)', icon: '📱', desc: 'Split the bill into 3 easy payments' },
+                { id: 'hire_purchase', label: 'Hire Purchase / Credit (Installments)', icon: '📝', desc: 'Pay down payment now, balance in monthly installments' },
               ].map((method) => (
-                <label key={method.id}
-                  className={`flex items-center gap-4 p-4 rounded-2xl border cursor-pointer transition-all ${
-                    paymentMethod === method.id ? 'border-brand-indigo bg-brand-indigo/5 shadow-[0_4px_12px_rgba(99,102,241,0.05)]' : 'border-slate-200 hover:border-slate-350'
-                  }`}
-                >
-                  <input type="radio" name="payment" value={method.id} checked={paymentMethod === method.id}
-                    onChange={(e) => setPaymentMethod(e.target.value)} className="accent-brand-indigo w-4 h-4 cursor-pointer" />
-                  <span className="text-2xl">{method.icon}</span>
-                  <div>
-                    <p className="font-bold text-slate-800 text-sm m-0 leading-tight">{method.label}</p>
-                    <p className="text-xs text-slate-400 m-0 mt-0.5 font-medium">{method.desc}</p>
-                  </div>
-                </label>
+                <div key={method.id} className="space-y-3">
+                  <label
+                    className={`flex items-center gap-4 p-4 rounded-2xl border cursor-pointer transition-all ${
+                      paymentMethod === method.id ? 'border-brand-indigo bg-brand-indigo/5 shadow-[0_4px_12px_rgba(99,102,241,0.05)]' : 'border-slate-200 hover:border-slate-350'
+                    }`}
+                  >
+                    <input type="radio" name="payment" value={method.id} checked={paymentMethod === method.id}
+                      onChange={(e) => setPaymentMethod(e.target.value)} className="accent-brand-indigo w-4 h-4 cursor-pointer" />
+                    <span className="text-2xl">{method.icon}</span>
+                    <div className="flex-1">
+                      <p className="font-bold text-slate-800 text-sm m-0 leading-tight">{method.label}</p>
+                      <p className="text-xs text-slate-400 m-0 mt-0.5 font-medium">{method.desc}</p>
+                    </div>
+                  </label>
+
+                  {/* Koko Installment Breakdown */}
+                  {paymentMethod === 'koko' && method.id === 'koko' && (
+                    <div className="ml-8 p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2 text-xs">
+                      <p className="font-bold text-slate-700 m-0 uppercase tracking-wider text-[10px]">Koko 3-Month Interest-Free Installments:</p>
+                      <div className="flex justify-between border-b border-slate-200/40 pb-1.5 pt-1">
+                        <span className="text-slate-500 font-semibold">1st Payment (Today):</span>
+                        <span className="font-bold text-slate-800">Rs. {Math.round(total / 3).toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between border-b border-slate-200/40 pb-1.5">
+                        <span className="text-slate-500 font-semibold">2nd Payment (In 30 Days):</span>
+                        <span className="font-bold text-slate-800">Rs. {Math.round(total / 3).toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between pb-0.5">
+                        <span className="text-slate-500 font-semibold">3rd Payment (In 60 Days):</span>
+                        <span className="font-bold text-slate-800">Rs. {Math.round(total / 3).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Hire Purchase / Credit Calculator & Fields */}
+                  {paymentMethod === 'hire_purchase' && method.id === 'hire_purchase' && (
+                    <div className="ml-8 p-4 bg-amber-50/50 border border-amber-200 rounded-2xl space-y-4 text-xs">
+                      <p className="font-bold text-amber-800 m-0 uppercase tracking-wider text-[10px]">Hire Purchase Application Details & Live Calculator:</p>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">Your NIC Number *</label>
+                          <input
+                            type="text"
+                            value={customerNic}
+                            onChange={(e) => setCustomerNic(e.target.value)}
+                            placeholder="Enter NIC Number"
+                            className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">Installment Period</label>
+                          <select
+                            value={hpInstallments}
+                            onChange={(e) => setHpInstallments(Number(e.target.value))}
+                            className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white focus:outline-none"
+                          >
+                            <option value="3">3 Months Plan</option>
+                            <option value="6">6 Months Plan</option>
+                            <option value="12">12 Months Plan</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="bg-amber-100/40 p-3.5 rounded-xl border border-amber-200/60 space-y-2">
+                        <p className="font-bold text-amber-900 m-0 text-[11px]">Installment Breakdown Summary:</p>
+                        <div className="flex justify-between border-b border-amber-200/20 pb-1.5 pt-1">
+                          <span className="text-slate-600 font-semibold">Down Payment (30%):</span>
+                          <span className="font-bold text-emerald-600">Rs. {Math.round(total * 0.3).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-amber-200/20 pb-1.5">
+                          <span className="text-slate-600 font-semibold">Remaining Principal to Finance:</span>
+                          <span className="font-bold text-slate-700">Rs. {Math.round(total * 0.7).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between pb-0.5">
+                          <span className="text-slate-600 font-semibold">Monthly Installment Amount:</span>
+                          <span className="font-extrabold text-amber-800">Rs. {Math.round((total * 0.7) / hpInstallments).toLocaleString()} / month</span>
+                        </div>
+                      </div>
+
+                      {/* Guarantor Details */}
+                      <div className="space-y-3 pt-2 border-t border-amber-200/40">
+                        <p className="font-bold text-slate-700 m-0 uppercase tracking-wider text-[10px]">Guarantor Information (Optional):</p>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                          <div>
+                            <input
+                              type="text"
+                              value={guarantorName}
+                              onChange={(e) => setGuarantorName(e.target.value)}
+                              placeholder="Guarantor Name"
+                              className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white focus:outline-none"
+                            />
+                          </div>
+                          <div>
+                            <input
+                              type="text"
+                              value={guarantorNic}
+                              onChange={(e) => setGuarantorNic(e.target.value)}
+                              placeholder="Guarantor NIC"
+                              className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white focus:outline-none"
+                            />
+                          </div>
+                          <div>
+                            <input
+                              type="text"
+                              value={guarantorPhone}
+                              onChange={(e) => setGuarantorPhone(e.target.value)}
+                              placeholder="Guarantor Phone"
+                              className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white focus:outline-none"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           </motion.div>
@@ -606,7 +730,7 @@ const Checkout = () => {
               disabled={loading}
               className="w-full bg-gradient-to-r from-brand-indigo to-brand-violet hover:opacity-95 text-white font-bold py-3.5 rounded-xl transition-all shadow-[0_4px_12px_rgba(99,102,241,0.25)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer text-sm"
             >
-              {loading ? 'Processing...' : paymentMethod === 'payhere' ? 'Pay Now Securely' : paymentMethod === 'koko' ? 'Place Koko Order' : 'Confirm Order (COD)'}
+              {loading ? 'Processing...' : paymentMethod === 'payhere' ? 'Pay Now Securely' : paymentMethod === 'koko' ? 'Place Koko Order' : paymentMethod === 'hire_purchase' ? 'Apply for Hire Purchase / Credit' : 'Confirm Order (COD)'}
               <ChevronRight size={15} />
             </button>
 

@@ -23,18 +23,20 @@ const OrdersPage = () => {
   const { user } = useAuthStore();
   const { convertPrice, formatPrice } = useCurrencyStore();
 
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      const { data } = await getMyOrders();
+      setOrders(data || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (user) {
-      const fetchOrders = async () => {
-        try {
-          const { data } = await getMyOrders();
-          setOrders(data);
-        } catch (err) {
-          console.error(err);
-        } finally {
-          setLoading(false);
-        }
-      };
       fetchOrders();
     }
   }, [user]);
@@ -70,9 +72,8 @@ const OrdersPage = () => {
     if (!window.confirm('Are you sure you want to cancel this order?')) return;
     try {
       await cancelMyOrder(orderId, { reason: 'Cancelled by customer' });
-      toast.success('Order cancelled successfully');
-      const { data } = await getMyOrders();
-      setOrders(data || []);
+      toast.success('Your order has been cancelled successfully! 🛑');
+      fetchOrders();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to cancel order');
     }

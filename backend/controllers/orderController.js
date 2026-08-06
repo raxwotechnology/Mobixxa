@@ -206,6 +206,40 @@ const createOrder = async (req, res, next) => {
       await markVoucherAsUsed(req.user._id, appliedVoucher.code);
     }
 
+    // Hire Purchase Initialization for Online Orders
+    if (paymentMethod === 'hire_purchase') {
+      const { hirePurchaseData } = req.body;
+      const hpStartDate = new Date();
+      const hpNextDueDate = new Date(hpStartDate);
+      hpNextDueDate.setMonth(hpNextDueDate.getMonth() + 1);
+
+      const HirePurchase = require('../models/HirePurchase');
+      await HirePurchase.create({
+        storeId,
+        orderId: order._id,
+        customer: {
+          name: req.user.name,
+          phone: req.user.phone || '',
+          nic: hirePurchaseData?.customerNic || '',
+          address: (deliveryAddress?.street || '') + ', ' + (deliveryAddress?.city || '')
+        },
+        totalAmount: order.totalAmount,
+        interestRate: 0,
+        interestAmount: 0,
+        netTotal: order.totalAmount,
+        downPayment: hirePurchaseData?.downPayment || Math.round(order.totalAmount * 0.3),
+        balanceAmount: order.totalAmount - (hirePurchaseData?.downPayment || Math.round(order.totalAmount * 0.3)),
+        installmentType: 'Monthly',
+        numberOfInstallments: hirePurchaseData?.numberOfInstallments || 3,
+        installmentAmount: Math.round((order.totalAmount - (hirePurchaseData?.downPayment || Math.round(order.totalAmount * 0.3))) / (hirePurchaseData?.numberOfInstallments || 3)),
+        totalPaid: hirePurchaseData?.downPayment || Math.round(order.totalAmount * 0.3),
+        startDate: hpStartDate,
+        nextDueDate: hpNextDueDate,
+        createdBy: req.user._id,
+        notes: 'Online Hire Purchase checkout'
+      });
+    }
+
     // Update product stock
     for (const item of items) {
       await Product.findByIdAndUpdate(item.productId, {

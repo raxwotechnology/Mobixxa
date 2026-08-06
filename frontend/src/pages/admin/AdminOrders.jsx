@@ -188,7 +188,7 @@ const AdminOrders = ({ navItems: propNavItems }) => {
     if (!window.confirm('Are you sure you want to cancel this order?')) return;
     try {
       await cancelOrder(orderId, { cancellationReason: 'Cancelled by Admin' });
-      toast.success('Order cancelled');
+      toast.success('Order has been cancelled successfully! 🛑');
       fetchOrders();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to cancel order');
