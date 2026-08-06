@@ -505,6 +505,14 @@ const AdminOrders = ({ navItems: propNavItems }) => {
                           </button>
 
                           <button
+                            onClick={() => setViewDetailsOrder(order)}
+                            className="p-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-800 hover:text-white transition-all border-0 cursor-pointer"
+                            title="View Full Details"
+                          >
+                            <Eye size={14} />
+                          </button>
+
+                          <button
                             onClick={() => setViewBillOrder(order)}
                             className="p-2 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all border-0 cursor-pointer"
                             title="View / Print Bill"
