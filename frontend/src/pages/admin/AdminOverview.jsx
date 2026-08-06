@@ -51,22 +51,22 @@ const AdminOverview = () => {
     <DashboardLayout navItems={navItems} title="Overview">
       <div className="max-w-7xl mx-auto pb-10 space-y-8">
         
-        {/* Executive Command Banner */}
-        <div className="admin-command-banner rounded-[2rem] p-8 text-white relative overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.15),transparent_60%)] pointer-events-none" />
+        {/* Executive Command Center Banner */}
+        <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden shadow-xl border border-blue-900/30">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,0.2),transparent_60%)] pointer-events-none" />
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-              <span className="inline-flex items-center gap-1.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest mb-3">
+              <span className="inline-flex items-center gap-1.5 bg-blue-500/20 text-blue-300 border border-blue-500/30 px-3.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider mb-3">
                 <ShieldCheck size={12} /> Executive Command Center
               </span>
-              <h1 className="text-2xl md:text-4xl font-black tracking-tight text-white m-0">Enterprise Overview</h1>
-              <p className="text-slate-300 text-xs md:text-sm font-semibold m-0 mt-2 max-w-xl">
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white m-0">Enterprise Overview</h1>
+              <p className="text-slate-300 text-xs md:text-sm font-normal m-0 mt-2 max-w-xl leading-relaxed">
                 Real-time insights across store network, sales revenues, inventory assets, and group profit performance.
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <span className="inline-flex items-center gap-2 bg-slate-900/80 backdrop-blur-md px-4 py-2 rounded-xl text-xs font-bold text-slate-200 border border-slate-700">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 pulse-live-dot" /> Live System Active
+              <span className="inline-flex items-center gap-2 bg-slate-900/90 backdrop-blur-md px-4 py-2 rounded-xl text-xs font-semibold text-slate-200 border border-slate-700/80 shadow-sm">
+                <span className="w-2.5 h-2.5 rounded-full bg-blue-400 pulse-live-dot" /> Live System Active
               </span>
             </div>
           </div>
@@ -75,7 +75,7 @@ const AdminOverview = () => {
         {/* Loading Spinner */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="w-10 h-10 border-4 border-slate-200 border-t-emerald-500 rounded-full animate-spin" />
+            <div className="w-10 h-10 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin" />
           </div>
         ) : (
           /* Metrics Top 5 Cards */
@@ -83,19 +83,19 @@ const AdminOverview = () => {
             {cards.map((card) => (
               <div
                 key={card.label}
-                className="bg-white border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between enterprise-card shadow-xs"
+                className="bg-white border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between enterprise-card shadow-xs hover:border-blue-300 transition-all"
               >
                 <div className="flex items-center justify-between">
                   <div className={`w-11 h-11 rounded-xl ${card.bg} border flex items-center justify-center shadow-xs`}>
                     <card.icon size={20} className={card.color} />
                   </div>
-                  <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md flex items-center gap-0.5 border border-emerald-200">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md flex items-center gap-0.5 border border-blue-200">
                     <ArrowUpRight size={10} /> {card.change}
                   </span>
                 </div>
                 <div className="mt-4">
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 m-0 mb-1">{card.label}</p>
-                  <p className="text-xl font-black text-slate-900 truncate m-0">{card.value}</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 m-0 mb-1">{card.label}</p>
+                  <p className="text-xl font-bold text-slate-900 truncate m-0">{card.value}</p>
                 </div>
               </div>
             ))}

@@ -13,7 +13,7 @@ import NotificationBell from './NotificationBell';
 const NavLink = ({ item, location, collapsed, onNavigate, userRole }) => {
   const { accent } = useThemeStore();
   const themeConfig = THEME_ACCENTS[accent] || THEME_ACCENTS.indigo;
-  const primaryColor = themeConfig.primary || '#6366f1';
+  const primaryColor = themeConfig.primary || '#2563eb';
   const [isHovered, setIsHovered] = useState(false);
 
   const isRoot = item.path === '/admin' || item.path === '/manager' || item.path === '/employee';
@@ -31,20 +31,20 @@ const NavLink = ({ item, location, collapsed, onNavigate, userRole }) => {
       style={
         isActive
           ? {
-              backgroundColor: primaryColor,
+              backgroundColor: '#2563eb',
               color: '#ffffff',
-              boxShadow: `0 10px 22px -5px ${primaryColor}70`,
+              boxShadow: `0 8px 20px -4px rgba(37, 99, 235, 0.4)`,
             }
           : isHovered
           ? {
-              backgroundColor: `${primaryColor}18`,
-              color: primaryColor,
+              backgroundColor: `#2563eb12`,
+              color: '#2563eb',
             }
           : {}
       }
-      className={`relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-black transition-all group ${
+      className={`relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all group ${
         isActive
-          ? 'text-white shadow-lg'
+          ? 'text-white shadow-md'
           : 'text-slate-600'
       }`}
     >
@@ -53,8 +53,8 @@ const NavLink = ({ item, location, collapsed, onNavigate, userRole }) => {
       )}
       <item.icon
         size={16}
-        style={!isActive && isHovered ? { color: primaryColor } : {}}
-        className={`flex-shrink-0 transition-transform duration-200 group-hover:scale-110 ${
+        style={!isActive && isHovered ? { color: '#2563eb' } : {}}
+        className={`flex-shrink-0 transition-transform duration-200 group-hover:scale-105 ${
           isActive ? 'text-white' : 'text-slate-400'
         }`}
       />
@@ -103,7 +103,7 @@ const SidebarContent = ({ navItems = [], collapsed, location, onNavigate, userRo
         <div key={gi} className="mb-2">
           {!collapsed && (
             <div className="flex items-center justify-between px-3 pt-3 pb-1">
-              <span className="text-[9.5px] font-black uppercase tracking-widest text-slate-400 select-none">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 select-none">
                 {group.label}
               </span>
             </div>
