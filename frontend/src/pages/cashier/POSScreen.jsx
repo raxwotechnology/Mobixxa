@@ -502,6 +502,7 @@ const POSScreen = () => {
         setUnlockCode('');
         setUnlockError('');
         toast.success(`Welcome back, ${user.name}!`);
+        loadSession();
         return;
       }
     }
@@ -524,6 +525,7 @@ const POSScreen = () => {
       setUnlockCode('');
       setUnlockError('');
       toast.success(`Welcome back, ${data.name}!`);
+      loadSession();
     } catch (err) {
       setUnlockError(err.response?.data?.message || 'Invalid passcode or password. Please try again.');
     }
@@ -837,7 +839,6 @@ const POSScreen = () => {
     setUnlockCode('');
     setUnlockError('');
     setSelectedCashier(null);
-    pos.clearCart();
   };
 
   // Logout
@@ -984,10 +985,37 @@ const POSScreen = () => {
         justifyContent: 'center',
         backgroundColor: '#0f172a',
         backgroundImage: 'radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.15) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(99, 102, 241, 0.15) 0%, transparent 40%)',
-        fontFamily: "'Inter', sans-serif",
+        fontFamily: "'Poppins', sans-serif",
         padding: '16px',
         overflowY: 'auto'
       }}>
+        {/* Floating Back to Dashboard Button */}
+        <button
+          onClick={handleBack}
+          style={{
+            position: 'absolute',
+            top: '24px',
+            left: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: 'rgba(255, 255, 255, 0.05)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            color: '#94a3b8',
+            padding: '10px 18px',
+            borderRadius: '14px',
+            cursor: 'pointer',
+            fontSize: '12px',
+            fontWeight: 'bold',
+            zIndex: 10000,
+            transition: 'all 0.2s',
+            outline: 'none'
+          }}
+          className="hover:bg-slate-800 hover:text-white"
+        >
+          <ArrowLeft size={16} /> Back to Dashboard
+        </button>
+
         {/* Main Glassmorphic Container */}
         <div 
           className="flex flex-col md:flex-row w-full max-w-[900px] h-auto md:h-[580px] overflow-y-auto md:overflow-hidden"
@@ -1073,6 +1101,10 @@ const POSScreen = () => {
                       
                       <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '2px', textTransform: 'capitalize' }}>
                         {cashier.role === 'deliveryGuy' ? 'Rider' : cashier.role}
+                      </div>
+
+                      <div style={{ fontSize: '9px', color: '#60a5fa', marginTop: '3px', fontWeight: 'bold' }}>
+                        ID: {cashier.employeeInfo?.epfNo || cashier._id.slice(-6).toUpperCase()}
                       </div>
 
                       {cashier.assignedStore?.name && (
