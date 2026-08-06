@@ -19,10 +19,11 @@ const adminNavGroups = [
   {
     label: 'User & Employee Management',
     items: [
-      { path: '/admin/users',      label: 'Users',      icon: Users },
       { path: '/admin/employees',  label: 'Employees',  icon: UsersRound },
       { path: '/admin/attendance', label: 'Attendance', icon: Clock },
       { path: '/admin/leaves',     label: 'Leaves',     icon: Clock },
+      { path: '/admin/payroll',    label: 'Payroll',    icon: Landmark },
+      { path: '/admin/salary-advances', label: 'Salary Advances', icon: DollarSign },
       { path: '/admin/targets',    label: 'Targets',    icon: Target },
     ],
   },

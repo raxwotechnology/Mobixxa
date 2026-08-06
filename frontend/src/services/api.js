@@ -250,6 +250,11 @@ export const downloadPaysheet = (id) => API.get(`/payroll/paysheet/${id}`, { res
 export const exportSalaryHistory = (employeeId, params) =>
   API.get(`/payroll/history/${employeeId}/export`, { params, responseType: 'blob' });
 
+// Salary Advances
+export const getSalaryAdvances = (params) => API.get('/payroll/advances', { params });
+export const recordSalaryAdvance = (data) => API.post('/payroll/advances', data);
+export const deleteSalaryAdvance = (id) => API.delete(`/payroll/advances/${id}`);
+
 // Settings
 export const uploadImage = (formData) => API.post('/upload/image', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 export const uploadDocument = (formData) => API.post('/upload/document', formData, { headers: { 'Content-Type': 'multipart/form-data' } });

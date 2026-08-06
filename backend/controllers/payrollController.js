@@ -3,6 +3,7 @@ const User = require('../models/User');
 const Settings = require('../models/Settings');
 const LeavePolicy = require('../models/LeavePolicy');
 const AttendancePolicy = require('../models/AttendancePolicy');
+const SalaryAdvance = require('../models/SalaryAdvance');
 const { sendNotification } = require('../utils/notificationService');
 const { salaryPaidEmail, sendEmail } = require('../utils/emailService');
 
@@ -588,4 +589,81 @@ const downloadPaysheet = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-module.exports = { calculateSalary, processSalaryPayment, getSalaryHistory, getPayrollReport, exportEmployeeSalaryReport, downloadPaysheet };
+// @desc    Record salary advance for an employee
+// @route   POST /api/payroll/advances
+// @access  Private/Manager/Admin
+const recordSalaryAdvance = async (req, res, next) => {
+  try {
+    const { employeeId, amount, reason, date } = req.body;
+    if (!employeeId || !amount) {
+      res.status(400);
+      return next(new Error('Employee and Amount are required'));
+    }
+    const advanceDate = date ? new Date(date) : new Date();
+    const advance = await SalaryAdvance.create({
+      employeeId,
+      amount: Number(amount),
+      reason: reason || 'Salary advance',
+      requestDate: advanceDate,
+      month: advanceDate.getMonth() + 1,
+      year: advanceDate.getFullYear(),
+      approvedBy: req.user._id,
+      status: 'approved',
+    });
+    const populated = await SalaryAdvance.findById(advance._id).populate('employeeId', 'name email role employeeInfo');
+    res.status(201).json(populated);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get salary advances
+// @route   GET /api/payroll/advances
+// @access  Private/Manager/Admin
+const getSalaryAdvances = async (req, res, next) => {
+  try {
+    const { month, year, employeeId } = req.query;
+    const query = {};
+    if (month) query.month = Number(month);
+    if (year) query.year = Number(year);
+    if (employeeId) query.employeeId = employeeId;
+
+    const advances = await SalaryAdvance.find(query)
+      .populate('employeeId', 'name email role employeeInfo')
+      .populate('approvedBy', 'name')
+      .sort({ createdAt: -1 });
+
+    res.json(advances);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Delete salary advance
+// @route   DELETE /api/payroll/advances/:id
+// @access  Private/Admin
+const deleteSalaryAdvance = async (req, res, next) => {
+  try {
+    const advance = await SalaryAdvance.findById(req.params.id);
+    if (!advance) {
+      res.status(404);
+      return next(new Error('Salary advance not found'));
+    }
+    await advance.deleteOne();
+    res.json({ message: 'Salary advance removed' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = {
+  calculateSalary,
+  processSalaryPayment,
+  getSalaryHistory,
+  getPayrollReport,
+  exportEmployeeSalaryReport,
+  downloadPaysheet,
+  recordSalaryAdvance,
+  getSalaryAdvances,
+  deleteSalaryAdvance,
+};

@@ -30,6 +30,7 @@ const AdminAttendance = () => {
   const [selectedStore, setSelectedStore] = useState('All');
   
   const [showAttModal, setShowAttModal] = useState(false);
+  const [empSearchQuery, setEmpSearchQuery] = useState('');
   const [attForm, setAttForm] = useState({ employeeId: '', date: new Date().toISOString().split('T')[0], checkInTime: '09:00', checkOutTime: '17:00', status: 'present', notes: '' });
 
   // Policy Management States
@@ -625,11 +626,26 @@ const AdminAttendance = () => {
             
             <div className="p-6 bg-slate-50/50 space-y-4">
               <div>
-                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Employee *</label>
-                <select value={attForm.employeeId} onChange={(e) => setAttForm({...attForm, employeeId: e.target.value})}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm cursor-pointer">
-                  <option value="">Select employee</option>
-                  {employees.map(e => <option key={e._id} value={e._id}>{e.name} ({e.role})</option>)}
+                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1">Search & Select Employee *</label>
+                <input
+                  type="text"
+                  placeholder="🔍 Type name or role to search..."
+                  value={empSearchQuery}
+                  onChange={(e) => setEmpSearchQuery(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs mb-2 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20"
+                />
+                <select
+                  value={attForm.employeeId}
+                  onChange={(e) => setAttForm({...attForm, employeeId: e.target.value})}
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm cursor-pointer"
+                >
+                  <option value="">Select employee ({employees.filter(e => e.role !== 'customer').length} available)</option>
+                  {employees
+                    .filter(e => e.role !== 'customer')
+                    .filter(e => e.name?.toLowerCase().includes(empSearchQuery.toLowerCase()) || e.role?.toLowerCase().includes(empSearchQuery.toLowerCase()))
+                    .map(e => (
+                      <option key={e._id} value={e._id}>{e.name} ({e.role})</option>
+                    ))}
                 </select>
               </div>
               <div className="grid grid-cols-2 gap-4">
