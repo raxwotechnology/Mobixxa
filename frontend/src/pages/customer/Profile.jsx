@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 
 import { adminNavGroups } from '../admin/adminNavItems';
 import { managerNavGroups } from '../storeOwner/managerNavItems';
+import { getEmployeeNavGroups } from '../employee/employeeNav';
 
 const defaultCustomerNavItems = [
   { path: '/profile', label: 'My Profile', icon: User },
@@ -21,6 +22,9 @@ const Profile = () => {
   const getNavGroups = () => {
     if (user?.role === 'admin') return adminNavGroups;
     if (user?.role === 'manager') return managerNavGroups;
+    if (['cashier', 'deliveryGuy', 'stockEmployee'].includes(user?.role)) {
+      return getEmployeeNavGroups(user.role);
+    }
     return null;
   };
 

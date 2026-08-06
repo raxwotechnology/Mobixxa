@@ -8,6 +8,7 @@ import { updateProfile } from '../services/api';
 import { toast } from 'react-toastify';
 import { adminNavGroups } from './admin/adminNavItems';
 import { managerNavGroups } from './storeOwner/managerNavItems';
+import { getEmployeeNavGroups } from './employee/employeeNav';
 
 const UserSettings = () => {
   const { user, login } = useAuthStore();
@@ -40,6 +41,9 @@ const UserSettings = () => {
   const getNavGroups = () => {
     if (user?.role === 'admin') return adminNavGroups;
     if (user?.role === 'manager') return managerNavGroups;
+    if (['cashier', 'deliveryGuy', 'stockEmployee'].includes(user?.role)) {
+      return getEmployeeNavGroups(user.role);
+    }
     return null;
   };
 
