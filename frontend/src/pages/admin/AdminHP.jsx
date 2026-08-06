@@ -17,10 +17,11 @@ import {
 import { getHPRecords, recordHPPayment, deleteHPRecord, getAccounts, getHPById } from '../../services/api';
 import { toast } from 'react-toastify';
 import DashboardLayout from '../../components/DashboardLayout';
-import { adminNavGroups as navItems } from './adminNavItems';
+import { adminNavGroups as defaultNavItems } from './adminNavItems';
 import DeleteConfirmationModal from '../../components/DeleteConfirmationModal';
 
-const AdminHP = () => {
+const AdminHP = ({ navItems: propNavItems }) => {
+  const navItems = propNavItems || defaultNavItems;
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');

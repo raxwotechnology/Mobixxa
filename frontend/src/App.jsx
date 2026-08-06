@@ -193,6 +193,7 @@ function App() {
           <Route path="/manager/supplier-payments" element={<ProtectedRoute roles={['manager']}><ManagerSupplierPayments /></ProtectedRoute>} />
           <Route path="/manager/repairs" element={<ProtectedRoute roles={['manager']}><ManagerRepairs navItems={managerNavGroups} /></ProtectedRoute>} />
           <Route path="/manager/warranty" element={<ProtectedRoute roles={['manager']}><AdminWarranty /></ProtectedRoute>} />
+          <Route path="/manager/hp" element={<ProtectedRoute roles={['manager']}><AdminHP navItems={managerNavGroups} /></ProtectedRoute>} />
 
           {/* Admin */}
           <Route path="/admin" element={<ProtectedRoute roles={['admin']}><AdminOverview /></ProtectedRoute>} />

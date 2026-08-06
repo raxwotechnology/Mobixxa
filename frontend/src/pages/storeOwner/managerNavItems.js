@@ -29,6 +29,7 @@ const managerNavGroups = [
       { path: '/manager/warranty', label: 'IMEI Warranty', icon: ShieldCheck },
       { path: '/manager/returns',  label: 'Returns',   icon: RotateCcw },
       { path: '/manager/repairs',  label: 'Device Repairs', icon: Wrench },
+      { path: '/manager/hp',       label: 'Hire Purchase & Credit', icon: Wallet },
     ],
   },
   {

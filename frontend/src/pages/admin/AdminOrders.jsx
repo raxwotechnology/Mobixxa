@@ -12,7 +12,8 @@ import {
   getAvailableDeliveryGuys,
   getCategories,
   updateOrderAdmin,
-  deleteAdminOrder
+  deleteAdminOrder,
+  getHPRecords
 } from '../../services/api';
 import useCurrencyStore from '../../store/currencyStore';
 import { toast } from 'react-toastify';
@@ -74,6 +75,33 @@ const AdminOrders = ({ navItems: propNavItems }) => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [passcode, setPasscode] = useState('');
+
+  const [linkedHPRecord, setLinkedHPRecord] = useState(null);
+  const [loadingHP, setLoadingHP] = useState(false);
+
+  useEffect(() => {
+    if (viewDetailsOrder && viewDetailsOrder.paymentMethod === 'hire_purchase') {
+      const fetchLinkedHP = async () => {
+        try {
+          setLoadingHP(true);
+          const { data } = await getHPRecords({ orderId: viewDetailsOrder._id });
+          if (data && data.length > 0) {
+            setLinkedHPRecord(data[0]);
+          } else {
+            setLinkedHPRecord(null);
+          }
+        } catch (err) {
+          console.error('Failed to load linked HP record', err);
+          setLinkedHPRecord(null);
+        } finally {
+          setLoadingHP(false);
+        }
+      };
+      fetchLinkedHP();
+    } else {
+      setLinkedHPRecord(null);
+    }
+  }, [viewDetailsOrder]);
 
   const [editForm, setEditForm] = useState({
     id: '',
@@ -614,6 +642,54 @@ const AdminOrders = ({ navItems: propNavItems }) => {
                   </table>
                 </div>
               </div>
+
+              {viewDetailsOrder.paymentMethod === 'hire_purchase' && (
+                <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider bg-amber-200/60 px-2 py-0.5 rounded">Hire Purchase / Credit Agreement</span>
+                    {linkedHPRecord && (
+                      <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full ${
+                        linkedHPRecord.status === 'completed' ? 'bg-emerald-100 text-emerald-700' :
+                        linkedHPRecord.status === 'arrears' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'
+                      }`}>
+                        Status: {linkedHPRecord.status}
+                      </span>
+                    )}
+                  </div>
+                  {loadingHP ? (
+                    <p className="text-xs text-amber-600 animate-pulse m-0">Fetching linked credit details...</p>
+                  ) : linkedHPRecord ? (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+                      <div>
+                        <span className="text-[10px] text-slate-500 block">Customer NIC</span>
+                        <span className="font-bold text-slate-700">{linkedHPRecord.customer?.nic || 'N/A'}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-500 block">Down Payment</span>
+                        <span className="font-bold text-emerald-600">Rs. {linkedHPRecord.downPayment?.toLocaleString()}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-500 block">Outstanding Balance</span>
+                        <span className="font-extrabold text-rose-600">Rs. {linkedHPRecord.balanceAmount?.toLocaleString()}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-500 block">Installment Plan</span>
+                        <span className="font-bold text-slate-700">Rs. {linkedHPRecord.installmentAmount?.toLocaleString()}/mo ({linkedHPRecord.numberOfInstallments}x)</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-500 block">Paid Amount</span>
+                        <span className="font-bold text-emerald-600">Rs. {linkedHPRecord.totalPaid?.toLocaleString()}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-500 block">Next Due Date</span>
+                        <span className="font-bold text-slate-700">{linkedHPRecord.nextDueDate ? new Date(linkedHPRecord.nextDueDate).toLocaleDateString() : 'N/A'}</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-amber-600 italic m-0">No active Hire Purchase details found for this order.</p>
+                  )}
+                </div>
+              )}
 
               <div className="bg-slate-900 text-white p-4 rounded-2xl flex items-center justify-between">
                 <div>

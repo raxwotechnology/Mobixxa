@@ -8,9 +8,10 @@ const { recordTransaction } = require('../services/ledgerService');
 // @access  Private/Admin/Manager
 const getHPRecords = async (req, res, next) => {
   try {
-    const { status, storeId, search } = req.query;
+    const { status, storeId, search, orderId } = req.query;
     const filter = {};
     
+    if (orderId) filter.orderId = orderId;
     if (req.user.role === 'manager') {
       const store = await Store.findOne({ managerId: req.user._id });
       if (store) filter.storeId = store._id;
