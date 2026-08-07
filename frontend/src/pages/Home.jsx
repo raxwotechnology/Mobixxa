@@ -49,78 +49,115 @@ const Home = () => {
   return (
     <div>
       {/* ===== HERO SECTION ===== */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white border-b border-slate-800/40">
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-10 left-10 w-80 h-80 bg-brand-indigo/20 rounded-full blur-[120px]"></div>
-          <div className="absolute bottom-10 right-10 w-96 h-96 bg-brand-violet/10 rounded-full blur-[130px]"></div>
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 text-white border-b border-slate-800/40 py-20 md:py-28">
+        {/* Animated Background Orbs */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <motion.div
+            className="absolute -top-20 -left-20 w-96 h-96 bg-blue-600/20 rounded-full blur-[130px]"
+            animate={{ scale: [1, 1.25, 1], opacity: [0.3, 0.55, 0.3] }}
+            transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          <motion.div
+            className="absolute -bottom-20 -right-20 w-[30rem] h-[30rem] bg-sky-500/15 rounded-full blur-[150px]"
+            animate={{ scale: [1.2, 1, 1.2], opacity: [0.2, 0.45, 0.2] }}
+            transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+          />
         </div>
-        <div className="base-container py-20 md:py-28 flex flex-col md:flex-row items-center justify-between relative z-10">
+
+        <div className="base-container flex flex-col md:flex-row items-center justify-between relative z-10">
           <motion.div
             className="md:w-1/2 mb-12 md:mb-0"
-            initial={{ opacity: 0, x: -40 }}
+            initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
           >
-            <span className="inline-flex items-center gap-2 bg-brand-indigo/15 text-brand-indigo text-xs font-bold px-4 py-2 rounded-full mb-6 uppercase tracking-wider border border-brand-indigo/25">
-              <Sparkles size={13} className="text-brand-indigo" /> Next-Gen Technology
-            </span>
-            {/* Brand Name - editable from admin settings */}
+            <motion.span
+              className="inline-flex items-center gap-2 bg-blue-500/15 text-blue-400 text-xs font-bold px-4 py-2 rounded-full mb-6 uppercase tracking-wider border border-blue-500/30 shadow-xs"
+              whileHover={{ scale: 1.05 }}
+            >
+              <Sparkles size={14} className="text-blue-400 animate-pulse" /> Next-Gen Technology
+            </motion.span>
+
+            {/* Brand Name */}
             <div className="mb-4">
               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Welcome to</p>
-              <h2 className="text-3xl md:text-4xl font-black bg-gradient-to-r from-brand-indigo via-brand-violet to-brand-fuchsia bg-clip-text text-transparent leading-tight">
+              <motion.h2
+                className="text-3xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-400 via-sky-300 to-cyan-400 bg-clip-text text-transparent leading-tight"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 1, delay: 0.2 }}
+              >
                 {settings?.shopName || 'Mobile Hub'}
-              </h2>
+              </motion.h2>
             </div>
-            <h1 className="text-4xl md:text-6xl font-semibold leading-tight mb-6 mt-0 tracking-tight">
+
+            <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-6 mt-0 tracking-tight text-white">
               Premium Tech &
               <br />
-              <span className="bg-gradient-to-r from-brand-indigo via-brand-violet to-brand-cyan bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-blue-400 via-sky-400 to-cyan-300 bg-clip-text text-transparent drop-shadow-sm">
                 Smart Devices.
               </span>
             </h1>
-            <p className="text-slate-400 text-lg mb-8 max-w-lg leading-relaxed font-medium">
+
+            <p className="text-slate-300 text-base md:text-lg mb-8 max-w-lg leading-relaxed font-normal">
               Discover the latest smartphones, powerful laptops, immersive audio, and premium accessories curated for modern lifestyles. Upgrade your tech today.
             </p>
+
             <div className="flex flex-wrap gap-4">
-              <Link
-                to="/shop"
-                className="bg-gradient-to-r from-brand-indigo to-brand-violet hover:opacity-95 text-white font-bold py-4 px-8 rounded-2xl transition-all shadow-[0_6px_20px_rgba(99,102,241,0.35)] inline-flex items-center gap-2"
-              >
-                Shop Now <ArrowRight size={18} />
-              </Link>
-              <Link
-                to="/deals"
-                className="border border-slate-700 bg-slate-800/30 hover:bg-slate-800/60 text-white font-bold py-4 px-8 rounded-2xl transition-all inline-flex items-center gap-2 backdrop-blur-sm"
-              >
-                Tech Deals
-              </Link>
+              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+                <Link
+                  to="/shop"
+                  className="bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-500 hover:to-sky-500 text-white font-bold py-4 px-8 rounded-2xl transition-all shadow-[0_8px_25px_rgba(37,99,235,0.4)] inline-flex items-center gap-2"
+                >
+                  Shop Now <ArrowRight size={18} />
+                </Link>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+                <Link
+                  to="/deals"
+                  className="border border-slate-700/80 bg-slate-900/60 hover:bg-slate-800 text-white font-bold py-4 px-8 rounded-2xl transition-all inline-flex items-center gap-2 backdrop-blur-md shadow-sm"
+                >
+                  Tech Deals
+                </Link>
+              </motion.div>
             </div>
           </motion.div>
 
           <motion.div
             className="md:w-1/2 flex justify-center"
-            initial={{ opacity: 0, x: 40 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, delay: 0.2 }}
+            initial={{ opacity: 0, scale: 0.85 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
           >
-            <div className="relative">
-              <div className="w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 rounded-full overflow-hidden shadow-[0_15px_45px_rgba(99,102,241,0.25)] border-4 border-brand-indigo/35 bg-white/5 p-1 backdrop-blur-sm flex items-center justify-center mx-auto">
+            <div className="relative group">
+              {/* Rotating Outer Glow Ring */}
+              <motion.div
+                className="absolute -inset-3 rounded-full bg-gradient-to-r from-blue-500 via-sky-400 to-cyan-500 opacity-40 blur-xl group-hover:opacity-70 transition-opacity duration-500"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+              />
+
+              <motion.div
+                className="relative w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 rounded-full overflow-hidden shadow-[0_20px_50px_rgba(37,99,235,0.3)] border-4 border-blue-500/40 bg-white/5 p-1 backdrop-blur-md flex items-center justify-center mx-auto"
+                animate={{ y: [0, -8, 0] }}
+                transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+              >
                 <img
                   src={getImageUrl(settings?.logoUrl) || '/logo.png'}
                   alt={settings?.shopName || 'Shop Logo'}
-                  className="w-full h-full object-cover rounded-full transition-transform duration-500 hover:scale-105"
+                  className="w-full h-full object-cover rounded-full transition-transform duration-700 group-hover:scale-105"
                   onError={(e) => { e.target.onerror = null; e.target.src = '/logo.png'; }}
                 />
-              </div>
+              </motion.div>
             </div>
           </motion.div>
         </div>
       </section>
 
       {/* ===== VALUE PROPS ===== */}
-      <section className="bg-slate-50/50 border-y border-slate-200/50 backdrop-blur-sm">
-        <div className="base-container py-10 px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+      <section className="bg-white/80 border-y border-slate-200/80 backdrop-blur-md shadow-xs">
+        <div className="base-container py-8 px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
               { icon: <Truck size={22} />, title: 'Free Shipping', desc: 'On all devices islandwide' },
               { icon: <Clock3 size={22} />, title: 'Fast Dispatch', desc: 'Packed in 24 hours' },
@@ -129,19 +166,20 @@ const Home = () => {
             ].map((item, i) => (
               <motion.div
                 key={i}
-                className="flex items-center gap-3.5"
+                className="flex items-center gap-3.5 p-3 rounded-2xl hover:bg-blue-50/50 transition-all cursor-default"
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true }}
                 variants={fadeUp}
                 transition={{ delay: i * 0.1, duration: 0.5 }}
+                whileHover={{ y: -3, scale: 1.02 }}
               >
-                <div className="w-12 h-12 bg-brand-indigo/10 rounded-xl flex items-center justify-center text-brand-indigo flex-shrink-0 shadow-sm">
+                <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 flex-shrink-0 shadow-xs border border-blue-100">
                   {item.icon}
                 </div>
                 <div>
-                  <h4 className="font-bold text-sm text-slate-800 m-0">{item.title}</h4>
-                  <p className="text-xs text-slate-400 m-0 mt-0.5 font-medium">{item.desc}</p>
+                  <h4 className="font-bold text-sm text-slate-900 m-0">{item.title}</h4>
+                  <p className="text-xs text-slate-500 m-0 mt-0.5 font-normal">{item.desc}</p>
                 </div>
               </motion.div>
             ))}
@@ -157,10 +195,10 @@ const Home = () => {
           variants={fadeUp} transition={{ duration: 0.5 }}
         >
           <div>
-            <h2 className="text-2xl md:text-3xl font-black text-slate-900 mt-0 mb-1.5 tracking-tight">Explore Categories</h2>
-            <p className="text-slate-500 m-0 text-sm font-medium">Discover curated smart devices and premium accessories</p>
+            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mt-0 mb-1.5 tracking-tight">Explore Categories</h2>
+            <p className="text-slate-500 m-0 text-sm font-normal">Discover curated smart devices and premium accessories</p>
           </div>
-          <Link to="/shop" className="text-brand-indigo hover:text-brand-violet transition-colors font-bold text-sm flex items-center gap-1">
+          <Link to="/shop" className="text-blue-600 hover:text-blue-700 transition-colors font-semibold text-sm flex items-center gap-1">
             View All <ArrowRight size={15} />
           </Link>
         </motion.div>
@@ -170,15 +208,16 @@ const Home = () => {
               key={cat._id}
               initial="hidden" whileInView="visible" viewport={{ once: true }}
               variants={fadeUp} transition={{ delay: i * 0.05, duration: 0.4 }}
+              whileHover={{ y: -8, scale: 1.04 }}
             >
               <Link
                 to={`/shop?category=${cat._id}`}
-                className="glass-card rounded-2xl p-5 text-center cursor-pointer group block"
+                className="bg-white border border-slate-200/80 hover:border-blue-400/80 rounded-2xl p-4 text-center cursor-pointer group block shadow-xs hover:shadow-[0_12px_25px_rgba(37,99,235,0.12)] transition-all duration-300"
               >
-                <div className="w-14 h-14 bg-slate-50 group-hover:bg-brand-indigo/10 rounded-2xl mx-auto mb-3.5 flex items-center justify-center text-2xl transition-all shadow-inner">
+                <div className="w-14 h-14 bg-slate-50 group-hover:bg-blue-50/80 rounded-2xl mx-auto mb-3 flex items-center justify-center text-2xl transition-colors shadow-inner border border-slate-100">
                   {cat.icon}
                 </div>
-                <h3 className="font-bold text-xs text-slate-700 mt-0 mb-0 group-hover:text-brand-indigo transition-colors truncate">
+                <h3 className="font-semibold text-xs text-slate-800 mt-0 mb-0 group-hover:text-blue-600 transition-colors truncate">
                   {cat.name}
                 </h3>
               </Link>
@@ -189,7 +228,7 @@ const Home = () => {
 
       {/* ===== DEALS OF THE DAY ===== */}
       {deals.length > 0 && (
-        <section className="bg-gradient-to-b from-slate-50 to-white py-16 border-y border-slate-100">
+        <section className="bg-gradient-to-b from-slate-50 via-blue-50/20 to-white py-16 border-y border-slate-200/60">
           <div className="base-container px-4">
             <motion.div
               className="flex items-end justify-between mb-10"
@@ -198,12 +237,18 @@ const Home = () => {
             >
               <div>
                 <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-2xl">⚡</span>
-                  <h2 className="text-2xl md:text-3xl font-black text-slate-900 mt-0 mb-0 tracking-tight">Flash Deals</h2>
+                  <motion.span
+                    className="text-2xl inline-block"
+                    animate={{ rotate: [0, -10, 10, -10, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                  >
+                    ⚡
+                  </motion.span>
+                  <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mt-0 mb-0 tracking-tight">Flash Deals</h2>
                 </div>
-                <p className="text-slate-500 m-0 text-sm font-medium">Grab these tech picks before they are gone</p>
+                <p className="text-slate-500 m-0 text-sm font-normal">Grab these tech picks before they are gone</p>
               </div>
-              <Link to="/deals" className="text-brand-indigo hover:text-brand-violet transition-colors font-bold text-sm flex items-center gap-1">
+              <Link to="/deals" className="text-blue-600 hover:text-blue-700 transition-colors font-semibold text-sm flex items-center gap-1">
                 View All <ArrowRight size={15} />
               </Link>
             </motion.div>
@@ -212,7 +257,8 @@ const Home = () => {
                 <motion.div
                   key={product._id}
                   initial="hidden" whileInView="visible" viewport={{ once: true }}
-                  variants={fadeUp} transition={{ delay: i * 0.1, duration: 0.5 }}
+                  variants={fadeUp} transition={{ delay: i * 0.08, duration: 0.5 }}
+                  whileHover={{ y: -4 }}
                 >
                   <ProductCard product={product} />
                 </motion.div>
@@ -231,10 +277,10 @@ const Home = () => {
             variants={fadeUp} transition={{ duration: 0.5 }}
           >
             <div>
-              <h2 className="text-2xl md:text-3xl font-black text-slate-900 mt-0 mb-1.5 tracking-tight">Featured Devices</h2>
-              <p className="text-slate-500 m-0 text-sm font-medium">Handpicked favorites by our tech experts</p>
+              <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mt-0 mb-1.5 tracking-tight">Featured Devices</h2>
+              <p className="text-slate-500 m-0 text-sm font-normal">Handpicked favorites by our tech experts</p>
             </div>
-            <Link to="/shop?featured=true" className="text-brand-indigo hover:text-brand-violet transition-colors font-bold text-sm flex items-center gap-1">
+            <Link to="/shop?featured=true" className="text-blue-600 hover:text-blue-700 transition-colors font-semibold text-sm flex items-center gap-1">
               View All <ArrowRight size={15} />
             </Link>
           </motion.div>
@@ -244,6 +290,7 @@ const Home = () => {
                 key={product._id}
                 initial="hidden" whileInView="visible" viewport={{ once: true }}
                 variants={fadeUp} transition={{ delay: i * 0.08, duration: 0.5 }}
+                whileHover={{ y: -4 }}
               >
                 <ProductCard product={product} />
               </motion.div>
@@ -253,42 +300,45 @@ const Home = () => {
       )}
 
       {/* ===== TESTIMONIALS ===== */}
-      <section className="base-container py-16 px-4">
-        <motion.div
-          className="text-center mb-12"
-          initial="hidden" whileInView="visible" viewport={{ once: true }}
-          variants={fadeUp} transition={{ duration: 0.5 }}
-        >
-          <h2 className="text-2xl md:text-3xl font-black text-slate-900 mt-0 mb-1.5 tracking-tight">What Our Customers Say</h2>
-          <p className="text-slate-500 m-0 text-sm font-medium">Trusted by tech enthusiasts everywhere</p>
-        </motion.div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {[
-            { name: 'Alex M.', text: "Got my new iPhone delivered the same day. Incredible service and the packaging was flawless. Highly recommended!", avatar: '👨‍💻', rating: 5 },
-            { name: 'Sarah J.', text: "The range of accessories is unmatched. Found the perfect MagSafe case and wireless charger combo here.", avatar: '👩‍💼', rating: 5 },
-            { name: 'Kevin D.', text: "Best tech store online. The warranty support is solid and the prices are always competitive.", avatar: '👨', rating: 4 },
-            { name: 'Maria L.', text: "Fast shipping and excellent customer service. Will definitely be shopping here again!", avatar: '👩', rating: 5 },
-          ].map((testimonial, i) => (
-            <motion.div
-              key={i}
-              className="glass-card rounded-3xl p-6 shadow-sm flex flex-col justify-between"
-              initial="hidden" whileInView="visible" viewport={{ once: true }}
-              variants={fadeUp} transition={{ delay: i * 0.15, duration: 0.5 }}
-            >
-              <div>
-                <div className="flex gap-1 mb-4">
-                  {[...Array(testimonial.rating)].map((_, j) => (
-                    <Star key={j} size={15} className="fill-brand-violet text-brand-violet" />
-                  ))}
+      <section className="bg-slate-50/70 border-t border-slate-200/80 py-16">
+        <div className="base-container px-4">
+          <motion.div
+            className="text-center mb-12"
+            initial="hidden" whileInView="visible" viewport={{ once: true }}
+            variants={fadeUp} transition={{ duration: 0.5 }}
+          >
+            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mt-0 mb-1.5 tracking-tight">What Our Customers Say</h2>
+            <p className="text-slate-500 m-0 text-sm font-normal">Trusted by tech enthusiasts everywhere</p>
+          </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {[
+              { name: 'Alex M.', text: "Got my new iPhone delivered the same day. Incredible service and the packaging was flawless. Highly recommended!", avatar: '👨‍💻', rating: 5 },
+              { name: 'Sarah J.', text: "The range of accessories is unmatched. Found the perfect MagSafe case and wireless charger combo here.", avatar: '👩‍💼', rating: 5 },
+              { name: 'Kevin D.', text: "Best tech store online. The warranty support is solid and the prices are always competitive.", avatar: '👨', rating: 4 },
+              { name: 'Maria L.', text: "Fast shipping and excellent customer service. Will definitely be shopping here again!", avatar: '👩', rating: 5 },
+            ].map((testimonial, i) => (
+              <motion.div
+                key={i}
+                className="bg-white border border-slate-200/80 hover:border-blue-300 rounded-3xl p-6 shadow-xs hover:shadow-lg transition-all flex flex-col justify-between"
+                initial="hidden" whileInView="visible" viewport={{ once: true }}
+                variants={fadeUp} transition={{ delay: i * 0.12, duration: 0.5 }}
+                whileHover={{ y: -6, scale: 1.02 }}
+              >
+                <div>
+                  <div className="flex gap-1 mb-4">
+                    {[...Array(testimonial.rating)].map((_, j) => (
+                      <Star key={j} size={15} className="fill-amber-400 text-amber-400" />
+                    ))}
+                  </div>
+                  <p className="text-slate-600 text-sm italic mb-6 leading-relaxed">"{testimonial.text}"</p>
                 </div>
-                <p className="text-slate-600 text-sm italic mb-6 leading-relaxed">"{testimonial.text}"</p>
-              </div>
-              <div className="flex items-center gap-3 border-t border-slate-100/50 pt-4">
-                <span className="text-2xl">{testimonial.avatar}</span>
-                <span className="font-bold text-xs text-slate-800 uppercase tracking-wider">{testimonial.name}</span>
-              </div>
-            </motion.div>
-          ))}
+                <div className="flex items-center gap-3 border-t border-slate-100 pt-4">
+                  <span className="text-2xl">{testimonial.avatar}</span>
+                  <span className="font-semibold text-xs text-slate-800 uppercase tracking-wider">{testimonial.name}</span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
     </div>
