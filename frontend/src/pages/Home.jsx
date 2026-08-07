@@ -112,33 +112,6 @@ const Home = () => {
                   onError={(e) => { e.target.onerror = null; e.target.src = '/logo.png'; }}
                 />
               </div>
-              {/* Floating badges */}
-              {heroProducts[0] && (
-                <motion.div
-                  className="absolute -top-4 right-0 bg-slate-900/90 border border-slate-800 backdrop-blur-md rounded-2xl shadow-xl p-3.5 flex items-center gap-3"
-                  animate={{ y: [0, -10, 0] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  <span className="text-2xl">{heroProducts[0].emoji || '📱'}</span>
-                  <div>
-                    <p className="text-xs font-bold text-white m-0 leading-tight">{heroProducts[0].name}</p>
-                    <p className="text-xs text-brand-indigo m-0 font-bold mt-1">LKR {Number(heroProducts[0].price).toLocaleString()}</p>
-                  </div>
-                </motion.div>
-              )}
-              {heroProducts[1] && (
-                <motion.div
-                  className="absolute bottom-4 -left-4 bg-slate-900/90 border border-slate-800 backdrop-blur-md rounded-2xl shadow-xl p-3.5 flex items-center gap-3"
-                  animate={{ y: [0, 10, 0] }}
-                  transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  <span className="text-2xl">{heroProducts[1].emoji || '💻'}</span>
-                  <div>
-                    <p className="text-xs font-bold text-white m-0 leading-tight">{heroProducts[1].name}</p>
-                    <p className="text-xs text-brand-indigo m-0 font-bold mt-1">LKR {Number(heroProducts[1].price).toLocaleString()}</p>
-                  </div>
-                </motion.div>
-              )}
             </div>
           </motion.div>
         </div>
