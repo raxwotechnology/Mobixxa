@@ -145,6 +145,16 @@ const AppLayout = ({ children }) => {
 };
 
 
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+};
+
 function App() {
   useEffect(() => {
     useThemeStore.getState().applyThemeToDocument();
@@ -152,6 +162,7 @@ function App() {
 
   return (
     <Router>
+      <ScrollToTop />
       <AppLayout>
         <Routes>
           {/* Public */}
