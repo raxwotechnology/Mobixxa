@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { User, Lock, Palette, Bell, CheckCircle, Save, Moon, Sun } from 'lucide-react';
+import { User, Lock, Palette, Bell, CheckCircle, Save, Moon, Sun, Type, ALargeSmall, Bold, Search } from 'lucide-react';
 import DashboardLayout from '../components/DashboardLayout';
 import useAuthStore from '../store/authStore';
 import useThemeStore, { THEME_ACCENTS, FONT_OPTIONS, SPECTRUM_GRID } from '../store/themeStore';
@@ -13,9 +13,26 @@ import { getEmployeeNavGroups } from './employee/employeeNav';
 const UserSettings = () => {
   const { user, login } = useAuthStore();
   const { currency, setCurrency } = useCurrencyStore();
-  const { accent, customColor, mode, fontFamily, notifications, setAccent, setCustomColor, setMode, setFontFamily, toggleNotificationPref, applyThemeToDocument } = useThemeStore();
+  const { 
+    accent, 
+    customColor, 
+    mode, 
+    fontFamily, 
+    fontSize, 
+    fontWeight, 
+    notifications, 
+    setAccent, 
+    setCustomColor, 
+    setMode, 
+    setFontFamily, 
+    setFontSize, 
+    setFontWeight, 
+    toggleNotificationPref, 
+    applyThemeToDocument 
+  } = useThemeStore();
 
-  const [activeTab, setActiveTab] = useState('security'); // 'security', 'theme', 'profile', 'notifications'
+  const [activeTab, setActiveTab] = useState('security'); // 'security', 'font', 'theme', 'profile', 'notifications'
+  const [fontSearch, setFontSearch] = useState('');
 
   // Profile Form
   const [name, setName] = useState(user?.name || '');
@@ -133,13 +150,9 @@ const UserSettings = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold hover:bg-slate-200 transition-all cursor-pointer"
-          >
-            {mode === 'dark' ? <Sun size={16} className="text-amber-500" /> : <Moon size={16} style={{ color: primaryColor }} />}
-            {mode === 'dark' ? 'Light Mode' : 'Dark Mode'}
-          </button>
+          <span className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 text-xs font-bold">
+            ☀️ Light Theme
+          </span>
         </div>
       </div>
 
@@ -149,6 +162,7 @@ const UserSettings = () => {
         <div className="bg-white rounded-3xl p-3 border border-slate-200/80 shadow-sm space-y-1 h-fit">
           {[
             { id: 'security', label: 'Security & Password', icon: Lock },
+            { id: 'font', label: 'Font & Typography', icon: Type },
             { id: 'theme', label: 'Theme & Color Accent', icon: Palette },
             { id: 'profile', label: 'Profile Details', icon: User },
             { id: 'notifications', label: 'Notifications', icon: Bell },
@@ -258,51 +272,273 @@ const UserSettings = () => {
             </form>
           )}
 
-          {/* TAB 2: THEME & COLOR ACCENT CUSTOMIZER */}
-          {activeTab === 'theme' && (
-            <div className="space-y-8">
+          {/* TAB 2: FONT & TYPOGRAPHY MANAGEMENT */}
+          {activeTab === 'font' && (
+            <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <Palette className="text-blue-600" size={20} /> Personal Theme & Font Customizer
+                <h3 className="text-xl font-extrabold text-slate-900 flex items-center gap-2 m-0">
+                  <Type className="text-indigo-600" size={22} /> Font & Typography Management
                 </h3>
-                <p className="text-xs text-slate-500 mt-1">Customize the font family, primary accent colors, and visual experience for your account</p>
+                <p className="text-xs text-slate-500 mt-1 m-0">
+                  Customize font family choices, global text sizing, and font weight boldness for your account
+                </p>
               </div>
 
-              {/* Font Family Selector */}
-              <div className="space-y-3">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Choose Font Family (Applies Across All Pages)</label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {Object.entries(FONT_OPTIONS).map(([key, config]) => {
-                    const isSelected = (fontFamily || 'poppins') === key;
+              {/* SECTION 1: FONT FAMILY SELECTION */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
+                <div className="flex items-center justify-between flex-wrap gap-2 pb-4 border-b border-slate-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-lg">
+                      🔤
+                    </div>
+                    <div>
+                      <h4 className="text-base font-extrabold text-slate-900 m-0">Choose Font Family (Applies Across All Pages)</h4>
+                      <p className="text-xs text-slate-500 m-0 mt-0.5">Select a typography typeface for headings, product lists, and AI prediction cards</p>
+                    </div>
+                  </div>
+                  <span className="px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 text-[10px] font-bold uppercase tracking-wider">
+                    {Object.keys(FONT_OPTIONS).length} Font Choices
+                  </span>
+                </div>
+
+                {/* Font Search Bar */}
+                <div className="relative">
+                  <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    value={fontSearch}
+                    onChange={(e) => setFontSearch(e.target.value)}
+                    placeholder="Search 18+ font families (e.g. Poppins, Tech, Serif, Mono, Clean)..."
+                    className="w-full bg-slate-50 border border-slate-200/90 rounded-2xl py-2.5 pl-10 pr-10 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                  />
+                  {fontSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setFontSearch('')}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 hover:text-slate-700 cursor-pointer border-0 bg-transparent"
+                      title="Clear search"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+
+                {/* Font Items Grid */}
+                {(() => {
+                  const filteredFonts = Object.entries(FONT_OPTIONS).filter(([key, config]) => {
+                    if (!fontSearch.trim()) return true;
+                    const q = fontSearch.toLowerCase();
                     return (
-                      <button
-                        key={key}
-                        type="button"
-                        onClick={() => handleSelectFont(key, config.name)}
-                        style={{ 
-                          fontFamily: config.font,
-                          ...(isSelected ? { borderColor: primaryColor, backgroundColor: `${primaryColor}10` } : {})
-                        }}
-                        className={`p-4 rounded-2xl border transition-all text-left flex items-center justify-between cursor-pointer ${
-                          isSelected ? 'shadow-sm' : 'border-slate-200 hover:border-slate-300 bg-white'
-                        }`}
-                      >
-                        <div>
-                          <p className="text-sm font-semibold text-slate-900 m-0">{config.name}</p>
-                          <p className="text-xs text-slate-500 m-0 mt-1" style={{ fontFamily: config.font }}>
-                            The quick brown fox jumps over the lazy dog. 12345
-                          </p>
-                        </div>
-                        {isSelected && <CheckCircle size={20} style={{ color: primaryColor }} className="flex-shrink-0 ml-2" />}
-                      </button>
+                      config.name.toLowerCase().includes(q) ||
+                      (config.category && config.category.toLowerCase().includes(q)) ||
+                      key.toLowerCase().includes(q)
                     );
-                  })}
+                  });
+
+                  if (filteredFonts.length === 0) {
+                    return (
+                      <div className="text-center py-10 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                        <Type size={32} className="mx-auto text-slate-300 mb-2" />
+                        <p className="text-xs font-bold text-slate-600 m-0">No fonts found matching "{fontSearch}"</p>
+                        <p className="text-[11px] text-slate-400 m-0 mt-1">Try searching for "Serif", "Sans", "Mono", or "Clean"</p>
+                        <button
+                          type="button"
+                          onClick={() => setFontSearch('')}
+                          className="mt-3 text-xs font-extrabold text-indigo-600 hover:underline border-0 bg-transparent cursor-pointer"
+                        >
+                          Clear Search Filter
+                        </button>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 max-h-[480px] overflow-y-auto pr-1">
+                      {filteredFonts.map(([key, config]) => {
+                        const isSelected = (fontFamily || 'poppins') === key;
+                        return (
+                          <button
+                            key={key}
+                            type="button"
+                            onClick={() => handleSelectFont(key, config.name)}
+                            style={{ 
+                              fontFamily: config.font,
+                              ...(isSelected ? { borderColor: primaryColor, backgroundColor: `${primaryColor}08` } : {})
+                            }}
+                            className={`p-4 rounded-2xl border transition-all text-left flex items-center justify-between cursor-pointer group ${
+                              isSelected ? 'shadow-sm ring-1 ring-offset-1' : 'border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50/50'
+                            }`}
+                          >
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <p className="text-sm font-bold text-slate-900 m-0">{config.name}</p>
+                                {config.category && (
+                                  <span className="text-[9px] font-semibold uppercase px-2 py-0.5 rounded-md bg-slate-100 text-slate-500">
+                                    {config.category}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs text-slate-500 m-0 leading-relaxed" style={{ fontFamily: config.font }}>
+                                The quick brown fox jumps over the lazy dog. 12345
+                              </p>
+                            </div>
+                            {isSelected && <CheckCircle size={20} style={{ color: primaryColor }} className="flex-shrink-0 ml-3" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* SECTION 2: FONT SIZE BALANCE & WEIGHT CONTROLS */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Font Size Scaling */}
+                <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs space-y-4">
+                  <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
+                    <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                      <ALargeSmall size={18} />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-extrabold text-slate-900 m-0">Font Size Scale Balance</h4>
+                      <p className="text-[11px] text-slate-500 m-0">Adjust display text scale ratio</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {[
+                      { key: 'compact', label: 'Compact', scale: '92%' },
+                      { key: 'normal', label: 'Balanced (Default)', scale: '100%' },
+                      { key: 'large', label: 'Large Clean', scale: '108%' },
+                      { key: 'xlarge', label: 'Extra Large', scale: '116%' },
+                    ].map((item) => {
+                      const isSelected = (fontSize || 'normal') === item.key;
+                      return (
+                        <button
+                          key={item.key}
+                          type="button"
+                          onClick={() => {
+                            setFontSize(item.key);
+                            toast.success(`Font size changed to ${item.label}! 📐`);
+                          }}
+                          style={isSelected ? { borderColor: primaryColor, backgroundColor: `${primaryColor}10` } : {}}
+                          className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                            isSelected ? 'font-black shadow-xs ring-1' : 'border-slate-200 hover:bg-slate-50 text-slate-700'
+                          }`}
+                        >
+                          <p className="text-xs font-bold m-0">{item.label}</p>
+                          <span className="text-[10px] text-slate-400 font-mono">{item.scale}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Font Weight Boldness */}
+                <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs space-y-4">
+                  <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
+                    <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
+                      <Bold size={18} />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-extrabold text-slate-900 m-0">Font Weight & Boldness</h4>
+                      <p className="text-[11px] text-slate-500 m-0">Select heading & UI text weight preference</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {[
+                      { key: 'normal', label: 'Regular (400)', weight: '400' },
+                      { key: 'medium', label: 'Medium (500)', weight: '500' },
+                      { key: 'semibold', label: 'SemiBold (600)', weight: '600' },
+                      { key: 'bold', label: 'Bold (700)', weight: '700' },
+                    ].map((item) => {
+                      const isSelected = (fontWeight || 'normal') === item.key;
+                      return (
+                        <button
+                          key={item.key}
+                          type="button"
+                          onClick={() => {
+                            setFontWeight(item.key);
+                            toast.success(`Font weight changed to ${item.label}! 🖋️`);
+                          }}
+                          style={{
+                            ...(isSelected ? { borderColor: primaryColor, backgroundColor: `${primaryColor}10` } : {}),
+                            fontWeight: item.weight,
+                          }}
+                          className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                            isSelected ? 'shadow-xs ring-1' : 'border-slate-200 hover:bg-slate-50 text-slate-700'
+                          }`}
+                        >
+                          <p className="text-xs m-0">{item.label}</p>
+                          <span className="text-[10px] text-slate-400 font-mono">w-{item.weight}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 
-              {/* Color Accents Grid with Hex Codes */}
-              <div className="pt-4 border-t border-slate-100 space-y-4">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Choose Accent Theme Color (#Hex Codes)</label>
+              {/* SECTION 3: LIVE PREVIEW & AI PREDICTION DEMO BOX */}
+              <div 
+                className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4 transition-all"
+                style={{
+                  fontFamily: FONT_OPTIONS[fontFamily]?.font || FONT_OPTIONS.poppins.font,
+                  fontSize: fontSize === 'compact' ? '0.9rem' : fontSize === 'large' ? '1.08rem' : fontSize === 'xlarge' ? '1.16rem' : '1rem',
+                  fontWeight: fontWeight === 'medium' ? '500' : fontWeight === 'semibold' ? '600' : fontWeight === 'bold' ? '700' : '400',
+                }}
+              >
+                <div className="flex items-center justify-between text-xs text-slate-400 font-bold uppercase tracking-wider pb-2 border-b border-slate-100">
+                  <span>Dynamic Real-Time Font Preview</span>
+                  <span className="text-indigo-600 font-mono">
+                    {FONT_OPTIONS[fontFamily]?.name || 'Poppins'} • {fontSize || 'normal'} • {fontWeight || 'normal'}
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  <span className="inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider text-white" style={{ backgroundColor: primaryColor }}>
+                    🤖 AI Device Prediction Card
+                  </span>
+                  <h4 className="text-xl font-black text-slate-900 m-0">Apple iPhone 15 Pro Max (256GB - Natural Titanium)</h4>
+                  <p className="text-xs text-slate-600 m-0 leading-relaxed">
+                    Based on your recent browsing predictions and sales trends, this device matches 98% of your preferred specifications. Enjoy Super Retina XDR display with ProMotion.
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-3 pt-2">
+                  <span className="px-4 py-2.5 rounded-xl text-white text-xs font-bold shadow-md cursor-pointer" style={{ backgroundColor: primaryColor }}>
+                    Order Now • LKR 449,900.00
+                  </span>
+                  <span className="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold hover:bg-slate-200 cursor-pointer">
+                    Compare Specs
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: THEME & COLOR ACCENT CUSTOMIZER */}
+          {activeTab === 'theme' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-xl font-extrabold text-slate-900 flex items-center gap-2 m-0">
+                  <Palette className="text-blue-600" size={22} /> Theme & Color Accent Customizer
+                </h3>
+                <p className="text-xs text-slate-500 mt-1 m-0">Customize primary accent colors, spectrum hex palettes, display modes, and currency settings</p>
+              </div>
+
+              {/* SECTION 1: PREDEFINED ACCENT THEMES */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
+                <div className="flex items-center justify-between flex-wrap gap-2 pb-4 border-b border-slate-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg">
+                      🎨
+                    </div>
+                    <div>
+                      <h4 className="text-base font-extrabold text-slate-900 m-0">Preset Accent Theme Colors (#Hex Codes)</h4>
+                      <p className="text-xs text-slate-500 m-0 mt-0.5">Select a primary color scheme for buttons, icons, highlights, and gradients</p>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {Object.entries(THEME_ACCENTS).map(([key, config]) => {
                     const isSelected = accent === key;
@@ -311,13 +547,13 @@ const UserSettings = () => {
                         key={key}
                         type="button"
                         onClick={() => handleSelectAccent(key, config.name)}
-                        style={isSelected ? { borderColor: primaryColor, backgroundColor: `${primaryColor}10` } : {}}
+                        style={isSelected ? { borderColor: primaryColor, backgroundColor: `${primaryColor}08` } : {}}
                         className={`p-4 rounded-2xl border transition-all text-left flex items-center justify-between cursor-pointer ${
-                          isSelected ? 'shadow-sm' : 'border-slate-200 hover:border-slate-300 bg-white'
+                          isSelected ? 'shadow-sm ring-1 ring-offset-1' : 'border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50/50'
                         }`}
                       >
                         <div className="flex items-center gap-3">
-                          <div className={`w-9 h-9 rounded-xl bg-gradient-to-tr ${config.gradient} shadow-sm border border-black/10`} />
+                          <div className={`w-10 h-10 rounded-2xl bg-gradient-to-tr ${config.gradient} shadow-sm border border-black/10`} />
                           <div>
                             <p className="text-xs font-bold text-slate-900 m-0">{config.name}</p>
                             <div className="flex items-center gap-1.5 mt-1 font-mono text-[10px] text-slate-500">
@@ -334,106 +570,85 @@ const UserSettings = () => {
                     );
                   })}
                 </div>
-              </div>
 
-              {/* Full Spectrum Color Grid & Custom Color Picker */}
-              <div className="pt-4 border-t border-slate-100 space-y-4">
-                <div className="flex items-center justify-between flex-wrap gap-2">
-                  <div>
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Full Spectrum Color Palette Grid</label>
-                    <p className="text-xs text-slate-500 m-0 mt-0.5 font-normal">Pick any exact shade or choose your custom #hex brand color</p>
+                {/* Full Spectrum Color Grid & Custom Color Picker */}
+                <div className="pt-4 border-t border-slate-100 space-y-4">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div>
+                      <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Full Spectrum Color Palette Grid</label>
+                      <p className="text-xs text-slate-500 m-0 mt-0.5 font-normal">Pick any exact shade or enter a custom #hex brand color</p>
+                    </div>
+                    <div className="flex items-center gap-2 bg-slate-50 border border-slate-200/80 px-3 py-1.5 rounded-xl">
+                      <input
+                        type="color"
+                        value={customColor || '#2563eb'}
+                        onChange={(e) => handleSelectCustomColor(e.target.value)}
+                        className="w-7 h-7 rounded-lg border-0 cursor-pointer bg-transparent"
+                        title="Open custom color wheel"
+                      />
+                      <input
+                        type="text"
+                        value={customColor || '#2563eb'}
+                        onChange={(e) => handleSelectCustomColor(e.target.value)}
+                        placeholder="#2563eb"
+                        className="w-20 font-mono text-xs font-bold text-slate-800 bg-transparent border-0 focus:outline-none uppercase"
+                      />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 bg-slate-50 border border-slate-200/80 px-3 py-1.5 rounded-xl">
-                    <input
-                      type="color"
-                      value={customColor || '#2563eb'}
-                      onChange={(e) => handleSelectCustomColor(e.target.value)}
-                      className="w-7 h-7 rounded-lg border-0 cursor-pointer bg-transparent"
-                      title="Open custom color wheel"
-                    />
-                    <input
-                      type="text"
-                      value={customColor || '#2563eb'}
-                      onChange={(e) => handleSelectCustomColor(e.target.value)}
-                      placeholder="#2563eb"
-                      className="w-20 font-mono text-xs font-bold text-slate-800 bg-transparent border-0 focus:outline-none uppercase"
-                    />
+
+                  {/* Color Tiles Grid */}
+                  <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-2xl">
+                    <div className="grid grid-cols-10 sm:grid-cols-20 gap-1.5">
+                      {SPECTRUM_GRID.map((hex, idx) => {
+                        const isSelected = accent === 'custom' && customColor?.toLowerCase() === hex.toLowerCase();
+                        return (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => handleSelectCustomColor(hex)}
+                            title={`Select ${hex}`}
+                            style={{ backgroundColor: hex }}
+                            className={`w-full aspect-square rounded-md transition-transform duration-150 hover:scale-125 cursor-pointer relative ${
+                              isSelected ? 'ring-2 ring-white ring-offset-2 ring-offset-slate-900 scale-110 z-10' : 'hover:z-10'
+                            }`}
+                          >
+                            {isSelected && (
+                              <span className="absolute inset-0 flex items-center justify-center text-white text-[10px] font-bold drop-shadow-md">✓</span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
 
-                {/* Color Tiles Grid */}
-                <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-2xl">
-                  <div className="grid grid-cols-10 sm:grid-cols-20 gap-1.5">
-                    {SPECTRUM_GRID.map((hex, idx) => {
-                      const isSelected = accent === 'custom' && customColor?.toLowerCase() === hex.toLowerCase();
-                      return (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => handleSelectCustomColor(hex)}
-                          title={`Select ${hex}`}
-                          style={{ backgroundColor: hex }}
-                          className={`w-full aspect-square rounded-md transition-transform duration-150 hover:scale-125 cursor-pointer relative ${
-                            isSelected ? 'ring-2 ring-white ring-offset-2 ring-offset-slate-900 scale-110 z-10' : 'hover:z-10'
-                          }`}
-                        >
-                          {isSelected && (
-                            <span className="absolute inset-0 flex items-center justify-center text-white text-[10px] font-bold drop-shadow-md">✓</span>
-                          )}
-                        </button>
-                      );
-                    })}
+                {/* Currency Preferences */}
+                <div className="pt-4 border-t border-slate-100">
+
+                  {/* Currency Preference */}
+                  <div className="space-y-3">
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Default Currency Preference</label>
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setCurrency('LKR')}
+                        className={`flex-1 p-3.5 rounded-2xl border text-center font-bold text-xs cursor-pointer ${
+                          currency === 'LKR' ? 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-xs' : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                        }`}
+                      >
+                        LKR 🇱🇰 (Rupee)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCurrency('USD')}
+                        className={`flex-1 p-3.5 rounded-2xl border text-center font-bold text-xs cursor-pointer ${
+                          currency === 'USD' ? 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-xs' : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                        }`}
+                      >
+                        USD 🇺🇸 (Dollar)
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </div>
-
-              {/* Mode Toggle */}
-              <div className="pt-4 border-t border-slate-100 space-y-3">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Display Layout Mode</label>
-                <div className="flex gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setMode('light')}
-                    className={`flex-1 p-4 rounded-2xl border text-center transition-all cursor-pointer ${
-                      mode === 'light' ? 'border-indigo-600 bg-indigo-50/50 font-black text-slate-900' : 'border-slate-200 text-slate-600'
-                    }`}
-                  >
-                    ☀️ Light Clean Mode
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setMode('dark')}
-                    className={`flex-1 p-4 rounded-2xl border text-center transition-all cursor-pointer ${
-                      mode === 'dark' ? 'border-indigo-600 bg-slate-900 text-white font-black' : 'border-slate-200 text-slate-600'
-                    }`}
-                  >
-                    🌙 Dark Glass Mode
-                  </button>
-                </div>
-              </div>
-
-              {/* Currency Preference */}
-              <div className="pt-4 border-t border-slate-100 space-y-3">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Default Currency Preference</label>
-                <div className="flex gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setCurrency('LKR')}
-                    className={`flex-1 p-3 rounded-xl border text-center font-bold text-xs cursor-pointer ${
-                      currency === 'LKR' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-slate-200 text-slate-600'
-                    }`}
-                  >
-                    LKR 🇱🇰 (Sri Lankan Rupee)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCurrency('USD')}
-                    className={`flex-1 p-3 rounded-xl border text-center font-bold text-xs cursor-pointer ${
-                      currency === 'USD' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-slate-200 text-slate-600'
-                    }`}
-                  >
-                    USD 🇺🇸 (US Dollar)
-                  </button>
                 </div>
               </div>
             </div>

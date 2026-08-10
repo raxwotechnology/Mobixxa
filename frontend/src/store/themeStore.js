@@ -65,17 +65,30 @@ const THEME_ACCENTS = {
 };
 
 const FONT_OPTIONS = {
-  poppins: { name: 'Poppins (Modern Clean)', font: "'Poppins', sans-serif" },
-  inter: { name: 'Inter (Sleek Tech)', font: "'Inter', sans-serif" },
-  outfit: { name: 'Outfit (Luxury Modern)', font: "'Outfit', sans-serif" },
-  jakarta: { name: 'Plus Jakarta Sans (Corporate)', font: "'Plus Jakarta Sans', sans-serif" },
+  poppins: { name: 'Poppins (Modern Clean)', font: "'Poppins', sans-serif", category: 'Geometric Sans' },
+  inter: { name: 'Inter (Sleek Tech)', font: "'Inter', sans-serif", category: 'Modern Neo-Grotesque' },
+  outfit: { name: 'Outfit (Luxury Modern)', font: "'Outfit', sans-serif", category: 'Display Tech' },
+  jakarta: { name: 'Plus Jakarta Sans (Corporate)', font: "'Plus Jakarta Sans', sans-serif", category: 'Humanist' },
+  space: { name: 'Space Grotesk (Futuristic Tech)', font: "'Space Grotesk', sans-serif", category: 'Futuristic Tech' },
+  montserrat: { name: 'Montserrat (Bold & Elegant)', font: "'Montserrat', sans-serif", category: 'Geometric Display' },
+  roboto: { name: 'Roboto (Universal Clean)', font: "'Roboto', sans-serif", category: 'Neo-Grotesque' },
+  lexend: { name: 'Lexend (Enhanced Readability)', font: "'Lexend', sans-serif", category: 'Readability' },
+  dmsans: { name: 'DM Sans (Minimalist Modern)', font: "'DM Sans', sans-serif", category: 'Minimalist' },
+  syne: { name: 'Syne (Avant-Garde Display)', font: "'Syne', sans-serif", category: 'Creative Display' },
+  playfair: { name: 'Playfair Display (Editorial Luxury)', font: "'Playfair Display', serif", category: 'Editorial Serif' },
+  cinzel: { name: 'Cinzel (Classic Royal)', font: "'Cinzel', serif", category: 'Classic Display' },
+  raleway: { name: 'Raleway (Sophisticated Clean)', font: "'Raleway', sans-serif", category: 'Elegant Sans' },
+  oswald: { name: 'Oswald (Condensed Impact)', font: "'Oswald', sans-serif", category: 'Condensed Display' },
+  lato: { name: 'Lato (Warm & Friendly)', font: "'Lato', sans-serif", category: 'Humanist Sans' },
+  nunito: { name: 'Nunito (Soft Rounded)', font: "'Nunito', sans-serif", category: 'Rounded Sans' },
+  cabin: { name: 'Cabin (Modern Humanist)', font: "'Cabin', sans-serif", category: 'Humanist Sans' },
+  firacode: { name: 'Fira Code (Monospace Tech)', font: "'Fira Code', monospace", category: 'Monospace Code' },
 };
 
-// Full spectrum color palette grid (similar to professional color pickers)
+// Full spectrum color palette grid (vibrant brand accent shades)
 const SPECTRUM_GRID = [
   '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16', '#22c55e', '#10b981', '#14b8a6', '#06b6d4', '#0891b2', '#0284c7', '#2563eb', '#3b82f6', '#4f46e5', '#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899', '#f43f5e',
-  '#dc2626', '#ea580c', '#d97706', '#ca8a04', '#65a30d', '#16a34a', '#059669', '#0d9488', '#0891b2', '#0369a1', '#1d4ed8', '#4338ca', '#6d28d9', '#7e22ce', '#c026d3', '#db2777', '#e11d48', '#991b1b', '#9a3412', '#854d0e',
-  '#0f172a', '#1e293b', '#334155', '#475569', '#64748b', '#000000'
+  '#dc2626', '#ea580c', '#d97706', '#ca8a04', '#65a30d', '#16a34a', '#059669', '#0d9488', '#0891b2', '#0369a1', '#1d4ed8', '#4338ca', '#6d28d9', '#7e22ce', '#c026d3', '#db2777', '#e11d48', '#991b1b', '#9a3412', '#854d0e'
 ];
 
 const useThemeStore = create(
@@ -84,8 +97,9 @@ const useThemeStore = create(
       accent: 'sapphire', // 'sapphire' | 'indigo' | 'emerald' | 'amber' | 'rose' | 'crimson' | 'custom'
       customColor: '#2563eb',
       mode: 'light', // 'light' | 'dark'
-      fontSize: 'normal',
-      fontFamily: 'poppins', // 'poppins' | 'inter' | 'outfit' | 'jakarta'
+      fontSize: 'normal', // 'compact' | 'normal' | 'large' | 'xlarge'
+      fontWeight: 'normal', // 'normal' | 'medium' | 'semibold' | 'bold'
+      fontFamily: 'poppins',
       notifications: {
         whatsappAlerts: true,
         smsAlerts: true,
@@ -107,7 +121,14 @@ const useThemeStore = create(
         set({ fontFamily: fontKey });
         get().applyThemeToDocument();
       },
-      setFontSize: (size) => set({ fontSize: size }),
+      setFontSize: (size) => {
+        set({ fontSize: size });
+        get().applyThemeToDocument();
+      },
+      setFontWeight: (weight) => {
+        set({ fontWeight: weight });
+        get().applyThemeToDocument();
+      },
       toggleNotificationPref: (key) =>
         set((state) => ({
           notifications: {
@@ -116,14 +137,29 @@ const useThemeStore = create(
           },
         })),
       applyThemeToDocument: () => {
-        const { accent, customColor, mode, fontFamily } = get();
+        const { accent, customColor, mode, fontFamily, fontSize, fontWeight } = get();
         const root = document.documentElement;
 
         const fontConfig = FONT_OPTIONS[fontFamily] || FONT_OPTIONS.poppins;
         root.style.setProperty('--font-user', fontConfig.font);
+        root.style.setProperty('--font-sans', fontConfig.font);
+
+        // Apply font scale
+        let fontScale = '100%';
+        if (fontSize === 'compact') fontScale = '92%';
+        if (fontSize === 'large') fontScale = '108%';
+        if (fontSize === 'xlarge') fontScale = '116%';
+        root.style.setProperty('--font-scale', fontScale);
+
+        // Apply font weight
+        let weightVal = '400';
+        if (fontWeight === 'medium') weightVal = '500';
+        if (fontWeight === 'semibold') weightVal = '600';
+        if (fontWeight === 'bold') weightVal = '700';
+        root.style.setProperty('--font-weight-user', weightVal);
 
         if (document.body) {
-          document.body.style.fontFamily = `${fontConfig.font} !important`;
+          document.body.style.fontFamily = fontConfig.font;
         }
 
         if (mode === 'dark') {
