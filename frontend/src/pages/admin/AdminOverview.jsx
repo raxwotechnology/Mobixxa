@@ -6,6 +6,7 @@ import { getAdminStats, getStores, getFinancialDashboard } from '../../services/
 import { adminNavGroups as navItems } from './adminNavItems';
 import useCurrencyStore from '../../store/currencyStore';
 import useAdminStoreStore from '../../store/adminStoreStore';
+import useThemeStore, { THEME_ACCENTS } from '../../store/themeStore';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 const AdminOverview = () => {
@@ -15,6 +16,10 @@ const AdminOverview = () => {
   const [loading, setLoading] = useState(true);
   const { currency } = useCurrencyStore();
   const { selectedStoreId } = useAdminStoreStore();
+  const { accent, customColor } = useThemeStore();
+
+  const themeConfig = THEME_ACCENTS[accent] || THEME_ACCENTS.sapphire;
+  const primaryColor = accent === 'custom' ? (customColor || '#2563eb') : (themeConfig.primary || '#2563eb');
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -52,11 +57,23 @@ const AdminOverview = () => {
       <div className="max-w-7xl mx-auto pb-10 space-y-8">
         
         {/* Executive Command Center Banner */}
-        <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden shadow-xl border border-blue-900/30">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,0.2),transparent_60%)] pointer-events-none" />
+        <div 
+          className="rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden shadow-xl border transition-all duration-300"
+          style={{
+            background: `linear-gradient(135deg, #0f172a 0%, #1e293b 45%, ${primaryColor} 100%)`,
+            borderColor: `${primaryColor}40`
+          }}
+        >
+          <div 
+            className="absolute inset-0 pointer-events-none opacity-40" 
+            style={{ background: `radial-gradient(circle at top right, ${primaryColor}, transparent 70%)` }}
+          />
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-              <span className="inline-flex items-center gap-1.5 bg-blue-500/20 text-blue-300 border border-blue-500/30 px-3.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider mb-3">
+              <span 
+                className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider mb-3 border shadow-xs"
+                style={{ backgroundColor: `${primaryColor}30`, color: '#ffffff', borderColor: `${primaryColor}60` }}
+              >
                 <ShieldCheck size={12} /> Executive Command Center
               </span>
               <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white m-0">Enterprise Overview</h1>
@@ -66,7 +83,7 @@ const AdminOverview = () => {
             </div>
             <div className="flex items-center gap-3">
               <span className="inline-flex items-center gap-2 bg-slate-900/90 backdrop-blur-md px-4 py-2 rounded-xl text-xs font-semibold text-slate-200 border border-slate-700/80 shadow-sm">
-                <span className="w-2.5 h-2.5 rounded-full bg-blue-400 pulse-live-dot" /> Live System Active
+                <span className="w-2.5 h-2.5 rounded-full pulse-live-dot" style={{ backgroundColor: primaryColor }} /> Live System Active
               </span>
             </div>
           </div>
@@ -75,7 +92,7 @@ const AdminOverview = () => {
         {/* Loading Spinner */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="w-10 h-10 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin" />
+            <div className="w-10 h-10 border-4 border-slate-200 rounded-full animate-spin" style={{ borderTopColor: primaryColor }} />
           </div>
         ) : (
           /* Metrics Top 5 Cards */
@@ -83,13 +100,16 @@ const AdminOverview = () => {
             {cards.map((card) => (
               <div
                 key={card.label}
-                className="bg-white border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between enterprise-card shadow-xs hover:border-blue-300 transition-all"
+                className="bg-white border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between enterprise-card shadow-xs transition-all"
               >
                 <div className="flex items-center justify-between">
                   <div className={`w-11 h-11 rounded-xl ${card.bg} border flex items-center justify-center shadow-xs`}>
                     <card.icon size={20} className={card.color} />
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md flex items-center gap-0.5 border border-blue-200">
+                  <span 
+                    className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md flex items-center gap-0.5 border"
+                    style={{ backgroundColor: `${primaryColor}12`, color: primaryColor, borderColor: `${primaryColor}30` }}
+                  >
                     <ArrowUpRight size={10} /> {card.change}
                   </span>
                 </div>

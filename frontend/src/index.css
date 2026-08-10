@@ -1,18 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
+:root {
+  --user-theme-primary: #2563eb;
+  --user-theme-secondary: #3b82f6;
+  --user-theme-accent: #0284c7;
+}
+
 @theme {
-  --color-primary-blue: #2563eb;
+  --color-primary-blue: var(--user-theme-primary, #2563eb);
   --color-accent-slate: #0f172a;
   --color-dark-navy: #030712;
   --color-light-bg: #f8fafc;
   --color-card-border: #e2e8f0;
   --color-muted-text: #64748b;
 
-  /* Premium Brand Palette (Blue Theme) */
-  --color-brand-indigo: #2563eb;
-  --color-brand-violet: #3b82f6;
-  --color-brand-fuchsia: #0284c7;
+  /* Dynamic Brand Palette (bound to user theme selection) */
+  --color-brand-indigo: var(--user-theme-primary, #2563eb);
+  --color-brand-violet: var(--user-theme-secondary, #3b82f6);
+  --color-brand-fuchsia: var(--user-theme-accent, #0284c7);
   --color-brand-cyan: #06b6d4;
 
   /* Override emerald → teal to align with cool teal theme */
