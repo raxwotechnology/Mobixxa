@@ -62,8 +62,8 @@ const Navbar = () => {
   const fetchCart = useCartStore((s) => s.fetchCart);
   const { currency, toggleCurrency, fetchRate, getProductPrice } = useCurrencyStore();
   const settings = useSettingsStore((s) => s.settings);
-  const brandName = 'Mobixa';
-  const brandLogoUrl = '/logo.png';
+  const brandName = settings?.shopName || 'SR Mobile';
+  const brandLogoUrl = getImageUrl(settings?.logoUrl || settings?.logo) || '/logo.png';
   const brandPhone = settings?.phone || '+94 11 255 5000';
   const freeDeliveryThreshold = Number(settings?.deliveryFeeThreshold || 5000).toLocaleString();
 

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { User, Lock, Palette, Bell, CheckCircle, Save, Moon, Sun } from 'lucide-react';
 import DashboardLayout from '../components/DashboardLayout';
 import useAuthStore from '../store/authStore';
-import useThemeStore, { THEME_ACCENTS } from '../store/themeStore';
+import useThemeStore, { THEME_ACCENTS, FONT_OPTIONS, SPECTRUM_GRID } from '../store/themeStore';
 import useCurrencyStore from '../store/currencyStore';
 import { updateProfile } from '../services/api';
 import { toast } from 'react-toastify';
@@ -13,7 +13,7 @@ import { getEmployeeNavGroups } from './employee/employeeNav';
 const UserSettings = () => {
   const { user, login } = useAuthStore();
   const { currency, setCurrency } = useCurrencyStore();
-  const { accent, mode, notifications, setAccent, setMode, toggleNotificationPref, applyThemeToDocument } = useThemeStore();
+  const { accent, customColor, mode, fontFamily, notifications, setAccent, setCustomColor, setMode, setFontFamily, toggleNotificationPref, applyThemeToDocument } = useThemeStore();
 
   const [activeTab, setActiveTab] = useState('security'); // 'security', 'theme', 'profile', 'notifications'
 
@@ -98,6 +98,16 @@ const UserSettings = () => {
   const handleSelectAccent = (key, name) => {
     setAccent(key);
     toast.success(`Theme color changed to ${name}! 🎨`);
+  };
+
+  const handleSelectCustomColor = (hex) => {
+    setCustomColor(hex);
+    toast.success(`Custom theme color set to ${hex}! 🎨`);
+  };
+
+  const handleSelectFont = (fontKey, fontName) => {
+    setFontFamily(fontKey);
+    toast.success(`Font family updated to ${fontName}! 🔤`);
   };
 
   const content = (
@@ -235,17 +245,46 @@ const UserSettings = () => {
 
           {/* TAB 2: THEME & COLOR ACCENT CUSTOMIZER */}
           {activeTab === 'theme' && (
-            <div className="space-y-6">
+            <div className="space-y-8">
               <div>
-                <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
-                  <Palette className="text-indigo-500" size={20} /> Personal Theme & Color Customizer
+                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <Palette className="text-blue-600" size={20} /> Personal Theme & Font Customizer
                 </h3>
-                <p className="text-xs text-slate-500 mt-1">Customize the primary accent colors and visual experience for your account</p>
+                <p className="text-xs text-slate-500 mt-1">Customize the font family, primary accent colors, and visual experience for your account</p>
               </div>
 
-              {/* Color Accents Grid */}
+              {/* Font Family Selector */}
               <div className="space-y-3">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Choose Accent Theme Color</label>
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Choose Font Family (Applies Across All Pages)</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {Object.entries(FONT_OPTIONS).map(([key, config]) => {
+                    const isSelected = (fontFamily || 'poppins') === key;
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => handleSelectFont(key, config.name)}
+                        style={{ fontFamily: config.font }}
+                        className={`p-4 rounded-2xl border transition-all text-left flex items-center justify-between cursor-pointer ${
+                          isSelected ? 'border-blue-600 bg-blue-50/60 shadow-sm ring-2 ring-blue-500/20' : 'border-slate-200 hover:border-slate-300 bg-white'
+                        }`}
+                      >
+                        <div>
+                          <p className="text-sm font-semibold text-slate-900 m-0">{config.name}</p>
+                          <p className="text-xs text-slate-500 m-0 mt-1" style={{ fontFamily: config.font }}>
+                            The quick brown fox jumps over the lazy dog. 12345
+                          </p>
+                        </div>
+                        {isSelected && <CheckCircle size={20} className="text-blue-600 flex-shrink-0 ml-2" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Color Accents Grid with Hex Codes */}
+              <div className="pt-4 border-t border-slate-100 space-y-4">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Choose Accent Theme Color (#Hex Codes)</label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {Object.entries(THEME_ACCENTS).map(([key, config]) => {
                     const isSelected = accent === key;
@@ -255,20 +294,77 @@ const UserSettings = () => {
                         type="button"
                         onClick={() => handleSelectAccent(key, config.name)}
                         className={`p-4 rounded-2xl border transition-all text-left flex items-center justify-between cursor-pointer ${
-                          isSelected ? 'border-indigo-600 bg-indigo-50/50 shadow-md ring-2 ring-indigo-500/20' : 'border-slate-200 hover:border-slate-300'
+                          isSelected ? 'border-blue-600 bg-blue-50/60 shadow-sm ring-2 ring-blue-500/20' : 'border-slate-200 hover:border-slate-300 bg-white'
                         }`}
                       >
                         <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-xl bg-gradient-to-tr ${config.gradient} shadow-md`} />
+                          <div className={`w-9 h-9 rounded-xl bg-gradient-to-tr ${config.gradient} shadow-sm border border-black/10`} />
                           <div>
-                            <p className="text-xs font-extrabold text-slate-800 m-0">{config.name}</p>
-                            <p className="text-[10px] font-mono text-slate-400 m-0">{config.primary}</p>
+                            <p className="text-xs font-bold text-slate-900 m-0">{config.name}</p>
+                            <div className="flex items-center gap-1.5 mt-1 font-mono text-[10px] text-slate-500">
+                              <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ backgroundColor: config.primary }} />
+                              <span>{config.primary}</span>
+                              <span className="text-slate-300">•</span>
+                              <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ backgroundColor: config.secondary }} />
+                              <span>{config.secondary}</span>
+                            </div>
                           </div>
                         </div>
-                        {isSelected && <CheckCircle size={18} className="text-indigo-600" />}
+                        {isSelected && <CheckCircle size={20} className="text-blue-600 flex-shrink-0" />}
                       </button>
                     );
                   })}
+                </div>
+              </div>
+
+              {/* Full Spectrum Color Grid & Custom Color Picker */}
+              <div className="pt-4 border-t border-slate-100 space-y-4">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div>
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Full Spectrum Color Palette Grid</label>
+                    <p className="text-xs text-slate-500 m-0 mt-0.5 font-normal">Pick any exact shade or choose your custom #hex brand color</p>
+                  </div>
+                  <div className="flex items-center gap-2 bg-slate-50 border border-slate-200/80 px-3 py-1.5 rounded-xl">
+                    <input
+                      type="color"
+                      value={customColor || '#2563eb'}
+                      onChange={(e) => handleSelectCustomColor(e.target.value)}
+                      className="w-7 h-7 rounded-lg border-0 cursor-pointer bg-transparent"
+                      title="Open custom color wheel"
+                    />
+                    <input
+                      type="text"
+                      value={customColor || '#2563eb'}
+                      onChange={(e) => handleSelectCustomColor(e.target.value)}
+                      placeholder="#2563eb"
+                      className="w-20 font-mono text-xs font-bold text-slate-800 bg-transparent border-0 focus:outline-none uppercase"
+                    />
+                  </div>
+                </div>
+
+                {/* Color Tiles Grid */}
+                <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-2xl">
+                  <div className="grid grid-cols-10 sm:grid-cols-20 gap-1.5">
+                    {SPECTRUM_GRID.map((hex, idx) => {
+                      const isSelected = accent === 'custom' && customColor?.toLowerCase() === hex.toLowerCase();
+                      return (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => handleSelectCustomColor(hex)}
+                          title={`Select ${hex}`}
+                          style={{ backgroundColor: hex }}
+                          className={`w-full aspect-square rounded-md transition-transform duration-150 hover:scale-125 cursor-pointer relative ${
+                            isSelected ? 'ring-2 ring-white ring-offset-2 ring-offset-slate-900 scale-110 z-10' : 'hover:z-10'
+                          }`}
+                        >
+                          {isSelected && (
+                            <span className="absolute inset-0 flex items-center justify-center text-white text-[10px] font-bold drop-shadow-md">✓</span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 

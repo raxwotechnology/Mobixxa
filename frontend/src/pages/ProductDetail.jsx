@@ -180,23 +180,44 @@ const ProductDetail = () => {
               <span className="text-xs font-bold text-slate-400 underline hover:text-brand-indigo cursor-pointer transition-colors">({product.totalReviews} verified reviews)</span>
             </div>
 
-            {/* Price */}
+            {/* Price & Koko Installments */}
             <div className="mb-6 pb-6 border-b border-slate-100">
               <div className="flex items-end gap-3.5">
-                <span className="text-3xl font-black text-slate-800 tracking-tight">{getProductPrice(product)}</span>
+                <span className="text-3xl font-bold text-slate-900 tracking-tight">{getProductPrice(product)}</span>
                 {product.mrp > product.price && (
                   <div className="flex flex-col">
-                    <span className="text-sm text-slate-450 line-through font-bold">
+                    <span className="text-sm text-slate-400 line-through font-medium">
                       {currency === 'USD' ? `$${(product.mrp / exchangeRate).toFixed(2)}` : `Rs. ${product.mrp.toFixed(2)}`}
                     </span>
                   </div>
                 )}
               </div>
-              <div className="mt-3 flex items-center gap-2">
+
+              {/* Koko Payment 3-Installment Badge */}
+              {product.price > 0 && (
+                <div className="mt-3.5 p-3.5 rounded-2xl bg-gradient-to-r from-blue-50/80 via-sky-50/60 to-slate-50 border border-blue-200/70 flex items-center justify-between gap-3 shadow-xs">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-xl bg-blue-600 text-white font-bold text-xs flex items-center justify-center shadow-xs">
+                      koko
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-900 m-0">
+                        Or 3 interest-free payments of <span className="font-bold text-blue-600">
+                          {currency === 'USD' ? `$${(Math.ceil(product.price / 3) / exchangeRate).toFixed(2)}` : `Rs. ${Math.ceil(product.price / 3).toLocaleString()}`}
+                        </span>
+                      </p>
+                      <p className="text-[10px] text-slate-500 m-0 font-normal">No hidden fees • Instant approval at checkout</p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-bold text-blue-600 bg-blue-100/80 px-2.5 py-1 rounded-full uppercase tracking-wider">3x Pay</span>
+                </div>
+              )}
+
+              <div className="mt-3.5 flex items-center gap-2">
                 {inStock ? (
-                  <span className="text-emerald-600 flex items-center gap-1.5 bg-emerald-55/10 border border-emerald-55/15 px-3 py-1 rounded-xl text-xs font-bold"><CheckCircle size={14} /> In Stock ({product.stock} units available)</span>
+                  <span className="text-emerald-600 flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-xl text-xs font-semibold"><CheckCircle size={14} /> In Stock ({product.stock} units available)</span>
                 ) : (
-                  <span className="text-rose-500 flex items-center gap-1.5 bg-rose-50 px-3 py-1 rounded-xl text-xs font-bold"><span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Out of Stock</span>
+                  <span className="text-rose-500 flex items-center gap-1.5 bg-rose-50 border border-rose-200 px-3 py-1 rounded-xl text-xs font-semibold"><span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Out of Stock</span>
                 )}
               </div>
             </div>

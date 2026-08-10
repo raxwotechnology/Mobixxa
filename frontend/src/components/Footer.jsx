@@ -223,8 +223,8 @@ const Footer = () => {
           <div className="flex items-center gap-2.5 text-xs text-slate-400 font-medium">
             <div className="w-5 h-5 rounded-md bg-white p-[1px]">
               <img
-                src="/logo.png"
-                alt="Mobixa"
+                src={brandLogoUrl}
+                alt={brandName}
                 className="w-full h-full rounded-[4px] object-cover"
                 onError={(e) => { e.target.onerror = null; e.target.src = '/logo.png'; }}
               />
@@ -239,7 +239,7 @@ const Footer = () => {
               >
                 Raxwo (Pvt) LTD
               </a>
-              . Mobixa. All rights reserved.
+              . {brandName}. All rights reserved.
             </span>
           </div>
           <div className="flex items-center gap-4">

@@ -63,19 +63,19 @@ const Deals = () => {
   return (
     <div className="bg-slate-50/50 min-h-screen">
       {/* Banner */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-brand-indigo via-brand-violet to-brand-fuchsia py-14 shadow-inner">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_60%)] pointer-events-none" />
+      <div className="relative overflow-hidden bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 py-14 shadow-md border-b border-blue-900/30">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,0.25),transparent_60%)] pointer-events-none" />
         <div className="base-container text-center relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <span className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white border border-white/20 mb-3 animate-pulse">
+            <span className="inline-flex items-center gap-1.5 bg-blue-500/20 backdrop-blur-md px-3.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-blue-300 border border-blue-500/30 mb-3 animate-pulse">
               ⚡ Exclusive Promotions ⚡
             </span>
-            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight mt-0 mb-3">Mega Deals & Offers</h1>
-            <p className="text-white/85 m-0 text-sm md:text-base font-medium max-w-xl mx-auto">
+            <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight mt-0 mb-3">Mega Deals & Offers</h1>
+            <p className="text-slate-300 m-0 text-xs md:text-sm font-normal max-w-xl mx-auto">
               Grab these authentic tech products at unbeatable promotional prices before they run out!
             </p>
 
