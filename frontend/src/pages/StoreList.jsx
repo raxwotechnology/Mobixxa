@@ -42,19 +42,19 @@ const StoreList = () => {
   return (
     <div className="bg-slate-50/50 min-h-screen">
       {/* Banner */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-brand-indigo via-brand-violet to-brand-fuchsia py-16 shadow-inner">
+      <div className="relative overflow-hidden bg-gradient-to-r from-brand-indigo via-brand-violet to-brand-fuchsia py-12 shadow-inner mb-8">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_60%)] pointer-events-none" />
         <div className="base-container text-center relative z-10">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.4 }}
           >
-            <span className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-md px-3.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white border border-white/20 mb-3 animate-pulse">
+            <span className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-md px-3.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-white border border-white/20 mb-2.5">
               <Building2 size={12} /> Official Flagship Boutiques
             </span>
-            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight mt-0 mb-3">Our Stores & Showrooms</h1>
-            <p className="text-white/85 m-0 text-sm md:text-base font-medium max-w-xl mx-auto">
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white m-0">Our Stores & Showrooms</h1>
+            <p className="text-xs md:text-sm text-white/90 font-normal m-0 mt-1 max-w-xl mx-auto">
               Visit our tech showrooms across Sri Lanka to experience hands-on product demos and expert technical service.
             </p>
           </motion.div>

@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { getCategories, getFeaturedProducts, getDeals } from '../services/api';
 import ProductCard from '../components/ProductCard';
 import useSettingsStore from '../store/settingsStore';
+import useThemeStore, { THEME_ACCENTS } from '../store/themeStore';
 import { getImageUrl } from '../utils/imageHelper';
 
 const Home = () => {
@@ -14,6 +15,11 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const settings = useSettingsStore((s) => s.settings);
   const fetchSettings = useSettingsStore((s) => s.fetchSettings);
+  const { accent, customColor } = useThemeStore();
+
+  const themeConfig = THEME_ACCENTS[accent] || THEME_ACCENTS.sapphire;
+  const primaryColor = accent === 'custom' && customColor ? customColor : (themeConfig.primary || '#2563eb');
+
   const heroProducts = settings?.heroProducts || [
     { name: 'iPhone 15 Pro Max', price: 450000, emoji: '📱' },
     { name: 'AirPods Pro', price: 85000, emoji: '🎧' },
@@ -49,20 +55,17 @@ const Home = () => {
   return (
     <div>
       {/* ===== HERO SECTION ===== */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 text-white border-b border-slate-800/40 py-20 md:py-28">
+      <section 
+        className="relative overflow-hidden text-white border-b border-slate-800/40 py-20 md:py-28 transition-all duration-300"
+        style={{
+          background: `linear-gradient(135deg, #020617 0%, #0f172a 45%, ${primaryColor} 100%)`
+        }}
+      >
         {/* Animated Background Orbs */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <motion.div
-            className="absolute -top-20 -left-20 w-96 h-96 bg-blue-600/20 rounded-full blur-[130px]"
-            animate={{ scale: [1, 1.25, 1], opacity: [0.3, 0.55, 0.3] }}
-            transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-          />
-          <motion.div
-            className="absolute -bottom-20 -right-20 w-[30rem] h-[30rem] bg-sky-500/15 rounded-full blur-[150px]"
-            animate={{ scale: [1.2, 1, 1.2], opacity: [0.2, 0.45, 0.2] }}
-            transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
-          />
-        </div>
+        <div 
+          className="absolute inset-0 pointer-events-none opacity-35"
+          style={{ background: `radial-gradient(circle at top right, ${primaryColor}, transparent 65%)` }}
+        />
 
         <div className="base-container flex flex-col md:flex-row items-center justify-between relative z-10">
           <motion.div
@@ -72,17 +75,18 @@ const Home = () => {
             transition={{ duration: 0.8, ease: "easeOut" }}
           >
             <motion.span
-              className="inline-flex items-center gap-2 bg-blue-500/15 text-blue-400 text-xs font-bold px-4 py-2 rounded-full mb-6 uppercase tracking-wider border border-blue-500/30 shadow-xs"
+              className="inline-flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full mb-6 uppercase tracking-wider border shadow-xs"
+              style={{ backgroundColor: `${primaryColor}25`, color: '#ffffff', borderColor: `${primaryColor}60` }}
               whileHover={{ scale: 1.05 }}
             >
-              <Sparkles size={14} className="text-blue-400 animate-pulse" /> Next-Gen Technology
+              <Sparkles size={14} className="text-white animate-pulse" /> Next-Gen Technology
             </motion.span>
 
             {/* Brand Name */}
             <div className="mb-4">
               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Welcome to</p>
               <motion.h2
-                className="text-3xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-400 via-sky-300 to-cyan-400 bg-clip-text text-transparent leading-tight"
+                className="text-3xl md:text-5xl font-extrabold text-white leading-tight m-0"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 1, delay: 0.2 }}
@@ -94,7 +98,7 @@ const Home = () => {
             <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-6 mt-0 tracking-tight text-white">
               Premium Tech &
               <br />
-              <span className="bg-gradient-to-r from-blue-400 via-sky-400 to-cyan-300 bg-clip-text text-transparent drop-shadow-sm">
+              <span className="text-white opacity-95 drop-shadow-sm">
                 Smart Devices.
               </span>
             </h1>
@@ -107,7 +111,8 @@ const Home = () => {
               <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
                 <Link
                   to="/shop"
-                  className="bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-500 hover:to-sky-500 text-white font-bold py-4 px-8 rounded-2xl transition-all shadow-[0_8px_25px_rgba(37,99,235,0.4)] inline-flex items-center gap-2"
+                  style={{ backgroundColor: primaryColor, boxShadow: `0 8px 25px -4px ${primaryColor}60` }}
+                  className="hover:opacity-95 text-white font-bold py-4 px-8 rounded-2xl transition-all inline-flex items-center gap-2 shadow-lg"
                 >
                   Shop Now <ArrowRight size={18} />
                 </Link>

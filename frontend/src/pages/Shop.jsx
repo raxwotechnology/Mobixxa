@@ -4,8 +4,13 @@ import { SlidersHorizontal, X, ChevronDown, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getProducts, getCategories, searchProducts } from '../services/api';
 import ProductCard from '../components/ProductCard';
+import useThemeStore, { THEME_ACCENTS } from '../store/themeStore';
 
 const Shop = () => {
+  const { accent, customColor } = useThemeStore();
+  const themeConfig = THEME_ACCENTS[accent] || THEME_ACCENTS.sapphire;
+  const primaryColor = accent === 'custom' && customColor ? customColor : (themeConfig.primary || '#2563eb');
+
   const [searchParams, setSearchParams] = useSearchParams();
   const q = (searchParams.get('q') || '').trim();
 
@@ -357,19 +362,19 @@ const Shop = () => {
   return (
     <div className="bg-slate-50/50 min-h-screen">
       {/* Brand Hero Banner */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 py-12 shadow-md border-b border-blue-900/30 mb-8">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,0.25),transparent_60%)] pointer-events-none" />
+      <div className="relative overflow-hidden bg-gradient-to-r from-brand-indigo via-brand-violet to-brand-fuchsia py-12 shadow-inner mb-8">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_60%)] pointer-events-none" />
         <div className="base-container text-center relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
           >
-            <span className="inline-flex items-center gap-1.5 bg-blue-500/20 backdrop-blur-md px-3.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-blue-300 border border-blue-500/30 mb-2.5">
+            <span className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-md px-3.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-white border border-white/20 mb-2.5">
               📱 Official Hardware Catalog
             </span>
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white m-0">Explore All Products</h1>
-            <p className="text-xs md:text-sm text-slate-300 font-normal m-0 mt-1 max-w-xl mx-auto">
+            <p className="text-xs md:text-sm text-white/90 font-normal m-0 mt-1 max-w-xl mx-auto">
               Find genuine smartphones, laptops, audio gear, and authentic mobile accessories with official islandwide warranty.
             </p>
           </motion.div>
