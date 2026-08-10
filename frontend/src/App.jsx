@@ -105,10 +105,12 @@ const AppLayout = ({ children }) => {
   const fetchSettings = useSettingsStore((s) => s.fetchSettings);
   const settings = useSettingsStore((s) => s.settings);
   const { user } = useAuthStore();
+  const { accent, customColor, fontFamily, mode, applyThemeToDocument } = useThemeStore();
 
   useEffect(() => {
     fetchSettings();
-  }, [fetchSettings]);
+    if (applyThemeToDocument) applyThemeToDocument();
+  }, [fetchSettings, accent, customColor, fontFamily, mode, applyThemeToDocument]);
 
   useEffect(() => {
     let link = document.querySelector("link[rel~='icon']");

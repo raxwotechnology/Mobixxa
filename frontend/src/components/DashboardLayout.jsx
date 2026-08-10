@@ -11,9 +11,8 @@ import useThemeStore, { THEME_ACCENTS } from '../store/themeStore';
 import NotificationBell from './NotificationBell';
 
 const NavLink = ({ item, location, collapsed, onNavigate, userRole }) => {
-  const { accent } = useThemeStore();
-  const themeConfig = THEME_ACCENTS[accent] || THEME_ACCENTS.indigo;
-  const primaryColor = themeConfig.primary || '#6366f1';
+  const { accent, customColor } = useThemeStore();
+  const primaryColor = accent === 'custom' && customColor ? customColor : (THEME_ACCENTS[accent]?.primary || '#2563eb');
   const [isHovered, setIsHovered] = useState(false);
 
   const isRoot = item.path === '/admin' || item.path === '/manager' || item.path === '/employee';
@@ -121,13 +120,12 @@ const SidebarContent = ({ navItems = [], collapsed, location, onNavigate, userRo
 };
 
 const DashboardLayout = ({ children, navItems, title }) => {
-  const { accent, applyThemeToDocument } = useThemeStore();
-  const themeConfig = THEME_ACCENTS[accent] || THEME_ACCENTS.indigo;
-  const primaryColor = themeConfig.primary || '#6366f1';
+  const { accent, customColor, applyThemeToDocument } = useThemeStore();
+  const primaryColor = accent === 'custom' && customColor ? customColor : (THEME_ACCENTS[accent]?.primary || '#2563eb');
 
   useEffect(() => {
     if (applyThemeToDocument) applyThemeToDocument();
-  }, [accent, applyThemeToDocument]);
+  }, [accent, customColor, applyThemeToDocument]);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);

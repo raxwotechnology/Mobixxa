@@ -195,21 +195,21 @@ const ProductDetail = () => {
 
               {/* Koko Payment 3-Installment Badge */}
               {product.price > 0 && (
-                <div className="mt-3.5 p-3.5 rounded-2xl bg-gradient-to-r from-blue-50/80 via-sky-50/60 to-slate-50 border border-blue-200/70 flex items-center justify-between gap-3 shadow-xs">
+                <div className="mt-3.5 p-3.5 rounded-2xl bg-brand-indigo/5 border border-brand-indigo/15 flex items-center justify-between gap-3 shadow-xs">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-blue-600 text-white font-bold text-xs flex items-center justify-center shadow-xs">
+                    <div className="w-8 h-8 rounded-xl bg-brand-indigo text-white font-bold text-xs flex items-center justify-center shadow-xs">
                       koko
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-slate-900 m-0">
-                        Or 3 interest-free payments of <span className="font-bold text-blue-600">
+                        Or 3 interest-free payments of <span className="font-bold text-brand-indigo">
                           {currency === 'USD' ? `$${(Math.ceil(product.price / 3) / exchangeRate).toFixed(2)}` : `Rs. ${Math.ceil(product.price / 3).toLocaleString()}`}
                         </span>
                       </p>
                       <p className="text-[10px] text-slate-500 m-0 font-normal">No hidden fees • Instant approval at checkout</p>
                     </div>
                   </div>
-                  <span className="text-[10px] font-bold text-blue-600 bg-blue-100/80 px-2.5 py-1 rounded-full uppercase tracking-wider">3x Pay</span>
+                  <span className="text-[10px] font-bold text-brand-indigo bg-brand-indigo/10 px-2.5 py-1 rounded-full uppercase tracking-wider">3x Pay</span>
                 </div>
               )}
 

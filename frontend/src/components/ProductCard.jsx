@@ -83,7 +83,7 @@ const ProductCard = ({ product }) => {
               </span>
             )}
             {product.isFeatured && (
-              <span className="bg-blue-600 text-white text-[9px] sm:text-[10px] uppercase font-bold px-2.5 py-1 rounded-full shadow-xs tracking-wide">
+              <span className="bg-brand-indigo text-white text-[9px] sm:text-[10px] uppercase font-bold px-2.5 py-1 rounded-full shadow-xs tracking-wide">
                 Featured
               </span>
             )}
@@ -100,14 +100,14 @@ const ProductCard = ({ product }) => {
         
         <div className="p-3 sm:p-5 flex flex-col flex-1">
           <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-            <p className="text-[10px] sm:text-xs font-semibold text-blue-600 m-0 uppercase tracking-wider">{product.category?.name || 'Device'}</p>
+            <p className="text-[10px] sm:text-xs font-semibold text-brand-indigo m-0 uppercase tracking-wider">{product.category?.name || 'Device'}</p>
             <div className="flex items-center gap-1 bg-amber-50 border border-amber-200/60 px-2 py-0.5 rounded-full">
               <Star size={11} className="fill-amber-400 text-amber-400" />
               <span className="text-[10px] sm:text-[11px] font-bold text-amber-700">{product.averageRating || '4.8'}</span>
             </div>
           </div>
           
-          <h3 className="font-semibold text-slate-900 text-sm sm:text-base mb-1 mt-0 leading-snug line-clamp-2 min-h-[2.2rem] sm:min-h-[2.5rem] group-hover:text-blue-600 transition-colors">
+          <h3 className="font-semibold text-slate-900 text-sm sm:text-base mb-1 mt-0 leading-snug line-clamp-2 min-h-[2.2rem] sm:min-h-[2.5rem] group-hover:text-brand-indigo transition-colors">
             {product.name}
           </h3>
           
@@ -118,10 +118,10 @@ const ProductCard = ({ product }) => {
           {/* Quick Specs */}
           <div className="hidden sm:flex items-center gap-2 sm:gap-3 mb-4">
             <div className="flex items-center gap-1 bg-slate-50 text-slate-600 text-[10px] font-medium px-2.5 py-1 rounded-lg border border-slate-200/60">
-              <ShieldCheck size={12} className="text-blue-600" /> 1Yr Warranty
+              <ShieldCheck size={12} className="text-brand-indigo" /> 1Yr Warranty
             </div>
             <div className="flex items-center gap-1 bg-slate-50 text-slate-600 text-[10px] font-medium px-2.5 py-1 rounded-lg border border-slate-200/60">
-              <Cpu size={12} className="text-blue-600" /> Genuine
+              <Cpu size={12} className="text-brand-indigo" /> Genuine
             </div>
           </div>
 
@@ -147,7 +147,7 @@ const ProductCard = ({ product }) => {
               disabled={!inStock}
               className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex-shrink-0 flex items-center justify-center transition-all ${
                 inStock 
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-200 hover:shadow-lg' 
+                  ? 'bg-brand-indigo hover:opacity-90 text-white shadow-md shadow-brand-indigo/20 hover:shadow-lg' 
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed'
               }`}
             >

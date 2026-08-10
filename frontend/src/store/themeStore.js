@@ -160,6 +160,7 @@ const useThemeStore = create(
         root.style.setProperty('--color-brand-indigo', primaryHex);
         root.style.setProperty('--color-brand-violet', secondaryHex);
         root.style.setProperty('--color-brand-fuchsia', accentHex);
+        root.style.setProperty('--color-primary-blue', primaryHex);
         root.style.setProperty('--user-theme-primary', primaryHex);
         root.style.setProperty('--user-theme-secondary', secondaryHex);
         root.style.setProperty('--user-theme-accent', accentHex);
@@ -172,5 +173,13 @@ const useThemeStore = create(
   )
 );
 
-export { THEME_ACCENTS, FONT_OPTIONS, SPECTRUM_GRID };
+const getPrimaryColorFromStore = (state) => {
+  if (state.accent === 'custom' && state.customColor) {
+    return state.customColor;
+  }
+  const config = THEME_ACCENTS[state.accent] || THEME_ACCENTS.sapphire;
+  return config?.primary || '#2563eb';
+};
+
+export { THEME_ACCENTS, FONT_OPTIONS, SPECTRUM_GRID, getPrimaryColorFromStore };
 export default useThemeStore;
