@@ -110,18 +110,24 @@ const UserSettings = () => {
     toast.success(`Font family updated to ${fontName}! 🔤`);
   };
 
+  const themeConfig = THEME_ACCENTS[accent] || THEME_ACCENTS.sapphire;
+  const primaryColor = accent === 'custom' && customColor ? customColor : (themeConfig.primary || '#2563eb');
+
   const content = (
     <div className="max-w-6xl mx-auto p-4 sm:p-6 space-y-6">
       {/* Header */}
       <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-brand-indigo via-brand-violet to-brand-fuchsia p-[2px] shadow-lg flex-shrink-0 flex items-center justify-center font-black text-xl text-white">
+          <div 
+            className="w-14 h-14 rounded-2xl p-[2px] shadow-lg flex-shrink-0 flex items-center justify-center font-bold text-xl text-white transition-all duration-300"
+            style={{ backgroundColor: primaryColor, boxShadow: `0 8px 25px -4px ${primaryColor}50` }}
+          >
             {name ? name.charAt(0).toUpperCase() : 'U'}
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900">{name || 'User Account'}</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900">{name || 'User Account'}</h1>
             <p className="text-xs font-semibold text-slate-500 mt-0.5">
-              {email} • <span className="uppercase font-black text-brand-indigo">{user?.role || 'Customer'}</span>
+              {email} • <span className="uppercase font-bold" style={{ color: primaryColor }}>{user?.role || 'Customer'}</span>
             </p>
           </div>
         </div>
@@ -131,7 +137,7 @@ const UserSettings = () => {
             onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold hover:bg-slate-200 transition-all cursor-pointer"
           >
-            {mode === 'dark' ? <Sun size={16} className="text-amber-500" /> : <Moon size={16} className="text-indigo-600" />}
+            {mode === 'dark' ? <Sun size={16} className="text-amber-500" /> : <Moon size={16} style={{ color: primaryColor }} />}
             {mode === 'dark' ? 'Light Mode' : 'Dark Mode'}
           </button>
         </div>
@@ -142,10 +148,10 @@ const UserSettings = () => {
         {/* Sidebar Nav */}
         <div className="bg-white rounded-3xl p-3 border border-slate-200/80 shadow-sm space-y-1 h-fit">
           {[
-            { id: 'security', label: 'Security & Password', icon: Lock, color: 'text-amber-500' },
-            { id: 'theme', label: 'Theme & Color Accent', icon: Palette, color: 'text-indigo-500' },
-            { id: 'profile', label: 'Profile Details', icon: User, color: 'text-emerald-500' },
-            { id: 'notifications', label: 'Notifications', icon: Bell, color: 'text-rose-500' },
+            { id: 'security', label: 'Security & Password', icon: Lock },
+            { id: 'theme', label: 'Theme & Color Accent', icon: Palette },
+            { id: 'profile', label: 'Profile Details', icon: User },
+            { id: 'notifications', label: 'Notifications', icon: Bell },
           ].map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -154,12 +160,20 @@ const UserSettings = () => {
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                style={active ? { backgroundColor: THEME_ACCENTS[accent]?.primary || '#6366f1', color: '#ffffff', boxShadow: `0 8px 20px -4px ${(THEME_ACCENTS[accent]?.primary || '#6366f1')}60` } : {}}
+                style={
+                  active
+                    ? {
+                        backgroundColor: primaryColor,
+                        color: '#ffffff',
+                        boxShadow: `0 8px 20px -4px ${primaryColor}60`,
+                      }
+                    : {}
+                }
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
-                  active ? 'text-white font-black shadow-md' : 'text-slate-600 hover:bg-slate-50'
+                  active ? 'text-white font-bold shadow-md' : 'text-slate-600 hover:bg-slate-50'
                 }`}
               >
-                <Icon size={18} className={active ? 'text-white' : tab.color} />
+                <Icon size={18} style={!active ? { color: primaryColor } : { color: '#ffffff' }} />
                 <span>{tab.label}</span>
               </button>
             );
@@ -235,7 +249,8 @@ const UserSettings = () => {
                 <button
                   type="submit"
                   disabled={updatingPassword}
-                  className="px-6 py-3 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-black text-xs transition-all shadow-lg shadow-amber-500/20 flex items-center gap-2 cursor-pointer"
+                  style={{ backgroundColor: primaryColor, boxShadow: `0 8px 20px -4px ${primaryColor}50` }}
+                  className="px-6 py-3 rounded-2xl text-white font-bold text-xs transition-all flex items-center gap-2 cursor-pointer hover:opacity-95"
                 >
                   <Save size={16} /> {updatingPassword ? 'Updating Password...' : 'Update Password'}
                 </button>
@@ -264,9 +279,12 @@ const UserSettings = () => {
                         key={key}
                         type="button"
                         onClick={() => handleSelectFont(key, config.name)}
-                        style={{ fontFamily: config.font }}
+                        style={{ 
+                          fontFamily: config.font,
+                          ...(isSelected ? { borderColor: primaryColor, backgroundColor: `${primaryColor}10` } : {})
+                        }}
                         className={`p-4 rounded-2xl border transition-all text-left flex items-center justify-between cursor-pointer ${
-                          isSelected ? 'border-blue-600 bg-blue-50/60 shadow-sm ring-2 ring-blue-500/20' : 'border-slate-200 hover:border-slate-300 bg-white'
+                          isSelected ? 'shadow-sm' : 'border-slate-200 hover:border-slate-300 bg-white'
                         }`}
                       >
                         <div>
@@ -275,7 +293,7 @@ const UserSettings = () => {
                             The quick brown fox jumps over the lazy dog. 12345
                           </p>
                         </div>
-                        {isSelected && <CheckCircle size={20} className="text-blue-600 flex-shrink-0 ml-2" />}
+                        {isSelected && <CheckCircle size={20} style={{ color: primaryColor }} className="flex-shrink-0 ml-2" />}
                       </button>
                     );
                   })}
@@ -293,8 +311,9 @@ const UserSettings = () => {
                         key={key}
                         type="button"
                         onClick={() => handleSelectAccent(key, config.name)}
+                        style={isSelected ? { borderColor: primaryColor, backgroundColor: `${primaryColor}10` } : {}}
                         className={`p-4 rounded-2xl border transition-all text-left flex items-center justify-between cursor-pointer ${
-                          isSelected ? 'border-blue-600 bg-blue-50/60 shadow-sm ring-2 ring-blue-500/20' : 'border-slate-200 hover:border-slate-300 bg-white'
+                          isSelected ? 'shadow-sm' : 'border-slate-200 hover:border-slate-300 bg-white'
                         }`}
                       >
                         <div className="flex items-center gap-3">
@@ -310,7 +329,7 @@ const UserSettings = () => {
                             </div>
                           </div>
                         </div>
-                        {isSelected && <CheckCircle size={20} className="text-blue-600 flex-shrink-0" />}
+                        {isSelected && <CheckCircle size={20} style={{ color: primaryColor }} className="flex-shrink-0" />}
                       </button>
                     );
                   })}
@@ -468,7 +487,8 @@ const UserSettings = () => {
                 <button
                   type="submit"
                   disabled={savingProfile}
-                  className="px-6 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs transition-all shadow-lg shadow-emerald-600/20 flex items-center gap-2 cursor-pointer"
+                  style={{ backgroundColor: primaryColor, boxShadow: `0 8px 20px -4px ${primaryColor}50` }}
+                  className="px-6 py-3 rounded-2xl text-white font-bold text-xs transition-all flex items-center gap-2 cursor-pointer hover:opacity-95"
                 >
                   <Save size={16} /> {savingProfile ? 'Saving Profile...' : 'Save Profile Changes'}
                 </button>
