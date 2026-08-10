@@ -1,3 +1,6 @@
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+
 const THEME_ACCENTS = {
   sapphire: {
     name: 'Sapphire & Royal Blue (Default)',
