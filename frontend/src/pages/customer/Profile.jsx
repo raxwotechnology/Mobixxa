@@ -11,6 +11,7 @@ import { Link } from 'react-router-dom';
 import { adminNavGroups } from '../admin/adminNavItems';
 import { managerNavGroups } from '../storeOwner/managerNavItems';
 import { getEmployeeNavGroups } from '../employee/employeeNav';
+import useThemeStore, { THEME_ACCENTS } from '../../store/themeStore';
 
 const defaultCustomerNavItems = [
   { path: '/profile', label: 'My Profile', icon: User },
@@ -18,8 +19,13 @@ const defaultCustomerNavItems = [
 
 const Profile = () => {
   const { user, login } = useAuthStore();
+  const { accent, customColor } = useThemeStore();
+  const themeConfig = THEME_ACCENTS[accent] || THEME_ACCENTS.sapphire;
+  const primaryColor = accent === 'custom' && customColor ? customColor : (themeConfig.primary || '#2563eb');
   
-  const getNavGroups = () => {
+  const isStaff = user && ['admin', 'manager', 'cashier', 'deliveryGuy', 'stockEmployee'].includes(user.role);
+
+  const getStaffNavGroups = () => {
     if (user?.role === 'admin') return adminNavGroups;
     if (user?.role === 'manager') return managerNavGroups;
     if (['cashier', 'deliveryGuy', 'stockEmployee'].includes(user?.role)) {
@@ -27,9 +33,6 @@ const Profile = () => {
     }
     return null;
   };
-
-  const navGroups = getNavGroups();
-  const layoutProps = navGroups ? { navItems: navGroups, activePath: '/profile' } : { navItems: defaultCustomerNavItems, activePath: '/profile' };
 
   const settings = useSettingsStore((s) => s.settings);
   const [loading, setLoading] = useState(true);
@@ -140,30 +143,38 @@ const Profile = () => {
   };
 
   if (loading) {
-    return (
-      <DashboardLayout {...layoutProps} title="My Account">
-        <div className="flex items-center justify-center h-64">
-          <div className="w-10 h-10 border-4 border-primary-blue border-t-transparent rounded-full animate-spin" />
-        </div>
-      </DashboardLayout>
+    const loadingSpinner = (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-10 h-10 border-4 border-t-transparent rounded-full animate-spin" style={{ borderColor: `${primaryColor} transparent ${primaryColor} ${primaryColor}` }} />
+      </div>
     );
+    if (isStaff) {
+      return (
+        <DashboardLayout navItems={getStaffNavGroups()} activePath="/profile" title="My Account">
+          {loadingSpinner}
+        </DashboardLayout>
+      );
+    }
+    return loadingSpinner;
   }
 
-  return (
-    <DashboardLayout {...layoutProps} title="My Account">
-      <div className="max-w-3xl space-y-6 animate-fade-in">
-        {/* Header Block */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-sky-400">
-              <User size={20} strokeWidth={2.5} />
-            </div>
-            <div>
-              <h1 className="text-2xl font-black text-slate-900 m-0">My Account Profile</h1>
-              <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 mt-1 m-0">Personal details, contact numbers & saved delivery locations</p>
-            </div>
+  const content = (
+    <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6 animate-fade-in">
+      {/* Header Block */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm relative overflow-hidden">
+        <div className="flex items-center gap-4">
+          <div 
+            className="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-md transition-all duration-300"
+            style={{ backgroundColor: primaryColor, boxShadow: `0 8px 20px -4px ${primaryColor}50` }}
+          >
+            <User size={22} strokeWidth={2.5} />
+          </div>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 m-0">My Account Profile</h1>
+            <p className="text-xs font-semibold text-slate-500 mt-0.5 m-0">Personal details, contact numbers & saved delivery locations</p>
           </div>
         </div>
+      </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Personal Information */}
@@ -315,7 +326,8 @@ const Profile = () => {
           <button
             type="submit"
             disabled={saving}
-            className="flex items-center gap-2 bg-brand-indigo hover:bg-brand-violet text-white px-8 py-3.5 rounded-xl font-black text-[10px] uppercase tracking-wider transition-all shadow-md disabled:opacity-50 cursor-pointer border-0"
+            style={{ backgroundColor: primaryColor, boxShadow: `0 8px 20px -4px ${primaryColor}50` }}
+            className="flex items-center gap-2 text-white px-8 py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all hover:opacity-95 shadow-md disabled:opacity-50 cursor-pointer border-0"
           >
             <Save size={14} />
             {saving ? 'Saving...' : 'Save Changes'}
@@ -419,7 +431,6 @@ const Profile = () => {
             </div>
           </div>
         </div>
-      </div>
 
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -453,8 +464,18 @@ const Profile = () => {
           </div>
         </div>
       )}
-    </DashboardLayout>
+    </div>
   );
+
+  if (isStaff) {
+    return (
+      <DashboardLayout navItems={getStaffNavGroups()} activePath="/profile" title="My Account">
+        {content}
+      </DashboardLayout>
+    );
+  }
+
+  return content;
 };
 
 export default Profile;
