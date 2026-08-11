@@ -6,7 +6,8 @@ import { exportToCSV, exportToExcel, exportToPDF } from '../../utils/exportUtils
 import { adminNavGroups as navItems } from './adminNavItems';
 import API from '../../services/api';
 
-const AdminInventory = () => {
+const AdminInventory = ({ navItems: customNavItems }) => {
+  const activeNavItems = customNavItems || navItems;
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -84,7 +85,7 @@ const AdminInventory = () => {
 
   if (loading) {
     return (
-      <DashboardLayout navItems={navItems} title="Inventory">
+      <DashboardLayout navItems={activeNavItems} title="Inventory">
         <div className="flex items-center justify-center h-64">
           <div className="w-10 h-10 border-4 border-brand-indigo border-t-transparent rounded-full animate-spin" />
         </div>
@@ -93,7 +94,7 @@ const AdminInventory = () => {
   }
 
   return (
-    <DashboardLayout navItems={navItems} title="Inventory">
+    <DashboardLayout navItems={activeNavItems} title="Inventory">
       <div className="animate-fade-in space-y-6">
         {/* Header Controls */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm relative overflow-hidden">

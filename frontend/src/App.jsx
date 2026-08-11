@@ -203,7 +203,7 @@ function App() {
           <Route path="/manager/leaves" element={<ProtectedRoute roles={['manager']}><AdminLeaves navItems={managerNavGroups} /></ProtectedRoute>} />
           <Route path="/manager/targets" element={<ProtectedRoute roles={['manager']}><ManagerTargets /></ProtectedRoute>} />
           <Route path="/manager/performance" element={<ProtectedRoute roles={['manager']}><ManagerPerformance /></ProtectedRoute>} />
-          <Route path="/manager/inventory" element={<ProtectedRoute roles={['manager']}><Navigate to="/manager/products" replace /></ProtectedRoute>} />
+          <Route path="/manager/inventory" element={<ProtectedRoute roles={['manager']}><AdminInventory navItems={managerNavGroups} /></ProtectedRoute>} />
           <Route path="/manager/supplier-payments" element={<ProtectedRoute roles={['manager']}><ManagerSupplierPayments /></ProtectedRoute>} />
           <Route path="/manager/repairs" element={<ProtectedRoute roles={['manager']}><ManagerRepairs navItems={managerNavGroups} /></ProtectedRoute>} />
           <Route path="/manager/warranty" element={<ProtectedRoute roles={['manager']}><AdminWarranty /></ProtectedRoute>} />
