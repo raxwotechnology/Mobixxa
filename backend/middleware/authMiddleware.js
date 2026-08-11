@@ -53,8 +53,8 @@ const requirePermission = (permission) => {
       return next(new Error('Not authorized'));
     }
 
-    // Super Admin & Admin bypass
-    if (req.user.email === 'admin@mobilehub.com' || req.user.role === 'admin' || req.user.isSuperAdmin) {
+    // Super Admin, Admin & Manager bypass
+    if (req.user.email === 'admin@mobilehub.com' || req.user.role === 'admin' || req.user.role === 'manager' || req.user.isSuperAdmin) {
       return next();
     }
 

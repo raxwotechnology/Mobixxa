@@ -21,7 +21,7 @@ const {
 const { protect, authorize, requirePermission } = require('../middleware/authMiddleware');
 
 router.use(protect);
-router.use(authorize('admin'));
+router.use(authorize('admin', 'manager'));
 
 router.get('/stats', getStats); // General overview
 
