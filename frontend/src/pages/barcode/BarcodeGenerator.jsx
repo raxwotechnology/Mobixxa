@@ -55,8 +55,18 @@ const BarcodeGenerator = () => {
     try {
       const { data } = await getAdminProducts();
       setProducts(Array.isArray(data) ? data : data.products || []);
-    } catch {
-      toast.error('Failed to load products');
+    } catch (adminErr) {
+      try {
+        const { data } = await API.get('/products');
+        setProducts(Array.isArray(data) ? data : data.products || []);
+      } catch (pubErr) {
+        try {
+          const { data } = await API.get('/pos/products');
+          setProducts(Array.isArray(data) ? data : data.products || []);
+        } catch (posErr) {
+          toast.error('Failed to load products');
+        }
+      }
     } finally {
       setLoading(false);
     }

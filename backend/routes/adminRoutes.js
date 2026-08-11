@@ -21,7 +21,7 @@ const {
 const { protect, authorize, requirePermission } = require('../middleware/authMiddleware');
 
 router.use(protect);
-router.use(authorize('admin', 'manager'));
+router.use(authorize('admin', 'manager', 'cashier'));
 
 router.get('/stats', getStats); // General overview
 
@@ -39,7 +39,10 @@ router.put('/users/:id/toggle-status', requirePermission('employees'), toggleUse
 
 // Stores / Settings (requires 'settings' permission)
 router.get('/stores/summaries', requirePermission('settings'), getStoreSummaries);
-router.get('/stores', requirePermission('settings'), getAllStores);
+router.get('/stores', (req, res, next) => {
+  if (['admin', 'manager', 'cashier'].includes(req.user.role)) return next();
+  return requirePermission('settings')(req, res, next);
+}, getAllStores);
 router.put('/stores/:id/toggle', requirePermission('settings'), toggleStore);
 
 // Orders / Sales (requires 'sales' permission)
@@ -51,7 +54,7 @@ router.delete('/orders/:id', requirePermission('sales'), deleteOrder);
 
 // Products (requires 'products' or 'suppliers' permission for GRN)
 router.get('/products', (req, res, next) => {
-  if (req.user.email === 'admin@mobilehub.com' || req.user.isSuperAdmin) return next();
+  if (['admin', 'manager', 'cashier'].includes(req.user.role) || req.user.email === 'admin@mobilehub.com' || req.user.isSuperAdmin) return next();
   if (req.user.permissions && (req.user.permissions.products || req.user.permissions.suppliers)) return next();
   res.status(403);
   return next(new Error('Access denied. You need products or suppliers permission.'));
