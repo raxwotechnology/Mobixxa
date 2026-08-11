@@ -1,15 +1,34 @@
 import { toast } from 'react-toastify';
 
-export const sendWhatsAppInvoice = (order, brandName = 'Max Durakathana', storePhone = '+94 11 255 5000') => {
+export const sendWhatsAppInvoice = (order, brandName = 'SR Mobile Official', storePhone = '+94 11 255 5000') => {
   if (!order) return;
 
-  const rawPhone = (order.customerPhone || order.userId?.phone || '').replace(/[^0-9]/g, '');
-  if (!rawPhone) {
-    toast.error('Customer phone number is missing for WhatsApp invoice');
+  let extractedPhone = (
+    order.customerPhone ||
+    order.deliveryAddress?.phone ||
+    order.deliveryAddress?.mobile ||
+    order.hirePurchaseData?.customerWhatsapp ||
+    order.userId?.phone ||
+    order.phone ||
+    order.guarantorPhone ||
+    ''
+  ).replace(/[^0-9]/g, '');
+
+  if (!extractedPhone) {
+    const userInput = window.prompt("Customer phone number not found. Enter Customer's WhatsApp Number (e.g. 0771234567):");
+    if (!userInput) {
+      toast.info('WhatsApp receipt generation cancelled');
+      return;
+    }
+    extractedPhone = userInput.replace(/[^0-9]/g, '');
+  }
+
+  if (!extractedPhone) {
+    toast.error('Valid WhatsApp number is required to send invoice');
     return;
   }
 
-  let formattedPhone = rawPhone;
+  let formattedPhone = extractedPhone;
   if (formattedPhone.startsWith('0')) {
     formattedPhone = '94' + formattedPhone.slice(1);
   } else if (!formattedPhone.startsWith('94')) {

@@ -311,7 +311,7 @@ const getOrderById = async (req, res, next) => {
   try {
     const order = await Order.findById(req.params.id)
       .populate('storeId', 'name logo phone')
-      .populate('userId', 'name email');
+      .populate('userId', 'name email phone');
 
     if (!order) {
       res.status(404);

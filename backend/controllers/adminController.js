@@ -238,7 +238,7 @@ const getAllOrders = async (req, res, next) => {
     }
 
     const orders = await Order.find(filter)
-      .populate('userId', 'name email')
+      .populate('userId', 'name email phone')
       .populate('storeId', 'name')
       .populate('deliveryGuyId', 'name email phone')
       .sort({ createdAt: -1 });
