@@ -116,7 +116,7 @@ const ProductCard = ({ product }) => {
           </p>
 
           {/* Quick Specs */}
-          <div className="hidden sm:flex items-center gap-2 sm:gap-3 mb-4">
+          <div className="hidden sm:flex items-center gap-2 sm:gap-3 mb-2.5">
             <div className="flex items-center gap-1 bg-slate-50 text-slate-600 text-[10px] font-medium px-2.5 py-1 rounded-lg border border-slate-200/60">
               <ShieldCheck size={12} className="text-brand-indigo" /> 1Yr Warranty
             </div>
@@ -125,7 +125,26 @@ const ProductCard = ({ product }) => {
             </div>
           </div>
 
-          <div className="flex items-center justify-between mt-auto pt-3 sm:pt-4 border-t border-slate-100 gap-2">
+          {/* Koko Payment Mention Badge */}
+          {product.price > 0 && product.allowKokoOnline !== false && (
+            <div className="mb-2 sm:mb-3 py-1 px-2 rounded-lg bg-brand-indigo/5 border border-brand-indigo/15 flex items-center justify-between gap-1 text-[10px] sm:text-xs">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="w-4 h-4 rounded bg-brand-indigo text-white font-black text-[8px] flex items-center justify-center flex-shrink-0">
+                  koko
+                </span>
+                <span className="text-slate-700 font-medium truncate">
+                  Or 3 x <strong className="text-brand-indigo font-bold">
+                    {currency === 'USD' ? `$${(Math.ceil(product.price / 3) / exchangeRate).toFixed(2)}` : `Rs. ${Math.ceil(product.price / 3).toLocaleString()}`}
+                  </strong> with Koko
+                </span>
+              </div>
+              <span className="text-[9px] font-bold text-brand-indigo bg-brand-indigo/10 px-1.5 py-0.5 rounded-full uppercase tracking-wider flex-shrink-0">
+                3x Pay
+              </span>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between mt-auto pt-2.5 sm:pt-3 border-t border-slate-100 gap-2">
             <div className="min-w-0 flex-1">
               <p className="text-[10px] sm:text-xs font-medium mb-0.5 m-0 flex items-center gap-1">
                 {inStock ? (
