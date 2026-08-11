@@ -224,7 +224,7 @@ const Shop = () => {
             className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
               tempCategory === ''
                 ? 'bg-brand-indigo/10 border-brand-indigo/25 text-brand-indigo shadow-sm'
-                : 'bg-white border-slate-150 hover:border-slate-300 text-slate-650'
+                : 'bg-white border-slate-150 hover:border-slate-300 text-slate-700'
             }`}
           >
             <span className="flex items-center gap-2">
@@ -240,7 +240,7 @@ const Shop = () => {
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                 tempCategory === cat._id
                   ? 'bg-brand-indigo/10 border-brand-indigo/25 text-brand-indigo shadow-sm'
-                  : 'bg-white border-slate-150 hover:border-slate-300 text-slate-650'
+                  : 'bg-white border-slate-150 hover:border-slate-300 text-slate-700'
               }`}
             >
               <span className="flex items-center gap-2">
@@ -390,7 +390,7 @@ const Shop = () => {
               className={`px-4 py-2 rounded-xl border text-xs font-extrabold uppercase tracking-wider transition-all flex-shrink-0 cursor-pointer shadow-sm ${
                 selectedCategory === ''
                   ? 'bg-brand-indigo border-brand-indigo text-white shadow-md'
-                  : 'bg-white border-slate-200 text-slate-650 hover:border-slate-300 hover:bg-slate-50'
+                  : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50'
               }`}
             >
               All Products
@@ -411,7 +411,7 @@ const Shop = () => {
                 className={`px-4 py-2 rounded-xl border text-xs font-extrabold uppercase tracking-wider transition-all flex-shrink-0 cursor-pointer shadow-sm ${
                   selectedCategory === cat._id
                     ? 'bg-brand-indigo border-brand-indigo text-white shadow-md'
-                    : 'bg-white border-slate-200 text-slate-650 hover:border-slate-300 hover:bg-slate-50'
+                    : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50'
                 }`}
               >
                 <span>{cat.icon} {cat.name}</span>

@@ -110,12 +110,12 @@ const StoreDetail = () => {
                   </p>
                 )}
                 {store.email && (
-                  <p className="text-xs font-bold text-slate-650 m-0 flex items-center gap-2">
+                  <p className="text-xs font-bold text-slate-700 m-0 flex items-center gap-2">
                     <Mail size={14} className="text-brand-indigo" /> {store.email}
                   </p>
                 )}
                 {store.address && (
-                  <p className="text-xs font-bold text-slate-650 m-0 flex items-center gap-2">
+                  <p className="text-xs font-bold text-slate-700 m-0 flex items-center gap-2">
                     <MapPin size={14} className="text-brand-indigo" /> {store.address}
                   </p>
                 )}

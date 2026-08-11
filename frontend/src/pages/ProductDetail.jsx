@@ -258,10 +258,10 @@ const ProductDetail = () => {
                 </button>
                 <div className="flex gap-3">
                   <button onClick={handleToggleWishlist}
-                    className={`w-14 h-14 border rounded-2xl flex items-center justify-center transition-all cursor-pointer ${wishlisted ? 'bg-rose-50 border-rose-200 text-rose-500' : 'border-slate-200 hover:bg-slate-50 text-slate-400 hover:text-slate-650'}`}>
+                    className={`w-14 h-14 border rounded-2xl flex items-center justify-center transition-all cursor-pointer ${wishlisted ? 'bg-rose-50 border-rose-200 text-rose-500' : 'border-slate-200 hover:bg-slate-50 text-slate-400 hover:text-slate-700'}`}>
                     <Heart size={20} className={wishlisted ? 'fill-rose-500' : ''} />
                   </button>
-                  <button className="w-14 h-14 border border-slate-200 rounded-2xl flex items-center justify-center hover:bg-slate-50 text-slate-400 hover:text-slate-650 transition-all cursor-pointer">
+                  <button className="w-14 h-14 border border-slate-200 rounded-2xl flex items-center justify-center hover:bg-slate-50 text-slate-400 hover:text-slate-700 transition-all cursor-pointer">
                     <Share2 size={20} />
                   </button>
                 </div>

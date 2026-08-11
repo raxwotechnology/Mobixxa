@@ -478,7 +478,7 @@ const Checkout = () => {
                       setVoucherDiscount(0);
                     }
                   }}
-                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-indigo/25 focus:border-brand-indigo font-semibold text-slate-650 cursor-pointer"
+                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-indigo/25 focus:border-brand-indigo font-semibold text-slate-700 cursor-pointer"
                 >
                   <option value="">Select claimed voucher</option>
                   {claimedVouchers.map((v, idx) => (
@@ -794,7 +794,7 @@ const Checkout = () => {
               <h3 className="text-lg font-black text-slate-800 m-0">Verify Payment OTP</h3>
               <button
                 onClick={() => setOtpModalOpen(false)}
-                className="text-slate-400 hover:text-slate-650 cursor-pointer"
+                className="text-slate-400 hover:text-slate-700 cursor-pointer"
                 aria-label="Close OTP dialog"
               >
                 <X size={18} />
