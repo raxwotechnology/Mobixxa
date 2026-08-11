@@ -21,6 +21,7 @@ const Checkout = () => {
   const [deliveryTime, setDeliveryTime] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('cod');
   const [customerNic, setCustomerNic] = useState('');
+  const [customerWhatsapp, setCustomerWhatsapp] = useState(user?.phone || '');
   const [guarantorName, setGuarantorName] = useState('');
   const [guarantorPhone, setGuarantorPhone] = useState('');
   const [guarantorNic, setGuarantorNic] = useState('');
@@ -186,6 +187,7 @@ const Checkout = () => {
         }
         orderData.hirePurchaseData = {
           customerNic,
+          customerWhatsapp: customerWhatsapp || user?.phone,
           numberOfInstallments: Number(hpInstallments),
           downPayment: Math.round(total * 0.3),
           netTotal: total,
@@ -593,53 +595,65 @@ const Checkout = () => {
 
                   {/* Hire Purchase / Credit Calculator & Fields */}
                   {paymentMethod === 'hire_purchase' && method.id === 'hire_purchase' && (
-                    <div className="ml-8 p-4 bg-amber-50/50 border border-amber-200 rounded-2xl space-y-4 text-xs">
-                      <p className="font-bold text-amber-800 m-0 uppercase tracking-wider text-[10px]">Hire Purchase Application Details & Live Calculator:</p>
+                    <div className="ml-8 p-5 bg-amber-50/70 border border-amber-200/80 rounded-2xl space-y-4 text-xs shadow-xs">
+                      <p className="font-extrabold text-amber-900 m-0 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                        📝 Hire Purchase Application Details & Live Calculator:
+                      </p>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
-                          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">Your NIC Number *</label>
+                          <label className="block text-[10px] font-extrabold text-slate-700 uppercase tracking-wide mb-1">Your NIC Number *</label>
                           <input
                             type="text"
                             value={customerNic}
                             onChange={(e) => setCustomerNic(e.target.value)}
-                            placeholder="Enter NIC Number"
-                            className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white focus:outline-none"
+                            placeholder="e.g., 991234567V"
+                            className="w-full px-3 py-2.5 border border-slate-200 rounded-xl bg-white text-slate-800 font-bold text-xs focus:outline-none focus:ring-2 focus:ring-brand-indigo/25 focus:border-brand-indigo placeholder:text-slate-400 placeholder:font-normal"
                           />
                         </div>
                         <div>
-                          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">Installment Period</label>
+                          <label className="block text-[10px] font-extrabold text-slate-700 uppercase tracking-wide mb-1">💬 WhatsApp Number *</label>
+                          <input
+                            type="tel"
+                            value={customerWhatsapp}
+                            onChange={(e) => setCustomerWhatsapp(e.target.value)}
+                            placeholder="e.g., 0771234567"
+                            className="w-full px-3 py-2.5 border border-slate-200 rounded-xl bg-white text-slate-800 font-bold text-xs focus:outline-none focus:ring-2 focus:ring-brand-indigo/25 focus:border-brand-indigo placeholder:text-slate-400 placeholder:font-normal"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-extrabold text-slate-700 uppercase tracking-wide mb-1">Installment Period</label>
                           <select
                             value={hpInstallments}
                             onChange={(e) => setHpInstallments(Number(e.target.value))}
-                            className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white focus:outline-none"
+                            className="w-full px-3 py-2.5 border border-slate-200 rounded-xl bg-white text-slate-800 font-bold text-xs focus:outline-none focus:ring-2 focus:ring-brand-indigo/25 focus:border-brand-indigo cursor-pointer"
                           >
-                            <option value="3">3 Months Plan</option>
-                            <option value="6">6 Months Plan</option>
-                            <option value="12">12 Months Plan</option>
+                            <option value="3" className="text-slate-800 font-bold">3 Months Plan</option>
+                            <option value="6" className="text-slate-800 font-bold">6 Months Plan</option>
+                            <option value="12" className="text-slate-800 font-bold">12 Months Plan</option>
                           </select>
                         </div>
                       </div>
 
-                      <div className="bg-amber-100/40 p-3.5 rounded-xl border border-amber-200/60 space-y-2">
-                        <p className="font-bold text-amber-900 m-0 text-[11px]">Installment Breakdown Summary:</p>
-                        <div className="flex justify-between border-b border-amber-200/20 pb-1.5 pt-1">
-                          <span className="text-slate-600 font-semibold">Down Payment (30%):</span>
-                          <span className="font-bold text-emerald-600">Rs. {Math.round(total * 0.3).toLocaleString()}</span>
+                      <div className="bg-amber-100/60 p-4 rounded-xl border border-amber-200 space-y-2">
+                        <p className="font-black text-amber-950 m-0 text-xs uppercase tracking-wide">Installment Breakdown Summary:</p>
+                        <div className="flex justify-between border-b border-amber-200/60 pb-1.5 pt-1">
+                          <span className="text-slate-700 font-semibold">Down Payment (30%):</span>
+                          <span className="font-black text-emerald-700">Rs. {Math.round(total * 0.3).toLocaleString()}</span>
                         </div>
-                        <div className="flex justify-between border-b border-amber-200/20 pb-1.5">
-                          <span className="text-slate-600 font-semibold">Remaining Principal to Finance:</span>
-                          <span className="font-bold text-slate-700">Rs. {Math.round(total * 0.7).toLocaleString()}</span>
+                        <div className="flex justify-between border-b border-amber-200/60 pb-1.5">
+                          <span className="text-slate-700 font-semibold">Remaining Principal to Finance:</span>
+                          <span className="font-bold text-slate-800">Rs. {Math.round(total * 0.7).toLocaleString()}</span>
                         </div>
                         <div className="flex justify-between pb-0.5">
-                          <span className="text-slate-600 font-semibold">Monthly Installment Amount:</span>
-                          <span className="font-extrabold text-amber-800">Rs. {Math.round((total * 0.7) / hpInstallments).toLocaleString()} / month</span>
+                          <span className="text-slate-700 font-semibold">Monthly Installment Amount:</span>
+                          <span className="font-black text-amber-900 text-sm">Rs. {Math.round((total * 0.7) / hpInstallments).toLocaleString()} / month</span>
                         </div>
                       </div>
 
                       {/* Guarantor Details */}
-                      <div className="space-y-3 pt-2 border-t border-amber-200/40">
-                        <p className="font-bold text-slate-700 m-0 uppercase tracking-wider text-[10px]">Guarantor Information (Optional):</p>
+                      <div className="space-y-3 pt-2 border-t border-amber-200/60">
+                        <p className="font-extrabold text-slate-800 m-0 uppercase tracking-wider text-[10px]">Guarantor Information (Optional):</p>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                           <div>
                             <input
@@ -647,7 +661,7 @@ const Checkout = () => {
                               value={guarantorName}
                               onChange={(e) => setGuarantorName(e.target.value)}
                               placeholder="Guarantor Name"
-                              className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white focus:outline-none"
+                              className="w-full px-3 py-2.5 border border-slate-200 rounded-xl bg-white text-slate-800 font-bold text-xs focus:outline-none focus:ring-2 focus:ring-brand-indigo/25 focus:border-brand-indigo placeholder:text-slate-400 placeholder:font-normal"
                             />
                           </div>
                           <div>
@@ -656,7 +670,7 @@ const Checkout = () => {
                               value={guarantorNic}
                               onChange={(e) => setGuarantorNic(e.target.value)}
                               placeholder="Guarantor NIC"
-                              className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white focus:outline-none"
+                              className="w-full px-3 py-2.5 border border-slate-200 rounded-xl bg-white text-slate-800 font-bold text-xs focus:outline-none focus:ring-2 focus:ring-brand-indigo/25 focus:border-brand-indigo placeholder:text-slate-400 placeholder:font-normal"
                             />
                           </div>
                           <div>
@@ -665,7 +679,7 @@ const Checkout = () => {
                               value={guarantorPhone}
                               onChange={(e) => setGuarantorPhone(e.target.value)}
                               placeholder="Guarantor Phone"
-                              className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white focus:outline-none"
+                              className="w-full px-3 py-2.5 border border-slate-200 rounded-xl bg-white text-slate-800 font-bold text-xs focus:outline-none focus:ring-2 focus:ring-brand-indigo/25 focus:border-brand-indigo placeholder:text-slate-400 placeholder:font-normal"
                             />
                           </div>
                         </div>
