@@ -664,6 +664,41 @@ const AdminOrders = ({ navItems: propNavItems }) => {
                 </div>
               </div>
 
+              {viewDetailsOrder.paymentMethod === 'koko' && (
+                <div className="bg-gradient-to-br from-brand-indigo/5 via-sky-50/50 to-slate-50 border border-brand-indigo/20 p-5 rounded-2xl space-y-3">
+                  <div className="flex items-center justify-between border-b border-brand-indigo/15 pb-2.5">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-xl bg-brand-indigo text-white font-black text-xs flex items-center justify-center shadow-xs">
+                        koko
+                      </div>
+                      <span className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Koko Payment Breakdown (3x Installments)</span>
+                    </div>
+                    <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-100/80 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                      1/3 Paid (Active)
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                    <div>
+                      <span className="text-[10px] font-bold uppercase text-slate-400 block">Koko Txn ID</span>
+                      <span className="font-mono font-bold text-slate-800 text-xs">{viewDetailsOrder.kokoDetails?.transactionId || `KOKO-${viewDetailsOrder._id.slice(-6).toUpperCase()}`}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold uppercase text-slate-400 block">1st Installment (Paid)</span>
+                      <span className="font-bold text-emerald-600">Rs. {Math.ceil(viewDetailsOrder.totalAmount / 3).toLocaleString()}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold uppercase text-slate-400 block">2nd Due (+30 Days)</span>
+                      <span className="font-bold text-slate-700">Rs. {Math.ceil(viewDetailsOrder.totalAmount / 3).toLocaleString()}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold uppercase text-slate-400 block">3rd Due (+60 Days)</span>
+                      <span className="font-bold text-slate-700">Rs. {Math.max(0, viewDetailsOrder.totalAmount - (Math.ceil(viewDetailsOrder.totalAmount / 3) * 2)).toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {viewDetailsOrder.paymentMethod === 'hire_purchase' && (
                 <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl space-y-3">
                   <div className="flex items-center justify-between">

@@ -43,6 +43,7 @@ const createOrder = async (req, res, next) => {
       sendReceiptEmail = false,
       receiptEmail,
       voucherCode,
+      kokoDetails,
     } = req.body;
 
     if (!items || items.length === 0) {
@@ -133,6 +134,30 @@ const createOrder = async (req, res, next) => {
       appliedVoucher = voucher;
     }
 
+    const buildKokoScheduleData = (amt) => {
+      const transactionId = kokoDetails?.transactionId || `KOKO-TXN-${Date.now().toString().slice(-6)}${Math.floor(100 + Math.random() * 900)}`;
+      const kokoRef = kokoDetails?.kokoRef || `KOKO-REF-${Math.floor(100000 + Math.random() * 900000)}`;
+      const instAmt = Math.ceil(amt / 3);
+      const now = new Date();
+      const date1 = new Date(now);
+      const date2 = new Date(now); date2.setDate(date2.getDate() + 30);
+      const date3 = new Date(now); date3.setDate(date3.getDate() + 60);
+
+      return {
+        transactionId,
+        kokoRef,
+        installmentsCount: 3,
+        installmentAmount: instAmt,
+        paidInstallments: 1,
+        nextPaymentDate: date2,
+        installmentsSchedule: [
+          { installmentNo: 1, amount: instAmt, dueDate: date1, status: 'paid', paidAt: date1 },
+          { installmentNo: 2, amount: instAmt, dueDate: date2, status: 'pending' },
+          { installmentNo: 3, amount: Math.max(0, amt - (instAmt * 2)), dueDate: date3, status: 'pending' },
+        ],
+      };
+    };
+
     if (paymentMethod === 'koko' && nonKokoItems.length > 0) {
       const kokoTotal = calculateTotal(kokoEligibleItems, 0, 0);
       const nonKokoTotal = calculateTotal(nonKokoItems, deliveryFee || 0, tax || 0);
@@ -148,8 +173,9 @@ const createOrder = async (req, res, next) => {
           deliveryFee: 0,
           tax: 0,
           paymentMethod: 'koko',
-          paymentStatus: 'pending',
-          orderStatus: 'pending',
+          paymentStatus: 'completed',
+          kokoDetails: buildKokoScheduleData(kokoTotal),
+          orderStatus: 'confirmed',
           paymentOtpRequired: false,
           sendReceiptEmail: !!sendReceiptEmail,
           receiptEmail: receiptEmail || undefined,
@@ -192,8 +218,9 @@ const createOrder = async (req, res, next) => {
         deliveryFee: deliveryFee || 0,
         tax: tax || 0,
         paymentMethod: paymentMethod || 'cod',
-        paymentStatus: 'pending',
-        orderStatus: 'pending',
+        paymentStatus: paymentMethod === 'koko' ? 'completed' : 'pending',
+        kokoDetails: paymentMethod === 'koko' ? buildKokoScheduleData(totalAmount) : undefined,
+        orderStatus: paymentMethod === 'koko' ? 'confirmed' : 'pending',
         paymentOtpRequired: paymentMethod === 'payhere',
         sendReceiptEmail: !!sendReceiptEmail,
         receiptEmail: receiptEmail || undefined,

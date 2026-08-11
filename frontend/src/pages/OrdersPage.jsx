@@ -255,6 +255,11 @@ const OrdersPage = () => {
                 </div>
 
                 <div className="flex items-center justify-between md:justify-end gap-3.5 w-full md:w-auto pt-3 md:pt-0 border-t md:border-t-0 border-slate-100 mt-1 md:mt-0">
+                  {order.paymentMethod === 'koko' && (
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-xl border bg-brand-indigo/10 text-brand-indigo border-brand-indigo/20 flex items-center gap-1">
+                      <span className="font-black text-[9px] bg-brand-indigo text-white px-1.5 py-0.5 rounded-md">koko</span> 3x Pay (1/3 Paid)
+                    </span>
+                  )}
                   <span className={`text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-xl border capitalize ${statusColor(order.orderStatus)}`}>
                     {order.orderStatus.replace('_', ' ')}
                   </span>

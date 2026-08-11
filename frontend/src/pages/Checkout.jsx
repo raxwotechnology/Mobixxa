@@ -42,6 +42,10 @@ const Checkout = () => {
   const [loyaltyPointsToRedeem, setLoyaltyPointsToRedeem] = useState(0);
   const [loyaltyDiscount, setLoyaltyDiscount] = useState(0);
   const [showLoyalty, setShowLoyalty] = useState(false);
+  const [kokoModalOpen, setKokoModalOpen] = useState(false);
+  const [kokoPhone, setKokoPhone] = useState(user?.phone || '');
+  const [kokoOtp, setKokoOtp] = useState('582910');
+  const [kokoProcessing, setKokoProcessing] = useState(false);
   const siteSettings = useSettingsStore((s) => s.settings);
   const pointValue = siteSettings?.loyaltyPointValue || 1;
 
@@ -146,6 +150,11 @@ const Checkout = () => {
       return;
     }
 
+    if (paymentMethod === 'koko') {
+      setKokoModalOpen(true);
+      return;
+    }
+
     setLoading(true);
     try {
       const orderData = {
@@ -190,14 +199,6 @@ const Checkout = () => {
         await sendPaymentOtp(order._id);
         setOtpOrderId(order._id);
         setOtpModalOpen(true);
-      } else if (paymentMethod === 'koko') {
-        clearItems();
-        if (order?.splitOrders?.isSplit) {
-          toast.info(order.splitOrders.message);
-        } else {
-          toast.success('Koko order placed successfully!');
-        }
-        navigate(`/order-confirmation/${order._id}`);
       } else {
         // COD — go to confirmation
         clearItems();
@@ -208,6 +209,50 @@ const Checkout = () => {
       toast.error(err.response?.data?.message || 'Failed to place order');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleConfirmKokoPayment = async () => {
+    if (!kokoPhone || kokoPhone.trim().length < 8) {
+      toast.error('Enter a valid mobile number for Koko verification');
+      return;
+    }
+    try {
+      setKokoProcessing(true);
+      const transactionId = `KOKO-TXN-${Date.now().toString().slice(-6)}${Math.floor(100 + Math.random() * 900)}`;
+      const kokoRef = `KOKO-REF-${Math.floor(100000 + Math.random() * 900000)}`;
+
+      const orderData = {
+        items: items.map((item) => ({
+          productId: item.productId?._id || item.productId,
+          name: item.productId?.name || item.name,
+          image: item.productId?.productLink || item.productId?.images?.[0] || item.image,
+          quantity: item.quantity,
+          price: item.productId?.price || item.price,
+          storeId: item.productId?.storeId,
+        })),
+        deliveryAddress: address,
+        deliverySlot: { date: deliveryDate, timeSlot: deliveryTime },
+        paymentMethod: 'koko',
+        kokoDetails: { transactionId, kokoRef },
+        deliveryFee,
+        tax,
+        voucherCode: selectedVoucherCode || undefined,
+        loyaltyPointsRedeemed: loyaltyPointsToRedeem || undefined,
+        loyaltyDiscount: loyaltyDiscount || undefined,
+        sendReceiptEmail,
+        receiptEmail: sendReceiptEmail ? (receiptEmail || user?.email || '') : undefined,
+      };
+
+      const { data: order } = await createOrder(orderData);
+      setKokoModalOpen(false);
+      clearItems();
+      toast.success(`Koko Payment Approved! 1st Installment of Rs. ${Math.ceil(total / 3).toLocaleString()} Paid. 💳✨`);
+      navigate(`/order-confirmation/${order._id}`);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Koko payment approval failed');
+    } finally {
+      setKokoProcessing(false);
     }
   };
 
@@ -779,6 +824,107 @@ const Checkout = () => {
                 className="flex-1 bg-gradient-to-r from-brand-indigo to-brand-violet hover:opacity-95 text-white font-bold py-3 rounded-xl transition-all disabled:opacity-60 cursor-pointer text-xs uppercase tracking-wider shadow-[0_4px_12px_rgba(99,102,241,0.2)]"
               >
                 {otpVerifying ? 'Verifying...' : 'Verify & Pay'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Koko Payment Gateway Simulation Modal */}
+      {kokoModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl border border-slate-100 animate-fade-in relative">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-brand-indigo to-brand-violet p-6 text-white flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-white text-brand-indigo font-black text-sm flex items-center justify-center shadow-md">
+                  koko
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-lg m-0 text-white leading-snug">Koko Payment Gateway</h3>
+                  <p className="text-xs text-white/80 m-0 font-medium">Merchant: {siteSettings?.shopName || 'SR Mobile Official'}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setKokoModalOpen(false)}
+                className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition-all cursor-pointer border-0"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-5">
+              <div className="bg-brand-indigo/5 border border-brand-indigo/15 rounded-2xl p-4 flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-slate-500 font-medium m-0">Total Order Amount</p>
+                  <p className="text-xl font-bold text-slate-900 m-0">Rs. {Math.round(total).toLocaleString()}</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-brand-indigo bg-brand-indigo/10 px-3 py-1 rounded-full">
+                    3x Pay (0% Interest)
+                  </span>
+                  <p className="text-xs font-semibold text-brand-indigo mt-1 m-0">Rs. {Math.ceil(total / 3).toLocaleString()} / month</p>
+                </div>
+              </div>
+
+              {/* Installment Schedule */}
+              <div className="space-y-2 border border-slate-200/80 rounded-2xl p-4 bg-slate-50/50">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 m-0 mb-2">Approved 3-Installment Schedule:</p>
+                <div className="flex items-center justify-between text-xs py-1.5 border-b border-slate-200/60">
+                  <span className="font-semibold text-emerald-700 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span> 1st Payment (Today)
+                  </span>
+                  <span className="font-bold text-slate-900">Rs. {Math.ceil(total / 3).toLocaleString()}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs py-1.5 border-b border-slate-200/60">
+                  <span className="font-semibold text-slate-600 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-slate-400"></span> 2nd Payment (in 30 Days)
+                  </span>
+                  <span className="font-bold text-slate-700">Rs. {Math.ceil(total / 3).toLocaleString()}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs py-1.5">
+                  <span className="font-semibold text-slate-600 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-slate-400"></span> 3rd Payment (in 60 Days)
+                  </span>
+                  <span className="font-bold text-slate-700">Rs. {Math.max(0, total - (Math.ceil(total / 3) * 2)).toLocaleString()}</span>
+                </div>
+              </div>
+
+              {/* Mobile & Security Verification */}
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Koko Registered Mobile Number</label>
+                  <input
+                    type="text"
+                    value={kokoPhone}
+                    onChange={(e) => setKokoPhone(e.target.value)}
+                    placeholder="+9477XXXXXXX"
+                    className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/25 focus:border-brand-indigo"
+                  />
+                </div>
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="text-xs font-bold text-slate-700">Koko Verification Security OTP Code</label>
+                    <span className="text-[10px] font-bold text-brand-indigo">Demo Code: 582910</span>
+                  </div>
+                  <input
+                    type="text"
+                    value={kokoOtp}
+                    onChange={(e) => setKokoOtp(e.target.value)}
+                    placeholder="Enter 6-digit OTP"
+                    className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-mono font-bold tracking-widest text-center text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/25 focus:border-brand-indigo"
+                  />
+                </div>
+              </div>
+
+              {/* Approval Button */}
+              <button
+                onClick={handleConfirmKokoPayment}
+                disabled={kokoProcessing}
+                className="w-full bg-gradient-to-r from-brand-indigo to-brand-violet hover:opacity-95 text-white font-bold py-3.5 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 text-xs uppercase tracking-wider cursor-pointer border-0"
+              >
+                {kokoProcessing ? 'Approving Koko Payment...' : `Approve & Pay Installment 1 (Rs. ${Math.ceil(total / 3).toLocaleString()})`}
               </button>
             </div>
           </div>

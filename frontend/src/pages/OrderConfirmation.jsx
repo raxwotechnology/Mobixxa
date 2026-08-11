@@ -137,6 +137,53 @@ const OrderConfirmation = () => {
           )}
         </div>
 
+        {/* Koko Payment Breakdown Card */}
+        {order.paymentMethod === 'koko' && (
+          <div className="mb-6 bg-gradient-to-br from-brand-indigo/5 via-sky-50/40 to-slate-50 border border-brand-indigo/20 rounded-2xl p-5 shadow-xs">
+            <div className="flex items-center justify-between border-b border-brand-indigo/15 pb-3 mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-brand-indigo text-white font-black text-xs flex items-center justify-center shadow-xs">
+                  koko
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-slate-900 text-xs uppercase tracking-wider m-0">Koko 3x Installment Schedule</h4>
+                  <p className="text-[10px] text-slate-500 font-medium m-0">Ref: {order.kokoDetails?.transactionId || `KOKO-TXN-${order._id.slice(-6).toUpperCase()}`}</p>
+                </div>
+              </div>
+              <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-100/80 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                1/3 Paid Today
+              </span>
+            </div>
+
+            <div className="space-y-2.5">
+              <div className="flex justify-between items-center bg-white p-3 rounded-xl border border-emerald-200 shadow-2xs">
+                <span className="text-xs font-bold text-emerald-800 flex items-center gap-2">
+                  <CheckCircle size={14} className="text-emerald-600" /> Installment 1 (Paid Today)
+                </span>
+                <span className="text-xs font-extrabold text-slate-900">
+                  Rs. {Math.ceil(order.totalAmount / 3).toLocaleString()}
+                </span>
+              </div>
+              <div className="flex justify-between items-center bg-white/70 p-3 rounded-xl border border-slate-200/70">
+                <span className="text-xs font-semibold text-slate-700 flex items-center gap-2">
+                  <Clock size={14} className="text-brand-indigo" /> Installment 2 (Due in 30 Days)
+                </span>
+                <span className="text-xs font-bold text-slate-800">
+                  Rs. {Math.ceil(order.totalAmount / 3).toLocaleString()}
+                </span>
+              </div>
+              <div className="flex justify-between items-center bg-white/70 p-3 rounded-xl border border-slate-200/70">
+                <span className="text-xs font-semibold text-slate-700 flex items-center gap-2">
+                  <Clock size={14} className="text-brand-indigo" /> Installment 3 (Due in 60 Days)
+                </span>
+                <span className="text-xs font-bold text-slate-800">
+                  Rs. {Math.max(0, order.totalAmount - (Math.ceil(order.totalAmount / 3) * 2)).toLocaleString()}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Total */}
         <div className="space-y-3.5 border-t border-slate-100 pt-5">
           <div className="flex justify-between text-xs font-bold uppercase tracking-wider text-slate-400">

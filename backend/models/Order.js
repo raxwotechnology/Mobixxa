@@ -67,6 +67,24 @@ const orderSchema = mongoose.Schema(
       enum: ['pending', 'completed', 'failed', 'refunded'],
       default: 'pending',
     },
+    // Koko 3-installment payment breakdown details
+    kokoDetails: {
+      transactionId: { type: String },
+      kokoRef: { type: String },
+      installmentsCount: { type: Number, default: 3 },
+      installmentAmount: { type: Number },
+      paidInstallments: { type: Number, default: 1 },
+      nextPaymentDate: { type: Date },
+      installmentsSchedule: [
+        {
+          installmentNo: { type: Number },
+          amount: { type: Number },
+          dueDate: { type: Date },
+          status: { type: String, enum: ['paid', 'pending'], default: 'pending' },
+          paidAt: { type: Date },
+        },
+      ],
+    },
     orderStatus: {
       type: String,
       enum: [
