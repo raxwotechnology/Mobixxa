@@ -497,7 +497,7 @@ const BarcodeGenerator = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-bold text-slate-800 truncate m-0">{product.name}</p>
-                        <p className="text-[10px] text-slate-450 font-semibold m-0 mt-0.5">
+                        <p className="text-[10px] text-slate-500 font-semibold m-0 mt-0.5">
                           SKU: {product.sku || 'N/A'} • Rs. {product.price?.toFixed(2)}
                         </p>
                       </div>
@@ -604,10 +604,10 @@ const BarcodeGenerator = () => {
                           <button
                             key={n}
                             onClick={() => setQuantity(n)}
-                            className={`px-3 py-2 text-[10px] font-black uppercase tracking-wider rounded-lg transition-colors cursor-pointer border ${
+                            className={`px-3 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer border ${
                               quantity === n
-                                ? 'bg-slate-900 border-slate-900 text-white shadow-xs'
-                                : 'bg-white border-slate-200 text-slate-550 hover:bg-slate-50'
+                                ? 'bg-brand-indigo border-brand-indigo text-white shadow-xs'
+                                : 'bg-white border-slate-200 text-slate-700 font-bold hover:bg-slate-50 hover:border-slate-300'
                             }`}
                           >
                             {n}
