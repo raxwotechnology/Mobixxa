@@ -238,9 +238,9 @@ const DashboardLayout = ({ children, navItems, title }) => {
   const mainML = collapsed ? 'lg:ml-[72px]' : 'lg:ml-64';
 
   return (
-    <div className="admin-dashboard-container min-h-[100dvh] flex flex-col bg-slate-50/70 overflow-x-hidden">
+    <div className="admin-dashboard-container min-h-[100dvh] flex flex-col bg-slate-50/70 relative">
       {showDashboardHeader && (
-        <header className="h-14 sm:h-16 bg-white/90 backdrop-blur-md border-b border-slate-200/80 flex items-center px-3 sm:px-4 md:px-6 gap-2 sm:gap-3 sticky top-0 z-50 flex-shrink-0">
+        <header className="h-14 sm:h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/80 flex items-center px-3 sm:px-4 md:px-6 gap-2 sm:gap-3 sticky top-0 z-50 flex-shrink-0 shadow-xs">
           <button
             type="button"
             className="lg:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors border-0 bg-transparent cursor-pointer"
@@ -426,7 +426,7 @@ const DashboardLayout = ({ children, navItems, title }) => {
           />
         </aside>
 
-        <main className={`flex-1 min-w-0 transition-all duration-250 ${mainML} overflow-x-hidden`}>
+        <main className={`flex-1 min-w-0 transition-all duration-250 ${mainML}`}>
           <div className="p-3 sm:p-5 md:p-6 lg:p-8 w-full max-w-[1600px] mx-auto" style={{ minHeight: mainMinHeight }}>
             {children}
           </div>
