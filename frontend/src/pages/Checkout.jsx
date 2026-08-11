@@ -430,7 +430,7 @@ const Checkout = () => {
                   return (
                     <button key={d} type="button" onClick={() => setDeliveryDate(d)}
                       className={`px-4 py-3 rounded-xl border text-sm font-medium transition-all text-center min-w-[72px] cursor-pointer ${
-                        deliveryDate === d ? 'border-brand-indigo bg-brand-indigo/5 text-brand-indigo font-bold shadow-sm' : 'border-slate-200 hover:border-slate-350 text-slate-500'
+                        deliveryDate === d ? 'border-brand-indigo bg-brand-indigo/5 text-brand-indigo font-bold shadow-sm' : 'border-slate-200 hover:border-slate-300 text-slate-700 font-bold bg-white'
                       }`}
                     >
                       <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{dayName}</div>
@@ -447,7 +447,7 @@ const Checkout = () => {
                 {timeSlots.map((slot) => (
                   <button key={slot} type="button" onClick={() => setDeliveryTime(slot)}
                     className={`px-3 py-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
-                      deliveryTime === slot ? 'border-brand-indigo bg-brand-indigo/5 text-brand-indigo shadow-sm' : 'border-slate-200 hover:border-slate-350 text-slate-550'
+                      deliveryTime === slot ? 'border-brand-indigo bg-brand-indigo/5 text-brand-indigo shadow-sm font-extrabold' : 'border-slate-200 hover:border-slate-300 text-slate-700 font-bold bg-white'
                     }`}
                   >
                     {slot}
