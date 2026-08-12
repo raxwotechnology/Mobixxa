@@ -7,7 +7,7 @@ import {
   getLeavePolicies, createLeavePolicy, updateLeavePolicy, deleteLeavePolicy,
   getAttendancePolicies, createAttendancePolicy, updateAttendancePolicy, deleteAttendancePolicy,
   assignPoliciesToEmployee, assignPoliciesToAllEmployees,
-  checkIn, checkOut, startBreak, endBreak, getMyAttendance
+  checkIn, checkOut, startBreak, endBreak, getMyAttendance, getActiveBreak
 } from '../../services/api';
 import useAuthStore from '../../store/authStore';
 import AttendanceDashboardView from '../../components/AttendanceDashboardView';
@@ -26,6 +26,7 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
   const { user } = useAuthStore();
   const [records, setRecords] = useState([]);
   const [myRecords, setMyRecords] = useState([]);
+  const [activeBreak, setActiveBreak] = useState(null);
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [month, setMonth] = useState(now.getMonth() + 1);
@@ -78,16 +79,18 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
       const params = { month, year };
       if (selectedStore !== 'All') params.storeId = selectedStore;
       
-      const [attRes, empRes, storeRes, myAttRes] = await Promise.all([
+      const [attRes, empRes, storeRes, myAttRes, activeBrkRes] = await Promise.all([
         getAttendanceReport(params),
         getEmployees(),
         getStores(),
         getMyAttendance({ month, year }),
+        getActiveBreak().catch(() => ({ data: null })),
       ]);
       setRecords(attRes.data || []);
       setEmployees(empRes.data || []);
       setStores(storeRes.data || []);
       setMyRecords(myAttRes.data || []);
+      setActiveBreak(activeBrkRes?.data || null);
     } catch (err) { toast.error('Failed to load attendance'); }
     finally { setLoading(false); }
   };
@@ -114,7 +117,8 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
 
   const handleStartBreakAction = async () => {
     try {
-      await startBreak();
+      const res = await startBreak();
+      setActiveBreak(res.data || true);
       toast.info('Break Started ☕');
       fetchData();
     } catch (err) {
@@ -125,6 +129,7 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
   const handleEndBreakAction = async () => {
     try {
       await endBreak();
+      setActiveBreak(null);
       toast.success('Break Ended ⚡');
       fetchData();
     } catch (err) {
@@ -437,6 +442,7 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
           <AttendanceDashboardView
             user={user}
             records={myRecords}
+            activeBreak={activeBreak}
             loading={loading}
             month={month}
             year={year}

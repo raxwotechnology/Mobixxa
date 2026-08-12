@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Download, FileText, FileSpreadsheet, Filter, Clock, CheckCircle, X, Users, UserCheck } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
-import { getAttendanceReport, getEmployees, adminMarkAttendance, checkIn, checkOut, startBreak, endBreak, getMyAttendance } from '../../services/api';
+import { getAttendanceReport, getEmployees, adminMarkAttendance, checkIn, checkOut, startBreak, endBreak, getMyAttendance, getActiveBreak } from '../../services/api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { toast } from 'react-toastify';
 import { managerNavGroups as navItems } from './managerNavItems';
@@ -18,6 +18,7 @@ const ManagerAttendance = () => {
   const [activeTab, setActiveTab] = useState('my-attendance'); // 'my-attendance' | 'team-report'
   const [records, setRecords] = useState([]);
   const [myRecords, setMyRecords] = useState([]);
+  const [activeBreak, setActiveBreak] = useState(null);
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [month, setMonth] = useState(now.getMonth() + 1);
@@ -33,14 +34,16 @@ const ManagerAttendance = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [attRes, empRes, myAttRes] = await Promise.all([
+      const [attRes, empRes, myAttRes, activeBrkRes] = await Promise.all([
         getAttendanceReport({ month, year }),
         getEmployees(),
         getMyAttendance({ month, year }),
+        getActiveBreak().catch(() => ({ data: null })),
       ]);
       setRecords(attRes.data || []);
       setEmployees(empRes.data || []);
       setMyRecords(myAttRes.data || []);
+      setActiveBreak(activeBrkRes?.data || null);
     } catch (err) {
       toast.error('Failed to load attendance');
     } finally {
@@ -70,7 +73,8 @@ const ManagerAttendance = () => {
 
   const handleStartBreakAction = async () => {
     try {
-      await startBreak();
+      const res = await startBreak();
+      setActiveBreak(res.data || true);
       toast.info('Break Started ☕');
       fetchData();
     } catch (err) {
@@ -81,6 +85,7 @@ const ManagerAttendance = () => {
   const handleEndBreakAction = async () => {
     try {
       await endBreak();
+      setActiveBreak(null);
       toast.success('Break Ended ⚡');
       fetchData();
     } catch (err) {
@@ -211,6 +216,7 @@ const ManagerAttendance = () => {
           <AttendanceDashboardView
             user={user}
             records={myRecords}
+            activeBreak={activeBreak}
             loading={loading}
             month={month}
             year={year}

@@ -3,7 +3,7 @@ import { Clock, CheckCircle, X } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
 import useAuthStore from '../../store/authStore';
 import { getEmployeeNavGroups } from './employeeNav';
-import { adminMarkAttendance, checkIn, checkOut, startBreak, endBreak } from '../../services/api';
+import { adminMarkAttendance, checkIn, checkOut, startBreak, endBreak, getActiveBreak } from '../../services/api';
 import API from '../../services/api';
 import { toast } from 'react-toastify';
 import AttendanceDashboardView from '../../components/AttendanceDashboardView';
@@ -16,6 +16,7 @@ const now = new Date();
 const EmployeeAttendance = () => {
   const { user } = useAuthStore();
   const [records, setRecords] = useState([]);
+  const [activeBreak, setActiveBreak] = useState(null);
   const [loading, setLoading] = useState(true);
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [year, setYear] = useState(now.getFullYear());
@@ -31,8 +32,12 @@ const EmployeeAttendance = () => {
   const fetchAttendance = async () => {
     setLoading(true);
     try {
-      const { data } = await API.get('/hr/attendance', { params: { month, year } });
+      const [{ data }, activeBrkRes] = await Promise.all([
+        API.get('/hr/attendance', { params: { month, year } }),
+        getActiveBreak().catch(() => ({ data: null })),
+      ]);
       setRecords(data || []);
+      setActiveBreak(activeBrkRes?.data || null);
     } catch {
       toast.error('Failed to load attendance');
     } finally {
@@ -66,7 +71,8 @@ const EmployeeAttendance = () => {
 
   const handleStartBreakAction = async () => {
     try {
-      await startBreak();
+      const res = await startBreak();
+      setActiveBreak(res.data || true);
       toast.info('Break Started ☕');
       fetchAttendance();
     } catch (err) {
@@ -77,6 +83,7 @@ const EmployeeAttendance = () => {
   const handleEndBreakAction = async () => {
     try {
       await endBreak();
+      setActiveBreak(null);
       toast.success('Break Ended ⚡');
       fetchAttendance();
     } catch (err) {
@@ -148,6 +155,7 @@ const EmployeeAttendance = () => {
       <AttendanceDashboardView
         user={user}
         records={records}
+        activeBreak={activeBreak}
         loading={loading}
         month={month}
         year={year}
