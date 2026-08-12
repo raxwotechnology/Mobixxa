@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Clock, Calendar, CheckCircle, AlertCircle, TrendingUp, Coffee, Target, Award, User, Zap, ShoppingCart, Package, ShoppingBag, Barcode, ArrowRight } from 'lucide-react';
+import { Clock, Calendar, CheckCircle, AlertCircle, TrendingUp, Coffee, Target, Award, User, Zap, Package, ShoppingBag, Barcode, ArrowRight, RotateCcw } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
 import useAuthStore from '../../store/authStore';
 import { getEmployeeNavGroups } from './employeeNav';
@@ -173,6 +173,50 @@ const EmployeeDashboard = () => {
                 <CheckCircle size={14} /> Attendance recorded today
               </span>
             )}
+          </div>
+        </div>
+
+        {/* Employee Quick Access Console */}
+        <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h3 className="text-sm font-black text-slate-900 m-0 tracking-tight flex items-center gap-2">
+                <Zap size={16} className="text-blue-600 fill-blue-600" /> Employee Quick Access
+              </h3>
+              <p className="text-xs font-semibold text-slate-500 m-0 mt-0.5">Quick access to daily staff modules</p>
+            </div>
+            <span className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-slate-400 bg-slate-100 px-3 py-1.5 rounded-xl">
+              Staff Shortcuts
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { title: 'Clock In & Attendance', desc: 'Mark attendance & break logs', path: '/employee/attendance', icon: Clock, gradient: 'from-sky-500 to-blue-600', badge: 'Attendance' },
+              { title: 'Stock & Price Lookup', desc: 'Check available products & IMEI', path: '/employee/stock', icon: Package, gradient: 'from-emerald-600 to-teal-600', badge: 'Inventory' },
+              { title: 'Order History List', desc: 'View past customer orders & sales', path: '/employee/orders', icon: ShoppingBag, gradient: 'from-violet-600 to-purple-600', badge: 'Orders' },
+              { title: 'Barcode Label Generator', desc: 'Generate & print product labels', path: '/barcode-generator', icon: Barcode, gradient: 'from-amber-500 to-orange-600', badge: 'Labels' },
+              { title: 'Item Returns & Refunds', desc: 'Process customer returns', path: '/employee/returns', icon: RotateCcw, gradient: 'from-rose-600 to-pink-600', badge: 'Returns' },
+              { title: 'My Profile & Paysheets', desc: 'View profile & salary slips', path: '/employee/profile', icon: User, gradient: 'from-slate-700 to-slate-900', badge: 'Profile' },
+            ].map((q) => (
+              <Link
+                key={q.title}
+                to={q.path}
+                className="flex items-center gap-4 p-4 rounded-2xl border border-slate-200/70 hover:border-blue-400 bg-slate-50/50 hover:bg-white transition-all duration-300 no-underline shadow-xs hover:shadow-md hover:-translate-y-0.5 group"
+              >
+                <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${q.gradient} flex items-center justify-center text-white shadow-md flex-shrink-0 group-hover:scale-105 transition-transform`}>
+                  <q.icon size={22} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="font-extrabold text-sm text-slate-900 truncate group-hover:text-blue-600 transition-colors">{q.title}</span>
+                    <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-md bg-slate-200/80 text-slate-700 flex-shrink-0">{q.badge}</span>
+                  </div>
+                  <p className="text-xs font-semibold text-slate-500 truncate m-0 mt-0.5">{q.desc}</p>
+                </div>
+                <ArrowRight size={16} className="text-slate-300 group-hover:text-blue-600 group-hover:translate-x-1 transition-all flex-shrink-0" />
+              </Link>
+            ))}
           </div>
         </div>
 

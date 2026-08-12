@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Package, ShoppingBag, DollarSign, Clock, TrendingUp, AlertCircle, Zap, ShoppingCart, Barcode, Users, ArrowRight } from 'lucide-react';
+import { Package, ShoppingBag, DollarSign, Clock, TrendingUp, AlertCircle, Zap, Barcode, Users, ArrowRight, Wrench } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
 import { getMyStoreProducts, getStoreOrders } from '../../services/api';
 import { Link } from 'react-router-dom';
@@ -93,6 +93,50 @@ const StoreOverview = () => {
                 <span className="w-2 h-2 rounded-full bg-amber-400 pulse-live-dot" /> Operations Online
               </span>
             </div>
+          </div>
+        </div>
+
+        {/* Quick Operations Console */}
+        <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h3 className="text-sm font-black text-slate-900 m-0 tracking-tight flex items-center gap-2">
+                <Zap size={16} className="text-amber-500 fill-amber-500" /> Quick Access
+              </h3>
+              <p className="text-xs font-semibold text-slate-500 m-0 mt-0.5">Instant access to key store management modules</p>
+            </div>
+            <span className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-slate-400 bg-slate-100 px-3 py-1.5 rounded-xl">
+              Manager Shortcuts
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { title: 'Store Inventory Stock', desc: 'Manage products & quantities', path: '/manager/inventory', icon: Package, gradient: 'from-emerald-600 to-teal-600', badge: 'Stock' },
+              { title: 'Store Orders', desc: 'View customer sales & invoices', path: '/manager/orders', icon: ShoppingBag, gradient: 'from-violet-600 to-purple-600', badge: 'Orders' },
+              { title: 'Barcode Label Generator', desc: 'Generate & print product barcodes', path: '/barcode-generator', icon: Barcode, gradient: 'from-amber-500 to-orange-600', badge: 'Labels' },
+              { title: 'My Attendance & Team', desc: 'Clock in, break & employee logs', path: '/manager/attendance', icon: Clock, gradient: 'from-sky-500 to-blue-600', badge: 'Attendance' },
+              { title: 'Store Staff & Roles', desc: 'Manage employee team roster', path: '/manager/employees', icon: Users, gradient: 'from-fuchsia-600 to-pink-600', badge: 'Staff' },
+              { title: 'Customer Repair Jobs', desc: 'Track device repairs & costs', path: '/manager/repairs', icon: Wrench, gradient: 'from-orange-500 to-amber-600', badge: 'Repairs' },
+            ].map((q) => (
+              <Link
+                key={q.title}
+                to={q.path}
+                className="flex items-center gap-4 p-4 rounded-2xl border border-slate-200/70 hover:border-blue-400 bg-slate-50/50 hover:bg-white transition-all duration-300 no-underline shadow-xs hover:shadow-md hover:-translate-y-0.5 group"
+              >
+                <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${q.gradient} flex items-center justify-center text-white shadow-md flex-shrink-0 group-hover:scale-105 transition-transform`}>
+                  <q.icon size={22} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="font-extrabold text-sm text-slate-900 truncate group-hover:text-blue-600 transition-colors">{q.title}</span>
+                    <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-md bg-slate-200/80 text-slate-700 flex-shrink-0">{q.badge}</span>
+                  </div>
+                  <p className="text-xs font-semibold text-slate-500 truncate m-0 mt-0.5">{q.desc}</p>
+                </div>
+                <ArrowRight size={16} className="text-slate-300 group-hover:text-blue-600 group-hover:translate-x-1 transition-all flex-shrink-0" />
+              </Link>
+            ))}
           </div>
         </div>
 
