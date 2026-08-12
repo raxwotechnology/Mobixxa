@@ -6,6 +6,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
 import Shop from './pages/Shop';
 import ProductDetail from './pages/ProductDetail';
 import StoreList from './pages/StoreList';
@@ -171,6 +172,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/stores" element={<StoreList />} />

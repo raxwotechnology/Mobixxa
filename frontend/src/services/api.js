@@ -66,6 +66,9 @@ export const updateProfile = (data) => API.put('/auth/profile', data);
 export const getCashiers = () => API.get('/auth/cashiers');
 export const posLogin = (data) => API.post('/auth/pos-login', data);
 export const verifyPassword = (password) => API.post('/auth/verify-password', { password });
+export const requestPasswordReset = (email) => API.post('/auth/forgot-password/request-otp', { email });
+export const verifyResetOtp = (email, otp) => API.post('/auth/forgot-password/verify-otp', { email, otp });
+export const resetPassword = (email, otp, newPassword) => API.post('/auth/forgot-password/reset', { email, otp, newPassword });
 
 // Products
 export const getProducts = (params) => API.get('/products', { params });

@@ -1,11 +1,13 @@
 const User = require('../models/User');
 const RegistrationOtp = require('../models/RegistrationOtp');
+const PasswordResetOtp = require('../models/PasswordResetOtp');
 const generateToken = require('../utils/generateToken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const { isValidEmail, isValidSLPhone, formatSLPhone } = require('../utils/validators');
 const { isRealEmailAddress } = require('../utils/emailValidationService');
 const { sendSms, buildOtpMessage } = require('../utils/smsService');
+const { sendEmail, passwordResetOtpEmail } = require('../utils/emailService');
 
 const OTP_EXPIRY_MINUTES = 5;
 
@@ -464,6 +466,120 @@ const verifyPassword = async (req, res, next) => {
   }
 };
 
+const requestPasswordReset = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return fail(res, 400, 'Email address is required');
+    }
+
+    if (!isValidEmail(email)) {
+      return fail(res, 400, 'Please enter a valid email address');
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail });
+
+    if (!user) {
+      return fail(res, 404, 'No registered user account found with this email address');
+    }
+
+    const otp = generateOtp();
+    const otpHash = hashOtp(otp);
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+
+    await PasswordResetOtp.findOneAndUpdate(
+      { email: normalizedEmail },
+      { email: normalizedEmail, otpHash, expiresAt, attempts: 0, isVerified: false },
+      { upsert: true, new: true }
+    );
+
+    const emailTemplate = passwordResetOtpEmail(user.name, otp);
+    await sendEmail(user.email, emailTemplate.subject, emailTemplate.html);
+
+    res.json({
+      success: true,
+      message: 'Password reset verification code (OTP) sent to your email address.',
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message || 'Failed to request password reset' });
+  }
+};
+
+const verifyResetOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) {
+      return fail(res, 400, 'Email and OTP verification code are required');
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const record = await PasswordResetOtp.findOne({ email: normalizedEmail });
+
+    if (!record) {
+      return fail(res, 400, 'OTP request not found or expired. Please request a new code.');
+    }
+
+    if (new Date() > new Date(record.expiresAt)) {
+      await PasswordResetOtp.deleteOne({ _id: record._id });
+      return fail(res, 400, 'OTP verification code has expired. Please request a new code.');
+    }
+
+    const inputHash = hashOtp(otp.trim());
+    if (inputHash !== record.otpHash) {
+      record.attempts += 1;
+      await record.save();
+      return fail(res, 400, 'Invalid OTP code. Please check your email and try again.');
+    }
+
+    record.isVerified = true;
+    await record.save();
+
+    res.json({ success: true, message: 'OTP verified successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message || 'OTP verification failed' });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    if (!email || !otp || !newPassword) {
+      return fail(res, 400, 'Email, OTP, and new password are required');
+    }
+
+    if (newPassword.length < 6) {
+      return fail(res, 400, 'New password must be at least 6 characters');
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const record = await PasswordResetOtp.findOne({ email: normalizedEmail });
+
+    if (!record || !record.isVerified) {
+      return fail(res, 400, 'Please verify your OTP code first before resetting password.');
+    }
+
+    const inputHash = hashOtp(otp.trim());
+    if (inputHash !== record.otpHash) {
+      return fail(res, 400, 'Invalid OTP verification state.');
+    }
+
+    const user = await User.findOne({ email: normalizedEmail });
+    if (!user) {
+      return fail(res, 404, 'User account not found');
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    await PasswordResetOtp.deleteOne({ _id: record._id });
+
+    res.json({ success: true, message: 'Password reset successfully! You can now log in.' });
+  } catch (error) {
+    res.status(500).json({ message: error.message || 'Password reset failed' });
+  }
+};
+
 module.exports = {
   registerUser,
   requestRegistrationOtp,
@@ -474,4 +590,7 @@ module.exports = {
   getCashiersList,
   posLogin,
   verifyPassword,
+  requestPasswordReset,
+  verifyResetOtp,
+  resetPassword,
 };

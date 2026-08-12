@@ -425,6 +425,45 @@ const customerReturnUpdateEmail = ({ order, returnDoc }) => {
   };
 };
 
+const passwordResetOtpEmail = (name, otp) => {
+  return {
+    subject: `🔐 Mobile Hub — Password Reset Verification Code: ${otp}`,
+    html: `
+      <div style="font-family: 'Plus Jakarta Sans', 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 20px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
+        <!-- Header -->
+        <div style="background: linear-gradient(135deg, #0f172a, #1e293b, #2563eb); padding: 35px 30px; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 24px; font-weight: 900; letter-spacing: -0.5px;">⚡ MOBILE HUB</h1>
+          <p style="color: #93c5fd; margin: 8px 0 0; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Password Reset Verification Request</p>
+        </div>
+
+        <!-- Body -->
+        <div style="padding: 32px; background: #ffffff;">
+          <h2 style="color: #0f172a; margin-top: 0; font-size: 20px; font-weight: 800;">Hello ${name || 'Valued User'},</h2>
+          <p style="color: #475569; font-size: 14px; line-height: 1.6; margin-bottom: 24px;">
+            We received a request to reset the password for your Mobile Hub account. Use the 6-digit verification code below to authorize your password reset:
+          </p>
+
+          <!-- OTP Box -->
+          <div style="background: #f8fafc; border: 2px dashed #2563eb; border-radius: 16px; padding: 20px; text-align: center; margin: 25px 0;">
+            <span style="font-size: 34px; font-weight: 900; letter-spacing: 8px; color: #2563eb; font-family: monospace;">${otp}</span>
+            <p style="margin: 8px 0 0; font-size: 12px; color: #64748b; font-weight: 600;">This verification code will expire in <strong>10 minutes</strong>.</p>
+          </div>
+
+          <p style="color: #64748b; font-size: 13px; line-height: 1.5; margin-bottom: 0;">
+            If you did not request a password reset, please ignore this email or contact our support team immediately if you suspect unauthorized activity.
+          </p>
+        </div>
+
+        <!-- Footer -->
+        <div style="background: #f1f5f9; padding: 20px; text-align: center; font-size: 12px; color: #64748b; border-top: 1px solid #e2e8f0;">
+          <p style="margin: 0; font-weight: 700; color: #475569;">SR Mobile Official (Mobile Hub)</p>
+          <p style="margin: 4px 0 0; color: #94a3b8;">This is an automated security email. Please do not reply directly to this message.</p>
+        </div>
+      </div>
+    `,
+  };
+};
+
 module.exports = {
   sendEmail,
   orderConfirmationEmail,
@@ -434,4 +473,5 @@ module.exports = {
   paymentReceiptEmail,
   posReceiptEmail,
   customerReturnUpdateEmail,
+  passwordResetOtpEmail,
 };

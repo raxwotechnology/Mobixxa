@@ -10,6 +10,9 @@ const {
   getCashiersList,
   posLogin,
   verifyPassword,
+  requestPasswordReset,
+  verifyResetOtp,
+  resetPassword,
 } = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
 
@@ -22,5 +25,10 @@ router.put('/profile', protect, updateProfile);
 router.get('/cashiers', getCashiersList);
 router.post('/pos-login', posLogin);
 router.post('/verify-password', protect, verifyPassword);
+
+// Forgot Password & Reset Routes
+router.post('/forgot-password/request-otp', requestPasswordReset);
+router.post('/forgot-password/verify-otp', verifyResetOtp);
+router.post('/forgot-password/reset', resetPassword);
 
 module.exports = router;
