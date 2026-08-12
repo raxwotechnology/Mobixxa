@@ -44,49 +44,82 @@ const sendEmail = async (to, subject, html) => {
 // ========== EMAIL TEMPLATES ==========
 
 const orderConfirmationEmail = (order, customerName) => {
-  const itemsHtml = order.items
+  const itemsHtml = (order.items || [])
     .map(
       (item) =>
         `<tr>
-          <td style="padding: 8px; border-bottom: 1px solid #eee;">${item.name}</td>
-          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
-          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">Rs. ${(item.price * item.quantity).toFixed(2)}</td>
+          <td style="padding: 12px 10px; border-bottom: 1px solid #f1f5f9; color: #1e293b; font-weight: 600; font-size: 14px;">${item.name}</td>
+          <td style="padding: 12px 10px; border-bottom: 1px solid #f1f5f9; text-align: center; color: #475569; font-weight: 700; font-size: 14px;">${item.quantity}</td>
+          <td style="padding: 12px 10px; border-bottom: 1px solid #f1f5f9; text-align: right; color: #0f172a; font-weight: 800; font-size: 14px;">Rs. ${(item.price * item.quantity).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
         </tr>`
     )
     .join('');
 
+  const orderIdStr = order.invoiceNumber || order._id.toString().slice(-8).toUpperCase();
+  const confirmationUrl = `https://sr-mobileshop-official.vercel.app/order-confirmation/${order._id}`;
+
   return {
-    subject: `Mobile Hub — Order Confirmed #${order._id.toString().slice(-8).toUpperCase()}`,
+    subject: `📱 Mobile Hub — Official Electronic Order Receipt #${orderIdStr}`,
     html: `
-      <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f8faf8;">
-        <div style="background: linear-gradient(135deg, #059669, #10b981); padding: 30px; text-align: center;">
-          <h1 style="color: white; margin: 0; font-size: 28px;">💄 Mobile Hub</h1>
-          <p style="color: #d1fae5; margin: 5px 0 0;">Order Confirmation</p>
+      <div style="font-family: 'Plus Jakarta Sans', 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 620px; margin: 0 auto; background: #f8fafc; border-radius: 20px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
+        <!-- Header -->
+        <div style="background: linear-gradient(135deg, #1e40af, #2563eb, #3b82f6); padding: 35px 30px; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -0.5px;">⚡ MOBILE HUB</h1>
+          <p style="color: #dbeafe; margin: 8px 0 0; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Official Digital Invoice & Order Confirmation</p>
         </div>
-        <div style="padding: 30px; background: white;">
-          <h2 style="color: #1e293b; margin-top: 0;">Hi ${customerName}! 🎉</h2>
-          <p style="color: #64748b;">Your order has been confirmed successfully. Here are the details:</p>
-          <div style="background: #f0fdf4; border-radius: 12px; padding: 15px; margin: 20px 0;">
-            <p style="margin: 0; font-size: 14px; color: #64748b;">Order ID</p>
-            <p style="margin: 5px 0 0; font-size: 18px; font-weight: bold; color: #059669;">#${order._id.toString().slice(-8).toUpperCase()}</p>
+
+        <!-- Body -->
+        <div style="padding: 32px; background: #ffffff;">
+          <h2 style="color: #0f172a; margin-top: 0; font-size: 20px; font-weight: 800;">Hi ${customerName || 'Valued Customer'}! 🎉</h2>
+          <p style="color: #475569; font-size: 14px; line-height: 1.6; margin-bottom: 24px;">
+            Thank you for shopping with <strong>Mobile Hub</strong>! Your order has been placed successfully. Below is your itemized electronic invoice:
+          </p>
+
+          <!-- Info Box -->
+          <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 16px; padding: 18px 20px; margin-bottom: 24px;">
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: #2563eb; letter-spacing: 0.5px;">Invoice Number:</td>
+                <td style="font-size: 14px; font-weight: 900; text-align: right; color: #1e3a8a;">#${orderIdStr}</td>
+              </tr>
+              <tr>
+                <td style="padding-top: 8px; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #2563eb; letter-spacing: 0.5px;">Payment Method:</td>
+                <td style="padding-top: 8px; font-size: 14px; font-weight: 900; text-align: right; color: #1e3a8a;">${(order.paymentMethod || 'COD').toUpperCase()}</td>
+              </tr>
+            </table>
           </div>
-          <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+
+          <!-- Items Table -->
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
             <thead>
-              <tr style="background: #f0fdf4;">
-                <th style="padding: 10px 8px; text-align: left; color: #059669; font-size: 13px;">Item</th>
-                <th style="padding: 10px 8px; text-align: center; color: #059669; font-size: 13px;">Qty</th>
-                <th style="padding: 10px 8px; text-align: right; color: #059669; font-size: 13px;">Total</th>
+              <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+                <th style="padding: 10px; text-align: left; color: #64748b; font-size: 12px; font-weight: 800; text-transform: uppercase;">Item Description</th>
+                <th style="padding: 10px; text-align: center; color: #64748b; font-size: 12px; font-weight: 800; text-transform: uppercase;">Qty</th>
+                <th style="padding: 10px; text-align: right; color: #64748b; font-size: 12px; font-weight: 800; text-transform: uppercase;">Amount</th>
               </tr>
             </thead>
             <tbody>${itemsHtml}</tbody>
           </table>
-          <div style="border-top: 2px solid #059669; padding-top: 15px; text-align: right;">
-            <p style="font-size: 20px; font-weight: bold; color: #1e293b; margin: 0;">Total: Rs. ${order.totalAmount.toFixed(2)}</p>
+
+          <!-- Total Summary -->
+          <div style="border-top: 2px solid #2563eb; padding-top: 18px; text-align: right; margin-bottom: 28px;">
+            <p style="font-size: 22px; font-weight: 900; color: #0f172a; margin: 0;">
+              Total Paid: <span style="color: #2563eb;">Rs. ${(order.totalAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+            </p>
           </div>
-          <p style="color: #64748b; font-size: 13px; margin-top: 20px;">Payment Method: <strong>${order.paymentMethod.toUpperCase()}</strong></p>
+
+          <!-- Direct Link CTA Button -->
+          <div style="text-align: center; margin: 30px 0 10px;">
+            <a href="${confirmationUrl}" target="_blank" style="background: #2563eb; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 800; padding: 16px 32px; border-radius: 14px; display: inline-block; box-shadow: 0 4px 14px rgba(37,99,235,0.4);">
+              📄 View Official Digital Receipt & Track Order →
+            </a>
+          </div>
         </div>
-        <div style="background: #f1f5f9; padding: 20px; text-align: center;">
-          <p style="color: #94a3b8; font-size: 12px; margin: 0;">© ${new Date().getFullYear()} Mobile Hub. Premium tech and smart devices delivered with care.</p>
+
+        <!-- Footer -->
+        <div style="background: #f1f5f9; padding: 24px; text-align: center; border-top: 1px solid #e2e8f0;">
+          <p style="color: #64748b; font-size: 13px; font-weight: 700; margin: 0 0 6px;">📞 Store Hotline: +94 11 255 5000</p>
+          <p style="color: #94a3b8; font-size: 12px; margin: 0;">© ${new Date().getFullYear()} Mobile Hub Official Store. Premium Tech Delivered With Care.</p>
         </div>
       </div>
     `,

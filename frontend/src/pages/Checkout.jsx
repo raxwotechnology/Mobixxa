@@ -787,15 +787,15 @@ const Checkout = () => {
             <button
               onClick={handlePlaceOrder}
               disabled={loading}
-              className="w-full bg-gradient-to-r from-brand-indigo to-brand-violet hover:opacity-95 text-white font-bold py-3.5 rounded-xl transition-all shadow-[0_4px_12px_rgba(99,102,241,0.25)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer text-sm"
+              className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-black py-4 rounded-2xl transition-all shadow-[0_4px_16px_rgba(37,99,235,0.35)] hover:shadow-[0_6px_22px_rgba(37,99,235,0.45)] hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 cursor-pointer text-sm border-0"
             >
               {loading ? 'Processing...' : paymentMethod === 'payhere' ? 'Pay Now Securely' : paymentMethod === 'koko' ? 'Place Koko Order' : paymentMethod === 'hire_purchase' ? 'Apply for Hire Purchase / Credit' : 'Confirm Order (COD)'}
-              <ChevronRight size={15} />
+              <ChevronRight size={16} />
             </button>
 
             <div className="flex items-center justify-center gap-1.5 mt-4 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-              <ShieldCheck size={14} className="text-brand-indigo" />
-              <span>Secure Checkout</span>
+              <ShieldCheck size={14} className="text-blue-600" />
+              <span>Secure 256-Bit SSL Checkout</span>
             </div>
           </motion.div>
         </div>

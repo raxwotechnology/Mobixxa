@@ -137,13 +137,13 @@ const CartPage = () => {
 
                       {/* Line Total */}
                       <div className="text-right min-w-[80px]">
-                        <span className="font-extrabold text-brand-indigo text-sm sm:text-base">{formatPrice(convertPrice(price * item.quantity))}</span>
+                        <span className="font-black text-blue-600 text-base sm:text-lg">{formatPrice(convertPrice(price * item.quantity))}</span>
                       </div>
 
                       {/* Remove */}
                       <button
                         onClick={() => handleRemove(productId, name)}
-                        className="text-slate-400 hover:text-rose-500 transition-colors p-2 rounded-xl hover:bg-rose-50 cursor-pointer"
+                        className="text-slate-400 hover:text-rose-500 transition-colors p-2 rounded-xl hover:bg-rose-50 cursor-pointer border-0 bg-transparent"
                         title="Remove item"
                       >
                         <Trash2 size={15} />
@@ -159,34 +159,34 @@ const CartPage = () => {
         {/* Order Summary */}
         <div className="lg:w-96 w-full">
           <motion.div
-            className="bg-white border border-slate-200/60 rounded-[2rem] p-6 lg:p-8 sticky top-24 shadow-sm"
+            className="bg-white border border-slate-200/80 rounded-[2rem] p-6 lg:p-8 sticky top-24 shadow-md"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.2 }}
           >
-            <h3 className="font-black text-slate-800 text-lg mt-0 mb-5 border-b border-slate-100 pb-2">Order Summary</h3>
+            <h3 className="font-black text-slate-900 text-xl mt-0 mb-5 border-b border-slate-100 pb-3 tracking-tight">Order Summary</h3>
 
-            <div className="space-y-4.5 mb-5">
-              <div className="flex justify-between text-xs font-bold uppercase tracking-wider text-slate-400">
+            <div className="space-y-4 mb-5">
+              <div className="flex justify-between text-xs font-bold uppercase tracking-wider text-slate-500">
                 <span>Subtotal</span>
-                <span className="text-slate-700 font-extrabold">{formatPrice(convertPrice(subtotal))}</span>
+                <span className="text-slate-800 font-black text-sm">{formatPrice(convertPrice(subtotal))}</span>
               </div>
-              <div className="flex justify-between text-xs font-bold uppercase tracking-wider text-slate-400">
+              <div className="flex justify-between text-xs font-bold uppercase tracking-wider text-slate-500">
                 <span>Delivery Fee</span>
-                <span className="text-slate-700 font-extrabold">
+                <span className="text-slate-800 font-black text-sm">
                   {deliveryFee === 0 ? (
-                    <span className="text-emerald-600">FREE</span>
+                    <span className="text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full font-black">FREE</span>
                   ) : (
                     formatPrice(convertPrice(deliveryFee))
                   )}
                 </span>
               </div>
-              <div className="flex justify-between text-xs font-bold uppercase tracking-wider text-slate-400">
+              <div className="flex justify-between text-xs font-bold uppercase tracking-wider text-slate-500">
                 <span>Tax (8%)</span>
-                <span className="text-slate-700 font-extrabold">{formatPrice(convertPrice(tax))}</span>
+                <span className="text-slate-800 font-black text-sm">{formatPrice(convertPrice(tax))}</span>
               </div>
               {subtotal < 50 && (
-                <p className="text-xs text-orange-600 bg-orange-50 border border-orange-100 rounded-xl px-4 py-3 m-0 font-medium">
+                <p className="text-xs text-blue-700 bg-blue-50 border border-blue-200/80 rounded-xl px-4 py-3 m-0 font-semibold">
                   Add {formatPrice(convertPrice(50 - subtotal))} more for free delivery!
                 </p>
               )}
@@ -194,22 +194,22 @@ const CartPage = () => {
 
             <div className="border-t border-slate-100 pt-5 mb-6">
               <div className="flex justify-between items-baseline">
-                <span className="font-black text-slate-800 text-lg">Total</span>
-                <span className="font-black text-brand-indigo text-xl tracking-tight">{formatPrice(convertPrice(total))}</span>
+                <span className="font-black text-slate-900 text-lg">Total</span>
+                <span className="font-black text-blue-600 text-2xl tracking-tight">{formatPrice(convertPrice(total))}</span>
               </div>
             </div>
 
             {user ? (
               <Link
                 to="/checkout"
-                className="w-full bg-gradient-to-r from-brand-indigo to-brand-violet hover:opacity-95 text-white font-bold py-3.5 rounded-xl transition-all shadow-[0_4px_12px_rgba(99,102,241,0.25)] flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-black text-sm py-4 px-6 rounded-2xl transition-all shadow-[0_4px_16px_rgba(37,99,235,0.35)] hover:shadow-[0_6px_22px_rgba(37,99,235,0.45)] hover:-translate-y-0.5 flex items-center justify-center gap-2 cursor-pointer no-underline"
               >
-                Proceed to Checkout <ArrowRight size={15} />
+                Proceed to Checkout <ArrowRight size={16} />
               </Link>
             ) : (
               <Link
                 to="/login"
-                className="w-full bg-gradient-to-r from-brand-indigo to-brand-violet hover:opacity-95 text-white font-bold py-3.5 rounded-xl transition-all shadow-[0_4px_12px_rgba(99,102,241,0.25)] flex items-center justify-center gap-2 text-center cursor-pointer"
+                className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-black text-sm py-4 px-6 rounded-2xl transition-all shadow-[0_4px_16px_rgba(37,99,235,0.35)] hover:shadow-[0_6px_22px_rgba(37,99,235,0.45)] hover:-translate-y-0.5 flex items-center justify-center gap-2 text-center cursor-pointer no-underline"
               >
                 Sign In to Checkout
               </Link>
@@ -217,7 +217,7 @@ const CartPage = () => {
 
             <Link
               to="/shop"
-              className="block text-center text-xs font-bold text-brand-indigo hover:underline mt-5 uppercase tracking-wider"
+              className="block text-center text-xs font-extrabold text-blue-600 hover:text-blue-700 mt-5 uppercase tracking-wider no-underline"
             >
               Continue Shopping
             </Link>

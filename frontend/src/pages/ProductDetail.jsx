@@ -193,49 +193,49 @@ const ProductDetail = () => {
                 )}
               </div>
 
-              {/* Koko Payment 3-Installment Badge */}
+              {/* Koko Banner */}
               {product.price > 0 && (
-                <div className="mt-3.5 p-3.5 rounded-2xl bg-brand-indigo/5 border border-brand-indigo/15 flex items-center justify-between gap-3 shadow-xs">
+                <div className="mt-3.5 p-3.5 bg-blue-50/80 border border-blue-200/80 rounded-2xl flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-brand-indigo text-white font-bold text-xs flex items-center justify-center shadow-xs">
+                    <div className="w-9 h-9 rounded-xl bg-blue-600 text-white font-black text-xs flex items-center justify-center shadow-sm">
                       koko
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-slate-900 m-0">
-                        Or 3 interest-free payments of <span className="font-bold text-brand-indigo">
+                      <p className="text-xs font-bold text-slate-900 m-0">
+                        Or 3 interest-free payments of <span className="font-black text-blue-600">
                           {currency === 'USD' ? `$${(Math.ceil(product.price / 3) / exchangeRate).toFixed(2)}` : `Rs. ${Math.ceil(product.price / 3).toLocaleString()}`}
                         </span>
                       </p>
-                      <p className="text-[10px] text-slate-500 m-0 font-normal">No hidden fees • Instant approval at checkout</p>
+                      <p className="text-[10px] text-slate-500 m-0 font-medium">No hidden fees • Instant approval at checkout</p>
                     </div>
                   </div>
-                  <span className="text-[10px] font-bold text-brand-indigo bg-brand-indigo/10 px-2.5 py-1 rounded-full uppercase tracking-wider">3x Pay</span>
+                  <span className="text-[10px] font-black text-blue-700 bg-blue-100/90 px-3 py-1 rounded-full uppercase tracking-wider">3x Pay</span>
                 </div>
               )}
 
               <div className="mt-3.5 flex items-center gap-2">
                 {inStock ? (
-                  <span className="text-emerald-600 flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-xl text-xs font-semibold"><CheckCircle size={14} /> In Stock ({product.stock} units available)</span>
+                  <span className="text-emerald-700 flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-xl text-xs font-bold"><CheckCircle size={14} /> In Stock ({product.stock} units available)</span>
                 ) : (
-                  <span className="text-rose-500 flex items-center gap-1.5 bg-rose-50 border border-rose-200 px-3 py-1 rounded-xl text-xs font-semibold"><span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Out of Stock</span>
+                  <span className="text-rose-600 flex items-center gap-1.5 bg-rose-50 border border-rose-200 px-3 py-1 rounded-xl text-xs font-bold"><span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Out of Stock</span>
                 )}
               </div>
             </div>
 
             {/* Key Specs */}
             <div className="grid grid-cols-2 gap-4 mb-8">
-              <div className="flex items-start gap-3 p-3.5 bg-slate-50 border border-slate-200/50 rounded-2xl">
-                <div className="w-10 h-10 rounded-xl bg-brand-indigo/10 flex items-center justify-center text-brand-indigo flex-shrink-0"><ShieldCheck size={18} /></div>
+              <div className="flex items-start gap-3 p-3.5 bg-slate-50 border border-slate-200/60 rounded-2xl">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 flex-shrink-0"><ShieldCheck size={18} /></div>
                 <div>
                   <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider m-0">Warranty</p>
-                  <p className="text-sm font-bold text-slate-800 m-0">1 Year Official</p>
+                  <p className="text-sm font-extrabold text-slate-800 m-0">1 Year Official</p>
                 </div>
               </div>
-              <div className="flex items-start gap-3 p-3.5 bg-slate-50 border border-slate-200/50 rounded-2xl">
-                <div className="w-10 h-10 rounded-xl bg-brand-indigo/10 flex items-center justify-center text-brand-indigo flex-shrink-0"><Cpu size={18} /></div>
+              <div className="flex items-start gap-3 p-3.5 bg-slate-50 border border-slate-200/60 rounded-2xl">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 flex-shrink-0"><Cpu size={18} /></div>
                 <div>
                   <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider m-0">Condition</p>
-                  <p className="text-sm font-bold text-slate-800 m-0">Brand New Sealed</p>
+                  <p className="text-sm font-extrabold text-slate-800 m-0">Brand New Sealed</p>
                 </div>
               </div>
             </div>
@@ -245,23 +245,23 @@ const ProductDetail = () => {
               <div className="flex items-center gap-4 mb-6">
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Quantity</span>
                 <div className="flex items-center border border-slate-200 rounded-xl overflow-hidden bg-slate-50">
-                  <button onClick={() => setQuantity((q) => Math.max(1, q - 1))} className="w-11 h-11 flex items-center justify-center hover:bg-slate-200 transition-colors text-slate-500 cursor-pointer"><Minus size={16} /></button>
-                  <span className="w-11 h-11 flex items-center justify-center font-bold text-slate-800 text-sm">{quantity}</span>
-                  <button onClick={() => setQuantity((q) => Math.min(product.stock, q + 1))} disabled={!inStock} className="w-11 h-11 flex items-center justify-center hover:bg-slate-200 transition-colors text-slate-500 disabled:opacity-50 cursor-pointer"><Plus size={16} /></button>
+                  <button onClick={() => setQuantity((q) => Math.max(1, q - 1))} className="w-11 h-11 flex items-center justify-center hover:bg-slate-200 transition-colors text-slate-600 cursor-pointer border-0 bg-transparent"><Minus size={16} /></button>
+                  <span className="w-11 h-11 flex items-center justify-center font-black text-slate-900 text-sm border-x border-slate-200">{quantity}</span>
+                  <button onClick={() => setQuantity((q) => Math.min(product.stock, q + 1))} disabled={!inStock} className="w-11 h-11 flex items-center justify-center hover:bg-slate-200 transition-colors text-slate-600 disabled:opacity-50 cursor-pointer border-0 bg-transparent"><Plus size={16} /></button>
                 </div>
               </div>
 
               {/* Actions */}
               <div className="flex flex-col sm:flex-row gap-3.5 mb-6">
-                <button onClick={handleAddToCart} disabled={!inStock} className={`flex-1 font-bold py-4 px-8 rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2.5 text-base cursor-pointer ${inStock ? 'bg-gradient-to-r from-brand-indigo to-brand-violet hover:opacity-95 text-white shadow-[0_4px_15px_rgba(99,102,241,0.25)] hover:-translate-y-0.5' : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'}`}>
+                <button onClick={handleAddToCart} disabled={!inStock} className={`flex-1 font-black py-4 px-8 rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2.5 text-base cursor-pointer ${inStock ? 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white shadow-[0_4px_16px_rgba(37,99,235,0.35)] hover:shadow-[0_6px_22px_rgba(37,99,235,0.45)] hover:-translate-y-0.5 border-0' : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none border-0'}`}>
                   <ShoppingCart size={20} /> Add to Cart
                 </button>
                 <div className="flex gap-3">
                   <button onClick={handleToggleWishlist}
-                    className={`w-14 h-14 border rounded-2xl flex items-center justify-center transition-all cursor-pointer ${wishlisted ? 'bg-rose-50 border-rose-200 text-rose-500' : 'border-slate-200 hover:bg-slate-50 text-slate-400 hover:text-slate-700'}`}>
+                    className={`w-14 h-14 border rounded-2xl flex items-center justify-center transition-all cursor-pointer ${wishlisted ? 'bg-rose-50 border-rose-200 text-rose-500' : 'border-slate-200 hover:bg-slate-50 text-slate-500 hover:text-slate-900 bg-white'}`}>
                     <Heart size={20} className={wishlisted ? 'fill-rose-500' : ''} />
                   </button>
-                  <button className="w-14 h-14 border border-slate-200 rounded-2xl flex items-center justify-center hover:bg-slate-50 text-slate-400 hover:text-slate-700 transition-all cursor-pointer">
+                  <button className="w-14 h-14 border border-slate-200 rounded-2xl flex items-center justify-center hover:bg-slate-50 text-slate-500 hover:text-slate-900 transition-all cursor-pointer bg-white">
                     <Share2 size={20} />
                   </button>
                 </div>
@@ -269,13 +269,13 @@ const ProductDetail = () => {
 
               {/* Store Info */}
               {product.storeId && (
-                <div className="bg-slate-50 border border-slate-200/50 rounded-2xl p-4 flex items-center gap-4">
-                  <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-slate-200/30 flex items-center justify-center"><Store size={18} className="text-brand-indigo" /></div>
+                <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-4 flex items-center gap-4">
+                  <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-slate-200/40 flex items-center justify-center"><Store size={18} className="text-blue-600" /></div>
                   <div className="flex-1">
                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider m-0 mb-0.5">Sold by</p>
-                    <Link to={`/store/${product.storeId._id}`} className="font-bold text-slate-800 hover:text-brand-indigo transition-colors text-sm block">{product.storeId.name}</Link>
+                    <Link to={`/store/${product.storeId._id}`} className="font-bold text-slate-800 hover:text-blue-600 transition-colors text-sm block no-underline">{product.storeId.name}</Link>
                   </div>
-                  {product.storeId.city && <div className="text-right"><p className="text-[10px] font-bold uppercase tracking-wide text-slate-500 bg-white border border-slate-200/60 px-2.5 py-1 rounded-lg inline-flex items-center gap-1.5"><MapPin size={11} className="text-brand-indigo"/> {product.storeId.city}</p></div>}
+                  {product.storeId.city && <div className="text-right"><p className="text-[10px] font-extrabold uppercase tracking-wide text-slate-600 bg-white border border-slate-200 px-2.5 py-1 rounded-lg inline-flex items-center gap-1.5"><MapPin size={11} className="text-blue-600"/> {product.storeId.city}</p></div>}
                 </div>
               )}
             </div>
@@ -288,7 +288,7 @@ const ProductDetail = () => {
         <div className="flex overflow-x-auto border-b border-slate-200 mb-8 gap-8 px-4 scrollbar-hide">
           {['description', 'specifications', 'reviews'].map((tab) => (
             <button key={tab} onClick={() => setActiveTab(tab)}
-              className={`py-4 text-sm font-bold capitalize transition-all border-b-2 whitespace-nowrap cursor-pointer ${activeTab === tab ? 'border-brand-indigo text-brand-indigo' : 'border-transparent text-slate-400 hover:text-slate-850'}`}>
+              className={`py-4 text-sm font-bold capitalize transition-all border-b-2 whitespace-nowrap cursor-pointer border-x-0 border-t-0 bg-transparent ${activeTab === tab ? 'border-blue-600 text-blue-600 font-extrabold' : 'border-transparent text-slate-400 hover:text-slate-700'}`}>
               {tab === 'reviews' ? `Customer Reviews (${product.totalReviews})` : tab}
             </button>
           ))}

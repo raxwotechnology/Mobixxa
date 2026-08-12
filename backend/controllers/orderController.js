@@ -280,6 +280,19 @@ const createOrder = async (req, res, next) => {
       { items: [] }
     );
 
+    // Send Electronic Email Receipt asynchronously
+    try {
+      const targetEmail = order.receiptEmail || req.user?.email;
+      if (targetEmail) {
+        const receipt = orderConfirmationEmail(order, req.user?.name || 'Valued Customer');
+        sendEmail(targetEmail, receipt.subject, receipt.html).catch((err) => {
+          console.error('[Email] Order receipt send failed:', err.message);
+        });
+      }
+    } catch (eErr) {
+      console.error('[Email] Dispatch error:', eErr.message);
+    }
+
     res.status(201).json({
       ...order.toObject(),
       splitOrders,
