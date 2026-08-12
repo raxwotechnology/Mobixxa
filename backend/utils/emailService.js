@@ -41,8 +41,8 @@ const sendEmail = async (to, subject, html) => {
     const fromEmail = process.env.EMAIL_FROM || process.env.SMTP_USER || process.env.GMAIL_USER;
     const appPassword = process.env.EMAIL_APP_PASSWORD || process.env.SMTP_PASS || process.env.GMAIL_PASS;
 
-    if (!fromEmail || !appPassword) {
-      console.warn(`[Email Notice] Unable to send email to "${to}". EMAIL_FROM and EMAIL_APP_PASSWORD environment variables are missing in backend/.env & Vercel.`);
+    if (!fromEmail || !appPassword || appPassword === 'abcdefghijklmnop') {
+      console.warn(`[Email Notice] Live Gmail SMTP skipped for "${to}". Placeholder EMAIL_APP_PASSWORD detected in backend/.env. OTP code has been printed in terminal console.`);
       return null;
     }
 

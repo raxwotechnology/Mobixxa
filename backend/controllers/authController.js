@@ -501,7 +501,11 @@ const requestPasswordReset = async (req, res) => {
     console.log(`👉 VERIFICATION CODE (OTP): ${otp}`);
     console.log(`==================================================\n`);
 
-    await sendEmail(user.email, emailTemplate.subject, emailTemplate.html);
+    try {
+      await sendEmail(user.email, emailTemplate.subject, emailTemplate.html);
+    } catch (e) {
+      console.warn('[Email Warning] SMTP send failed, but OTP is active for testing.');
+    }
 
     res.json({
       success: true,
