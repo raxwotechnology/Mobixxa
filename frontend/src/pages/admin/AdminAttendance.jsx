@@ -6,8 +6,11 @@ import {
   getAttendanceReport, getEmployees, getStores, adminMarkAttendance,
   getLeavePolicies, createLeavePolicy, updateLeavePolicy, deleteLeavePolicy,
   getAttendancePolicies, createAttendancePolicy, updateAttendancePolicy, deleteAttendancePolicy,
-  assignPoliciesToEmployee, assignPoliciesToAllEmployees
+  assignPoliciesToEmployee, assignPoliciesToAllEmployees,
+  checkIn, checkOut, startBreak, endBreak, getMyAttendance
 } from '../../services/api';
+import useAuthStore from '../../store/authStore';
+import AttendanceDashboardView from '../../components/AttendanceDashboardView';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { toast } from 'react-toastify';
 import { adminNavGroups as defaultNavItems } from './adminNavItems';
@@ -20,7 +23,9 @@ const now = new Date();
 
 const AdminAttendance = ({ navItems: propNavItems }) => {
   const navItems = propNavItems || defaultNavItems;
+  const { user } = useAuthStore();
   const [records, setRecords] = useState([]);
+  const [myRecords, setMyRecords] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [month, setMonth] = useState(now.getMonth() + 1);
@@ -35,7 +40,7 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
   const [attForm, setAttForm] = useState({ employeeId: '', date: new Date().toISOString().split('T')[0], checkInTime: '09:00', checkOutTime: '17:00', status: 'present', notes: '' });
 
   // Policy Management States
-  const [activeTab, setActiveTab] = useState('records'); // 'records' | 'attendance-policies' | 'assign-policies'
+  const [activeTab, setActiveTab] = useState('my-attendance'); // 'my-attendance' | 'records' | 'attendance-policies' | 'assign-policies'
   const [attendancePolicies, setAttendancePolicies] = useState([]);
   const [policiesLoading, setPoliciesLoading] = useState(false);
 
@@ -73,16 +78,58 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
       const params = { month, year };
       if (selectedStore !== 'All') params.storeId = selectedStore;
       
-      const [attRes, empRes, storeRes] = await Promise.all([
+      const [attRes, empRes, storeRes, myAttRes] = await Promise.all([
         getAttendanceReport(params),
         getEmployees(),
         getStores(),
+        getMyAttendance({ month, year }),
       ]);
-      setRecords(attRes.data);
-      setEmployees(empRes.data);
+      setRecords(attRes.data || []);
+      setEmployees(empRes.data || []);
       setStores(storeRes.data || []);
+      setMyRecords(myAttRes.data || []);
     } catch (err) { toast.error('Failed to load attendance'); }
     finally { setLoading(false); }
+  };
+
+  const handleCheckInAction = async () => {
+    try {
+      await checkIn();
+      toast.success('Successfully Clocked In! ⚡');
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to Clock In');
+    }
+  };
+
+  const handleCheckOutAction = async () => {
+    try {
+      await checkOut();
+      toast.success('Successfully Clocked Out! 🚪');
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to Clock Out');
+    }
+  };
+
+  const handleStartBreakAction = async () => {
+    try {
+      await startBreak();
+      toast.info('Break Started ☕');
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to start break');
+    }
+  };
+
+  const handleEndBreakAction = async () => {
+    try {
+      await endBreak();
+      toast.success('Break Ended ⚡');
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to end break');
+    }
   };
 
   const fetchPolicies = async () => {
@@ -352,16 +399,24 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
         {/* Tab switcher */}
         <div className="flex gap-2 flex-wrap mb-6 bg-white/40 backdrop-blur-sm p-2 rounded-2xl border border-white/40 shadow-sm w-fit">
           <button
+            onClick={() => setActiveTab('my-attendance')}
+            className={`px-4 py-2.5 text-[10px] uppercase font-black tracking-wider rounded-xl transition-all flex items-center gap-2 border-0 cursor-pointer ${
+              activeTab === 'my-attendance' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-white hover:text-slate-900'
+            }`}
+          >
+            ⚡ My Attendance
+          </button>
+          <button
             onClick={() => setActiveTab('records')}
-            className={`px-4 py-2.5 text-[10px] uppercase font-black tracking-wider rounded-xl transition-all flex items-center gap-2 ${
+            className={`px-4 py-2.5 text-[10px] uppercase font-black tracking-wider rounded-xl transition-all flex items-center gap-2 border-0 cursor-pointer ${
               activeTab === 'records' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-white hover:text-slate-900'
             }`}
           >
-            📋 Records
+            📋 Team Records
           </button>
           <button
             onClick={() => setActiveTab('attendance-policies')}
-            className={`px-4 py-2.5 text-[10px] uppercase font-black tracking-wider rounded-xl transition-all flex items-center gap-2 ${
+            className={`px-4 py-2.5 text-[10px] uppercase font-black tracking-wider rounded-xl transition-all flex items-center gap-2 border-0 cursor-pointer ${
               activeTab === 'attendance-policies' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-white hover:text-slate-900'
             }`}
           >
@@ -369,7 +424,7 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
           </button>
           <button
             onClick={() => setActiveTab('assign-policies')}
-            className={`px-4 py-2.5 text-[10px] uppercase font-black tracking-wider rounded-xl transition-all flex items-center gap-2 ${
+            className={`px-4 py-2.5 text-[10px] uppercase font-black tracking-wider rounded-xl transition-all flex items-center gap-2 border-0 cursor-pointer ${
               activeTab === 'assign-policies' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-white hover:text-slate-900'
             }`}
           >
@@ -378,6 +433,24 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
         </div>
 
         {/* Tab content */}
+        {activeTab === 'my-attendance' && (
+          <AttendanceDashboardView
+            user={user}
+            records={myRecords}
+            loading={loading}
+            month={month}
+            year={year}
+            onMonthChange={setMonth}
+            onYearChange={setYear}
+            onCheckIn={handleCheckInAction}
+            onCheckOut={handleCheckOutAction}
+            onStartBreak={handleStartBreakAction}
+            onEndBreak={handleEndBreakAction}
+            onMarkAttendanceModal={() => setShowAttModal(true)}
+            onExportExcel={exportExcel}
+            onExportPDF={exportPDF}
+          />
+        )}
         {activeTab === 'records' && (
           <>
             {/* Filters */}

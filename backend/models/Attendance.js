@@ -22,6 +22,16 @@ const attendanceSchema = mongoose.Schema(
     checkOut: {
       type: Date,
     },
+    breakStart: {
+      type: Date,
+    },
+    breakEnd: {
+      type: Date,
+    },
+    breakMinutes: {
+      type: Number,
+      default: 0,
+    },
     hoursWorked: {
       type: Number,
       default: 0,
