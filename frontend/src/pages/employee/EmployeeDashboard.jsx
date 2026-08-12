@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Clock, Calendar, CheckCircle, AlertCircle, TrendingUp, Coffee, Target, Award, User } from 'lucide-react';
+import { Clock, Calendar, CheckCircle, AlertCircle, TrendingUp, Coffee, Target, Award, User, Zap, ShoppingCart, Package, ShoppingBag, Barcode, ArrowRight } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
 import useAuthStore from '../../store/authStore';
 import { getEmployeeNavGroups } from './employeeNav';

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Users, Store as StoreIcon, Tag, ShoppingBag, DollarSign, Package, TrendingUp, ArrowUpRight, ArrowDownRight, Wallet, ShieldCheck, Sparkles, Monitor, CreditCard } from 'lucide-react';
+import { Users, Store as StoreIcon, Tag, ShoppingBag, DollarSign, Package, TrendingUp, ArrowUpRight, ArrowDownRight, Wallet, ShieldCheck, Sparkles, Monitor, CreditCard, Zap, ShoppingCart, Barcode, Clock, BarChart2, ArrowRight } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
 import { getAdminStats, getStores, getFinancialDashboard } from '../../services/api';
 import { adminNavGroups as navItems } from './adminNavItems';

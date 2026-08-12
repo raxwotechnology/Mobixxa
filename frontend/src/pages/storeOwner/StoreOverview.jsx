@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Package, ShoppingBag, DollarSign, Clock, TrendingUp, AlertCircle } from 'lucide-react';
+import { Package, ShoppingBag, DollarSign, Clock, TrendingUp, AlertCircle, Zap, ShoppingCart, Barcode, Users, ArrowRight } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
 import { getMyStoreProducts, getStoreOrders } from '../../services/api';
 import { Link } from 'react-router-dom';
