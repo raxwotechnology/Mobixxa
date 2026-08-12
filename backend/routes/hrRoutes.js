@@ -14,8 +14,8 @@ const { protect, authorize, requirePermission } = require('../middleware/authMid
 router.use(protect);
 
 // Attendance
-router.post('/attendance/check-in', authorize('cashier', 'deliveryGuy', 'stockEmployee', 'manager'), checkIn);
-router.post('/attendance/check-out', authorize('cashier', 'deliveryGuy', 'stockEmployee', 'manager'), checkOut);
+router.post('/attendance/check-in', authorize('admin', 'cashier', 'deliveryGuy', 'stockEmployee', 'manager'), checkIn);
+router.post('/attendance/check-out', authorize('admin', 'cashier', 'deliveryGuy', 'stockEmployee', 'manager'), checkOut);
 router.get('/attendance', getMyAttendance);
 router.get('/attendance/report', requirePermission('employees'), getAttendanceReport);
 // Admin/manager can mark any employee; cashier/delivery/stock can mark themselves only
@@ -41,8 +41,8 @@ router.put('/employees/:id', requirePermission('employees'), updateEmployee);
 router.delete('/employees/:id', requirePermission('employees'), deleteEmployee);
 
 // Breaks
-router.post('/breaks/start', authorize('cashier', 'deliveryGuy', 'stockEmployee', 'manager'), startBreak);
-router.post('/breaks/end', authorize('cashier', 'deliveryGuy', 'stockEmployee', 'manager'), endBreak);
+router.post('/breaks/start', authorize('admin', 'cashier', 'deliveryGuy', 'stockEmployee', 'manager'), startBreak);
+router.post('/breaks/end', authorize('admin', 'cashier', 'deliveryGuy', 'stockEmployee', 'manager'), endBreak);
 router.get('/breaks/active', getActiveBreak);
 router.get('/breaks', getBreakHistory);
 

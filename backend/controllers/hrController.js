@@ -504,6 +504,21 @@ const startBreak = async (req, res, next) => {
       return next(new Error('You are already on a break'));
     }
 
+    // Auto-create attendance check-in if not checked in yet
+    let attendance = await Attendance.findOne({
+      employeeId: req.user._id,
+      date: { $gte: today },
+    });
+    if (!attendance) {
+      await Attendance.create({
+        employeeId: req.user._id,
+        storeId: req.user.assignedStore || null,
+        date: new Date(),
+        checkIn: new Date(),
+        status: 'present',
+      });
+    }
+
     const brk = await EmployeeBreak.create({
       employeeId: req.user._id,
       storeId: req.user.assignedStore || null,
@@ -537,6 +552,16 @@ const endBreak = async (req, res, next) => {
     brk.breakEnd = new Date();
     brk.duration = Math.round((brk.breakEnd - brk.breakStart) / 60000); // minutes
     await brk.save();
+
+    // Also update Attendance record breakMinutes
+    const attendance = await Attendance.findOne({
+      employeeId: req.user._id,
+      date: { $gte: today },
+    });
+    if (attendance) {
+      attendance.breakMinutes = (attendance.breakMinutes || 0) + (brk.duration || 0);
+      await attendance.save();
+    }
 
     res.json(brk);
   } catch (error) { next(error); }

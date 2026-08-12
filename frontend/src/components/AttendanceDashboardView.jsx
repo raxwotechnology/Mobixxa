@@ -189,13 +189,13 @@ const AttendanceDashboardView = ({
           {/* Clocking Action Buttons */}
           <div className="flex items-center gap-3 w-full sm:w-auto">
             {/* Start / End Break Button */}
-            {isClockedIn && !isClockedOut && (
+            {!isClockedOut && (
               <button
                 onClick={() => handleAction(isOnBreak ? onEndBreak : onStartBreak)}
                 disabled={actionLoading}
                 className={`px-4 py-2.5 rounded-xl font-bold text-xs transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer border ${
                   isOnBreak
-                    ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-600'
+                    ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-600 font-black'
                     : 'bg-sky-50 hover:bg-sky-100 text-sky-700 border-sky-200'
                 }`}
               >
@@ -221,7 +221,7 @@ const AttendanceDashboardView = ({
                 className={`font-black text-xs px-5 py-2.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 border-0 ${
                   isClockedOut
                     ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
-                    : 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer'
+                    : 'bg-blue-600 hover:bg-blue-700 text-white cursor-pointer shadow-[0_4px_16px_rgba(37,99,235,0.35)]'
                 }`}
               >
                 <LogIn size={15} />
