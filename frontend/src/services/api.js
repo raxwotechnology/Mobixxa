@@ -227,8 +227,8 @@ export const getPopularTradeInModels = () => API.get('/trade-in/models');
 export const convertToRefurbishedStock = (id, data) => API.post(`/trade-in/${id}/add-to-inventory`, data);
 
 // Breaks
-export const startBreak = (data) => API.post('/hr/breaks/start', data);
-export const endBreak = () => API.post('/hr/breaks/end');
+export const startBreak = (data = {}) => API.post('/hr/breaks/start', data || {});
+export const endBreak = (data = {}) => API.post('/hr/breaks/end', data || {});
 export const getActiveBreak = () => API.get('/hr/breaks/active');
 export const getBreakHistory = (params) => API.get('/hr/breaks', { params });
 

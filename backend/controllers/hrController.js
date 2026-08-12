@@ -524,7 +524,7 @@ const startBreak = async (req, res, next) => {
       storeId: req.user.assignedStore || null,
       date: new Date(),
       breakStart: new Date(),
-      type: req.body.type || 'short',
+      type: req.body?.type || 'short',
     });
 
     res.status(201).json(brk);
