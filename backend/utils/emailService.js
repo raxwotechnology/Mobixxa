@@ -1,13 +1,26 @@
 const nodemailer = require('nodemailer');
 
-// Create reusable transporter using Gmail SMTP
+// Create reusable transporter using Gmail / SMTP credentials
 const createTransporter = () => {
+  const user = process.env.EMAIL_FROM || process.env.SMTP_USER || process.env.GMAIL_USER;
+  const pass = process.env.EMAIL_APP_PASSWORD || process.env.SMTP_PASS || process.env.GMAIL_PASS;
+
+  if (!user || !pass) {
+    return null;
+  }
+
   return nodemailer.createTransport({
     service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
     auth: {
-      user: process.env.EMAIL_FROM,
-      pass: process.env.EMAIL_APP_PASSWORD,
+      user,
+      pass,
     },
+    tls: {
+      rejectUnauthorized: false
+    }
   });
 };
 
@@ -20,23 +33,35 @@ const createTransporter = () => {
  */
 const sendEmail = async (to, subject, html) => {
   try {
-    if (!process.env.EMAIL_FROM || !process.env.EMAIL_APP_PASSWORD) {
+    if (!to) {
+      console.warn('[Email Warning] No recipient email specified.');
+      return null;
+    }
+
+    const fromEmail = process.env.EMAIL_FROM || process.env.SMTP_USER || process.env.GMAIL_USER;
+    const appPassword = process.env.EMAIL_APP_PASSWORD || process.env.SMTP_PASS || process.env.GMAIL_PASS;
+
+    if (!fromEmail || !appPassword) {
+      console.warn(`[Email Notice] Unable to send email to "${to}". EMAIL_FROM and EMAIL_APP_PASSWORD environment variables are missing in backend/.env & Vercel.`);
       return null;
     }
 
     const transporter = createTransporter();
+    if (!transporter) return null;
+
+    console.log(`[Email Sending] Dispatching receipt to ${to}...`);
 
     const info = await transporter.sendMail({
-      from: `"Mobile Hub" <${process.env.EMAIL_FROM}>`,
+      from: `"Mobile Hub Official" <${fromEmail}>`,
       to,
       subject,
       html,
     });
 
-    console.log(`[Email] Sent to ${to}: ${info.messageId}`);
+    console.log(`[Email Success] Sent to ${to}: Message ID ${info.messageId}`);
     return info;
   } catch (error) {
-    console.error(`[Email] Failed to send to ${to}:`, error.message);
+    console.error(`[Email Error] Failed to send to ${to}:`, error.message);
     return null;
   }
 };
