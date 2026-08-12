@@ -495,6 +495,12 @@ const requestPasswordReset = async (req, res) => {
     );
 
     const emailTemplate = passwordResetOtpEmail(user.name, otp);
+    
+    console.log(`\n==================================================`);
+    console.log(`🔐 [PASSWORD RESET OTP] For: ${user.email}`);
+    console.log(`👉 VERIFICATION CODE (OTP): ${otp}`);
+    console.log(`==================================================\n`);
+
     await sendEmail(user.email, emailTemplate.subject, emailTemplate.html);
 
     res.json({
