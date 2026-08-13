@@ -171,7 +171,7 @@ const orderSchema = mongoose.Schema(
     },
     sendReceiptEmail: {
       type: Boolean,
-      default: false,
+      default: true,
     },
     receiptEmail: {
       type: String,

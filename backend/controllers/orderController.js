@@ -280,14 +280,20 @@ const createOrder = async (req, res, next) => {
       { items: [] }
     );
 
-    // Send Electronic Email Receipt asynchronously
+    // Send Electronic Email Receipt
     try {
       const targetEmail = order.receiptEmail || req.user?.email;
       if (targetEmail) {
         const receipt = orderConfirmationEmail(order, req.user?.name || 'Valued Customer');
-        sendEmail(targetEmail, receipt.subject, receipt.html).catch((err) => {
-          console.error('[Email] Order receipt send failed:', err.message);
-        });
+        const sent = await sendEmail(targetEmail, receipt.subject, receipt.html);
+        if (sent) {
+          order.receiptEmailSentAt = new Date();
+          order.receiptEmailError = undefined;
+          await order.save();
+        } else {
+          order.receiptEmailError = 'Email service failed to deliver receipt';
+          await order.save();
+        }
       }
     } catch (eErr) {
       console.error('[Email] Dispatch error:', eErr.message);
@@ -613,12 +619,12 @@ const payHereNotify = async (req, res, next) => {
         await markVoucherAsUsed(order.userId, order.voucherCode);
       }
 
-      // Send payment receipt email only when user opted in.
+      // Send payment receipt email
       try {
         const customer = await User.findById(order.userId);
         const targetEmail = order.receiptEmail || customer?.email;
-        if (order.sendReceiptEmail && targetEmail) {
-          const receipt = paymentReceiptEmail(order, customer.name);
+        if (targetEmail && order.sendReceiptEmail !== false) {
+          const receipt = paymentReceiptEmail(order, customer?.name || 'Valued Customer');
           const sent = await sendEmail(targetEmail, receipt.subject, receipt.html);
           if (sent) {
             order.receiptEmailSentAt = new Date();
@@ -683,7 +689,7 @@ const kokoNotify = async (req, res) => {
         const customer = await User.findById(order.userId);
         const installment = (order.totalAmount / 3).toFixed(2);
         const targetEmail = order.receiptEmail || customer?.email;
-        if (order.sendReceiptEmail && targetEmail) {
+        if (targetEmail && order.sendReceiptEmail !== false) {
           const receipt = paymentReceiptEmail(order, customer?.name || 'Customer');
           await sendEmail(targetEmail, receipt.subject, receipt.html);
           order.receiptEmailSentAt = new Date();

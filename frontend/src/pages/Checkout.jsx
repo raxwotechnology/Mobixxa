@@ -26,8 +26,8 @@ const Checkout = () => {
   const [guarantorPhone, setGuarantorPhone] = useState('');
   const [guarantorNic, setGuarantorNic] = useState('');
   const [hpInstallments, setHpInstallments] = useState(3);
-  const [sendReceiptEmail, setSendReceiptEmail] = useState(false);
-  const [receiptEmail, setReceiptEmail] = useState('');
+  const [sendReceiptEmail, setSendReceiptEmail] = useState(true);
+  const [receiptEmail, setReceiptEmail] = useState(user?.email || '');
   const [loading, setLoading] = useState(false);
   const [otpModalOpen, setOtpModalOpen] = useState(false);
   const [otpCode, setOtpCode] = useState('');
@@ -176,7 +176,7 @@ const Checkout = () => {
         loyaltyPointsRedeemed: loyaltyPointsToRedeem || undefined,
         loyaltyDiscount: loyaltyDiscount || undefined,
         sendReceiptEmail,
-        receiptEmail: sendReceiptEmail ? (receiptEmail || user?.email || '') : undefined,
+        receiptEmail: sendReceiptEmail ? (receiptEmail || user?.email || undefined) : undefined,
       };
 
       if (paymentMethod === 'hire_purchase') {
@@ -243,7 +243,7 @@ const Checkout = () => {
         loyaltyPointsRedeemed: loyaltyPointsToRedeem || undefined,
         loyaltyDiscount: loyaltyDiscount || undefined,
         sendReceiptEmail,
-        receiptEmail: sendReceiptEmail ? (receiptEmail || user?.email || '') : undefined,
+        receiptEmail: sendReceiptEmail ? (receiptEmail || user?.email || undefined) : undefined,
       };
 
       const { data: order } = await createOrder(orderData);
