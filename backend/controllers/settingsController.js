@@ -7,6 +7,19 @@ const getSettings = async (req, res) => {
     let settings = await Settings.findOne();
     if (!settings) {
       settings = await Settings.create({});
+    } else {
+      let updated = false;
+      if (!settings.shopName || settings.shopName === 'Mobile Hub' || settings.shopName === 'SR Mobile Official' || settings.shopName === 'Max Durakathana' || settings.shopName === 'SR Mobile') {
+        settings.shopName = 'Mobixa';
+        updated = true;
+      }
+      if (settings.receiptSettings?.headerTitle === 'Mobile Hub' || settings.receiptSettings?.headerTitle === 'SR Mobile Official' || settings.receiptSettings?.headerTitle === 'Max Durakathana' || settings.receiptSettings?.headerTitle === 'SR Mobile') {
+        settings.receiptSettings.headerTitle = 'Mobixa';
+        updated = true;
+      }
+      if (updated) {
+        await settings.save();
+      }
     }
     res.json(settings);
   } catch (err) {

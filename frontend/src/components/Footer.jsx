@@ -330,7 +330,7 @@ const Footer = () => {
                   </p>
                   <p className="flex items-center gap-2 m-0">
                     <Mail size={13} className="text-amber-400 shrink-0" />
-                    <span className="truncate font-medium">manager@mobilehub.com</span>
+                    <span className="truncate font-medium">manager@mobixa.com</span>
                   </p>
                   <div className="pt-1.5 border-t border-white/5">
                     <span className="inline-block px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 text-[9px] font-bold">

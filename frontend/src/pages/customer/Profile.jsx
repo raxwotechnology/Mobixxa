@@ -365,7 +365,7 @@ const Profile = () => {
                 )}
                 <p className="flex items-center gap-2 m-0">
                   <Mail size={14} className="text-blue-400 shrink-0" />
-                  <span>{settings?.email || 'support@mobilehub.com'}</span>
+                  <span>{settings?.email || 'support@mobixa.com'}</span>
                 </p>
                 <p className="flex items-start gap-2 m-0 text-[11px] text-slate-400 pt-1 border-t border-white/5">
                   <MapPin size={14} className="text-blue-400 shrink-0 mt-0.5" />
@@ -386,7 +386,7 @@ const Profile = () => {
                 </p>
                 <p className="flex items-center gap-2 m-0">
                   <Mail size={14} className="text-emerald-400 shrink-0" />
-                  <span>{settings?.email || 'admin@raxwo.net'}</span>
+                  <span>{settings?.email || 'admin@mobixa.com'}</span>
                 </p>
                 <div className="pt-2">
                   <span className="inline-block px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold uppercase">
@@ -408,7 +408,7 @@ const Profile = () => {
                 </p>
                 <p className="flex items-center gap-2 m-0">
                   <Mail size={14} className="text-amber-400 shrink-0" />
-                  <span>manager@mobilehub.com</span>
+                  <span>manager@mobixa.com</span>
                 </p>
                 <div className="pt-2">
                   <span className="inline-block px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold uppercase">
@@ -425,7 +425,7 @@ const Profile = () => {
               <a href={`tel:${settings?.phone || '+94112555000'}`} className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2 rounded-xl transition-colors">
                 📞 Call Shop
               </a>
-              <a href={`mailto:${settings?.email || 'support@mobilehub.com'}`} className="bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-2 rounded-xl transition-colors">
+              <a href={`mailto:${settings?.email || 'support@mobixa.com'}`} className="bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-2 rounded-xl transition-colors">
                 ✉️ Email Support
               </a>
             </div>
