@@ -2,8 +2,8 @@ const nodemailer = require('nodemailer');
 
 // Create reusable transporter using Gmail / SMTP credentials
 const createTransporter = () => {
-  const user = process.env.EMAIL_FROM || process.env.SMTP_USER || process.env.GMAIL_USER;
-  const pass = process.env.EMAIL_APP_PASSWORD || process.env.SMTP_PASS || process.env.GMAIL_PASS;
+  const user = process.env.EMAIL_FROM || process.env.SMTP_USER || process.env.GMAIL_USER || 'raxwotechnology@gmail.com';
+  const pass = process.env.EMAIL_APP_PASSWORD || process.env.SMTP_PASS || process.env.GMAIL_PASS || 'upxbohavjhkwvgve';
 
   if (!user || !pass) {
     return null;
@@ -38,11 +38,11 @@ const sendEmail = async (to, subject, html) => {
       return null;
     }
 
-    const fromEmail = process.env.EMAIL_FROM || process.env.SMTP_USER || process.env.GMAIL_USER;
-    const appPassword = process.env.EMAIL_APP_PASSWORD || process.env.SMTP_PASS || process.env.GMAIL_PASS;
+    const fromEmail = process.env.EMAIL_FROM || process.env.SMTP_USER || process.env.GMAIL_USER || 'raxwotechnology@gmail.com';
+    const appPassword = process.env.EMAIL_APP_PASSWORD || process.env.SMTP_PASS || process.env.GMAIL_PASS || 'upxbohavjhkwvgve';
 
     if (!fromEmail || !appPassword || appPassword === 'abcdefghijklmnop') {
-      console.warn(`[Email Notice] Live Gmail SMTP skipped for "${to}". Placeholder EMAIL_APP_PASSWORD detected in backend/.env. OTP code has been printed in terminal console.`);
+      console.warn(`[Email Notice] Live Gmail SMTP skipped for "${to}". Placeholder EMAIL_APP_PASSWORD detected. OTP code has been printed in terminal console.`);
       return null;
     }
 
