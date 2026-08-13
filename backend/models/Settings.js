@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const settingsSchema = new mongoose.Schema({
-  shopName: { type: String, default: 'Mobile Hub' },
+  shopName: { type: String, default: 'Mobixa' },
   tagline: { type: String, default: 'Where style meets accessories' },
   logo: { type: String, default: '' },
   logoUrl: { type: String, default: '' },
@@ -62,7 +62,7 @@ const settingsSchema = new mongoose.Schema({
     showWarranty: { type: Boolean, default: true },
     layoutStyle: { type: String, default: 'receipt' }, // 'receipt' | 'a4'
     themeColor: { type: String, default: '#3b82f6' },
-    headerTitle: { type: String, default: 'Mobile Hub' },
+    headerTitle: { type: String, default: 'Mobixa' },
     subtitle: { type: String, default: '88 Tech Avenue, Colombo 03' },
     footerMessage: { type: String, default: 'Thank you for your purchase!' }
   },

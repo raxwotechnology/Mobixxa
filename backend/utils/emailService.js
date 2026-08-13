@@ -52,7 +52,7 @@ const sendEmail = async (to, subject, html) => {
     console.log(`[Email Sending] Dispatching receipt to ${to}...`);
 
     const info = await transporter.sendMail({
-      from: `"Mobile Hub Official" <${fromEmail}>`,
+      from: `"Mobixa Official" <${fromEmail}>`,
       to,
       subject,
       html,
@@ -84,12 +84,12 @@ const orderConfirmationEmail = (order, customerName) => {
   const confirmationUrl = `https://sr-mobileshop-official.vercel.app/order-confirmation/${order._id}`;
 
   return {
-    subject: `📱 Mobile Hub — Official Electronic Order Receipt #${orderIdStr}`,
+    subject: `📱 Mobixa — Official Electronic Order Receipt #${orderIdStr}`,
     html: `
       <div style="font-family: 'Plus Jakarta Sans', 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 620px; margin: 0 auto; background: #f8fafc; border-radius: 20px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
         <!-- Header -->
         <div style="background: linear-gradient(135deg, #1e40af, #2563eb, #3b82f6); padding: 35px 30px; text-align: center;">
-          <h1 style="color: white; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -0.5px;">⚡ MOBILE HUB</h1>
+          <h1 style="color: white; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -0.5px;">⚡ MOBIXA</h1>
           <p style="color: #dbeafe; margin: 8px 0 0; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Official Digital Invoice & Order Confirmation</p>
         </div>
 
@@ -97,7 +97,7 @@ const orderConfirmationEmail = (order, customerName) => {
         <div style="padding: 32px; background: #ffffff;">
           <h2 style="color: #0f172a; margin-top: 0; font-size: 20px; font-weight: 800;">Hi ${customerName || 'Valued Customer'}! 🎉</h2>
           <p style="color: #475569; font-size: 14px; line-height: 1.6; margin-bottom: 24px;">
-            Thank you for shopping with <strong>Mobile Hub</strong>! Your order has been placed successfully. Below is your itemized electronic invoice:
+            Thank you for shopping with <strong>Mobixa</strong>! Your order has been placed successfully. Below is your itemized electronic invoice:
           </p>
 
           <!-- Info Box -->
@@ -144,7 +144,7 @@ const orderConfirmationEmail = (order, customerName) => {
         <!-- Footer -->
         <div style="background: #f1f5f9; padding: 24px; text-align: center; border-top: 1px solid #e2e8f0;">
           <p style="color: #64748b; font-size: 13px; font-weight: 700; margin: 0 0 6px;">📞 Store Hotline: +94 11 255 5000</p>
-          <p style="color: #94a3b8; font-size: 12px; margin: 0;">© ${new Date().getFullYear()} Mobile Hub Official Store. Premium Tech Delivered With Care.</p>
+          <p style="color: #94a3b8; font-size: 12px; margin: 0;">© ${new Date().getFullYear()} Mobixa Official Store. Premium Tech Delivered With Care.</p>
         </div>
       </div>
     `,
@@ -152,7 +152,7 @@ const orderConfirmationEmail = (order, customerName) => {
 };
 
 const deliveryAssignmentEmail = (order, deliveryGuyName) => ({
-  subject: `Mobile Hub — New Delivery Assignment #${order._id.toString().slice(-8).toUpperCase()}`,
+  subject: `Mobixa — New Delivery Assignment #${order._id.toString().slice(-8).toUpperCase()}`,
   html: `
     <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <div style="background: linear-gradient(135deg, #2563eb, #3b82f6); padding: 30px; text-align: center;">
@@ -172,7 +172,7 @@ const deliveryAssignmentEmail = (order, deliveryGuyName) => ({
 });
 
 const salaryPaidEmail = (employeeName, payroll) => ({
-  subject: `Mobile Hub — Salary Credited for ${payroll.month}/${payroll.year}`,
+  subject: `Mobixa — Salary Credited for ${payroll.month}/${payroll.year}`,
   html: `
     <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <div style="background: linear-gradient(135deg, #059669, #10b981); padding: 30px; text-align: center;">
@@ -194,16 +194,16 @@ const salaryPaidEmail = (employeeName, payroll) => ({
 });
 
 const welcomeEmail = (name) => ({
-  subject: 'Welcome to Mobile Hub! ✨',
+  subject: 'Welcome to Mobixa! ✨',
   html: `
     <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <div style="background: linear-gradient(135deg, #059669, #10b981); padding: 40px; text-align: center;">
-        <h1 style="color: white; margin: 0; font-size: 32px;">💄 Mobile Hub</h1>
+        <h1 style="color: white; margin: 0; font-size: 32px;">⚡ Mobixa</h1>
         <p style="color: #d1fae5; margin: 10px 0 0; font-size: 16px;">Premium tech and smart devices, delivered with care</p>
       </div>
       <div style="padding: 30px; background: white;">
         <h2 style="color: #1e293b; margin-top: 0;">Welcome, ${name}! 🎉</h2>
-        <p style="color: #64748b; line-height: 1.6;">Thank you for joining Mobile Hub! Explore our curated range of tech, gadgets, accessories, and smart essentials.</p>
+        <p style="color: #64748b; line-height: 1.6;">Thank you for joining Mobixa! Explore our curated range of tech, gadgets, accessories, and smart essentials.</p>
         <div style="background: #f0fdf4; border-radius: 12px; padding: 20px; margin: 20px 0; text-align: center;">
           <p style="margin: 0; font-size: 14px; color: #64748b;">Use code</p>
           <p style="margin: 5px 0; font-size: 24px; font-weight: bold; color: #059669;">WELCOME10</p>
@@ -231,12 +231,12 @@ const paymentReceiptEmail = (order, customerName) => {
   const paidDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 
   return {
-    subject: `Mobile Hub — Payment Receipt #${orderId}`,
+    subject: `Mobixa — Payment Receipt #${orderId}`,
     html: `
       <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
         <!-- Header -->
         <div style="background: linear-gradient(135deg, #059669, #0d9488); padding: 35px; text-align: center;">
-          <h1 style="color: white; margin: 0; font-size: 28px; letter-spacing: -0.5px;">💄 Mobile Hub</h1>
+          <h1 style="color: white; margin: 0; font-size: 28px; letter-spacing: -0.5px;">⚡ Mobixa</h1>
           <p style="color: #d1fae5; margin: 8px 0 0; font-size: 14px;">Payment Receipt</p>
         </div>
 
@@ -307,8 +307,8 @@ const paymentReceiptEmail = (order, customerName) => {
 
         <!-- Footer -->
         <div style="background: #f1f5f9; padding: 20px; text-align: center;">
-          <p style="color: #64748b; font-size: 13px; margin: 0 0 5px;">Thank you for shopping with Mobile Hub! ✨</p>
-          <p style="color: #94a3b8; font-size: 11px; margin: 0;">© ${new Date().getFullYear()} Mobile Hub. Premium tech and smart devices delivered with care.</p>
+          <p style="color: #64748b; font-size: 13px; margin: 0 0 5px;">Thank you for shopping with Mobixa! ✨</p>
+          <p style="color: #94a3b8; font-size: 11px; margin: 0;">© ${new Date().getFullYear()} Mobixa. Premium tech and smart devices delivered with care.</p>
         </div>
       </div>
     `,
@@ -334,7 +334,7 @@ const posReceiptEmail = (order, customer = {}) => {
     subject: `Receipt #${order._id.toString().slice(-8).toUpperCase()}`,
     html: `
       <div style="font-family:Arial,sans-serif;max-width:650px;margin:0 auto;">
-        <h2 style="color:#059669;">Mobile Hub POS Receipt</h2>
+        <h2 style="color:#059669;">Mobixa POS Receipt</h2>
         <p><strong>Receipt ID:</strong> #${order._id.toString().slice(-8).toUpperCase()}</p>
         <p><strong>Date:</strong> ${new Date(order.createdAt || Date.now()).toLocaleString()}</p>
         <h3>Customer Details</h3>
@@ -386,7 +386,7 @@ const customerReturnUpdateEmail = ({ order, returnDoc }) => {
       : 'Your return is on hold while we complete the exchange/upgrade process.';
 
   return {
-    subject: `Mobile Hub — Return Update ${rma}`,
+    subject: `Mobixa — Return Update ${rma}`,
     html: `
       <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:650px;margin:0 auto;background:#ffffff;">
         <div style="background:linear-gradient(135deg,#059669,#10b981);padding:28px;text-align:center;">
@@ -427,12 +427,12 @@ const customerReturnUpdateEmail = ({ order, returnDoc }) => {
 
 const passwordResetOtpEmail = (name, otp) => {
   return {
-    subject: `🔐 Mobile Hub — Password Reset Verification Code: ${otp}`,
+    subject: `🔐 Mobixa — Password Reset Verification Code: ${otp}`,
     html: `
       <div style="font-family: 'Plus Jakarta Sans', 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 20px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
         <!-- Header -->
         <div style="background: linear-gradient(135deg, #0f172a, #1e293b, #2563eb); padding: 35px 30px; text-align: center;">
-          <h1 style="color: white; margin: 0; font-size: 24px; font-weight: 900; letter-spacing: -0.5px;">⚡ MOBILE HUB</h1>
+          <h1 style="color: white; margin: 0; font-size: 24px; font-weight: 900; letter-spacing: -0.5px;">⚡ MOBIXA</h1>
           <p style="color: #93c5fd; margin: 8px 0 0; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Password Reset Verification Request</p>
         </div>
 
@@ -440,7 +440,7 @@ const passwordResetOtpEmail = (name, otp) => {
         <div style="padding: 32px; background: #ffffff;">
           <h2 style="color: #0f172a; margin-top: 0; font-size: 20px; font-weight: 800;">Hello ${name || 'Valued User'},</h2>
           <p style="color: #475569; font-size: 14px; line-height: 1.6; margin-bottom: 24px;">
-            We received a request to reset the password for your Mobile Hub account. Use the 6-digit verification code below to authorize your password reset:
+            We received a request to reset the password for your Mobixa account. Use the 6-digit verification code below to authorize your password reset:
           </p>
 
           <!-- OTP Box -->
@@ -456,7 +456,7 @@ const passwordResetOtpEmail = (name, otp) => {
 
         <!-- Footer -->
         <div style="background: #f1f5f9; padding: 20px; text-align: center; font-size: 12px; color: #64748b; border-top: 1px solid #e2e8f0;">
-          <p style="margin: 0; font-weight: 700; color: #475569;">SR Mobile Official (Mobile Hub)</p>
+          <p style="margin: 0; font-weight: 700; color: #475569;">SR Mobile Official (Mobixa)</p>
           <p style="margin: 4px 0 0; color: #94a3b8;">This is an automated security email. Please do not reply directly to this message.</p>
         </div>
       </div>

@@ -157,7 +157,7 @@ const AdminSettings = () => {
     }
   };
 
-  if (loading) return <DashboardLayout navItems={navItems} title="Mobile Hub Admin Panel"><div className="flex items-center justify-center h-64"><div className="w-10 h-10 border-4 border-primary-blue border-t-transparent rounded-full animate-spin" /></div></DashboardLayout>;
+  if (loading) return <DashboardLayout navItems={navItems} title="Mobixa Admin Panel"><div className="flex items-center justify-center h-64"><div className="w-10 h-10 border-4 border-primary-blue border-t-transparent rounded-full animate-spin" /></div></DashboardLayout>;
 
   const tabs = [
     { key: 'general', label: 'General', icon: Globe },
@@ -172,7 +172,7 @@ const AdminSettings = () => {
   ];
 
   return (
-    <DashboardLayout navItems={navItems} title="Mobile Hub Admin Panel">
+    <DashboardLayout navItems={navItems} title="Mobixa Admin Panel">
       <div>
         <div className="flex items-center justify-between mb-8 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm">
           <div>
@@ -224,7 +224,7 @@ const AdminSettings = () => {
                 </div>
               </div>
               <div className="grid sm:grid-cols-2 gap-6">
-                <SettingsInputField label="Shop Name" value={settings.shopName} onChange={(v) => handleChange('shopName', v)} placeholder="Mobile Hub" />
+                <SettingsInputField label="Shop Name" value={settings.shopName} onChange={(v) => handleChange('shopName', v)} placeholder="Mobixa" />
                 <SettingsInputField label="Tagline" value={settings.tagline} onChange={(v) => handleChange('tagline', v)} placeholder="Where style meets accessories" />
               </div>
             </div>
@@ -401,7 +401,7 @@ const AdminSettings = () => {
                     label="Header Logo / Title Text"
                     value={settings.receiptSettings?.headerTitle || settings.shopName}
                     onChange={(v) => handleChange('receiptSettings', { ...settings.receiptSettings, headerTitle: v })}
-                    placeholder="e.g. Mobile Hub Corner"
+                    placeholder="e.g. Mobixa Corner"
                   />
 
                   {/* Subtitle / Branch details */}
@@ -448,7 +448,7 @@ const AdminSettings = () => {
                     label="Letterhead Header Text (A4 Invoice)"
                     value={settings.letterheadHeader}
                     onChange={(v) => handleChange('letterheadHeader', v)}
-                    placeholder="e.g. SMART MOBILE HUB (PVT) LTD\nNo. 12, Galle Road, Colombo\nReg: PV-12345"
+                    placeholder="e.g. MOBIXA (PVT) LTD\nNo. 12, Galle Road, Colombo\nReg: PV-12345"
                   />
 
                   {/* Letterhead Footer Textarea */}

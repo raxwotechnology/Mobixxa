@@ -134,7 +134,7 @@ const SupplierReturnsPanel = ({ storeId, products, prefillData, onSuccess }) => 
   };
 
   const printReturnVoucher = (ret) => {
-    const siteName = settings?.shopName || 'Mobile Hub';
+    const siteName = settings?.shopName || 'Mobixa';
     const logoUrl = settings?.logoUrl || settings?.logo || '';
     const itemRows = (ret.items || []).map((it, i) => `<tr>
       <td style="padding:8px;border:1px solid #ddd">${i + 1}</td>

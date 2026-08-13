@@ -50,7 +50,7 @@ const POSScreen = () => {
   const navigate = useNavigate();
   const { user, login, logout } = useAuthStore();
   const settings = useSettingsStore((s) => s.settings);
-  const brandName = settings?.shopName || 'Mobile Hub';
+  const brandName = settings?.shopName || 'Mobixa';
   const pos = usePosStore();
 
   const [products, setProducts] = useState([]);

@@ -36,7 +36,7 @@ const seedData = async () => {
     // Create Stores
     const store1 = await Store.create({
       managerId: manager1._id,
-      name: 'Mobile Hub',
+      name: 'Mobixa',
       slug: 'mobile-hub',
       description: 'Premium destination for the latest smartphones, tablets, and high-end tech accessories.',
       address: '123 Tech Avenue, Colombo 03',

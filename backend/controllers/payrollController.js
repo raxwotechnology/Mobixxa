@@ -540,7 +540,7 @@ const downloadPaysheet = async (req, res, next) => {
     const accent = template.accentColor || '#2563eb';
     doc.rect(0, 0, doc.page.width, 72).fill(accent);
     doc.fillColor('#ffffff').fontSize(18).text(template.title || 'Paysheet', 42, 24);
-    doc.fontSize(10).text(settings?.shopName || 'Mobile Hub', 42, 48);
+    doc.fontSize(10).text(settings?.shopName || 'Mobixa', 42, 48);
 
     doc.fillColor('#111827').moveDown(3);
     doc.fontSize(12).text(`Period: ${payroll.month}/${payroll.year}`);

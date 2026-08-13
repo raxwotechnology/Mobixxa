@@ -75,11 +75,11 @@ app.use('/api/repairs', require('../routes/repairRoutes'));
 app.use('/api/letters', require('../routes/letterRoutes'));
 
 app.get('/', (req, res) => {
-  res.send('Mobile Hub API is running...');
+  res.send('Mobixa API is running...');
 });
 
 app.get('/api', (req, res) => {
-  res.json({ message: 'Mobile Hub API is active', status: 'online' });
+  res.json({ message: 'Mobixa API is active', status: 'online' });
 });
 
 app.use((err, req, res, next) => {

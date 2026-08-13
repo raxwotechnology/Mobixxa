@@ -9,7 +9,7 @@ import { toast } from 'react-toastify';
 
 const InvoiceModal = ({ isOpen, onClose, order, onNewSale }) => {
   const settings = useSettingsStore((s) => s.settings);
-  const brandName = settings?.shopName || 'Mobile Hub';
+  const brandName = settings?.shopName || 'Mobixa';
   const brandAddress = settings?.address || '';
   const brandPhone = settings?.phone || '';
   const brandEmail = settings?.email || '';

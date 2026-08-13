@@ -16,7 +16,7 @@ const ProductCard = ({ product }) => {
 
   const imageUrl = getImageUrl(product.productLink || product.images?.[0]) || 'https://via.placeholder.com/400x400?text=Smart+Product';
   const secondaryImageUrl = getImageUrl(product.images?.[1] || product.productLink || product.images?.[0]) || imageUrl;
-  const storeName = product.storeId?.name || 'Mobile Hub Boutique';
+  const storeName = product.storeId?.name || 'Mobixa Boutique';
   const wishlisted = user && isInWishlist(product._id);
   const inStock = product.stock > 0;
 

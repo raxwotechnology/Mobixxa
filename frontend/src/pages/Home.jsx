@@ -91,7 +91,7 @@ const Home = () => {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 1, delay: 0.2 }}
               >
-                {settings?.shopName || 'Mobile Hub'}
+                {settings?.shopName || 'Mobixa'}
               </motion.h2>
             </div>
 

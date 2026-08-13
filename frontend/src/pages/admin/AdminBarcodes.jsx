@@ -78,7 +78,7 @@ const AdminBarcodes = () => {
   };
 
   return (
-    <DashboardLayout navItems={navItems} title="Mobile Hub Admin Panel">
+    <DashboardLayout navItems={navItems} title="Mobixa Admin Panel">
       <div>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
           <div>
@@ -271,7 +271,7 @@ const AdminBarcodes = () => {
             </p>
 
             <div className="my-5 p-4 bg-slate-50 rounded-2xl border border-slate-200/80 flex flex-col items-center justify-center">
-              <p className="text-xs font-black text-slate-900 uppercase tracking-wide mb-1">Mobile Hub</p>
+              <p className="text-xs font-black text-slate-900 uppercase tracking-wide mb-1">Mobixa</p>
               <p className="text-sm font-bold text-slate-800 line-clamp-1 max-w-[240px] text-center mb-1">
                 {viewingLog.productName}
               </p>

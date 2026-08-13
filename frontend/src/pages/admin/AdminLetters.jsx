@@ -77,7 +77,7 @@ const AdminLetters = () => {
     const emp = employees.find(e => e._id === empId);
     if (!emp) return;
 
-    const shopName = settings?.shopName || 'Mobile Hub';
+    const shopName = settings?.shopName || 'Mobixa';
     const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
 
     let defaultSubj = '';
@@ -157,7 +157,7 @@ const AdminLetters = () => {
   const downloadPDFLetter = (ltr) => {
     try {
       const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      const shopName = settings?.shopName || 'Mobile Hub';
+      const shopName = settings?.shopName || 'Mobixa';
       const address = settings?.address || 'Main Street, Colombo 03';
       const phone = settings?.phone || '077 123 4567';
 
@@ -235,7 +235,7 @@ const AdminLetters = () => {
   );
 
   return (
-    <DashboardLayout navItems={navItems} title="Mobile Hub Admin Panel">
+    <DashboardLayout navItems={navItems} title="Mobixa Admin Panel">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
@@ -526,7 +526,7 @@ const AdminLetters = () => {
             {/* Official Letterhead Header */}
             <div className="bg-slate-900 text-white p-5 rounded-2xl mb-6 flex justify-between items-center">
               <div>
-                <h2 className="text-xl font-black tracking-wider m-0 uppercase">{settings?.shopName || 'Mobile Hub'}</h2>
+                <h2 className="text-xl font-black tracking-wider m-0 uppercase">{settings?.shopName || 'Mobixa'}</h2>
                 <p className="text-[10px] text-slate-300 m-0 mt-0.5">{settings?.address || 'Colombo, Sri Lanka'} • Tel: {settings?.phone || '077 123 4567'}</p>
               </div>
               <span className="font-mono text-xs font-bold bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700 text-brand-indigo">
@@ -557,7 +557,7 @@ const AdminLetters = () => {
                 <div>
                   <div className="w-40 border-b border-slate-400 mb-1" />
                   <p className="font-bold text-slate-900 m-0">Authorized Signature</p>
-                  <p className="text-[10px] text-slate-400 m-0">{settings?.shopName || 'Mobile Hub'} Management</p>
+                  <p className="text-[10px] text-slate-400 m-0">{settings?.shopName || 'Mobixa'} Management</p>
                 </div>
                 <button
                   onClick={() => downloadPDFLetter(previewLetter)}

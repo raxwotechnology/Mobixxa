@@ -80,11 +80,11 @@ const getSmsTemplates = async () => {
     const Settings = require('../models/Settings');
     const settings = await Settings.findOne().lean();
     return {
-      shopName: settings?.shopName || 'Mobile Hub',
+      shopName: settings?.shopName || 'Mobixa',
       templates: settings?.smsTemplates || {},
     };
   } catch {
-    return { shopName: 'Mobile Hub', templates: {} };
+    return { shopName: 'Mobixa', templates: {} };
   }
 };
 

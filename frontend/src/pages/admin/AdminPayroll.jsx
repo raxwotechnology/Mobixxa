@@ -102,7 +102,7 @@ const AdminPayroll = () => {
   const selectedEmployee = employees.find(e => e._id === selectedEmpId);
 
   return (
-    <DashboardLayout navItems={navItems} title="Mobile Hub Admin Panel">
+    <DashboardLayout navItems={navItems} title="Mobixa Admin Panel">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">

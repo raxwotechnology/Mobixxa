@@ -82,7 +82,7 @@ const updateDeliveryStatus = async (req, res, next) => {
         message: statusMessages[status],
         link: `/orders`,
         emailContent: {
-          subject: `Mobile Hub — Your order is ${status.replace(/_/g, ' ')}`,
+          subject: `Mobixa — Your order is ${status.replace(/_/g, ' ')}`,
           html: `<div style="font-family: Arial, sans-serif; padding: 20px;"><h2>Hi ${customer.name}!</h2><p>${statusMessages[status]}</p><p>Order #${order._id.toString().slice(-8).toUpperCase()}</p></div>`,
         },
       });

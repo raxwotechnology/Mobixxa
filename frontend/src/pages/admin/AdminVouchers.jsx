@@ -38,7 +38,7 @@ const AdminVouchers = () => {
   const exportVoucherPDF = (v, qty = 1) => {
     try {
       const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      const siteName = settings?.shopName || 'Mobile Hub';
+      const siteName = settings?.shopName || 'Mobixa';
       const discountText = v.type === 'percentage' ? `${v.value}% OFF` : `Rs. ${v.value} OFF`;
       const expiryText = v.expiresAt ? new Date(v.expiresAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'No Expiry';
 
@@ -471,7 +471,7 @@ const AdminVouchers = () => {
               <div className="absolute bottom-[-20px] left-[-20px] w-20 h-20 bg-purple-500/10 rounded-full pointer-events-none" />
 
               <p className="text-sm font-black text-slate-900 uppercase tracking-widest m-0">
-                {settings?.shopName || 'Mobile Hub'}
+                {settings?.shopName || 'Mobixa'}
               </p>
               <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest mt-0.5 m-0 mb-3">
                 Official Discount Voucher
@@ -564,7 +564,7 @@ const AdminVouchers = () => {
         <div id="voucher-print-area" className="hidden print:block">
           {Array(printQty[selectedVoucherForPreview._id] || 1).fill(0).map((_, idx) => (
             <div key={idx} style={{ width: '380px', border: '2px dashed #d946a0', borderRadius: '20px', padding: '24px', margin: '20px auto', textAlign: 'center', background: '#ffffff', pageBreakInside: 'avoid', pageBreakAfter: 'always' }}>
-              <h2 style={{ margin: '0 0 4px', fontSize: '18px', color: '#1f1f1f', fontWeight: 'bold' }}>{settings?.shopName || 'Mobile Hub'}</h2>
+              <h2 style={{ margin: '0 0 4px', fontSize: '18px', color: '#1f1f1f', fontWeight: 'bold' }}>{settings?.shopName || 'Mobixa'}</h2>
               <p style={{ margin: '0 0 12px', fontSize: '10px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '2px' }}>Discount Voucher</p>
               <div style={{ background: 'linear-gradient(135deg,#d946a0,#c026d3)', color: 'white', borderRadius: '14px', padding: '14px 20px', margin: '0 0 14px' }}>
                 <p style={{ margin: 0, fontSize: '26px', fontWeight: '900', letterSpacing: '1px' }}>
@@ -580,7 +580,7 @@ const AdminVouchers = () => {
                 <span>Expires: {selectedVoucherForPreview.expiresAt ? new Date(selectedVoucherForPreview.expiresAt).toLocaleDateString() : 'Never'}</span>
               </div>
               {selectedVoucherForPreview.description && <p style={{ margin: '0 0 8px', fontSize: '11px', color: '#7b6f69', fontStyle: 'italic' }}>"{selectedVoucherForPreview.description}"</p>}
-              <p style={{ margin: 0, fontSize: '9px', color: '#9ca3af' }}>Present this voucher at checkout · {settings?.shopName || 'Mobile Hub'}</p>
+              <p style={{ margin: 0, fontSize: '9px', color: '#9ca3af' }}>Present this voucher at checkout · {settings?.shopName || 'Mobixa'}</p>
             </div>
           ))}
         </div>

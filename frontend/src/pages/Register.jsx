@@ -25,7 +25,7 @@ const Register = () => {
   const [phoneError, setPhoneError] = useState('');
   const login = useAuthStore((state) => state.login);
   const settings = useSettingsStore((s) => s.settings);
-  const brandName = settings?.shopName || 'Mobile Hub';
+  const brandName = settings?.shopName || 'Mobixa';
   const brandLogoUrl = getImageUrl(settings?.logoUrl || settings?.logo || '') || '/logo.png';
   const navigate = useNavigate();
 

@@ -800,7 +800,7 @@ const ManagerRepairs = ({ isAdmin = false, isEmployee = false, navItems: propNav
               />
             )}
             <h2 style={{ fontSize: '18px', fontWeight: 800, margin: '0 0 2px' }}>
-              {printJob.repair.storeId?.name || settings?.shopName || 'Mobile Hub'}
+              {printJob.repair.storeId?.name || settings?.shopName || 'Mobixa'}
             </h2>
             <p style={{ fontSize: '11px', margin: '2px 0' }}>
               {printJob.repair.storeId?.address || settings?.address || ''}
@@ -917,7 +917,7 @@ const ManagerRepairs = ({ isAdmin = false, isEmployee = false, navItems: propNav
               <ol className="list-decimal pl-3 space-y-1">
                 <li>Repaired hardware components carry a 30-day warranty only.</li>
                 <li>Warranty is void if device shows water damage, physical impact, or third-party tampering.</li>
-                <li>Thank you for choosing {settings?.shopName || 'Mobile Hub'}!</li>
+                <li>Thank you for choosing {settings?.shopName || 'Mobixa'}!</li>
               </ol>
             )}
 
@@ -931,7 +931,7 @@ const ManagerRepairs = ({ isAdmin = false, isEmployee = false, navItems: propNav
             </div>
 
             <div className="text-center mt-6 text-[8px] text-gray-500">
-              Printed on {new Date().toLocaleString()} | Powered by Mobile Hub ERP
+              Printed on {new Date().toLocaleString()} | Powered by Mobixa ERP
             </div>
           </div>
           

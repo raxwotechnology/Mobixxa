@@ -18,7 +18,7 @@ const bootstrapUsers = async () => {
 
     const usersToCreate = [
       {
-        name: 'Mobile Hub Admin',
+        name: 'Mobixa Admin',
         email: 'admin@mobilehub.com',
         password: 'admin123',
         role: 'admin',

@@ -180,7 +180,7 @@ const DashboardLayout = ({ children, navItems, title }) => {
     return () => { document.body.style.overflow = ''; };
   }, [sidebarOpen]);
 
-  const brandName = settings?.shopName || 'Mobile Hub';
+  const brandName = settings?.shopName || 'Mobixa';
   const logoSrc = getImageUrl(settings?.logoUrl || settings?.logo || '') || '/logo.png';
 
   const [userMenuOpen, setUserMenuOpen] = useState(false);

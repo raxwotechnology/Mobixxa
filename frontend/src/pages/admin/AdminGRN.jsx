@@ -146,7 +146,7 @@ const AdminGRN = () => {
   };
 
   const printVoucher = (receipt) => {
-    const siteName = settings?.shopName || 'Mobile Hub';
+    const siteName = settings?.shopName || 'Mobixa';
     const logoUrl = settings?.logoUrl || settings?.logo || '';
     const itemRows = (receipt.items || []).map((it, i) => {
       const qty = printQty[`${receipt._id}_${i}`] || it.qty;

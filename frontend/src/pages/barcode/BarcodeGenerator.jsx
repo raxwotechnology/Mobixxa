@@ -27,7 +27,7 @@ const BarcodeGenerator = () => {
   const [search, setSearch] = useState('');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [quantity, setQuantity] = useState(12);
-  const [shopName, setShopName] = useState('Mobile Hub');
+  const [shopName, setShopName] = useState('Mobixa');
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [generated, setGenerated] = useState(false);
@@ -416,7 +416,7 @@ const BarcodeGenerator = () => {
     return getEmployeeNavGroups(user?.role);
   };
 
-  const dashTitle = user?.role === 'admin' ? 'Mobile Hub Admin Panel' :
+  const dashTitle = user?.role === 'admin' ? 'Mobixa Admin Panel' :
     user?.role === 'manager' ? 'Store Dashboard' : 'Employee Portal';
 
   return (

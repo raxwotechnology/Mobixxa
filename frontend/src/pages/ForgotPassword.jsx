@@ -9,7 +9,7 @@ import { getImageUrl } from '../utils/imageHelper';
 const ForgotPassword = () => {
   const navigate = useNavigate();
   const settings = useSettingsStore((s) => s.settings);
-  const brandName = settings?.shopName || 'Mobile Hub';
+  const brandName = settings?.shopName || 'Mobixa';
   const logoSrc = getImageUrl(settings?.logoUrl || settings?.logo || '') || '/logo.png';
 
   const [step, setStep] = useState(1); // 1: Email, 2: OTP, 3: New Password, 4: Success

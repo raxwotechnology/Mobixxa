@@ -1,5 +1,5 @@
 /**
- * Shared validation utilities for Mobile Hub
+ * Shared validation utilities for Mobixa
  */
 
 // Sri Lankan mobile number validation

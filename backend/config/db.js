@@ -12,7 +12,7 @@ const autoBootstrapStaff = async () => {
     console.log('⚡ Auto-bootstrapping staff accounts on new database connection...');
     const staffAccounts = [
       {
-        name: 'Mobile Hub Admin',
+        name: 'Mobixa Admin',
         email: 'admin@mobilehub.com',
         password: 'admin123',
         role: 'admin',
