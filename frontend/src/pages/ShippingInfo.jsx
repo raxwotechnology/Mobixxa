@@ -3,7 +3,7 @@ import useSettingsStore from '../store/settingsStore';
 
 const ShippingInfo = () => {
   const settings = useSettingsStore((s) => s.settings);
-  const brandName = settings?.shopName || 'SR Mobile Official';
+  const brandName = settings?.shopName || 'Mobixa';
 
   const methods = [
     {
@@ -22,7 +22,7 @@ const ShippingInfo = () => {
     },
     {
       title: 'In-Store Pickup (Boutique Collect)',
-      area: 'Official SR Mobile Outlets',
+      area: 'Official Mobixa Outlets',
       time: 'Ready in 1 Hour',
       fee: 'FREE',
       desc: 'Order online and pick up your items directly at your preferred store location at your convenience.'

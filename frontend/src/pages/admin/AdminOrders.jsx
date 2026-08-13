@@ -255,7 +255,7 @@ const AdminOrders = ({ navItems: propNavItems }) => {
   const downloadInvoicePDF = (order) => {
     try {
       const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      const shopName = order.storeId?.name || 'Max Durakathana / SR Mobile';
+      const shopName = order.storeId?.name || 'Mobixa';
       const invNo = order.invoiceNumber || `INV-${order._id.slice(-8).toUpperCase()}`;
 
       // Header Banner
@@ -783,7 +783,7 @@ const AdminOrders = ({ navItems: propNavItems }) => {
             {/* Bill Header */}
             <div className="border-b-2 border-slate-900 pb-4 mb-4 flex justify-between items-start">
               <div>
-                <h2 className="text-lg font-black text-slate-900 uppercase tracking-wider m-0">{viewBillOrder.storeId?.name || 'Max Durakathana / SR Mobile'}</h2>
+                <h2 className="text-lg font-black text-slate-900 uppercase tracking-wider m-0">{viewBillOrder.storeId?.name || 'Mobixa'}</h2>
                 <p className="text-[10px] text-slate-500 font-semibold m-0">Official Sales Receipt & Warranty</p>
               </div>
               <div className="text-right">

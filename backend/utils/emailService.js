@@ -456,7 +456,7 @@ const passwordResetOtpEmail = (name, otp) => {
 
         <!-- Footer -->
         <div style="background: #f1f5f9; padding: 20px; text-align: center; font-size: 12px; color: #64748b; border-top: 1px solid #e2e8f0;">
-          <p style="margin: 0; font-weight: 700; color: #475569;">SR Mobile Official (Mobixa)</p>
+          <p style="margin: 0; font-weight: 700; color: #475569;">Mobixa Official</p>
           <p style="margin: 4px 0 0; color: #94a3b8;">This is an automated security email. Please do not reply directly to this message.</p>
         </div>
       </div>

@@ -114,6 +114,11 @@ const AppLayout = ({ children }) => {
   }, [fetchSettings, accent, customColor, fontFamily, mode, applyThemeToDocument]);
 
   useEffect(() => {
+    const titleName = settings?.shopName || 'Mobixa';
+    document.title = `${titleName} - Premium Mobile Devices & Accessories`;
+  }, [settings?.shopName]);
+
+  useEffect(() => {
     let link = document.querySelector("link[rel~='icon']");
     if (!link) {
       link = document.createElement('link');

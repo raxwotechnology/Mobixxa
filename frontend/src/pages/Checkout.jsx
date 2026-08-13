@@ -856,7 +856,7 @@ const Checkout = () => {
                 </div>
                 <div>
                   <h3 className="font-extrabold text-lg m-0 text-white leading-snug">Koko Payment Gateway</h3>
-                  <p className="text-xs text-white/80 m-0 font-medium">Merchant: {siteSettings?.shopName || 'SR Mobile Official'}</p>
+                  <p className="text-xs text-white/80 m-0 font-medium">Merchant: {siteSettings?.shopName || 'Mobixa'}</p>
                 </div>
               </div>
               <button

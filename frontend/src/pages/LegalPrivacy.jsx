@@ -3,8 +3,8 @@ import useSettingsStore from '../store/settingsStore';
 
 const LegalPrivacy = () => {
   const settings = useSettingsStore((s) => s.settings);
-  const brandName = settings?.shopName || 'SR Mobile Official';
-  const brandEmail = settings?.email || 'privacy@srmobile.lk';
+  const brandName = settings?.shopName || 'Mobixa';
+  const brandEmail = settings?.email || 'privacy@mobixa.com';
 
   const sections = [
     {

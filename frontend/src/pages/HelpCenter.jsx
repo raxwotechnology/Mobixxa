@@ -4,8 +4,8 @@ import useSettingsStore from '../store/settingsStore';
 
 const HelpCenter = () => {
   const settings = useSettingsStore((s) => s.settings);
-  const brandName = settings?.shopName || 'SR Mobile Official';
-  const brandEmail = settings?.email || 'support@srmobile.lk';
+  const brandName = settings?.shopName || 'Mobixa';
+  const brandEmail = settings?.email || 'support@mobixa.com';
   const brandPhone = settings?.phone || '+94 11 255 5000';
 
   const [searchQuery, setSearchQuery] = useState('');

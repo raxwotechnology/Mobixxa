@@ -35,9 +35,9 @@ const Footer = () => {
   const [showHelpModal, setShowHelpModal] = useState(false);
   const user = useAuthStore((s) => s.user);
   const settings = useSettingsStore((s) => s.settings);
-  const brandName = settings?.shopName || 'Max Durakathana';
+  const brandName = settings?.shopName || 'Mobixa';
   const brandLogoUrl = getImageUrl(settings?.logoUrl || settings?.logo) || '/logo.png';
-  const brandEmail = settings?.email || 'support@mobilehub.com';
+  const brandEmail = settings?.email || 'support@mobixa.com';
   const brandPhone = settings?.phone || '+94 11 255 5000';
   const brandAddress = settings?.address || '88 Tech Avenue, Colombo 03';
 

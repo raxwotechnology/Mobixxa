@@ -3,14 +3,14 @@ import useSettingsStore from '../store/settingsStore';
 
 const ReturnsPolicy = () => {
   const settings = useSettingsStore((s) => s.settings);
-  const brandName = settings?.shopName || 'SR Mobile Official';
+  const brandName = settings?.shopName || 'Mobixa';
   const brandPhone = settings?.phone || '+94 11 255 5000';
 
   const steps = [
     { num: '01', title: 'Submit Return Request', desc: 'Contact customer care or submit a return request from My Orders within 7 days of delivery.' },
     { num: '02', title: 'Pack Device & Box', desc: 'Ensure the mobile device, original box, charger, invoice receipt, and IMEI stickers are intact.' },
-    { num: '03', title: 'Drop-off / Courier Pickup', desc: 'Drop off at any official SR Mobile outlet or schedule a free courier pickup.' },
-    { num: '04', title: 'Technical Inspection & Exchange', desc: 'Our technicians verify the hardware defect within 24 hours and issue a replacement or refund.' }
+    { num: '03', title: 'Drop-off / Courier Pickup', desc: 'Drop off at any official Mobixa outlet or schedule a free courier pickup.' },
+    { num: '04', title: 'Technical Inspection & Exchange', desc: 'Our technicians verify the hardware defect within 24 hours and issue a replacement unit or refund.' }
   ];
 
   return (
@@ -47,7 +47,7 @@ const ReturnsPolicy = () => {
             </div>
             <div>
               <h3 className="text-base font-black text-slate-900 m-0">Official Warranty Support</h3>
-              <p className="text-xs text-slate-500 font-semibold m-0 mt-1 leading-relaxed">All devices are covered by 1-Year Company / Agent Warranty or SR Mobile Store Warranty with official repair support.</p>
+              <p className="text-xs text-slate-500 font-semibold m-0 mt-1 leading-relaxed">All devices are covered by 1-Year Company / Agent Warranty or Mobixa Store Warranty with official repair support.</p>
             </div>
           </div>
         </div>

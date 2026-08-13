@@ -1,6 +1,6 @@
 import { toast } from 'react-toastify';
 
-export const sendWhatsAppInvoice = (order, brandName = 'SR Mobile Official', storePhone = '+94 11 255 5000') => {
+export const sendWhatsAppInvoice = (order, brandName = 'Mobixa', storePhone = '+94 11 255 5000') => {
   if (!order) return;
 
   let extractedPhone = (

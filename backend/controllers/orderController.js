@@ -877,7 +877,7 @@ const checkWarrantyByImei = async (req, res, next) => {
       isExpired,
       daysRemaining,
       customerName: order.customerName || order.userId?.name || 'Valued Customer',
-      storeName: order.storeId?.name || 'Max Durakathana',
+      storeName: order.storeId?.name || 'Mobixa',
       storePhone: order.storeId?.phone || '+94 11 255 5000',
     });
   } catch (error) {

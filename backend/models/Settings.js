@@ -9,7 +9,7 @@ const settingsSchema = new mongoose.Schema({
   sealUrl: { type: String, default: '' },
   letterheadHeader: { type: String, default: '' },
   letterheadFooter: { type: String, default: '' },
-  email: { type: String, default: 'hello@mobilehub.com' },
+  email: { type: String, default: 'hello@mobixa.com' },
   phone: { type: String, default: '+94 11 255 5000' },
   phone2: { type: String, default: '' },
   address: { type: String, default: '88 tech Avenue, Colombo 03, Sri Lanka' },
