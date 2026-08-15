@@ -1,10 +1,8 @@
 {
-  "buildCommand": "cd frontend && npm install && npm run build",
-  "outputDirectory": "frontend/.next",
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/backend/api/index.js"
+      "source": "/api/:path*",
+      "destination": "https://srmobile-backend.onrender.com/api/:path*"
     }
   ]
 }
