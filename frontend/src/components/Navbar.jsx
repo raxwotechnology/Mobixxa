@@ -1,5 +1,7 @@
+'use client';
+
 import { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from '../utils/navigation';
 import { ShoppingCart, User, Search, MapPin, Menu, X, ChevronDown, RefreshCw, Home, ShoppingBag, Heart, Package, LayoutDashboard, Tag, Settings } from 'lucide-react';
 import useAuthStore from '../store/authStore';
 import { getImageUrl, handleImageError } from '../utils/imageHelper';

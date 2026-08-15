@@ -1,5 +1,7 @@
+'use client';
+
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '../utils/navigation';
 import { MapPin, Phone, Mail } from 'lucide-react';
 import useSettingsStore from '../store/settingsStore';
 import useAuthStore from '../store/authStore';

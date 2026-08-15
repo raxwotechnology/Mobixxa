@@ -137,8 +137,10 @@ const useThemeStore = create(
           },
         })),
       applyThemeToDocument: () => {
+        if (typeof window === 'undefined' || typeof document === 'undefined') return;
         const { accent, customColor, mode, fontFamily, fontSize, fontWeight } = get();
         const root = document.documentElement;
+        if (!root) return;
 
         const fontConfig = FONT_OPTIONS[fontFamily] || FONT_OPTIONS.poppins;
         root.style.setProperty('--font-user', fontConfig.font);

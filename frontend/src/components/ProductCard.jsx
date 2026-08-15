@@ -1,4 +1,6 @@
-import { Link } from 'react-router-dom';
+'use client';
+
+import { Link } from '../utils/navigation';
 import { Star, ShoppingCart, Heart, ShieldCheck, Cpu } from 'lucide-react';
 import useCartStore from '../store/cartStore';
 import useWishlistStore from '../store/wishlistStore';

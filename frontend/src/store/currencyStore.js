@@ -1,26 +1,47 @@
 import { create } from 'zustand';
 import { getExchangeRate } from '../services/api';
 
+const getInitialCurrency = () => {
+  if (typeof window === 'undefined') return 'LKR';
+  return localStorage.getItem('mobilehub_currency') || 'LKR';
+};
+
+const getInitialRate = () => {
+  if (typeof window === 'undefined') return 320;
+  return parseFloat(localStorage.getItem('mobilehub_rate')) || 320;
+};
+
+const getInitialTimestamp = () => {
+  if (typeof window === 'undefined') return 0;
+  return parseInt(localStorage.getItem('mobilehub_rate_ts')) || 0;
+};
+
 const useCurrencyStore = create((set, get) => ({
-  currency: localStorage.getItem('mobilehub_currency') || 'LKR',
-  exchangeRate: parseFloat(localStorage.getItem('mobilehub_rate')) || 320,
-  lastFetched: parseInt(localStorage.getItem('mobilehub_rate_ts')) || 0,
+  currency: getInitialCurrency(),
+  exchangeRate: getInitialRate(),
+  lastFetched: getInitialTimestamp(),
 
   setCurrency: (currency) => {
-    localStorage.setItem('mobilehub_currency', currency);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('mobilehub_currency', currency);
+    }
     set({ currency });
   },
 
   toggleCurrency: () => {
     const newCurrency = get().currency === 'LKR' ? 'USD' : 'LKR';
-    localStorage.setItem('mobilehub_currency', newCurrency);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('mobilehub_currency', newCurrency);
+    }
     set({ currency: newCurrency });
   },
 
   setExchangeRate: (rate) => {
     const now = Date.now();
-    localStorage.setItem('mobilehub_rate', rate.toString());
-    localStorage.setItem('mobilehub_rate_ts', now.toString());
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('mobilehub_rate', rate.toString());
+      localStorage.setItem('mobilehub_rate_ts', now.toString());
+    }
     set({ exchangeRate: rate, lastFetched: now });
   },
 
@@ -50,7 +71,6 @@ const useCurrencyStore = create((set, get) => ({
   convertPrice: (priceLKR, priceUSD = null) => {
     const { currency, exchangeRate } = get();
     if (currency === 'USD') {
-      // Use pre-calculated USD price if available
       if (priceUSD && priceUSD > 0) return priceUSD;
       return parseFloat((priceLKR / exchangeRate).toFixed(2));
     }

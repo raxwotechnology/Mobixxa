@@ -1,9 +1,16 @@
 import { create } from 'zustand';
 
+const getInitialStore = () => {
+  if (typeof window === 'undefined') return 'all';
+  return localStorage.getItem('admin_selected_store') || 'all';
+};
+
 const useAdminStore = create((set) => ({
-  selectedStoreId: localStorage.getItem('admin_selected_store') || 'all',
+  selectedStoreId: getInitialStore(),
   setSelectedStoreId: (id) => {
-    localStorage.setItem('admin_selected_store', id);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('admin_selected_store', id);
+    }
     set({ selectedStoreId: id });
   },
 }));

@@ -1,6 +1,8 @@
+'use client';
+
 import { useState, useRef, useEffect } from 'react';
 import { Bell, CheckCheck } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '../utils/navigation';
 import useNotificationStore from '../store/notificationStore';
 import useAuthStore from '../store/authStore';
 

@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useRef, useEffect } from 'react';
 import { Download, ChevronDown, FileText, Table, FileSpreadsheet } from 'lucide-react';
 

@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect, useRef } from 'react';
 import { Eye, EyeOff, Lock, AlertTriangle, X } from 'lucide-react';
 import { verifyPassword } from '../services/api';

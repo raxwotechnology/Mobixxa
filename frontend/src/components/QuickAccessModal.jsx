@@ -1,5 +1,7 @@
+'use client';
+
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '../utils/navigation';
 import {
   Zap, Search, X, ShoppingCart, Package, ShoppingBag, Barcode, Clock,
   Users, Building, DollarSign, BarChart2, Wrench, Tag, Settings, ArrowRight,

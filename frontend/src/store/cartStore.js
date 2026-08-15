@@ -1,6 +1,15 @@
 import { create } from 'zustand';
 import * as api from '../services/api';
 
+const getUserInfo = () => {
+  if (typeof window === 'undefined') return null;
+  try {
+    return localStorage.getItem('userInfo');
+  } catch (e) {
+    return null;
+  }
+};
+
 const useCartStore = create((set, get) => ({
   items: [],
   loading: false,
@@ -20,7 +29,7 @@ const useCartStore = create((set, get) => ({
 
   // Add item to cart
   addItem: async (product, quantity = 1) => {
-    const userInfo = localStorage.getItem('userInfo');
+    const userInfo = getUserInfo();
     if (userInfo) {
       try {
         const { data } = await api.addToCart({
@@ -75,7 +84,7 @@ const useCartStore = create((set, get) => ({
 
   // Update item quantity
   updateQuantity: async (productId, quantity) => {
-    const userInfo = localStorage.getItem('userInfo');
+    const userInfo = getUserInfo();
     if (userInfo) {
       try {
         const { data } = await api.updateCartItem({ productId, quantity });
@@ -104,7 +113,7 @@ const useCartStore = create((set, get) => ({
 
   // Remove item
   removeItem: async (productId) => {
-    const userInfo = localStorage.getItem('userInfo');
+    const userInfo = getUserInfo();
     if (userInfo) {
       try {
         const { data } = await api.removeFromCart(productId);
@@ -123,7 +132,7 @@ const useCartStore = create((set, get) => ({
 
   // Clear cart
   clearItems: async () => {
-    const userInfo = localStorage.getItem('userInfo');
+    const userInfo = getUserInfo();
     if (userInfo) {
       try {
         await api.clearCart();

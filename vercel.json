@@ -1,14 +1,10 @@
 {
   "buildCommand": "cd frontend && npm install && npm run build",
-  "outputDirectory": "frontend/dist",
+  "outputDirectory": "frontend/.next",
   "rewrites": [
     {
       "source": "/api/(.*)",
       "destination": "/backend/api/index.js"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
     }
   ]
 }

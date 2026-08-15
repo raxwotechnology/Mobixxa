@@ -1,11 +1,10 @@
 import axios from 'axios';
 
-// Use environment variable for API base URL
-// In production (Netlify): set VITE_API_URL in Netlify dashboard
-// In development: falls back to empty string (uses Vite proxy)
-
 const getBaseUrl = () => {
-  const envUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_URL || '';
+  const envUrl =
+    (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_API_URL) ||
+    (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_URL) ||
+    '';
   const cleanUrl = envUrl.trim().replace(/\/$/, '');
   if (!cleanUrl) return '/api';
   return cleanUrl.endsWith('/api') ? cleanUrl : `${cleanUrl}/api`;
@@ -13,7 +12,7 @@ const getBaseUrl = () => {
 
 const API = axios.create({
   baseURL: getBaseUrl(),
-  timeout: 90000, // 90s timeout (Render free tier cold starts can be slow)
+  timeout: 90000, // 90s timeout
   headers: {
     'Content-Type': 'application/json',
   },
@@ -21,6 +20,7 @@ const API = axios.create({
 
 // Request interceptor: attach JWT token
 API.interceptors.request.use((config) => {
+  if (typeof window === 'undefined') return config;
   try {
     const userInfo = localStorage.getItem('userInfo');
     if (userInfo) {
@@ -30,7 +30,6 @@ API.interceptors.request.use((config) => {
       }
     }
   } catch (e) {
-    // Corrupted localStorage data — clear it
     console.warn('Corrupted auth data in localStorage, clearing...');
     localStorage.removeItem('userInfo');
   }
@@ -41,12 +40,10 @@ API.interceptors.request.use((config) => {
 API.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
-      // Clear ALL auth-related storage
+    if (typeof window !== 'undefined' && error.response && error.response.status === 401) {
       localStorage.removeItem('userInfo');
       sessionStorage.clear();
 
-      // Only redirect if not already on a login page
       const path = window.location.pathname;
       if (path !== '/login' && path !== '/cashier-login' && path !== '/register') {
         window.location.href = '/login';
@@ -79,8 +76,6 @@ export const getDeals = () => API.get('/products/deals');
 export const getMyStoreProducts = () => API.get('/products/my-store');
 export const createProduct = (data) => API.post('/products', data);
 export const updateProduct = (id, data) => API.put(`/products/${id}`, data);
-
-
 export const deleteProduct = (id) => API.delete(`/products/${id}`);
 export const getPriceHistory = (id) => API.get(`/products/${id}/price-history`);
 export const getNextSku = (categoryId) => API.get('/products/next-sku', { params: { categoryId } });
@@ -162,7 +157,6 @@ export const settleCreditOrder = (id, data) => API.put(`/pos/credit-orders/${id}
 export const createQuotation = (data) => API.post('/pos/quotation', data);
 export const getPosOrderByInvoice = (invoiceNumber) => API.get(`/pos/orders/invoice/${invoiceNumber}`);
 
-
 // Notifications
 export const getNotifications = (params) => API.get('/notifications', { params });
 export const getUnreadCount = () => API.get('/notifications/unread-count');
@@ -172,7 +166,7 @@ export const markAllNotificationsRead = () => API.put('/notifications/read-all')
 // Currency
 export const getExchangeRate = () => API.get('/currency/rate');
 
-// Loyalty (Phase 3)
+// Loyalty
 export const getMyLoyaltyPoints = () => API.get('/loyalty/points');
 export const getLoyaltyHistory = () => API.get('/loyalty/history');
 export const redeemPoints = (data) => API.post('/loyalty/redeem', data);
@@ -182,7 +176,7 @@ export const applyPromoCode = (data) => API.post('/loyalty/promo/apply', data);
 export const getAvailableVouchers = () => API.get('/loyalty/vouchers');
 export const claimVoucher = (code) => API.post(`/loyalty/vouchers/${code}/claim`);
 
-// Delivery (Phase 4)
+// Delivery
 export const getDeliveryOrders = () => API.get('/delivery/orders');
 export const updateDeliveryStatus = (id, data) => API.put(`/delivery/orders/${id}/status`, data);
 export const getDeliveryHistory = () => API.get('/delivery/history');
@@ -191,7 +185,7 @@ export const assignDeliveryGuy = (orderId, data) => API.post(`/delivery/assign/$
 export const getAvailableDeliveryGuys = (params) => API.get('/delivery/available', { params });
 export const markDeliveryPaymentSuccess = (id) => API.put(`/delivery/orders/${id}/payment-success`);
 
-// HR (Phase 5)
+// HR
 export const checkIn = () => API.post('/hr/attendance/check-in');
 export const checkOut = () => API.post('/hr/attendance/check-out');
 export const getMyAttendance = (params) => API.get('/hr/attendance', { params });
@@ -222,7 +216,7 @@ export const deleteAttendancePolicy = (id) => API.delete(`/hr/policies/attendanc
 export const assignPoliciesToEmployee = (data) => API.post('/hr/policies/assign', data);
 export const assignPoliciesToAllEmployees = (data) => API.post('/hr/policies/assign-all', data);
 
-// Trade-In & Refurbish Estimator
+// Trade-In & Refurbish
 export const calculateTradeInValuation = (data) => API.post('/trade-in/calculate', data);
 export const createTradeInRecord = (data) => API.post('/trade-in', data);
 export const getTradeIns = () => API.get('/trade-in');
@@ -244,7 +238,7 @@ export const payTargetBonus = (id) => API.put(`/hr/targets/${id}/pay-bonus`);
 export const deleteTarget = (id) => API.delete(`/hr/targets/${id}`);
 export const getEmployeePerformance = (employeeId) => API.get(`/hr/performance/${employeeId}`);
 
-// Payroll (Phase 5)
+// Payroll
 export const calculateSalary = (data) => API.post('/payroll/calculate', data);
 export const processSalaryPayment = (data) => API.post('/payroll/pay', data);
 export const getSalaryHistory = (employeeId) => API.get(`/payroll/history/${employeeId}`);
@@ -258,12 +252,12 @@ export const getSalaryAdvances = (params) => API.get('/payroll/advances', { para
 export const recordSalaryAdvance = (data) => API.post('/payroll/advances', data);
 export const deleteSalaryAdvance = (id) => API.delete(`/payroll/advances/${id}`);
 
-// Letters & Documents Generator
+// Letters
 export const getIssuedLetters = (params) => API.get('/letters', { params });
 export const issueLetter = (data) => API.post('/letters', data);
 export const deleteLetter = (id) => API.delete(`/letters/${id}`);
 
-// Settings
+// Settings & Uploads
 export const uploadImage = (formData) => API.post('/upload/image', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 export const uploadDocument = (formData) => API.post('/upload/document', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 
@@ -278,7 +272,7 @@ export const createExpense = (data) => API.post('/expenses', data);
 export const updateExpense = (id, data) => API.put(`/expenses/${id}`, data);
 export const deleteExpense = (id) => API.delete(`/expenses/${id}`);
 
-// Finance (Ledger)
+// Finance
 export const getFinancialDashboard = (params) => API.get('/finance/dashboard', { params });
 export const getTransactions = (params) => API.get('/finance/transactions', { params });
 export const createTransaction = (data) => API.post('/finance/transactions', data);
@@ -292,8 +286,7 @@ export const getTaxPayments = (params) => API.get('/finance/tax-payments', { par
 export const createTaxPayment = (data) => API.post('/finance/tax-payments', data);
 export const getProfitReport = (params) => API.get('/finance/profit-report', { params });
 
-
-// Suppliers + Stock
+// Suppliers & Stock
 export const getSuppliers = (params) => API.get('/suppliers', { params });
 export const createSupplier = (data) => API.post('/suppliers', data);
 export const updateSupplier = (id, data) => API.put(`/suppliers/${id}`, data);
@@ -327,10 +320,11 @@ export const deleteCustomerReturn = (id) => API.delete(`/returns/customer/${id}`
 export const exportCustomerReturnsReport = (params) =>
   API.get('/returns/customer/export', { params, responseType: 'blob' });
 
-// Barcode Generator
+// Barcode
 export const logBarcodeGeneration = (data) => API.post('/barcodes/generate', data);
 export const getBarcodeLogs = (params) => API.get('/barcodes/logs', { params });
 
+// Supplier Payments
 export const getSupplierPaymentSummary = (params) => API.get('/supplier-payments/summary', { params });
 export const getSupplierPayments = (params) => API.get('/supplier-payments/payments', { params });
 export const getSupplierLedger = (supplierId, params) => API.get(`/supplier-payments/${supplierId}/ledger`, { params });
@@ -340,11 +334,8 @@ export const updateSupplierTransaction = (id, data) => API.put(`/supplier-paymen
 export const deleteSupplierTransaction = (id) => API.delete(`/supplier-payments/transaction/${id}`);
 export const updateSupplierChequeStatus = (id, data) => API.put(`/supplier-payments/cheque-status/${id}`, data);
 
-
-// Sales Tracking
+// Sales & Predictions
 export const getCashierSalesReport = (params) => API.get('/pos/cashier-report', { params });
-
-// Predictions
 export const getSalesPredictions = (params) => API.get('/predictions/sales', { params });
 
 // Promotions
@@ -354,7 +345,8 @@ export const createPromotion = (data) => API.post('/promotions', data);
 export const updatePromotion = (id, data) => API.put(`/promotions/${id}`, data);
 export const togglePromotion = (id) => API.put(`/promotions/${id}/toggle`);
 export const deletePromotion = (id) => API.delete(`/promotions/${id}`);
-// Overtime Pay
+
+// Overtime
 export const getOvertimeRecords = (params) => API.get('/overtime', { params });
 export const getOvertimeSummary = (params) => API.get('/overtime/summary', { params });
 export const createOvertimeRecord = (data) => API.post('/overtime', data);
@@ -391,8 +383,7 @@ export const updateRepair = (id, data) => API.put(`/repairs/${id}`, data);
 export const deliverRepair = (id, data) => API.put(`/repairs/${id}/deliver`, data);
 export const deleteRepair = (id) => API.delete(`/repairs/${id}`);
 
-
-// Send receipt manually
+// Send Receipt
 export const sendInvoiceReceipt = (id, data) => API.post(`/pos/orders/${id}/send-receipt`, data);
 
 export default API;

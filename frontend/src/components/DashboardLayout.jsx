@@ -1,9 +1,11 @@
+'use client';
+
 import { useState, useEffect, useRef } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from '../utils/navigation';
 import { Menu, X, ChevronRight, User, Settings, LayoutDashboard, ChevronDown, LogOut } from 'lucide-react';
 import useAuthStore from '../store/authStore';
 import useSettingsStore from '../store/settingsStore';
-import { adminNavGroups, getAdminNavGroups } from '../pages/admin/adminNavItems';
+import { adminNavGroups, getAdminNavGroups } from '../views/admin/adminNavItems';
 import useAdminStoreStore from '../store/adminStoreStore';
 import { getAdminStores } from '../services/api';
 import { getImageUrl } from '../utils/imageHelper';
