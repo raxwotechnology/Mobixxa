@@ -185,7 +185,7 @@ const Navbar = () => {
   const isActive = (path) => location.pathname === path || (path !== '/' && location.pathname.startsWith(path));
 
   return (
-    <header className="glass-panel shadow-[0_4px_30px_rgba(0,0,0,0.03)] sticky top-0 z-50 transition-all duration-300">
+    <header className="bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-sm sticky top-0 z-50">
       {/* Top Utility Bar */}
       <div className="bg-gradient-to-r from-brand-indigo via-brand-violet to-brand-fuchsia text-white text-[11px] font-semibold tracking-wide">
         <div className="base-container py-2 flex items-center justify-between">
