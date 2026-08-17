@@ -1,5 +1,13 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const dns = require('dns');
+
+// Configure reliable DNS servers to avoid querySrv ENOTFOUND on local network
+try {
+  dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
+} catch (e) {
+  // ignore if restricted
+}
 
 let isConnected = false;
 

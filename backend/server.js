@@ -3,9 +3,14 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
-const connectDB = require('./config/db');
+const dns = require('dns');
+
+try {
+  dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
+} catch (e) {}
 
 dotenv.config({ path: path.join(__dirname, '.env') });
+const connectDB = require('./config/db');
 
 // Initialize DB connection
 connectDB();
