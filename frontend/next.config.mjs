@@ -27,14 +27,17 @@ const nextConfig = {
     ],
   },
   async rewrites() {
+    const isDev = process.env.NODE_ENV === 'development';
+    const backendTarget = process.env.NEXT_PUBLIC_API_URL || (isDev ? 'http://localhost:5000' : 'https://sr-mobile-1.onrender.com');
+    const cleanTarget = backendTarget.replace(/\/api\/?$/, '');
     return [
       {
         source: '/api/:path*',
-        destination: 'http://localhost:5000/api/:path*',
+        destination: `${cleanTarget}/api/:path*`,
       },
       {
         source: '/uploads/:path*',
-        destination: 'http://localhost:5000/uploads/:path*',
+        destination: `${cleanTarget}/uploads/:path*`,
       },
     ];
   },

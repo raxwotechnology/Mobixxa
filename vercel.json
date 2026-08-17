@@ -3,7 +3,11 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://srmobile-backend.onrender.com/api/:path*"
+      "destination": "https://sr-mobile-1.onrender.com/api/:path*"
+    },
+    {
+      "source": "/uploads/:path*",
+      "destination": "https://sr-mobile-1.onrender.com/uploads/:path*"
     }
   ]
 }
