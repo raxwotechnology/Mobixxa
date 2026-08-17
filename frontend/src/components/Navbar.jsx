@@ -310,7 +310,7 @@ const Navbar = () => {
                     className="flex items-center gap-3 px-4 py-3 hover:bg-blue-50 transition-colors border-b border-card-border last:border-b-0"
                   >
                     <img
-                      src={getImageUrl(product.productLink || product.images?.[0]) || 'https://via.placeholder.com/50'}
+                      src={getImageUrl(product.productLink || product.images?.[0]) || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&auto=format&fit=crop&q=60'}
                       alt=""
                       className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
                       onError={(e) => handleImageError(e, 'Product')}

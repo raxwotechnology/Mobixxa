@@ -154,7 +154,7 @@ const StoreList = () => {
                       <div className="flex items-center gap-3.5">
                         <div className="w-16 h-16 rounded-2xl border-2 border-white overflow-hidden bg-white shadow-xl p-0.5 flex-shrink-0">
                           <img
-                            src={getImageUrl(store.logo) || 'https://via.placeholder.com/100'}
+                            src={getImageUrl(store.logo) || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&auto=format&fit=crop&q=60'}
                             alt={store.name}
                             className="w-full h-full object-cover rounded-xl"
                           />

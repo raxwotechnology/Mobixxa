@@ -16,7 +16,7 @@ const ProductCard = ({ product }) => {
   const { user } = useAuthStore();
   const { getProductPrice, getProductPriceRaw, formatPrice, exchangeRate, currency } = useCurrencyStore();
 
-  const imageUrl = getImageUrl(product.productLink || product.images?.[0]) || 'https://via.placeholder.com/400x400?text=Smart+Product';
+  const imageUrl = getImageUrl(product.productLink || product.images?.[0]) || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&auto=format&fit=crop&q=60';
   const secondaryImageUrl = getImageUrl(product.images?.[1] || product.productLink || product.images?.[0]) || imageUrl;
   const storeName = product.storeId?.name || 'Mobixa Boutique';
   const wishlisted = user && isInWishlist(product._id);

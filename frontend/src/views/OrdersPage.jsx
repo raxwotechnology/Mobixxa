@@ -275,7 +275,7 @@ const OrdersPage = () => {
                 {order.items.slice(0, 4).map((item, j) => (
                   <img 
                     key={j} 
-                    src={getImageUrl(item.image) || 'https://via.placeholder.com/50'} 
+                    src={getImageUrl(item.image) || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&auto=format&fit=crop&q=60'} 
                     alt="" 
                     className="w-10 h-10 rounded-xl object-cover flex-shrink-0 border border-slate-150 p-0.5" 
                     onError={(e) => handleImageError(e, 'Product')}

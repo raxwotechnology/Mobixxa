@@ -105,7 +105,7 @@ const OrderConfirmation = () => {
           {order.items.map((item, i) => (
             <div key={i} className="flex items-center gap-3">
               <img 
-                src={getImageUrl(item.image) || 'https://via.placeholder.com/50'} 
+                src={getImageUrl(item.image) || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&auto=format&fit=crop&q=60'} 
                 alt="" 
                 className="w-12 h-12 rounded-xl object-cover border border-slate-100 p-0.5" 
                 onError={(e) => handleImageError(e, 'Product')}

@@ -82,7 +82,7 @@ const WishlistPage = () => {
           >
             <Link to={`/product/${product._id}`} className="block relative aspect-square overflow-hidden bg-slate-50 border-b border-slate-100">
               <img
-                src={getImageUrl(product.productLink || product.images?.[0]) || 'https://via.placeholder.com/400'}
+                src={getImageUrl(product.productLink || product.images?.[0]) || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&auto=format&fit=crop&q=60'}
                 alt={product.name}
                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-500 p-2 rounded-t-[2rem]"
                 loading="lazy"

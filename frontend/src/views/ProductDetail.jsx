@@ -138,7 +138,7 @@ const ProductDetail = () => {
         <motion.div className="lg:col-span-2" initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
           <div className="bg-white border border-slate-200/60 rounded-[2rem] overflow-hidden mb-4 p-8 flex items-center justify-center shadow-sm relative aspect-square">
             <img 
-              src={getImageUrl(product.productLink || product.images?.[selectedImage]) || 'https://via.placeholder.com/600'} 
+              src={getImageUrl(product.productLink || product.images?.[selectedImage]) || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&auto=format&fit=crop&q=60'} 
               alt={product.name} 
               className="w-full h-full object-contain transition-transform duration-300 hover:scale-105" 
               onError={(e) => handleImageError(e, 'Product')}

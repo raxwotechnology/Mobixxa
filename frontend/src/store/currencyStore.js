@@ -58,7 +58,8 @@ const useCurrencyStore = create((set, get) => ({
         get().setExchangeRate(data.rate);
       }
     } catch (err) {
-      console.error('Failed to fetch exchange rate:', err);
+      // Use fallback rate (320 LKR) gracefully without throwing
+      get().setExchangeRate(320);
     }
   },
 

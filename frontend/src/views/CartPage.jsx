@@ -93,7 +93,7 @@ const CartPage = () => {
                     {/* Product Image */}
                     <Link to={`/product/${productId}`} className="flex-shrink-0">
                       <img
-                        src={getImageUrl(image) || 'https://via.placeholder.com/100'}
+                        src={getImageUrl(image) || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&auto=format&fit=crop&q=60'}
                         alt={name}
                         className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border border-slate-100 p-1"
                         onError={(e) => handleImageError(e, 'Product')}
