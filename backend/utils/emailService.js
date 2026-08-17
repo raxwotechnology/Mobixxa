@@ -81,7 +81,8 @@ const orderConfirmationEmail = (order, customerName) => {
     .join('');
 
   const orderIdStr = order.invoiceNumber || order._id.toString().slice(-8).toUpperCase();
-  const confirmationUrl = `https://sr-mobileshop-official.vercel.app/order-confirmation/${order._id}`;
+  const frontendBase = (process.env.FRONTEND_URL || 'https://mobixa-official.vercel.app').replace(/\/$/, '');
+  const confirmationUrl = `${frontendBase}/order-confirmation/${order._id}`;
 
   return {
     subject: `📱 Mobixa — Official Electronic Order Receipt #${orderIdStr}`,

@@ -52,7 +52,7 @@ export const sendWhatsAppInvoice = (order, brandName = 'Mobixa', storePhone = '+
 
   const baseUrl = typeof window !== 'undefined' && !window.location.hostname.includes('localhost') 
     ? window.location.origin 
-    : 'https://sr-mobile-frontend.vercel.app';
+    : (process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://mobixa-official.vercel.app');
 
   const textMessage = `🧾 *${brandName.toUpperCase()} - DIGITAL RECEIPT*
 ----------------------------------------
