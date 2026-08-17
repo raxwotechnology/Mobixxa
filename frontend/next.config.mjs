@@ -28,7 +28,9 @@ const nextConfig = {
   },
   async rewrites() {
     const isDev = process.env.NODE_ENV === 'development';
-    const backendTarget = process.env.NEXT_PUBLIC_API_URL || (isDev ? 'http://localhost:5000' : 'https://sr-mobile-1.onrender.com');
+    const backendTarget =
+      process.env.NEXT_PUBLIC_API_URL ||
+      (isDev ? 'http://localhost:5000' : 'https://sr-mobile-api.vercel.app');
     const cleanTarget = backendTarget.replace(/\/api\/?$/, '');
     return [
       {
