@@ -20,6 +20,15 @@ export default function ClientProviders({ children }) {
       applyThemeToDocument();
     }
     setMounted(true);
+
+    // Global protection: Prevent mouse wheel scrolling from changing any numeric input value in any form across the system
+    const handleGlobalWheel = () => {
+      if (document.activeElement && document.activeElement.type === 'number') {
+        document.activeElement.blur();
+      }
+    };
+    window.addEventListener('wheel', handleGlobalWheel, { passive: true });
+    return () => window.removeEventListener('wheel', handleGlobalWheel);
   }, []);
 
   useEffect(() => {

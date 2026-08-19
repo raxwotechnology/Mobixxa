@@ -2079,7 +2079,22 @@ const POSScreen = () => {
                       </div>
                     ) : (
                       <div style={{ display: 'flex', gap: '6px' }}>
-                        <input type="number" value={pointsInput} onChange={(e) => setPointsInput(e.target.value)} placeholder="Points to redeem" className="pos-input" style={{ flex: 1, fontSize: '12px' }} min="10" max={customerPoints} />
+                        <input
+                          type="number"
+                          value={pointsInput}
+                          onChange={(e) => setPointsInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleApplyPoints();
+                            }
+                          }}
+                          placeholder="Points to redeem"
+                          className="pos-input"
+                          style={{ flex: 1, fontSize: '12px' }}
+                          min="10"
+                          max={customerPoints}
+                        />
                         <button className="pos-btn-green" onClick={handleApplyPoints} style={{ padding: '6px 14px', fontSize: '12px' }}>Apply</button>
                       </div>
                     )}
@@ -2342,9 +2357,15 @@ const POSScreen = () => {
                               type="number"
                               value={p.amount || ''}
                               onChange={(e) => {
-                                  const newPayments = [...payments];
-                                  newPayments[index].amount = parseFloat(e.target.value) || 0;
-                                  setPayments(newPayments);
+                                const newPayments = [...payments];
+                                newPayments[index].amount = parseFloat(e.target.value) || 0;
+                                setPayments(newPayments);
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  handleCheckout();
+                                }
                               }}
                               placeholder="Amount"
                               className="pos-input"
@@ -2841,6 +2862,12 @@ const POSScreen = () => {
                 type="number"
                 value={discountInput}
                 onChange={(e) => setDiscountInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleApplyDiscount();
+                  }
+                }}
                 placeholder={discountTypeInput === 'percentage' ? 'e.g. 10' : 'e.g. 5.00'}
                 className="pos-input pos-discount-input"
                 autoFocus

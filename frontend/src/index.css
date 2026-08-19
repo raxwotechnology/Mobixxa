@@ -2587,6 +2587,16 @@ body {
   }
 }
 
+/* Global reset to disable mouse wheel spin increments on numeric inputs */
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
 @media (min-width: 641px) and (max-width: 1024px) {
   .pos-product-grid {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
