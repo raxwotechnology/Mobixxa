@@ -17,7 +17,7 @@ import DeleteConfirmationModal from '../../components/DeleteConfirmationModal';
 const emptyForm = {
   name: '', categoryId: '', description: '', price: '', minPrice: '', mrp: '', discount: '', unit: 'pcs',
   stock: '', purchasePrice: '', images: '', isFeatured: false, isOnSale: false, status: 'active', storeId: '',
-  brand: '', modelNumber: '', ram: '', storage: '', color: '', condition: 'new', imei: '', warranty: '', supplierId: '', productLink: ''
+  brand: '', modelNumber: '', ram: '', storage: '', color: '', condition: 'new', imei: '', warranty: '', supplierId: '', productLink: '', barcode: ''
 };
 
 const AdminPhones = () => {
@@ -129,6 +129,7 @@ const AdminPhones = () => {
       warranty: product.warranty || '',
       supplierId: product.supplierId?._id || product.supplierId || '',
       productLink: product.productLink || '',
+      barcode: product.barcode || '',
     });
     const existingImages = (product.images || []).filter(Boolean);
     // Don't duplicate productLink in the uploadedImages list — it's shown separately
@@ -566,6 +567,10 @@ const AdminPhones = () => {
                     <div>
                       <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Model Number</label>
                       <input value={form.modelNumber} onChange={(e) => setForm({ ...form, modelNumber: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" placeholder="e.g. SM-S928B" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Barcode / SKU</label>
+                      <input value={form.barcode} onChange={(e) => setForm({ ...form, barcode: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" placeholder="Scan or type Barcode" />
                     </div>
                     <div>
                       <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Category *</label>
