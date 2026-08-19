@@ -726,6 +726,7 @@ const posCheckout = async (req, res, next) => {
       await HirePurchase.create({
         storeId,
         orderId: order._id,
+        invoiceNo: order.invoiceNumber || `HP-INV-${Date.now().toString().slice(-6)}`,
         customer: hirePurchaseData.customer,
         totalAmount: totalAmount,
         interestRate: hirePurchaseData.interestRate || 0,

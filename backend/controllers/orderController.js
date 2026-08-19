@@ -244,6 +244,7 @@ const createOrder = async (req, res, next) => {
       await HirePurchase.create({
         storeId,
         orderId: order._id,
+        invoiceNo: order.invoiceNumber || `HP-INV-${Date.now().toString().slice(-6)}`,
         customer: {
           name: req.user.name,
           phone: req.user.phone || '',

@@ -41,6 +41,7 @@ const getHPRecords = async (req, res, next) => {
       const matchingOrderIds = matchingOrders.map(o => o._id);
 
       const searchOr = [
+        { invoiceNo: { $regex: search, $options: 'i' } },
         { 'customer.name': { $regex: search, $options: 'i' } },
         { 'customer.phone': { $regex: search, $options: 'i' } },
         { 'customer.nic': { $regex: search, $options: 'i' } },

@@ -14,6 +14,7 @@ const hirePurchaseSchema = mongoose.Schema(
   {
     storeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Store', required: true },
     orderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Order' }, // Linked order
+    invoiceNo: { type: String, index: true }, // Unique Invoice Number for HP Agreement (e.g., HP-INV-10023)
     
     customer: {
       name: { type: String, required: true },

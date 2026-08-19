@@ -240,7 +240,7 @@ const AdminHP = ({ navItems: propNavItems }) => {
                 ) : records.length === 0 ? (
                   <tr><td colSpan="11" className="py-20 text-center text-slate-400 font-medium">No installment plans found</td></tr>
                 ) : records.map((record) => {
-                  const invoiceDisplay = record.orderId?.invoiceNo || record.orderId?.orderNumber || `HP-${record._id.slice(-6).toUpperCase()}`;
+                  const invoiceDisplay = record.invoiceNo || record.orderId?.invoiceNo || record.orderId?.orderNumber || `HP-${record._id.slice(-6).toUpperCase()}`;
                   return (
                     <tr key={record._id} className="hover:bg-slate-50/50 transition-all group">
                       <td className="px-4 py-4">
@@ -330,7 +330,7 @@ const AdminHP = ({ navItems: propNavItems }) => {
                   <h3 className="text-lg font-bold text-dark-navy">Credit Sale Agreement Details</h3>
                   {selectedHPDetails && (
                     <span className="px-2.5 py-0.5 bg-indigo-600 text-white rounded-lg text-xs font-black">
-                      #{selectedHPDetails.orderId?.invoiceNo || selectedHPDetails.orderId?.orderNumber || `HP-${selectedHPDetails._id.slice(-6).toUpperCase()}`}
+                      #{selectedHPDetails.invoiceNo || selectedHPDetails.orderId?.invoiceNo || selectedHPDetails.orderId?.orderNumber || `HP-${selectedHPDetails._id.slice(-6).toUpperCase()}`}
                     </span>
                   )}
                 </div>
