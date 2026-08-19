@@ -2489,13 +2489,18 @@ const POSScreen = () => {
                           placeholder="Address (e.g., Colombo)" className="pos-input" style={{ fontSize: '12px', background: '#fff', color: '#1e293b' }} />
                       </div>
                       <div style={{ gridColumn: 'span 2' }}>
-                        <label style={{ fontSize: '10px', fontWeight: 'bold', color: '#92400e' }}>Agreement Start/Purchase Date *</label>
-                        <input type="date" value={pos.hirePurchaseData?.startDate || new Date().toISOString().split('T')[0]}
-                          onChange={(e) => pos.setHirePurchaseData({
-                            ...pos.hirePurchaseData,
-                            startDate: e.target.value
-                          })}
-                          className="pos-input" style={{ fontSize: '12px', background: '#fff', color: '#1e293b' }} />
+                        <label style={{ fontSize: '10px', fontWeight: 'bold', color: '#92400e', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span>Agreement Start/Purchase Date (System Locked) *</span>
+                          <span style={{ fontSize: '9px', background: '#fef3c7', color: '#92400e', padding: '1px 6px', borderRadius: '4px', border: '1px solid #fde68a' }}>🔒 Auto Today</span>
+                        </label>
+                        <input 
+                          type="date" 
+                          readOnly
+                          disabled
+                          value={pos.hirePurchaseData?.startDate || new Date().toISOString().split('T')[0]}
+                          className="pos-input cursor-not-allowed" 
+                          style={{ fontSize: '12px', background: '#f1f5f9', color: '#64748b', fontWeight: 'bold', cursor: 'not-allowed' }} 
+                        />
                       </div>
                       <div>
                         <label style={{ fontSize: '10px', fontWeight: 'bold', color: '#92400e' }}>Down Payment (Rs.) *</label>
