@@ -173,125 +173,147 @@ const AdminHP = ({ navItems: propNavItems }) => {
 
         {/* Filters & Table */}
         <div className="bg-white rounded-3xl border border-card-border shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-card-border flex flex-wrap items-center justify-between gap-4 bg-slate-50/50">
-            <div className="flex items-center gap-4 flex-1 min-w-[300px]">
+          <div className="p-5 border-b border-card-border flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-slate-50/50">
+            {/* Tab filter buttons */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
+              <button
+                onClick={() => setStatusFilter('all')}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${statusFilter === 'all' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'}`}
+              >
+                📋 All HP ({records.length})
+              </button>
+              <button
+                onClick={() => setStatusFilter('outstanding')}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${statusFilter === 'outstanding' ? 'bg-amber-600 text-white shadow-sm' : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-50'}`}
+              >
+                ⏳ Outstanding HP ({records.filter(r => r.status === 'Active' || r.status === 'Overdue').length})
+              </button>
+              <button
+                onClick={() => setStatusFilter('completed')}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${statusFilter === 'completed' ? 'bg-emerald-600 text-white shadow-sm' : 'bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50'}`}
+              >
+                ✅ Completed HP ({records.filter(r => r.status === 'Completed').length})
+              </button>
+            </div>
+
+            <div className="flex items-center gap-3 flex-1 max-w-lg">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                 <input 
                   type="text" 
-                  placeholder="Search by customer name, phone or NIC..."
-                  className="w-full pl-10 pr-4 py-2.5 bg-white border border-card-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue/20"
+                  placeholder="Search by Invoice No, Code, Customer Name, Phone, NIC..."
+                  className="w-full pl-10 pr-4 py-2 bg-white border border-card-border rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary-blue/20"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && fetchData()}
                 />
               </div>
-              <select 
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-4 py-2.5 bg-white border border-card-border rounded-xl text-sm font-medium focus:outline-none"
+              <button
+                onClick={fetchData}
+                className="px-3 py-2 bg-indigo-50 text-indigo-600 font-bold text-xs rounded-xl hover:bg-indigo-100 transition-all"
               >
-                <option value="all">All Status</option>
-                <option value="Active">Active</option>
-                <option value="Completed">Completed</option>
-                <option value="Overdue">Overdue</option>
-              </select>
+                Search
+              </button>
             </div>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse" style={{ minWidth: '1300px' }}>
+            <table className="w-full text-left border-collapse" style={{ minWidth: '1350px' }}>
               <thead>
                 <tr className="bg-slate-50/50 border-b border-card-border">
+                  <th className="px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Invoice / Code</th>
                   <th className="px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Customer</th>
                   <th className="px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Product Sold</th>
                   <th className="px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Original Price</th>
                   <th className="px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Advance Paid</th>
-                  <th className="px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Principal Balance</th>
-                  <th className="px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Interest Added</th>
                   <th className="px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Total Payable</th>
+                  <th className="px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Total Paid</th>
                   <th className="px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Installment</th>
                   <th className="px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Next Due</th>
                   <th className="px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Outstanding</th>
-                  <th className="px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Cashier</th>
                   <th className="px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-card-border">
                 {loading ? (
-                  <tr><td colSpan="12" className="py-20 text-center"><span className="pos-spinner-sm" /></td></tr>
+                  <tr><td colSpan="11" className="py-20 text-center"><span className="pos-spinner-sm" /></td></tr>
                 ) : records.length === 0 ? (
-                  <tr><td colSpan="12" className="py-20 text-center text-slate-400 font-medium">No installment plans found</td></tr>
-                ) : records.map((record) => (
-                  <tr key={record._id} className="hover:bg-slate-50/50 transition-all group">
-                    <td className="px-4 py-4">
-                      <div>
-                        <p className="text-xs font-bold text-dark-navy">{record.customer.name}</p>
-                        <p className="text-[10px] text-slate-500 font-medium">{record.customer.phone} | {record.customer.nic}</p>
-                        <p className="text-[9px] text-indigo-600 font-bold mt-0.5">Agreement Date: {new Date(record.startDate || record.createdAt).toLocaleDateString()}</p>
-
-                      </div>
-                    </td>
-                    <td className="px-4 py-4 text-xs text-slate-600 max-w-[150px] truncate" title={record.orderId?.items?.map(i => `${i.name} (x${i.quantity})`).join(', ')}>
-                      {record.orderId?.items?.map(i => i.name).join(', ') || 'N/A'}
-                    </td>
-                    <td className="px-4 py-4 text-xs font-semibold text-slate-700">
-                      Rs. {record.totalAmount.toLocaleString()}
-                    </td>
-                    <td className="px-4 py-4 text-xs font-semibold text-emerald-600">
-                      Rs. {record.downPayment.toLocaleString()}
-                    </td>
-                    <td className="px-4 py-4 text-xs font-semibold text-slate-700">
-                      Rs. {(record.totalAmount - record.downPayment).toLocaleString()}
-                    </td>
-                    <td className="px-4 py-4 text-xs font-semibold text-amber-600">
-                      Rs. {(record.interestAmount || 0).toLocaleString()}
-                    </td>
-                    <td className="px-4 py-4 text-xs font-bold text-slate-900">
-                      Rs. {record.netTotal.toLocaleString()}
-                    </td>
-                    <td className="px-4 py-4 text-xs">
-                      <p className="font-semibold text-dark-navy">Rs. {record.installmentAmount.toLocaleString()}/mo</p>
-                      <p className="text-[9px] text-slate-400 font-medium">{record.numberOfInstallments} installments ({record.installmentType})</p>
-                    </td>
-                    <td className="px-4 py-4 text-xs text-slate-600">
-                      {record.nextDueDate ? new Date(record.nextDueDate).toLocaleDateString() : 'N/A'}
-                    </td>
-                    <td className="px-4 py-4">
-                      <span className="text-xs font-bold text-rose-600 block">Rs. {record.balanceAmount.toLocaleString()}</span>
-                      <span className={`inline-block px-2 py-0.5 mt-1 rounded-full text-[9px] font-bold border ${getStatusColor(record.status)}`}>
-                        {record.status.toUpperCase()}
-                      </span>
-                    </td>
-                    <td className="px-4 py-4 text-xs text-slate-500">
-                      {record.createdBy?.name || 'N/A'}
-                    </td>
-                    <td className="px-4 py-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <button 
-                          onClick={() => handleOpenDetails(record._id)}
-                          className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-dark-navy rounded text-[11px] font-bold transition-all"
-                        >
-                          Details
-                        </button>
-                        <button 
-                          onClick={() => { setSelectedHP(record); setPayForm({ ...payForm, amount: record.installmentAmount }); setShowPayModal(true); }}
-                          disabled={record.status === 'Completed'}
-                          className="px-2 py-1 bg-primary-blue text-white rounded text-[11px] font-bold hover:bg-blue-600 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          Pay
-                        </button>
-                        <button 
-                          onClick={() => handleDeleteClick(record)}
-                          className="p-1 rounded text-red-400 hover:text-red-600 hover:bg-red-50 transition-all"
-                          title="Delete Agreement"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                  <tr><td colSpan="11" className="py-20 text-center text-slate-400 font-medium">No installment plans found</td></tr>
+                ) : records.map((record) => {
+                  const invoiceDisplay = record.orderId?.invoiceNo || record.orderId?.orderNumber || `HP-${record._id.slice(-6).toUpperCase()}`;
+                  return (
+                    <tr key={record._id} className="hover:bg-slate-50/50 transition-all group">
+                      <td className="px-4 py-4">
+                        <span className="inline-block px-2.5 py-1 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-black tracking-wide">
+                          #{invoiceDisplay}
+                        </span>
+                        <p className="text-[10px] text-slate-400 font-medium mt-1">
+                          Date: {new Date(record.startDate || record.createdAt).toLocaleDateString()}
+                        </p>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div>
+                          <p className="text-xs font-bold text-dark-navy">{record.customer.name}</p>
+                          <p className="text-[10px] text-slate-500 font-medium">{record.customer.phone} | {record.customer.nic}</p>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 text-xs text-slate-600 max-w-[160px] truncate" title={record.orderId?.items?.map(i => `${i.name} (x${i.quantity})`).join(', ')}>
+                        {record.orderId?.items?.map(i => i.name).join(', ') || 'HP Order Items'}
+                      </td>
+                      <td className="px-4 py-4 text-xs font-semibold text-slate-700">
+                        Rs. {record.totalAmount.toLocaleString()}
+                      </td>
+                      <td className="px-4 py-4 text-xs font-semibold text-emerald-600">
+                        Rs. {record.downPayment.toLocaleString()}
+                      </td>
+                      <td className="px-4 py-4 text-xs font-bold text-slate-900">
+                        Rs. {record.netTotal.toLocaleString()}
+                      </td>
+                      <td className="px-4 py-4 text-xs font-bold text-emerald-600">
+                        Rs. {(record.totalPaid || 0).toLocaleString()}
+                      </td>
+                      <td className="px-4 py-4 text-xs">
+                        <p className="font-semibold text-dark-navy">Rs. {record.installmentAmount.toLocaleString()}/mo</p>
+                        <p className="text-[9px] text-slate-400 font-medium">{record.numberOfInstallments} installments ({record.installmentType})</p>
+                      </td>
+                      <td className="px-4 py-4 text-xs text-slate-600">
+                        {record.nextDueDate ? new Date(record.nextDueDate).toLocaleDateString() : 'N/A'}
+                      </td>
+                      <td className="px-4 py-4">
+                        <span className={`text-xs font-extrabold block ${record.balanceAmount > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                          Rs. {record.balanceAmount.toLocaleString()}
+                        </span>
+                        <span className={`inline-block px-2 py-0.5 mt-1 rounded-full text-[9px] font-bold border ${getStatusColor(record.status)}`}>
+                          {record.status.toUpperCase()}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button 
+                            onClick={() => handleOpenDetails(record._id)}
+                            className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-dark-navy rounded-lg text-[11px] font-bold transition-all"
+                          >
+                            Details
+                          </button>
+                          <button 
+                            onClick={() => { setSelectedHP(record); setPayForm({ ...payForm, amount: record.installmentAmount }); setShowPayModal(true); }}
+                            disabled={record.status === 'Completed'}
+                            className="px-2.5 py-1 bg-primary-blue text-white rounded-lg text-[11px] font-bold hover:bg-blue-600 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            Pay
+                          </button>
+                          <button 
+                            onClick={() => handleDeleteClick(record)}
+                            className="p-1 rounded text-red-400 hover:text-red-600 hover:bg-red-50 transition-all"
+                            title="Delete Agreement"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -304,7 +326,14 @@ const AdminHP = ({ navItems: propNavItems }) => {
           <div className="bg-white rounded-3xl w-full max-w-4xl overflow-hidden shadow-2xl animate-fade-in max-h-[90vh] flex flex-col">
             <div className="p-6 border-b border-card-border flex justify-between items-center bg-indigo-50/50">
               <div>
-                <h3 className="text-lg font-bold text-dark-navy">Credit Sale Agreement Details</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-bold text-dark-navy">Credit Sale Agreement Details</h3>
+                  {selectedHPDetails && (
+                    <span className="px-2.5 py-0.5 bg-indigo-600 text-white rounded-lg text-xs font-black">
+                      #{selectedHPDetails.orderId?.invoiceNo || selectedHPDetails.orderId?.orderNumber || `HP-${selectedHPDetails._id.slice(-6).toUpperCase()}`}
+                    </span>
+                  )}
+                </div>
                 {selectedHPDetails && (
                   <span className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${getStatusColor(selectedHPDetails.status)}`}>
                     {selectedHPDetails.status.toUpperCase()}

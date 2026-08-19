@@ -3,6 +3,8 @@ const Order = require('../models/Order');
 const Store = require('../models/Store');
 const { recordTransaction } = require('../services/ledgerService');
 
+const mongoose = require('mongoose');
+
 // @desc    Get all HP agreements
 // @route   GET /api/hp
 // @access  Private/Admin/Manager
@@ -19,13 +21,41 @@ const getHPRecords = async (req, res, next) => {
       filter.storeId = storeId;
     }
 
-    if (status) filter.status = status;
+    if (status === 'outstanding') {
+      filter.status = { $in: ['Active', 'Overdue'] };
+    } else if (status === 'completed') {
+      filter.status = 'Completed';
+    } else if (status && status !== 'all') {
+      filter.status = status;
+    }
+
     if (search) {
-      filter.$or = [
+      const matchingOrders = await Order.find({
+        $or: [
+          { invoiceNo: { $regex: search, $options: 'i' } },
+          { orderNumber: { $regex: search, $options: 'i' } },
+          { receiptNo: { $regex: search, $options: 'i' } },
+          { 'items.name': { $regex: search, $options: 'i' } }
+        ]
+      }).select('_id');
+      const matchingOrderIds = matchingOrders.map(o => o._id);
+
+      const searchOr = [
         { 'customer.name': { $regex: search, $options: 'i' } },
         { 'customer.phone': { $regex: search, $options: 'i' } },
-        { 'customer.nic': { $regex: search, $options: 'i' } }
+        { 'customer.nic': { $regex: search, $options: 'i' } },
+        { notes: { $regex: search, $options: 'i' } }
       ];
+
+      if (matchingOrderIds.length > 0) {
+        searchOr.push({ orderId: { $in: matchingOrderIds } });
+      }
+
+      if (mongoose.Types.ObjectId.isValid(search)) {
+        searchOr.push({ _id: search });
+      }
+
+      filter.$or = searchOr;
     }
 
     const records = await HirePurchase.find(filter)
