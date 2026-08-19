@@ -189,7 +189,7 @@ const AdminReloads = () => {
                   onClick={() => setIsAddStockOpen(true)}
                   className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-sm shadow-sm transition-all"
                 >
-                  <Plus size={18} /> Add Stock (තොග එකතු කරන්න)
+                  <Plus size={18} /> Add Stock
                 </button>
               </div>
             </div>
