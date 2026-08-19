@@ -21,25 +21,21 @@ const Home = () => {
 
   const themeConfig = THEME_ACCENTS[accent] || THEME_ACCENTS.sapphire;
   const primaryColor = accent === 'custom' && customColor ? customColor : (themeConfig.primary || '#2563eb');
-
-  const heroProducts = settings?.heroProducts || [
-    { name: 'iPhone 15 Pro Max', price: 450000, emoji: '📱' },
-    { name: 'AirPods Pro', price: 85000, emoji: '🎧' },
-  ];
+  const brandName = settings?.shopName || 'Mobixa';
 
   useEffect(() => { fetchSettings(); }, [fetchSettings]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [catRes, featRes, dealsRes] = await Promise.all([
+        const [catRes, featRes, dealsRes] = await Promise.allSettled([
           getCategories(),
           getFeaturedProducts(),
           getDeals(),
         ]);
-        setCategories(catRes.data);
-        setFeatured(featRes.data);
-        setDeals(dealsRes.data);
+        if (catRes.status === 'fulfilled') setCategories(catRes.value.data || []);
+        if (featRes.status === 'fulfilled') setFeatured(featRes.value.data || []);
+        if (dealsRes.status === 'fulfilled') setDeals(dealsRes.value.data || []);
       } catch (error) {
         console.error('Error fetching homepage data:', error);
       } finally {
@@ -50,302 +46,217 @@ const Home = () => {
   }, []);
 
   const fadeUp = {
-    hidden: { opacity: 0, y: 30 },
+    hidden: { opacity: 0, y: 25 },
     visible: { opacity: 1, y: 0 },
   };
 
   return (
-    <div>
-      {/* ===== HERO SECTION ===== */}
-      <section 
-        className="relative overflow-hidden text-white border-b border-slate-800/40 py-20 md:py-28 transition-all duration-300"
-        style={{
-          background: `linear-gradient(135deg, #020617 0%, #0f172a 45%, ${primaryColor} 100%)`
-        }}
-      >
-        {/* Animated Background Orbs */}
-        <div 
-          className="absolute inset-0 pointer-events-none opacity-35"
-          style={{ background: `radial-gradient(circle at top right, ${primaryColor}, transparent 65%)` }}
-        />
+    <div className="bg-slate-50/50 min-h-screen">
+      {/* ===== HERO SECTION (MATCHES SCREENSHOT) ===== */}
+      <section className="base-container pt-4 pb-8 px-4 sm:px-6">
+        <div className="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 rounded-3xl overflow-hidden shadow-2xl shadow-blue-500/20 relative p-8 sm:p-12 lg:p-14 text-white">
+          {/* Background Ambient Glow Elements */}
+          <div className="absolute -top-24 -left-24 w-96 h-96 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute -bottom-28 right-1/4 w-[450px] h-[450px] bg-sky-400/20 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="base-container flex flex-col md:flex-row items-center justify-between relative z-10">
-          <motion.div
-            className="md:w-1/2 mb-12 md:mb-0"
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-          >
-            <motion.span
-              className="inline-flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full mb-6 uppercase tracking-wider border shadow-xs"
-              style={{ backgroundColor: `${primaryColor}25`, color: '#ffffff', borderColor: `${primaryColor}60` }}
-              whileHover={{ scale: 1.05 }}
-            >
-              <Sparkles size={14} className="text-white animate-pulse" /> Next-Gen Technology
-            </motion.span>
+          <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-14">
+            {/* Left Copy */}
+            <div className="w-full lg:w-3/5">
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 mb-6 rounded-full bg-blue-900/40 border border-white/20 text-white text-xs font-bold tracking-wider uppercase backdrop-blur-md">
+                <Sparkles size={14} className="text-amber-300" />
+                Next-Gen Technology
+              </div>
 
-            {/* Brand Name */}
-            <div className="mb-4">
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Welcome to</p>
-              <motion.h2
-                className="text-3xl md:text-5xl font-extrabold text-white leading-tight m-0"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 1, delay: 0.2 }}
-              >
-                {settings?.shopName || 'Mobixa'}
-              </motion.h2>
-            </div>
+              {/* Headline */}
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight tracking-tight mb-4">
+                Welcome to {brandName}<br />
+                <span className="text-white drop-shadow-sm">Premium Tech &amp;</span>{' '}
+                <span className="text-amber-300 drop-shadow-sm">Smart Devices.</span>
+              </h1>
 
-            <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-6 mt-0 tracking-tight text-white">
-              Premium Tech &
-              <br />
-              <span className="text-white opacity-95 drop-shadow-sm">
-                Smart Devices.
-              </span>
-            </h1>
+              {/* Subtitle */}
+              <p className="text-sm sm:text-base lg:text-lg text-blue-100/90 leading-relaxed mb-8 max-w-xl font-normal">
+                Discover the latest smartphones, powerful laptops, immersive audio, and premium accessories curated for modern lifestyles. Upgrade your tech today.
+              </p>
 
-            <p className="text-slate-300 text-base md:text-lg mb-8 max-w-lg leading-relaxed font-normal">
-              Discover the latest smartphones, powerful laptops, immersive audio, and premium accessories curated for modern lifestyles. Upgrade your tech today.
-            </p>
-
-            <div className="flex flex-wrap gap-4">
-              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+              {/* CTA Buttons */}
+              <div className="flex flex-wrap items-center gap-4 mb-10">
                 <Link
                   to="/shop"
-                  style={{ backgroundColor: primaryColor, boxShadow: `0 8px 25px -4px ${primaryColor}60` }}
-                  className="hover:opacity-95 text-white font-bold py-4 px-8 rounded-2xl transition-all inline-flex items-center gap-2 shadow-lg"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 bg-white text-blue-700 font-extrabold text-sm rounded-full shadow-lg hover:shadow-xl hover:bg-blue-50 transition-all hover:scale-[1.02] active:scale-[0.98]"
                 >
-                  Shop Now <ArrowRight size={18} />
+                  Shop Now <ArrowRight size={16} />
                 </Link>
-              </motion.div>
-              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
                 <Link
                   to="/deals"
-                  className="border border-slate-700/80 bg-slate-900/60 hover:bg-slate-800 text-white font-bold py-4 px-8 rounded-2xl transition-all inline-flex items-center gap-2 backdrop-blur-md shadow-sm"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 bg-transparent text-white font-extrabold text-sm rounded-full border-2 border-white/60 hover:border-white hover:bg-white/10 transition-all"
                 >
                   Tech Deals
                 </Link>
-              </motion.div>
-            </div>
-          </motion.div>
+              </div>
 
-          <motion.div
-            className="md:w-1/2 flex justify-center"
-            initial={{ opacity: 0, scale: 0.85 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
-            <div className="relative group">
-              {/* Rotating Outer Glow Ring */}
-              <motion.div
-                className="absolute -inset-3 rounded-full bg-gradient-to-r from-blue-500 via-sky-400 to-cyan-500 opacity-40 blur-xl group-hover:opacity-70 transition-opacity duration-500"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-              />
-
-              <motion.div
-                className="relative w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 rounded-full overflow-hidden shadow-[0_20px_50px_rgba(37,99,235,0.3)] border-4 border-blue-500/40 bg-white/5 p-1 backdrop-blur-md flex items-center justify-center mx-auto"
-                animate={{ y: [0, -8, 0] }}
-                transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-              >
-                <img
-                  src={getImageUrl(settings?.logoUrl) || '/logo.png'}
-                  alt={settings?.shopName || 'Shop Logo'}
-                  className="w-full h-full object-cover rounded-full transition-transform duration-700 group-hover:scale-105"
-                  onError={(e) => { e.target.onerror = null; e.target.src = '/logo.png'; }}
-                />
-              </motion.div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ===== VALUE PROPS ===== */}
-      <section className="bg-white/80 border-y border-slate-200/80 backdrop-blur-md shadow-xs">
-        <div className="base-container py-8 px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              { icon: <Truck size={22} />, title: 'Free Shipping', desc: 'On all devices islandwide' },
-              { icon: <Clock3 size={22} />, title: 'Fast Dispatch', desc: 'Packed in 24 hours' },
-              { icon: <ShieldCheck size={22} />, title: 'Official Warranty', desc: 'Guaranteed 100% genuine' },
-              { icon: <Cpu size={22} />, title: 'Latest Tech', desc: 'Curated top-tier brands' },
-            ].map((item, i) => (
-              <motion.div
-                key={i}
-                className="flex items-center gap-3.5 p-3 rounded-2xl hover:bg-blue-50/50 transition-all cursor-default"
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={fadeUp}
-                transition={{ delay: i * 0.1, duration: 0.5 }}
-                whileHover={{ y: -3, scale: 1.02 }}
-              >
-                <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 flex-shrink-0 shadow-xs border border-blue-100">
-                  {item.icon}
+              {/* Stat Counters */}
+              <div className="grid grid-cols-3 gap-6 pt-6 border-t border-white/15 max-w-lg">
+                <div>
+                  <p className="text-xl sm:text-2xl font-black text-white m-0">50K+</p>
+                  <p className="text-xs text-blue-200 m-0 mt-0.5">Happy Customers</p>
                 </div>
                 <div>
-                  <h4 className="font-bold text-sm text-slate-900 m-0">{item.title}</h4>
-                  <p className="text-xs text-slate-500 m-0 mt-0.5 font-normal">{item.desc}</p>
+                  <p className="text-xl sm:text-2xl font-black text-white m-0">2K+</p>
+                  <p className="text-xs text-blue-200 m-0 mt-0.5">Genuine Products</p>
                 </div>
-              </motion.div>
-            ))}
+                <div>
+                  <p className="text-xl sm:text-2xl font-black text-amber-300 m-0">4.9★</p>
+                  <p className="text-xs text-blue-200 m-0 mt-0.5">Customer Rating</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Visual Showcase Card */}
+            <div className="w-full lg:w-2/5 flex justify-center">
+              <div className="w-full max-w-sm sm:max-w-md bg-white rounded-3xl p-4 sm:p-6 shadow-2xl border border-white/30 flex items-center justify-center">
+                <img
+                  src="/hero-products.jpg"
+                  alt="Mobixa Flagship Smart Devices"
+                  className="w-full h-auto max-h-[320px] object-contain rounded-2xl"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&auto=format&fit=crop&q=80';
+                  }}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ===== CATEGORIES ===== */}
-      <section className="base-container py-16 px-4">
-        <motion.div
-          className="flex items-end justify-between mb-10"
-          initial="hidden" whileInView="visible" viewport={{ once: true }}
-          variants={fadeUp} transition={{ duration: 0.5 }}
-        >
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mt-0 mb-1.5 tracking-tight">Explore Categories</h2>
-            <p className="text-slate-500 m-0 text-sm font-normal">Discover curated smart devices and premium accessories</p>
-          </div>
-          <Link to="/shop" className="text-blue-600 hover:text-blue-700 transition-colors font-semibold text-sm flex items-center gap-1">
-            View All <ArrowRight size={15} />
-          </Link>
-        </motion.div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
-          {categories.map((cat, i) => (
-            <motion.div
-              key={cat._id}
-              initial="hidden" whileInView="visible" viewport={{ once: true }}
-              variants={fadeUp} transition={{ delay: i * 0.05, duration: 0.4 }}
-              whileHover={{ y: -8, scale: 1.04 }}
+      {/* ===== FEATURE CARDS ROW (MATCHES SCREENSHOT) ===== */}
+      <section className="base-container px-4 sm:px-6 mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { icon: <Truck size={20} className="text-blue-600" />, title: 'Free Shipping', desc: 'On all devices nationwide', bg: 'bg-blue-50/80 border-blue-100' },
+            { icon: <Clock3 size={20} className="text-amber-600" />, title: 'Fast Dispatch', desc: 'Packed in 24 hours', bg: 'bg-amber-50/80 border-amber-100' },
+            { icon: <ShieldCheck size={20} className="text-emerald-600" />, title: 'Official Warranty', desc: 'Guaranteed 100% genuine', bg: 'bg-emerald-50/80 border-emerald-100' },
+            { icon: <Cpu size={20} className="text-indigo-600" />, title: 'Latest Tech', desc: 'Curated top-tier brands', bg: 'bg-indigo-50/80 border-indigo-100' },
+          ].map((item, i) => (
+            <div
+              key={i}
+              className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 shadow-xs hover:shadow-md transition-all"
             >
-              <Link
-                to={`/shop?category=${cat._id}`}
-                className="bg-white border border-slate-200/80 hover:border-blue-400/80 rounded-2xl p-4 text-center cursor-pointer group block shadow-xs hover:shadow-[0_12px_25px_rgba(37,99,235,0.12)] transition-all duration-300"
-              >
-                <div className="w-14 h-14 bg-slate-50 group-hover:bg-blue-50/80 rounded-2xl mx-auto mb-3 flex items-center justify-center text-2xl transition-colors shadow-inner border border-slate-100">
-                  {cat.icon}
-                </div>
-                <h3 className="font-semibold text-xs text-slate-800 mt-0 mb-0 group-hover:text-blue-600 transition-colors truncate">
-                  {cat.name}
-                </h3>
-              </Link>
-            </motion.div>
+              <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 border ${item.bg}`}>
+                {item.icon}
+              </div>
+              <div>
+                <h4 className="font-bold text-sm text-slate-900 m-0">{item.title}</h4>
+                <p className="text-xs text-slate-500 m-0 mt-0.5">{item.desc}</p>
+              </div>
+            </div>
           ))}
         </div>
       </section>
 
-      {/* ===== DEALS OF THE DAY ===== */}
-      {deals.length > 0 && (
-        <section className="bg-gradient-to-b from-slate-50 via-blue-50/20 to-white py-16 border-y border-slate-200/60">
-          <div className="base-container px-4">
-            <motion.div
-              className="flex items-end justify-between mb-10"
-              initial="hidden" whileInView="visible" viewport={{ once: true }}
-              variants={fadeUp} transition={{ duration: 0.5 }}
+      {/* ===== EXPLORE CATEGORIES (MATCHES SCREENSHOT) ===== */}
+      <section className="base-container px-4 sm:px-6 mb-16">
+        <div className="flex items-end justify-between mb-8">
+          <div>
+            <span className="text-[11px] font-extrabold uppercase tracking-widest text-blue-600">Shop by Type</span>
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-1 mb-0 tracking-tight">Explore Categories</h2>
+          </div>
+          <Link to="/shop" className="text-blue-600 hover:text-blue-700 font-bold text-xs sm:text-sm flex items-center gap-1">
+            All Categories <ArrowRight size={14} />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3.5">
+          {categories.slice(0, 8).map((cat) => (
+            <Link
+              key={cat._id}
+              to={`/shop?category=${cat._id}`}
+              className="bg-white border border-slate-200/80 hover:border-blue-500/80 rounded-2xl p-4 text-center group shadow-xs hover:shadow-lg hover:-translate-y-1 transition-all"
             >
-              <div>
-                <div className="flex items-center gap-2 mb-1.5">
-                  <motion.span
-                    className="text-2xl inline-block"
-                    animate={{ rotate: [0, -10, 10, -10, 0] }}
-                    transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-                  >
-                    ⚡
-                  </motion.span>
-                  <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mt-0 mb-0 tracking-tight">Flash Deals</h2>
-                </div>
-                <p className="text-slate-500 m-0 text-sm font-normal">Grab these tech picks before they are gone</p>
+              <div className="w-12 h-12 bg-slate-50 group-hover:bg-blue-50 rounded-xl mx-auto mb-2.5 flex items-center justify-center text-2xl transition-colors border border-slate-100">
+                {cat.icon || '📱'}
               </div>
-              <Link to="/deals" className="text-blue-600 hover:text-blue-700 transition-colors font-semibold text-sm flex items-center gap-1">
-                View All <ArrowRight size={15} />
+              <h3 className="font-bold text-xs text-slate-800 m-0 group-hover:text-blue-600 transition-colors truncate">
+                {cat.name}
+              </h3>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* ===== FEATURED PRODUCTS ===== */}
+      {featured.length > 0 && (
+        <section className="base-container px-4 sm:px-6 mb-16">
+          <div className="flex items-end justify-between mb-8">
+            <div>
+              <span className="text-[11px] font-extrabold uppercase tracking-widest text-blue-600">Handpicked Devices</span>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-1 mb-0 tracking-tight">Featured Products</h2>
+            </div>
+            <Link to="/shop?featured=true" className="text-blue-600 hover:text-blue-700 font-bold text-xs sm:text-sm flex items-center gap-1">
+              View All <ArrowRight size={14} />
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            {featured.slice(0, 8).map((product) => (
+              <ProductCard key={product._id} product={product} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ===== FLASH DEALS ===== */}
+      {deals.length > 0 && (
+        <section className="bg-gradient-to-b from-blue-50/50 via-slate-50 to-white py-16 border-y border-slate-200/70 mb-16">
+          <div className="base-container px-4 sm:px-6">
+            <div className="flex items-end justify-between mb-8">
+              <div>
+                <span className="text-[11px] font-extrabold uppercase tracking-widest text-amber-600">⚡ Limited Time Offers</span>
+                <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-1 mb-0 tracking-tight">Mega Deals &amp; Offers</h2>
+              </div>
+              <Link to="/deals" className="text-blue-600 hover:text-blue-700 font-bold text-xs sm:text-sm flex items-center gap-1">
+                View All Deals <ArrowRight size={14} />
               </Link>
-            </motion.div>
+            </div>
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-              {deals.slice(0, 8).map((product, i) => (
-                <motion.div
-                  key={product._id}
-                  initial="hidden" whileInView="visible" viewport={{ once: true }}
-                  variants={fadeUp} transition={{ delay: i * 0.08, duration: 0.5 }}
-                  whileHover={{ y: -4 }}
-                >
-                  <ProductCard product={product} />
-                </motion.div>
+              {deals.slice(0, 4).map((product) => (
+                <ProductCard key={product._id} product={product} />
               ))}
             </div>
           </div>
         </section>
       )}
 
-      {/* ===== FEATURED PRODUCTS ===== */}
-      {featured.length > 0 && (
-        <section className="base-container py-16 px-4">
-          <motion.div
-            className="flex items-end justify-between mb-10"
-            initial="hidden" whileInView="visible" viewport={{ once: true }}
-            variants={fadeUp} transition={{ duration: 0.5 }}
-          >
-            <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mt-0 mb-1.5 tracking-tight">Featured Devices</h2>
-              <p className="text-slate-500 m-0 text-sm font-normal">Handpicked favorites by our tech experts</p>
-            </div>
-            <Link to="/shop?featured=true" className="text-blue-600 hover:text-blue-700 transition-colors font-semibold text-sm flex items-center gap-1">
-              View All <ArrowRight size={15} />
-            </Link>
-          </motion.div>
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-            {featured.slice(0, 8).map((product, i) => (
-              <motion.div
-                key={product._id}
-                initial="hidden" whileInView="visible" viewport={{ once: true }}
-                variants={fadeUp} transition={{ delay: i * 0.08, duration: 0.5 }}
-                whileHover={{ y: -4 }}
-              >
-                <ProductCard product={product} />
-              </motion.div>
-            ))}
-          </div>
-        </section>
-      )}
+      {/* ===== CUSTOMER REVIEWS ===== */}
+      <section className="base-container px-4 sm:px-6 pb-20">
+        <div className="text-center max-w-xl mx-auto mb-10">
+          <span className="text-[11px] font-extrabold uppercase tracking-widest text-blue-600">Testimonials</span>
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-1 mb-2 tracking-tight">What Our Customers Say</h2>
+          <p className="text-slate-500 text-xs sm:text-sm m-0">Trusted by tech lovers and enterprise customers across the island</p>
+        </div>
 
-      {/* ===== TESTIMONIALS ===== */}
-      <section className="bg-slate-50/70 border-t border-slate-200/80 py-16">
-        <div className="base-container px-4">
-          <motion.div
-            className="text-center mb-12"
-            initial="hidden" whileInView="visible" viewport={{ once: true }}
-            variants={fadeUp} transition={{ duration: 0.5 }}
-          >
-            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mt-0 mb-1.5 tracking-tight">What Our Customers Say</h2>
-            <p className="text-slate-500 m-0 text-sm font-normal">Trusted by tech enthusiasts everywhere</p>
-          </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {[
-              { name: 'Alex M.', text: "Got my new iPhone delivered the same day. Incredible service and the packaging was flawless. Highly recommended!", avatar: '👨‍💻', rating: 5 },
-              { name: 'Sarah J.', text: "The range of accessories is unmatched. Found the perfect MagSafe case and wireless charger combo here.", avatar: '👩‍💼', rating: 5 },
-              { name: 'Kevin D.', text: "Best tech store online. The warranty support is solid and the prices are always competitive.", avatar: '👨', rating: 4 },
-              { name: 'Maria L.', text: "Fast shipping and excellent customer service. Will definitely be shopping here again!", avatar: '👩', rating: 5 },
-            ].map((testimonial, i) => (
-              <motion.div
-                key={i}
-                className="bg-white border border-slate-200/80 hover:border-blue-300 rounded-3xl p-6 shadow-xs hover:shadow-lg transition-all flex flex-col justify-between"
-                initial="hidden" whileInView="visible" viewport={{ once: true }}
-                variants={fadeUp} transition={{ delay: i * 0.12, duration: 0.5 }}
-                whileHover={{ y: -6, scale: 1.02 }}
-              >
-                <div>
-                  <div className="flex gap-1 mb-4">
-                    {[...Array(testimonial.rating)].map((_, j) => (
-                      <Star key={j} size={15} className="fill-amber-400 text-amber-400" />
-                    ))}
-                  </div>
-                  <p className="text-slate-600 text-sm italic mb-6 leading-relaxed">"{testimonial.text}"</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[
+            { name: 'Alex M.', text: "Got my new iPhone delivered the same day. Incredible service and the packaging was flawless. Highly recommended!", rating: 5, role: 'Verified Buyer' },
+            { name: 'Sarah J.', text: "The range of accessories is unmatched. Found the perfect MagSafe case and wireless charger combo here.", rating: 5, role: 'Tech Enthusiast' },
+            { name: 'Kevin D.', text: "Best tech store online. The warranty support is solid and the prices are always competitive.", rating: 5, role: 'Frequent Customer' },
+          ].map((item, i) => (
+            <div key={i} className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs hover:shadow-lg transition-all flex flex-col justify-between">
+              <div>
+                <div className="flex gap-1 mb-3">
+                  {[...Array(item.rating)].map((_, j) => (
+                    <Star key={j} size={15} className="fill-amber-400 text-amber-400" />
+                  ))}
                 </div>
-                <div className="flex items-center gap-3 border-t border-slate-100 pt-4">
-                  <span className="text-2xl">{testimonial.avatar}</span>
-                  <span className="font-semibold text-xs text-slate-800 uppercase tracking-wider">{testimonial.name}</span>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                <p className="text-slate-600 text-xs sm:text-sm italic mb-6 leading-relaxed">"{item.text}"</p>
+              </div>
+              <div className="border-t border-slate-100 pt-4 flex items-center justify-between">
+                <span className="font-bold text-xs text-slate-900">{item.name}</span>
+                <span className="text-[10px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">{item.role}</span>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
     </div>

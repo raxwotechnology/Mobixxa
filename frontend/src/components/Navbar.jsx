@@ -224,15 +224,15 @@ const Navbar = () => {
         </Link>
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden lg:flex items-center gap-1.5 bg-slate-100/50 p-1.5 rounded-2xl border border-slate-200/50 backdrop-blur-sm">
+        <nav className="hidden lg:flex items-center gap-6">
           {navLinks.filter((l) => l.show).map((link) => (
             <Link
               key={link.path}
               to={link.path}
-              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
+              className={`text-xs font-black uppercase tracking-wider transition-all py-1.5 border-b-2 ${
                 isActive(link.path)
-                  ? 'text-primary-blue bg-primary-blue/8 shadow-xs'
-                  : 'text-slate-600 hover:text-primary-blue hover:bg-white/80 hover:shadow-xs'
+                  ? 'text-blue-600 border-blue-600'
+                  : 'text-slate-600 hover:text-blue-600 border-transparent'
               }`}
             >
               {link.label}
@@ -241,10 +241,10 @@ const Navbar = () => {
           {dashLink && (
             <Link
               to={dashLink.path}
-              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
                 isActive(dashLink.path)
-                  ? 'text-brand-violet bg-brand-violet/20 shadow-xs'
-                  : 'text-brand-violet bg-brand-violet/10 hover:bg-brand-violet/20'
+                  ? 'text-blue-700 bg-blue-100 shadow-xs'
+                  : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
               }`}
             >
               {dashLink.emoji} {dashLink.label}
@@ -426,12 +426,11 @@ const Navbar = () => {
               </div>
             </div>
           ) : (
-            <div className="flex items-center gap-2">
-              <Link to="/login" className="flex items-center gap-1.5 text-sm font-semibold text-slate-700 hover:text-primary-blue transition-all px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 shadow-xs hover:shadow-sm">
-                <User size={15} />
-                <span className="hidden sm:inline">Sign In</span>
+            <div className="flex items-center gap-3">
+              <Link to="/login" className="text-xs font-bold text-slate-700 hover:text-blue-600 transition-colors px-2 py-1">
+                Sign In
               </Link>
-              <Link to="/register" className="hidden sm:flex bg-primary-blue hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all shadow-sm hover:shadow hover:-translate-y-0.5">
+              <Link to="/register" className="bg-[#0f172a] hover:bg-slate-800 text-white text-xs font-bold px-5 py-2 rounded-full transition-all shadow-sm">
                 Register
               </Link>
             </div>
