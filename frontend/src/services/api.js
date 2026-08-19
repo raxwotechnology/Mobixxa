@@ -370,6 +370,7 @@ export const recordHPPayment = (id, data) => API.post(`/hp/${id}/payments`, data
 export const getCustomerHistory = (phone) => API.get(`/hp/customer/${phone}/history`);
 export const getAllCustomers = () => API.get('/hp/customers/all');
 export const deleteHPRecord = (id) => API.delete(`/hp/${id}`);
+export const updateHPRecord = (id, data) => API.put(`/hp/${id}`, data);
 
 // Reloads & Stock API
 export const createReload = (data) => API.post('/reloads', data);

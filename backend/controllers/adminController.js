@@ -393,11 +393,27 @@ const updateOrderAdmin = async (req, res, next) => {
       res.status(404);
       return next(new Error('Order not found'));
     }
-    const { customerName, customerPhone, orderStatus, paymentStatus } = req.body;
+    const {
+      invoiceNumber,
+      customerName,
+      customerPhone,
+      orderStatus,
+      paymentStatus,
+      paymentMethod,
+      amountPaid,
+      items,
+      notes
+    } = req.body;
+
+    if (invoiceNumber !== undefined) order.invoiceNumber = invoiceNumber;
     if (customerName !== undefined) order.customerName = customerName;
     if (customerPhone !== undefined) order.customerPhone = customerPhone;
     if (orderStatus !== undefined) order.orderStatus = orderStatus;
     if (paymentStatus !== undefined) order.paymentStatus = paymentStatus;
+    if (paymentMethod !== undefined) order.paymentMethod = paymentMethod;
+    if (amountPaid !== undefined) order.amountPaid = Number(amountPaid);
+    if (items !== undefined && Array.isArray(items)) order.items = items;
+    if (notes !== undefined) order.notes = notes;
 
     const saved = await order.save();
     res.json(saved);

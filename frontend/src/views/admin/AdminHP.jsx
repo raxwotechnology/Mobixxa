@@ -14,9 +14,12 @@ import {
   Printer,
   Download,
   Plus,
-  Trash2
+  Trash2,
+  Edit,
+  Lock,
+  X
 } from 'lucide-react';
-import { getHPRecords, recordHPPayment, deleteHPRecord, getAccounts, getHPById } from '../../services/api';
+import { getHPRecords, recordHPPayment, deleteHPRecord, updateHPRecord, getAccounts, getHPById } from '../../services/api';
 import { toast } from 'react-toastify';
 import DashboardLayout from '../../components/DashboardLayout';
 import { adminNavGroups as defaultNavItems } from './adminNavItems';
@@ -35,6 +38,28 @@ const AdminHP = ({ navItems: propNavItems }) => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedHPDetails, setSelectedHPDetails] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
+
+  // Edit HP Invoice Modal state
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editForm, setEditForm] = useState({
+    id: '',
+    invoiceNo: '',
+    customerName: '',
+    customerPhone: '',
+    customerNic: '',
+    customerAddress: '',
+    guarantor1Name: '',
+    guarantor1Phone: '',
+    guarantor1Nic: '',
+    guarantor2Name: '',
+    guarantor2Phone: '',
+    totalAmount: 0,
+    downPayment: 0,
+    monthlyInstallment: 0,
+    status: 'Active'
+  });
+
+  const [passcode, setPasscode] = useState('');
 
   const [payForm, setPayForm] = useState({ amount: '', paymentMethod: 'Cash', accountId: '', referenceNo: '', notes: '' });
   const [accounts, setAccounts] = useState([]);
@@ -97,25 +122,83 @@ const AdminHP = ({ navItems: propNavItems }) => {
     }
   };
 
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState(null);
+  const openEditModal = (record) => {
+    setEditForm({
+      id: record._id,
+      invoiceNo: record.invoiceNo || `HP-INV-${record._id.slice(-6).toUpperCase()}`,
+      customerName: record.customer?.name || '',
+      customerPhone: record.customer?.phone || '',
+      customerNic: record.customer?.nic || '',
+      customerAddress: record.customer?.address || '',
+      guarantor1Name: record.guarantors?.[0]?.name || '',
+      guarantor1Phone: record.guarantors?.[0]?.phone || '',
+      guarantor1Nic: record.guarantors?.[0]?.nic || '',
+      guarantor2Name: record.guarantors?.[1]?.name || '',
+      guarantor2Phone: record.guarantors?.[1]?.phone || '',
+      totalAmount: record.financials?.totalAmount || 0,
+      downPayment: record.financials?.downPayment || 0,
+      monthlyInstallment: record.financials?.monthlyInstallment || 0,
+      status: record.status || 'Active'
+    });
+    setShowEditModal(true);
+  };
+
+  const handleSaveEdit = async (e) => {
+    e.preventDefault();
+    try {
+      await updateHPRecord(editForm.id, {
+        invoiceNo: editForm.invoiceNo,
+        customer: {
+          name: editForm.customerName,
+          phone: editForm.customerPhone,
+          nic: editForm.customerNic,
+          address: editForm.customerAddress
+        },
+        guarantors: [
+          { name: editForm.guarantor1Name, phone: editForm.guarantor1Phone, nic: editForm.guarantor1Nic },
+          { name: editForm.guarantor2Name, phone: editForm.guarantor2Phone }
+        ],
+        totalAmount: Number(editForm.totalAmount),
+        downPayment: Number(editForm.downPayment),
+        monthlyInstallment: Number(editForm.monthlyInstallment),
+        status: editForm.status
+      });
+      toast.success('Installment agreement & invoice updated successfully');
+      setShowEditModal(false);
+      fetchData();
+      if (showDetailsModal && selectedHPDetails?._id === editForm.id) {
+        const { data } = await getHPById(editForm.id);
+        setSelectedHPDetails(data);
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to update installment invoice');
+    }
+  };
 
   const handleDeleteClick = (record) => {
-    setItemToDelete({ id: record._id, name: `HP Agreement for ${record.customer?.name || 'Customer'}` });
+    setItemToDelete({ id: record._id, name: `HP Agreement #${record.invoiceNo || record._id.slice(-6).toUpperCase()} (${record.customer?.name || 'Customer'})` });
+    setPasscode('');
     setDeleteModalOpen(true);
   };
 
   const handleDeleteConfirm = async () => {
     if (!itemToDelete) return;
+    if (passcode !== '1234' && passcode !== '8888' && passcode !== '0000') {
+      toast.error('Invalid Security Passcode! Deletion denied.');
+      return;
+    }
     try {
       await deleteHPRecord(itemToDelete.id);
       toast.success('Installment agreement deleted successfully');
+      setDeleteModalOpen(false);
+      setItemToDelete(null);
+      setPasscode('');
       fetchData();
       if (showDetailsModal && selectedHPDetails?._id === itemToDelete.id) {
         setShowDetailsModal(false);
       }
     } catch (err) {
-      toast.error('Failed to delete installment agreement');
+      toast.error(err.response?.data?.message || 'Failed to delete installment agreement');
     }
   };
 
@@ -301,6 +384,13 @@ const AdminHP = ({ navItems: propNavItems }) => {
                             className="px-2.5 py-1 bg-primary-blue text-white rounded-lg text-[11px] font-bold hover:bg-blue-600 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             Pay
+                          </button>
+                          <button 
+                            onClick={() => openEditModal(record)}
+                            className="p-1 rounded text-amber-600 hover:text-amber-700 hover:bg-amber-50 transition-all"
+                            title="Edit Agreement & Invoice"
+                          >
+                            <Edit size={14} />
                           </button>
                           <button 
                             onClick={() => handleDeleteClick(record)}
@@ -537,12 +627,234 @@ const AdminHP = ({ navItems: propNavItems }) => {
         </div>
       )}
 
-      <DeleteConfirmationModal
-        isOpen={deleteModalOpen}
-        onClose={() => { setDeleteModalOpen(false); setItemToDelete(null); }}
-        onConfirm={handleDeleteConfirm}
-        itemName={itemToDelete?.name}
-      />
+      {/* Edit HP Agreement & Invoice Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={() => setShowEditModal(false)}>
+          <div className="bg-white rounded-3xl border border-slate-100 shadow-2xl w-full max-w-2xl p-6 text-left max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+              <h3 className="font-black text-slate-900 text-base flex items-center gap-2 m-0 text-amber-600">
+                <Edit size={18} /> Edit Installment Agreement & Invoice Details
+              </h3>
+              <button onClick={() => setShowEditModal(false)} className="p-1 text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full border-0 cursor-pointer">
+                <X size={16} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEdit} className="space-y-4 text-xs">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Invoice Number (#)</label>
+                  <input
+                    type="text"
+                    value={editForm.invoiceNo}
+                    onChange={(e) => setEditForm({ ...editForm, invoiceNo: e.target.value })}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3.5 text-xs font-bold text-slate-900"
+                    placeholder="e.g. HP-INV-00123"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Agreement Status</label>
+                  <select
+                    value={editForm.status}
+                    onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3.5 text-xs font-bold text-slate-900 cursor-pointer"
+                  >
+                    <option value="Active">Active</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Overdue">Overdue</option>
+                    <option value="Defaulted">Defaulted</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Customer Details */}
+              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/60 space-y-3">
+                <h4 className="font-extrabold text-slate-800 m-0 uppercase tracking-wider text-[11px]">Customer Details</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-600 block mb-1">Customer Name</label>
+                    <input
+                      type="text"
+                      value={editForm.customerName}
+                      onChange={(e) => setEditForm({ ...editForm, customerName: e.target.value })}
+                      className="w-full bg-white border border-slate-200 rounded-xl py-2 px-3 text-xs font-semibold text-slate-800"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-600 block mb-1">Phone Number</label>
+                    <input
+                      type="text"
+                      value={editForm.customerPhone}
+                      onChange={(e) => setEditForm({ ...editForm, customerPhone: e.target.value })}
+                      className="w-full bg-white border border-slate-200 rounded-xl py-2 px-3 text-xs font-semibold text-slate-800"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-600 block mb-1">NIC Number</label>
+                    <input
+                      type="text"
+                      value={editForm.customerNic}
+                      onChange={(e) => setEditForm({ ...editForm, customerNic: e.target.value })}
+                      className="w-full bg-white border border-slate-200 rounded-xl py-2 px-3 text-xs font-semibold text-slate-800"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-600 block mb-1">Address</label>
+                    <input
+                      type="text"
+                      value={editForm.customerAddress}
+                      onChange={(e) => setEditForm({ ...editForm, customerAddress: e.target.value })}
+                      className="w-full bg-white border border-slate-200 rounded-xl py-2 px-3 text-xs font-semibold text-slate-800"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Financial Terms */}
+              <div className="bg-amber-50/60 p-4 rounded-2xl border border-amber-200/60 space-y-3">
+                <h4 className="font-extrabold text-amber-900 m-0 uppercase tracking-wider text-[11px]">Financial Agreement Terms</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-700 block mb-1">Total Agreement Price (Rs.)</label>
+                    <input
+                      type="number"
+                      value={editForm.totalAmount}
+                      onChange={(e) => setEditForm({ ...editForm, totalAmount: e.target.value })}
+                      className="w-full bg-white border border-amber-200 rounded-xl py-2 px-3 text-xs font-bold text-amber-900"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-700 block mb-1">Down Payment (Rs.)</label>
+                    <input
+                      type="number"
+                      value={editForm.downPayment}
+                      onChange={(e) => setEditForm({ ...editForm, downPayment: e.target.value })}
+                      className="w-full bg-white border border-amber-200 rounded-xl py-2 px-3 text-xs font-bold text-amber-900"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-700 block mb-1">Monthly Installment (Rs.)</label>
+                    <input
+                      type="number"
+                      value={editForm.monthlyInstallment}
+                      onChange={(e) => setEditForm({ ...editForm, monthlyInstallment: e.target.value })}
+                      className="w-full bg-white border border-amber-200 rounded-xl py-2 px-3 text-xs font-bold text-amber-900"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Guarantors Info */}
+              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/60 space-y-3">
+                <h4 className="font-extrabold text-slate-800 m-0 uppercase tracking-wider text-[11px]">Guarantor Information</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <span className="font-bold text-slate-700 text-[10px] uppercase">Guarantor 1</span>
+                    <input
+                      type="text"
+                      value={editForm.guarantor1Name}
+                      onChange={(e) => setEditForm({ ...editForm, guarantor1Name: e.target.value })}
+                      placeholder="Name"
+                      className="w-full bg-white border border-slate-200 rounded-xl py-2 px-3 text-xs"
+                    />
+                    <input
+                      type="text"
+                      value={editForm.guarantor1Phone}
+                      onChange={(e) => setEditForm({ ...editForm, guarantor1Phone: e.target.value })}
+                      placeholder="Phone"
+                      className="w-full bg-white border border-slate-200 rounded-xl py-2 px-3 text-xs"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <span className="font-bold text-slate-700 text-[10px] uppercase">Guarantor 2</span>
+                    <input
+                      type="text"
+                      value={editForm.guarantor2Name}
+                      onChange={(e) => setEditForm({ ...editForm, guarantor2Name: e.target.value })}
+                      placeholder="Name"
+                      className="w-full bg-white border border-slate-200 rounded-xl py-2 px-3 text-xs"
+                    />
+                    <input
+                      type="text"
+                      value={editForm.guarantor2Phone}
+                      onChange={(e) => setEditForm({ ...editForm, guarantor2Phone: e.target.value })}
+                      placeholder="Phone"
+                      className="w-full bg-white border border-slate-200 rounded-xl py-2 px-3 text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="px-5 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-xl font-bold text-xs uppercase tracking-wider border-0 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-amber-600 hover:bg-amber-700 text-white py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all border-0 cursor-pointer shadow-md"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Passcode Protected HP Deletion Modal */}
+      {deleteModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={() => setDeleteModalOpen(false)}>
+          <div className="bg-white rounded-3xl border border-slate-100 shadow-2xl w-full max-w-md p-6 text-left" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+              <h3 className="font-black text-slate-900 text-base flex items-center gap-2 m-0 text-rose-600">
+                <Lock size={18} /> Confirm HP Invoice Deletion
+              </h3>
+              <button onClick={() => setDeleteModalOpen(false)} className="p-1 text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full border-0 cursor-pointer">
+                <X size={16} />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-600 mb-4 leading-relaxed">
+              Are you sure you want to permanently delete <strong>{itemToDelete?.name}</strong>? This action cannot be undone.
+            </p>
+
+            <div className="mb-5">
+              <label className="text-xs font-bold text-slate-700 block mb-1.5 flex items-center gap-1">
+                <Lock size={13} className="text-amber-600" /> Enter Security Passcode (Admin/Manager):
+              </label>
+              <input
+                type="password"
+                value={passcode}
+                onChange={(e) => setPasscode(e.target.value)}
+                placeholder="Enter passcode (e.g. 1234)"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3.5 text-sm font-bold text-slate-900 text-center tracking-widest"
+                autoFocus
+              />
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setDeleteModalOpen(false)}
+                className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-xl font-bold text-xs uppercase tracking-wider border-0 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteConfirm}
+                className="flex-1 bg-rose-600 hover:bg-rose-700 text-white py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all border-0 cursor-pointer shadow-md"
+              >
+                Delete Invoice
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 };

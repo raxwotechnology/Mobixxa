@@ -228,7 +228,7 @@ const getAllCustomers = async (req, res, next) => {
 
 // @desc    Delete HP record
 // @route   DELETE /api/hp/:id
-// @access  Private/Admin
+// @access  Private/Admin/Manager
 const deleteHPRecord = async (req, res, next) => {
   try {
     const record = await HirePurchase.findById(req.params.id);
@@ -241,11 +241,62 @@ const deleteHPRecord = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
+// @desc    Update HP record
+// @route   PUT /api/hp/:id
+// @access  Private/Admin/Manager
+const updateHPRecord = async (req, res, next) => {
+  try {
+    const record = await HirePurchase.findById(req.params.id);
+    if (!record) {
+      res.status(404);
+      return next(new Error('HP record not found'));
+    }
+
+    const {
+      invoiceNo,
+      customer,
+      guarantors,
+      totalAmount,
+      downPayment,
+      monthlyInstallment,
+      interestRate,
+      totalMonths,
+      status
+    } = req.body;
+
+    if (invoiceNo !== undefined) record.invoiceNo = invoiceNo;
+    
+    if (customer) {
+      record.customer = {
+        ...record.customer,
+        ...customer
+      };
+    }
+
+    if (guarantors) {
+      record.guarantors = guarantors;
+    }
+
+    if (totalAmount !== undefined) record.financials.totalAmount = Number(totalAmount);
+    if (downPayment !== undefined) record.financials.downPayment = Number(downPayment);
+    if (monthlyInstallment !== undefined) record.financials.monthlyInstallment = Number(monthlyInstallment);
+    if (interestRate !== undefined) record.financials.interestRate = Number(interestRate);
+    if (totalMonths !== undefined) record.financials.totalMonths = Number(totalMonths);
+    if (status !== undefined) record.status = status;
+
+    const saved = await record.save();
+    res.json(saved);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getHPRecords,
   getHPById,
   recordHPPayment,
   getCustomerHistory,
   getAllCustomers,
-  deleteHPRecord
+  deleteHPRecord,
+  updateHPRecord
 };

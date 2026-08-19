@@ -228,6 +228,7 @@ const AdminOrders = ({ navItems: propNavItems }) => {
   const openLiveEdit = (order) => {
     setEditForm({
       id: order._id,
+      invoiceNumber: order.invoiceNumber || `INV-${order._id.slice(-8).toUpperCase()}`,
       customerName: order.customerName || order.userId?.name || '',
       customerPhone: order.customerPhone || order.userId?.phone || '',
       orderStatus: order.orderStatus,
@@ -241,12 +242,13 @@ const AdminOrders = ({ navItems: propNavItems }) => {
     e.preventDefault();
     try {
       await updateOrderAdmin(editForm.id, {
+        invoiceNumber: editForm.invoiceNumber,
         customerName: editForm.customerName,
         customerPhone: editForm.customerPhone,
         orderStatus: editForm.orderStatus,
         paymentStatus: editForm.paymentStatus
       });
-      toast.success('Order updated successfully');
+      toast.success('Order & Invoice details updated successfully');
       setShowEditModal(false);
       fetchOrders();
     } catch (err) {
@@ -862,6 +864,17 @@ const AdminOrders = ({ navItems: propNavItems }) => {
             </div>
 
             <form onSubmit={handleSaveLiveEdit} className="space-y-4 text-xs">
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Invoice Number (#)</label>
+                <input
+                  type="text"
+                  value={editForm.invoiceNumber || ''}
+                  onChange={(e) => setEditForm({ ...editForm, invoiceNumber: e.target.value })}
+                  placeholder="e.g. INV-10025"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3.5 text-xs font-bold text-slate-900"
+                />
+              </div>
+
               <div>
                 <label className="text-xs font-bold text-slate-700 block mb-1">Customer Name</label>
                 <input
