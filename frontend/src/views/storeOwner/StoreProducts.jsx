@@ -17,8 +17,8 @@ import { getImageUrl, handleImageError } from '../../utils/imageHelper';
 
 
 const emptyForm = {
-  name: '', categoryId: '', description: '', price: '', mrp: '', discount: '', unit: 'kg',
-  stock: '', purchasePrice: '', images: '', isFeatured: false, isOnSale: false, allowKokoOnline: true, allowKokoPos: true, status: 'active', storeId: '', barcode: '',
+  name: '', categoryId: '', description: '', price: '', minPrice: '', mrp: '', discount: '', unit: 'kg',
+  stock: '', purchasePrice: '', images: '', isFeatured: false, isOnSale: false, allowKokoOnline: true, allowKokoPos: true, status: 'active', storeId: '', productLink: '', supplierId: '', barcode: '',
 };
 
 const StoreProducts = () => {
@@ -84,6 +84,9 @@ const StoreProducts = () => {
       isOnSale: product.isOnSale || false,
       status: product.status || 'active',
       barcode: product.barcode || '',
+      minPrice: product.minPrice || '',
+      productLink: product.productLink || '',
+      supplierId: product.supplierId?._id || product.supplierId || '',
       allowKokoOnline: product.allowKokoOnline !== undefined ? product.allowKokoOnline : true,
       allowKokoPos: product.allowKokoPos !== undefined ? product.allowKokoPos : true,
     });
@@ -432,6 +435,10 @@ const StoreProducts = () => {
                       <div>
                         <label className="block text-sm font-medium text-dark-navy mb-1">MRP</label>
                         <input type="number" step="0.01" value={form.mrp} onChange={(e) => setForm({ ...form, mrp: e.target.value })} className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-rose-600 mb-1 font-semibold">Minimum Price</label>
+                        <input type="number" step="0.01" value={form.minPrice} onChange={(e) => setForm({ ...form, minPrice: e.target.value })} className="w-full border border-rose-200 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400 placeholder:text-rose-300" placeholder="Minimum Selling Price" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-dark-navy mb-1">Stock *</label>
