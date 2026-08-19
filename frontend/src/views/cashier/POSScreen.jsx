@@ -1642,7 +1642,13 @@ const POSScreen = () => {
                 <div
                   key={product._id}
                   className={`pos-product-card ${product.stock <= 0 ? 'pos-out-of-stock' : ''}`}
-                  onClick={() => product.stock > 0 && handleAddProduct(product)}
+                  onClick={() => {
+                    if (product.stock > 0) {
+                      toast.info('Double-click card or tap + to add to cart', { toastId: `dbhint-${product._id}`, autoClose: 1500 });
+                    }
+                  }}
+                  onDoubleClick={() => product.stock > 0 && handleAddProduct(product)}
+                  title={product.stock > 0 ? "Double-click card or click + button to add to cart" : "Out of stock"}
                 >
                   <div className="pos-product-img-wrapper">
                     {(product.productLink || product.images?.[0]) ? (
@@ -1683,7 +1689,14 @@ const POSScreen = () => {
                     )}
                   </div>
                   {product.stock > 0 && (
-                    <button className="pos-product-add-btn">
+                    <button
+                      className="pos-product-add-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddProduct(product);
+                      }}
+                      title="Add to cart"
+                    >
                       <Plus size={18} />
                     </button>
                   )}
