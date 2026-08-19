@@ -87,6 +87,7 @@ const StoreProducts = () => {
       minPrice: product.minPrice || '',
       productLink: product.productLink || '',
       supplierId: product.supplierId?._id || product.supplierId || '',
+      images: (product.images || []).join(', '),
       allowKokoOnline: product.allowKokoOnline !== undefined ? product.allowKokoOnline : true,
       allowKokoPos: product.allowKokoPos !== undefined ? product.allowKokoPos : true,
     });
@@ -117,6 +118,8 @@ const StoreProducts = () => {
     e.preventDefault();
     setSaving(true);
     try {
+      let textUrls = form.images ? form.images.split(',').map(s => s.trim()).filter(Boolean) : [];
+      let finalImages = Array.from(new Set([...uploadedImages, ...textUrls])).filter(Boolean);
       const payload = {
         ...form,
         price: Number(form.price),
@@ -124,7 +127,7 @@ const StoreProducts = () => {
         discount: Number(form.discount) || 0,
         stock: Number(form.stock),
         purchasePrice: Number(form.purchasePrice) || 0,
-        images: uploadedImages.filter(Boolean),
+        images: finalImages,
         storeId: storeInfo?._id || form.storeId,
       };
 
@@ -456,9 +459,14 @@ const StoreProducts = () => {
                         <label className="block text-sm font-medium text-dark-navy mb-1">Description</label>
                         <textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue resize-none" />
                       </div>
+                      <div className="sm:col-span-2">
+                        <label className="block text-sm font-medium text-dark-navy mb-1">Image URLs <span className="text-muted-text font-normal">(comma separated)</span></label>
+                        <input value={form.images || ''} onChange={(e) => setForm({ ...form, images: e.target.value })} className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" placeholder="https://example.com/image.jpg" />
+                        <p className="text-[10px] text-muted-text mt-1">Product Image URL (External Link). This will be the primary display image if provided.</p>
+                      </div>
                       <div className="sm:col-span-2 space-y-3">
                         <label className="block text-sm font-medium text-dark-navy mb-1 flex items-center gap-2">
-                          <ImageIcon size={16} /> Product Images
+                          <ImageIcon size={16} /> Upload Product Images
                         </label>
 
                         {uploadedImages.length > 0 && (
