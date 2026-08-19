@@ -18,7 +18,7 @@ import { getImageUrl, handleImageError } from '../../utils/imageHelper';
 
 const emptyForm = {
   name: '', categoryId: '', description: '', price: '', mrp: '', discount: '', unit: 'kg',
-  stock: '', purchasePrice: '', images: '', isFeatured: false, isOnSale: false, allowKokoOnline: true, allowKokoPos: true, status: 'active', storeId: '',
+  stock: '', purchasePrice: '', images: '', isFeatured: false, isOnSale: false, allowKokoOnline: true, allowKokoPos: true, status: 'active', storeId: '', barcode: '',
 };
 
 const StoreProducts = () => {
@@ -83,6 +83,7 @@ const StoreProducts = () => {
       isFeatured: product.isFeatured || false,
       isOnSale: product.isOnSale || false,
       status: product.status || 'active',
+      barcode: product.barcode || '',
       allowKokoOnline: product.allowKokoOnline !== undefined ? product.allowKokoOnline : true,
       allowKokoPos: product.allowKokoPos !== undefined ? product.allowKokoPos : true,
     });
@@ -419,6 +420,10 @@ const StoreProducts = () => {
                         <select value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue">
                           {['kg', 'g', 'L', 'ml', 'pcs', 'pack', 'dozen', 'bunch'].map((u) => <option key={u} value={u}>{u}</option>)}
                         </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-dark-navy mb-1">Barcode / SKU</label>
+                        <input type="text" placeholder="Scan or type barcode" value={form.barcode || ''} onChange={(e) => setForm({ ...form, barcode: e.target.value })} className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-dark-navy mb-1">Price *</label>

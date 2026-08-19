@@ -15,7 +15,7 @@ import DeleteConfirmationModal from '../../components/DeleteConfirmationModal';
 
 const emptyForm = {
   name: '', categoryId: '', description: '', price: '', minPrice: '', mrp: '', discount: '', unit: 'kg',
-  stock: '', purchasePrice: '', images: '', isFeatured: false, isOnSale: false, allowKokoOnline: true, allowKokoPos: true, status: 'active', storeId: '', productLink: '', supplierId: '',
+  stock: '', purchasePrice: '', images: '', isFeatured: false, isOnSale: false, allowKokoOnline: true, allowKokoPos: true, status: 'active', storeId: '', productLink: '', supplierId: '', barcode: '',
 };
 
 const AdminProducts = () => {
@@ -92,6 +92,7 @@ const AdminProducts = () => {
       storeId: product.storeId?._id || '',
       productLink: product.productLink || '',
       supplierId: product.supplierId?._id || product.supplierId || '',
+      barcode: product.barcode || '',
     });
     setShowModal(true);
   };
@@ -473,6 +474,10 @@ const AdminProducts = () => {
                     <datalist id="store-suggestions">
                       {stores.map((s) => <option key={s._id} value={s.name} />)}
                     </datalist>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Barcode / SKU</label>
+                    <input type="text" placeholder="Scan or type barcode" value={form.barcode || ''} onChange={(e) => setForm({ ...form, barcode: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" />
                   </div>
                   <div>
                     <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Price *</label>
