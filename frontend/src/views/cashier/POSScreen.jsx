@@ -1999,15 +1999,39 @@ const POSScreen = () => {
                 <span>Search or scan to add products</span>
               </div>
             ) : (
-              pos.cart.map((item) => (
-                <div key={item.productId} className="pos-cart-item" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
-                  <div className="flex justify-between items-center w-full">
-                    <div className="pos-cart-item-info">
-                      <h4 className="pos-cart-item-name">{item.name}</h4>
-                      <p className="pos-cart-item-price">
-                        Rs.{item.price.toFixed(2)} × {item.quantity}
-                      </p>
-                    </div>
+              pos.cart.map((item) => {
+                const dbProduct = productCache[item.productId] || products.find(p => p._id === item.productId);
+                const barcode = item.barcode || dbProduct?.barcode || item.sku || dbProduct?.sku;
+
+                return (
+                  <div key={item.productId} className="pos-cart-item" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
+                    <div className="flex justify-between items-center w-full">
+                      <div className="pos-cart-item-info">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          <h4 className="pos-cart-item-name" style={{ margin: 0 }}>{item.name}</h4>
+                          {barcode && (
+                            <span 
+                              style={{ 
+                                fontSize: '11px', 
+                                background: '#eff6ff', 
+                                color: '#1d4ed8', 
+                                padding: '1px 7px', 
+                                borderRadius: '6px', 
+                                fontFamily: 'monospace', 
+                                fontWeight: 700, 
+                                border: '1px solid #bfdbfe',
+                                letterSpacing: '0.5px' 
+                              }} 
+                              title="Product Barcode / SKU"
+                            >
+                              🏷️ {barcode}
+                            </span>
+                          )}
+                        </div>
+                        <p className="pos-cart-item-price" style={{ marginTop: '2px' }}>
+                          Rs.{item.price.toFixed(2)} × {item.quantity}
+                        </p>
+                      </div>
                     <div className="pos-cart-item-controls">
                       <div className="pos-qty-controls">
                         <button
@@ -2146,7 +2170,8 @@ const POSScreen = () => {
                     );
                   })()}
                 </div>
-              ))
+              );
+            })
             )}
           </div>
 
