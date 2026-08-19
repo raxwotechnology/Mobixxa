@@ -401,6 +401,36 @@ const AdminFinancials = () => {
               </div>
             )}
 
+            {activeTab === 'balance-report' && (
+              <div className="flex gap-2">
+                <button onClick={() => {
+                  if (!balanceData) return;
+                  const rows = [
+                    { category: 'Mobile Income', amount: `Rs. ${Number(balanceData.mobileIncome || 0).toFixed(2)}` },
+                    { category: 'Accessories Income', amount: `Rs. ${Number(balanceData.accessoriesIncome || 0).toFixed(2)}` },
+                    { category: 'Wholesale Income', amount: `Rs. ${Number(balanceData.wholesaleIncome || 0).toFixed(2)}` },
+                    { category: 'Advance Income', amount: `Rs. ${Number(balanceData.advanceIncome || 0).toFixed(2)}` },
+                    { category: 'Repairing Income (Normal)', amount: `Rs. ${Number(balanceData.repairingIncomeNormal || 0).toFixed(2)}` },
+                    { category: 'Repairing Income (Company)', amount: `Rs. ${Number(balanceData.repairingIncomeCompany || 0).toFixed(2)}` },
+                    { category: 'Phone/SIM Card Income', amount: `Rs. ${Number(balanceData.simCardIncome || 0).toFixed(2)}` },
+                    { category: 'Reload Income', amount: `Rs. ${Number(balanceData.reloadIncome || 0).toFixed(2)}` },
+                    { category: 'Service Cost', amount: `Rs. ${Number(balanceData.serviceCost || 0).toFixed(2)}` },
+                    { category: 'Supplier Cost', amount: `Rs. ${Number(balanceData.supplierCost || 0).toFixed(2)}` },
+                    { category: 'Total Income', amount: `Rs. ${Number(balanceData.totalIncome || 0).toFixed(2)}` },
+                    { category: 'Total Cost', amount: `Rs. ${Number(balanceData.totalCost || 0).toFixed(2)}` },
+                    { category: 'Balance Amount', amount: `Rs. ${Number(balanceData.balanceAmount || 0).toFixed(2)}` },
+                  ];
+                  const cols = [
+                    { label: 'Category / Metric', accessor: 'category' },
+                    { label: 'Amount', accessor: 'amount' },
+                  ];
+                  exportToPDF(rows, cols, `Balance Report - ${balanceDate}`);
+                }} className="bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-black uppercase tracking-wider px-4 py-3 rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-slate-900/10">
+                  <FileText size={14} strokeWidth={2.5} /> PDF Export
+                </button>
+              </div>
+            )}
+
             {activeTab === 'profit' && (
               <div className="flex gap-2">
                 <button onClick={() => {
@@ -1158,31 +1188,67 @@ const AdminFinancials = () => {
 
         {/* BALANCE REPORT TAB */}
         {activeTab === 'balance-report' && (
-          <div className="bg-[#181f2a] rounded-3xl p-6 sm:p-8 text-white border border-slate-700/80 shadow-2xl space-y-6">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 text-slate-900 border border-slate-100 shadow-sm space-y-6 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+
             {/* Header & Date Picker */}
-            <div className="border-b border-slate-700/80 pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="border-b border-slate-100 pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
               <div>
-                <h2 className="text-2xl font-black text-[#eab308] tracking-widest uppercase flex items-center gap-2">
-                  <span>📋</span> BALANCE REPORT
+                <h2 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600">
+                    <span className="text-lg">📋</span>
+                  </div>
+                  BALANCE REPORT
                 </h2>
-                <p className="text-xs font-bold text-slate-400 mt-1">Real-time Daily Income, Costs, and Net Balance Summary</p>
+                <p className="text-xs font-bold text-slate-500 mt-1">Real-time Daily Income, Costs, and Net Balance Summary</p>
               </div>
 
-              {/* Date Filter & Search */}
-              <div className="flex items-center gap-3 bg-[#0b1220] p-2.5 rounded-2xl border border-slate-700/80 shadow-inner">
-                <span className="text-xs font-black text-slate-300 uppercase tracking-wider pl-2">DATE</span>
-                <input
-                  type="date"
-                  value={balanceDate}
-                  onChange={(e) => setBalanceDate(e.target.value)}
-                  className="bg-[#181f2a] text-amber-300 border border-slate-600 rounded-xl px-3 py-2 text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer"
-                />
+              {/* Date Filter, Search & PDF Export */}
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-2xl border border-slate-200/80 shadow-sm">
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider pl-2">DATE</span>
+                  <input
+                    type="date"
+                    value={balanceDate}
+                    onChange={(e) => setBalanceDate(e.target.value)}
+                    className="bg-white text-slate-800 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-amber-500/20 cursor-pointer shadow-sm"
+                  />
+                  <button
+                    onClick={fetchBalanceReport}
+                    className="bg-amber-500 hover:bg-amber-600 text-white p-2 rounded-xl transition-all shadow-sm flex items-center justify-center font-bold"
+                    title="Search Balance Report"
+                  >
+                    <Search size={16} strokeWidth={2.5} />
+                  </button>
+                </div>
+
                 <button
-                  onClick={fetchBalanceReport}
-                  className="bg-amber-400 hover:bg-amber-300 text-slate-950 p-2.5 rounded-xl transition-all shadow-md flex items-center justify-center font-bold"
-                  title="Search Balance Report"
+                  onClick={() => {
+                    if (!balanceData) return;
+                    const rows = [
+                      { category: 'Mobile Income', amount: `Rs. ${Number(balanceData.mobileIncome || 0).toFixed(2)}` },
+                      { category: 'Accessories Income', amount: `Rs. ${Number(balanceData.accessoriesIncome || 0).toFixed(2)}` },
+                      { category: 'Wholesale Income', amount: `Rs. ${Number(balanceData.wholesaleIncome || 0).toFixed(2)}` },
+                      { category: 'Advance Income', amount: `Rs. ${Number(balanceData.advanceIncome || 0).toFixed(2)}` },
+                      { category: 'Repairing Income (Normal)', amount: `Rs. ${Number(balanceData.repairingIncomeNormal || 0).toFixed(2)}` },
+                      { category: 'Repairing Income (Company)', amount: `Rs. ${Number(balanceData.repairingIncomeCompany || 0).toFixed(2)}` },
+                      { category: 'Phone/SIM Card Income', amount: `Rs. ${Number(balanceData.simCardIncome || 0).toFixed(2)}` },
+                      { category: 'Reload Income', amount: `Rs. ${Number(balanceData.reloadIncome || 0).toFixed(2)}` },
+                      { category: 'Service Cost', amount: `Rs. ${Number(balanceData.serviceCost || 0).toFixed(2)}` },
+                      { category: 'Supplier Cost', amount: `Rs. ${Number(balanceData.supplierCost || 0).toFixed(2)}` },
+                      { category: 'Total Income', amount: `Rs. ${Number(balanceData.totalIncome || 0).toFixed(2)}` },
+                      { category: 'Total Cost', amount: `Rs. ${Number(balanceData.totalCost || 0).toFixed(2)}` },
+                      { category: 'Balance Amount', amount: `Rs. ${Number(balanceData.balanceAmount || 0).toFixed(2)}` },
+                    ];
+                    const cols = [
+                      { label: 'Category / Metric', accessor: 'category' },
+                      { label: 'Amount', accessor: 'amount' },
+                    ];
+                    exportToPDF(rows, cols, `Balance Report - ${balanceDate}`);
+                  }}
+                  className="bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-black uppercase tracking-wider px-4 py-3 rounded-xl transition-all flex items-center gap-2 shadow-sm"
                 >
-                  <Search size={18} strokeWidth={3} />
+                  <FileText size={14} strokeWidth={2.5} /> Export PDF
                 </button>
               </div>
             </div>
@@ -1196,47 +1262,47 @@ const AdminFinancials = () => {
                 {/* Left Column: Income Categories */}
                 <div className="space-y-4">
                   {/* MOBILE INCOME */}
-                  <div className="bg-[#0b1220] p-4.5 rounded-2xl border border-slate-700/60 shadow-md">
-                    <div className="text-[11px] font-black uppercase text-slate-300 tracking-wider mb-2">MOBILE INCOME</div>
-                    <div className="text-lg font-bold text-[#22c55e]">
+                  <div className="bg-slate-50/80 p-4.5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all">
+                    <div className="text-[10px] font-black uppercase text-slate-500 tracking-wider mb-1.5">MOBILE INCOME</div>
+                    <div className="text-lg font-black text-emerald-600">
                       Rs. {Number(balanceData?.mobileIncome || 0).toFixed(2)}
                     </div>
                   </div>
 
                   {/* ACCESSORIES INCOME */}
-                  <div className="bg-[#0b1220] p-4.5 rounded-2xl border border-slate-700/60 shadow-md">
-                    <div className="text-[11px] font-black uppercase text-slate-300 tracking-wider mb-2">ACCESSORIES INCOME</div>
-                    <div className="text-lg font-bold text-[#22c55e]">
+                  <div className="bg-slate-50/80 p-4.5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all">
+                    <div className="text-[10px] font-black uppercase text-slate-500 tracking-wider mb-1.5">ACCESSORIES INCOME</div>
+                    <div className="text-lg font-black text-emerald-600">
                       Rs. {Number(balanceData?.accessoriesIncome || 0).toFixed(2)}
                     </div>
                   </div>
 
                   {/* WHOLESALE | ADVANCE INCOME */}
-                  <div className="bg-[#0b1220] p-4.5 rounded-2xl border border-slate-700/60 shadow-md">
-                    <div className="text-[11px] font-black uppercase text-slate-300 tracking-wider mb-2">WHOLESALE | ADVANCE INCOME</div>
-                    <div className="text-lg font-bold text-[#22c55e] flex items-center gap-4 flex-wrap">
+                  <div className="bg-slate-50/80 p-4.5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all">
+                    <div className="text-[10px] font-black uppercase text-slate-500 tracking-wider mb-1.5">WHOLESALE | ADVANCE INCOME</div>
+                    <div className="text-lg font-black text-emerald-600 flex items-center gap-4 flex-wrap">
                       <span>Rs. {Number(balanceData?.wholesaleIncome || 0).toFixed(2)}</span>
-                      <span className="text-slate-600">|</span>
+                      <span className="text-slate-300">|</span>
                       <span>Rs. {Number(balanceData?.advanceIncome || 0).toFixed(2)}</span>
                     </div>
                   </div>
 
                   {/* REPAIRING INCOME (Normal | Company) */}
-                  <div className="bg-[#0b1220] p-4.5 rounded-2xl border border-slate-700/60 shadow-md">
-                    <div className="text-[11px] font-black uppercase text-slate-300 tracking-wider mb-2">REPAIRING INCOME (Normal | Company)</div>
-                    <div className="text-lg font-bold text-[#22c55e] flex items-center gap-4 flex-wrap">
+                  <div className="bg-slate-50/80 p-4.5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all">
+                    <div className="text-[10px] font-black uppercase text-slate-500 tracking-wider mb-1.5">REPAIRING INCOME (Normal | Company)</div>
+                    <div className="text-lg font-black text-emerald-600 flex items-center gap-4 flex-wrap">
                       <span>Rs. {Number(balanceData?.repairingIncomeNormal || 0).toFixed(2)}</span>
-                      <span className="text-slate-600">|</span>
+                      <span className="text-slate-300">|</span>
                       <span>Rs. {Number(balanceData?.repairingIncomeCompany || 0).toFixed(2)}</span>
                     </div>
                   </div>
 
                   {/* PHONE CARD | SIM CARD INCOME */}
-                  <div className="bg-[#0b1220] p-4.5 rounded-2xl border border-slate-700/60 shadow-md">
-                    <div className="text-[11px] font-black uppercase text-slate-300 tracking-wider mb-2">PHONE CARD | SIM CARD INCOME</div>
-                    <div className="text-lg font-bold text-[#22c55e] flex items-center gap-4 flex-wrap">
+                  <div className="bg-slate-50/80 p-4.5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all">
+                    <div className="text-[10px] font-black uppercase text-slate-500 tracking-wider mb-1.5">PHONE CARD | SIM CARD INCOME</div>
+                    <div className="text-lg font-black text-emerald-600 flex items-center gap-4 flex-wrap">
                       <span>Rs. {Number(balanceData?.simCardIncome || 0).toFixed(2)}</span>
-                      <span className="text-slate-600">|</span>
+                      <span className="text-slate-300">|</span>
                       <span>Rs. 00.00</span>
                     </div>
                   </div>
@@ -1245,49 +1311,49 @@ const AdminFinancials = () => {
                 {/* Right Column: Costs & Totals */}
                 <div className="space-y-4">
                   {/* RELOAD INCOME */}
-                  <div className="bg-[#0b1220] p-4.5 rounded-2xl border border-slate-700/60 shadow-md">
-                    <div className="text-[11px] font-black uppercase text-slate-300 tracking-wider mb-2">RELOAD INCOME</div>
-                    <div className="text-lg font-bold text-[#22c55e]">
+                  <div className="bg-slate-50/80 p-4.5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all">
+                    <div className="text-[10px] font-black uppercase text-slate-500 tracking-wider mb-1.5">RELOAD INCOME</div>
+                    <div className="text-lg font-black text-emerald-600">
                       Rs. {Number(balanceData?.reloadIncome || 0).toFixed(2)}
                     </div>
                   </div>
 
                   {/* SERVICE COST */}
-                  <div className="bg-[#0b1220] p-4.5 rounded-2xl border border-slate-700/60 shadow-md">
-                    <div className="text-[11px] font-black uppercase text-slate-300 tracking-wider mb-2">SERVICE COST</div>
-                    <div className="text-lg font-bold text-[#ef4444]">
+                  <div className="bg-slate-50/80 p-4.5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all">
+                    <div className="text-[10px] font-black uppercase text-slate-500 tracking-wider mb-1.5">SERVICE COST</div>
+                    <div className="text-lg font-black text-rose-600">
                       Rs. {Number(balanceData?.serviceCost || 0).toFixed(2)}
                     </div>
                   </div>
 
                   {/* SUPPLIER COST */}
-                  <div className="bg-[#0b1220] p-4.5 rounded-2xl border border-slate-700/60 shadow-md">
-                    <div className="text-[11px] font-black uppercase text-slate-300 tracking-wider mb-2">SUPPLIER COST</div>
-                    <div className="text-lg font-bold text-[#ef4444]">
+                  <div className="bg-slate-50/80 p-4.5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all">
+                    <div className="text-[10px] font-black uppercase text-slate-500 tracking-wider mb-1.5">SUPPLIER COST</div>
+                    <div className="text-lg font-black text-rose-600">
                       Rs. {Number(balanceData?.supplierCost || 0).toFixed(2)}
                     </div>
                   </div>
 
                   {/* TOTAL INCOME */}
-                  <div className="bg-[#0b1220] p-4.5 rounded-2xl border border-emerald-500/40 shadow-lg">
-                    <div className="text-[11px] font-black uppercase text-slate-300 tracking-wider mb-2">TOTAL INCOME</div>
-                    <div className="text-xl font-black text-cyan-400">
+                  <div className="bg-emerald-50/60 p-4.5 rounded-2xl border border-emerald-200/80 shadow-sm">
+                    <div className="text-[10px] font-black uppercase text-emerald-700 tracking-wider mb-1.5">TOTAL INCOME</div>
+                    <div className="text-xl font-black text-emerald-700">
                       Rs. {Number(balanceData?.totalIncome || 0).toFixed(2)}
                     </div>
                   </div>
 
                   {/* TOTAL COST */}
-                  <div className="bg-[#0b1220] p-4.5 rounded-2xl border border-rose-500/40 shadow-lg">
-                    <div className="text-[11px] font-black uppercase text-slate-300 tracking-wider mb-2">TOTAL COST</div>
-                    <div className="text-xl font-black text-rose-400">
+                  <div className="bg-rose-50/60 p-4.5 rounded-2xl border border-rose-200/80 shadow-sm">
+                    <div className="text-[10px] font-black uppercase text-rose-700 tracking-wider mb-1.5">TOTAL COST</div>
+                    <div className="text-xl font-black text-rose-700">
                       Rs. {Number(balanceData?.totalCost || 0).toFixed(2)}
                     </div>
                   </div>
 
                   {/* BALANCE AMOUNT */}
-                  <div className="bg-[#0b1220] p-5 rounded-2xl border-2 border-amber-400/80 shadow-xl bg-gradient-to-r from-amber-500/10 via-transparent to-transparent">
-                    <div className="text-[11px] font-black uppercase text-amber-400 tracking-wider mb-2">BALANCE AMOUNT</div>
-                    <div className="text-2xl font-black text-amber-400">
+                  <div className="bg-amber-50 p-5 rounded-2xl border-2 border-amber-300 shadow-md">
+                    <div className="text-[10px] font-black uppercase text-amber-800 tracking-wider mb-1.5">BALANCE AMOUNT</div>
+                    <div className="text-2xl font-black text-amber-800">
                       Rs. {Number(balanceData?.balanceAmount || 0).toFixed(2)}
                     </div>
                   </div>
