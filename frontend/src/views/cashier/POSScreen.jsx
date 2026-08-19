@@ -3482,52 +3482,117 @@ const POSScreen = () => {
       )}
       {/* ──────────────── Quick HP Installment Payment Modal ──────────────── */}
       {showHpQuickPayModal && (
-        <div className="pos-modal-overlay">
-          <div className="pos-modal" style={{ maxWidth: '650px', width: '95%', padding: '24px', borderRadius: '16px' }}>
-            <div className="pos-modal-header" style={{ borderBottom: '1px solid #e2e8f0', paddingBottom: '14px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{ background: '#fef3c7', padding: '10px', borderRadius: '12px', color: '#b45309', display: 'flex' }}>
-                  <CreditCard size={22} />
+        <div 
+          className="pos-modal-overlay" 
+          onClick={() => { setShowHpQuickPayModal(false); setSelectedHpRecord(null); setHpReceiptData(null); }}
+          style={{ background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(6px)', zIndex: 99999 }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: '680px',
+              width: '95%',
+              background: '#ffffff',
+              color: '#0f172a',
+              padding: '28px',
+              borderRadius: '24px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0, 0, 0, 0.05)',
+              border: '1px solid #e2e8f0',
+              maxHeight: '90vh',
+              overflowY: 'auto'
+            }}
+          >
+            {/* Modal Header */}
+            <div style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: '16px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                <div style={{ background: '#fef3c7', padding: '12px', borderRadius: '16px', color: '#d97706', display: 'flex', boxShadow: '0 2px 8px rgba(217, 119, 6, 0.15)' }}>
+                  <CreditCard size={26} />
                 </div>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', color: '#1e293b' }}>
+                  <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.3px' }}>
                     Quick Installment (HP) Payment 💳
                   </h3>
-                  <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>
+                  <p style={{ margin: '2px 0 0 0', fontSize: '13px', color: '#64748b', fontWeight: '500' }}>
                     Search HP Invoice Number or Customer Phone to record payment & print receipt
                   </p>
                 </div>
               </div>
-              <button className="pos-modal-close" onClick={() => { setShowHpQuickPayModal(false); setSelectedHpRecord(null); setHpReceiptData(null); }}>
+              <button
+                onClick={() => { setShowHpQuickPayModal(false); setSelectedHpRecord(null); setHpReceiptData(null); }}
+                style={{
+                  border: 'none',
+                  background: '#f1f5f9',
+                  color: '#64748b',
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = '#e2e8f0'; e.currentTarget.style.color = '#0f172a'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.color = '#64748b'; }}
+              >
                 <X size={20} />
               </button>
             </div>
 
             {/* Step 1: Search HP Invoice */}
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#334155', display: 'block', marginBottom: '6px' }}>
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ fontSize: '12px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 Search HP Invoice Number, Customer Phone, or Name *
               </label>
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ display: 'flex', gap: '10px' }}>
                 <div style={{ position: 'relative', flex: 1 }}>
-                  <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                  <Search size={20} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
                   <input
                     type="text"
                     value={hpSearchInput}
                     onChange={(e) => setHpSearchInput(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter') handleSearchHpRecords(); }}
-                    placeholder="Enter Invoice No (e.g. #HP-INV-10025, INV-001) or Phone..."
-                    className="pos-input"
-                    style={{ paddingLeft: '38px', fontSize: '13px', background: '#fff', color: '#0f172a', fontWeight: '500' }}
+                    placeholder="e.g. #HP-INV-10025, INV-001, or 0771234567..."
+                    style={{
+                      width: '100%',
+                      paddingLeft: '44px',
+                      paddingRight: '16px',
+                      paddingTop: '12px',
+                      paddingBottom: '12px',
+                      fontSize: '14px',
+                      background: '#ffffff',
+                      color: '#0f172a',
+                      fontWeight: '600',
+                      borderRadius: '12px',
+                      border: '2px solid #cbd5e1',
+                      outline: 'none',
+                      boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+                      transition: 'border-color 0.2s'
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = '#d97706'}
+                    onBlur={(e) => e.target.style.borderColor = '#cbd5e1'}
                   />
                 </div>
                 <button
-                  className="pos-btn-blue"
                   onClick={() => handleSearchHpRecords()}
                   disabled={loadingHpSearch}
-                  style={{ padding: '0 18px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                  style={{
+                    padding: '0 24px',
+                    fontSize: '14px',
+                    fontWeight: '700',
+                    color: '#ffffff',
+                    background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+                    border: 'none',
+                    borderRadius: '12px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    boxShadow: '0 4px 12px rgba(217, 119, 6, 0.25)',
+                    transition: 'all 0.2s'
+                  }}
                 >
-                  {loadingHpSearch ? <RefreshCw size={16} className="animate-spin" /> : <Search size={16} />}
+                  {loadingHpSearch ? <RefreshCw size={18} className="animate-spin" /> : <Search size={18} />}
                   Search
                 </button>
               </div>
@@ -3535,37 +3600,38 @@ const POSScreen = () => {
 
             {/* List of matching HP records if multiple */}
             {hpRecordsList.length > 0 && !selectedHpRecord && (
-              <div style={{ maxHeight: '200px', overflowY: 'auto', marginBottom: '16px', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
+              <div style={{ maxHeight: '220px', overflowY: 'auto', marginBottom: '20px', border: '1px solid #e2e8f0', borderRadius: '14px', background: '#ffffff', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                 {hpRecordsList.map((rec) => (
                   <div
                     key={rec._id}
                     onClick={() => handleSelectHpRecord(rec)}
                     style={{
-                      padding: '10px 14px',
+                      padding: '12px 16px',
                       borderBottom: '1px solid #f1f5f9',
                       cursor: 'pointer',
                       display: 'flex',
                       justify: 'space-between',
                       alignItems: 'center',
-                      background: '#fff',
-                      transition: 'background 0.2s'
+                      background: '#ffffff',
+                      transition: 'all 0.2s'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#f8fafc'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = '#fff'}
+                    onMouseEnter={(e) => e.currentTarget.style.background = '#fffbe6'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = '#ffffff'}
                   >
                     <div>
-                      <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#1e293b' }}>
-                        {rec.invoiceNo} — {rec.customer?.name}
+                      <div style={{ fontWeight: '800', fontSize: '14px', color: '#0f172a' }}>
+                        {rec.invoiceNo} — <span style={{ color: '#2563eb' }}>{rec.customer?.name}</span>
                       </div>
-                      <div style={{ fontSize: '11px', color: '#64748b' }}>
-                        📞 {rec.customer?.phone} | Due: Rs. {rec.remainingBalance?.toLocaleString()}
+                      <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
+                        📞 {rec.customer?.phone} | Due: <strong style={{ color: '#d97706' }}>Rs. {rec.remainingBalance?.toLocaleString()}</strong>
                       </div>
                     </div>
                     <span style={{
                       fontSize: '11px',
-                      padding: '2px 8px',
-                      borderRadius: '12px',
-                      fontWeight: 'bold',
+                      padding: '4px 10px',
+                      borderRadius: '20px',
+                      fontWeight: '800',
+                      textTransform: 'uppercase',
                       background: rec.status === 'Completed' ? '#dcfce7' : rec.status === 'Overdue' ? '#fee2e2' : '#fef3c7',
                       color: rec.status === 'Completed' ? '#166534' : rec.status === 'Overdue' ? '#991b1b' : '#92400e'
                     }}>
@@ -3579,62 +3645,84 @@ const POSScreen = () => {
             {/* Step 2: Selected HP Agreement Details & Payment Form */}
             {selectedHpRecord ? (
               <div>
-                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '14px', marginBottom: '16px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '16px', marginBottom: '20px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                     <div>
-                      <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#1e293b' }}>{selectedHpRecord.invoiceNo}</span>
-                      <span style={{ fontSize: '12px', color: '#64748b', marginLeft: '8px' }}>({selectedHpRecord.customer?.name})</span>
+                      <span style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a' }}>{selectedHpRecord.invoiceNo}</span>
+                      <span style={{ fontSize: '13px', color: '#475569', marginLeft: '8px', fontWeight: '600' }}>({selectedHpRecord.customer?.name})</span>
                     </div>
                     <button
                       onClick={() => setSelectedHpRecord(null)}
-                      style={{ border: 'none', background: 'none', color: '#0284c7', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
+                      style={{ border: '1px solid #cbd5e1', background: '#ffffff', color: '#2563eb', fontSize: '12px', fontWeight: '700', padding: '4px 12px', borderRadius: '8px', cursor: 'pointer' }}
                     >
                       Change Agreement
                     </button>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', background: '#fff', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', background: '#ffffff', padding: '12px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
                     <div>
-                      <div style={{ fontSize: '10px', color: '#64748b', textTransform: 'uppercase' }}>Total Net</div>
-                      <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#334155' }}>Rs. {selectedHpRecord.netTotal?.toLocaleString()}</div>
+                      <div style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: '700' }}>Total Net</div>
+                      <div style={{ fontSize: '15px', fontWeight: '800', color: '#334155', marginTop: '2px' }}>Rs. {selectedHpRecord.netTotal?.toLocaleString()}</div>
                     </div>
                     <div>
-                      <div style={{ fontSize: '10px', color: '#166534', textTransform: 'uppercase' }}>Total Paid</div>
-                      <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#166534' }}>Rs. {selectedHpRecord.totalPaid?.toLocaleString()}</div>
+                      <div style={{ fontSize: '11px', color: '#166534', textTransform: 'uppercase', fontWeight: '700' }}>Total Paid</div>
+                      <div style={{ fontSize: '15px', fontWeight: '800', color: '#166534', marginTop: '2px' }}>Rs. {selectedHpRecord.totalPaid?.toLocaleString()}</div>
                     </div>
                     <div>
-                      <div style={{ fontSize: '10px', color: '#b45309', textTransform: 'uppercase' }}>Remaining Due</div>
-                      <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#d97706' }}>Rs. {selectedHpRecord.remainingBalance?.toLocaleString()}</div>
+                      <div style={{ fontSize: '11px', color: '#b45309', textTransform: 'uppercase', fontWeight: '700' }}>Remaining Due</div>
+                      <div style={{ fontSize: '16px', fontWeight: '800', color: '#d97706', marginTop: '2px' }}>Rs. {selectedHpRecord.remainingBalance?.toLocaleString()}</div>
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px', fontSize: '11px', color: '#475569' }}>
-                    <span>📞 {selectedHpRecord.customer?.phone}</span>
-                    <span>Monthly Installment: <strong>Rs. {selectedHpRecord.installmentAmount?.toLocaleString()}</strong></span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '12px', fontSize: '12px', color: '#475569', fontWeight: '500' }}>
+                    <span>📞 Customer Phone: <strong style={{ color: '#0f172a' }}>{selectedHpRecord.customer?.phone || 'N/A'}</strong></span>
+                    <span>Monthly Installment: <strong style={{ color: '#2563eb' }}>Rs. {selectedHpRecord.installmentAmount?.toLocaleString()}</strong></span>
                   </div>
                 </div>
 
                 {/* Form fields */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '14px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
                   <div>
-                    <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#334155' }}>Amount to Pay (Rs.) *</label>
+                    <label style={{ fontSize: '12px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '6px' }}>
+                      Amount to Pay (Rs.) *
+                    </label>
                     <input
                       type="number"
                       onWheel={(e) => e.target.blur()}
                       value={hpPayForm.amount}
                       onChange={(e) => setHpPayForm({ ...hpPayForm, amount: e.target.value })}
                       placeholder="Enter amount"
-                      className="pos-input"
-                      style={{ fontSize: '14px', fontWeight: 'bold', color: '#0f172a', background: '#fff' }}
+                      style={{
+                        width: '100%',
+                        padding: '12px 14px',
+                        fontSize: '16px',
+                        fontWeight: '800',
+                        color: '#0f172a',
+                        background: '#ffffff',
+                        border: '2px solid #cbd5e1',
+                        borderRadius: '12px',
+                        outline: 'none'
+                      }}
                     />
                   </div>
                   <div>
-                    <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#334155' }}>Payment Method *</label>
+                    <label style={{ fontSize: '12px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '6px' }}>
+                      Payment Method *
+                    </label>
                     <select
                       value={hpPayForm.paymentMethod}
                       onChange={(e) => setHpPayForm({ ...hpPayForm, paymentMethod: e.target.value })}
-                      className="pos-input"
-                      style={{ fontSize: '13px', background: '#fff', color: '#0f172a' }}
+                      style={{
+                        width: '100%',
+                        padding: '12px 14px',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: '#0f172a',
+                        background: '#ffffff',
+                        border: '2px solid #cbd5e1',
+                        borderRadius: '12px',
+                        outline: 'none'
+                      }}
                     >
                       <option value="cash">💵 Cash</option>
                       <option value="card">💳 Card</option>
@@ -3643,14 +3731,25 @@ const POSScreen = () => {
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '20px' }}>
                   <div>
-                    <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#334155' }}>Receiving Account / Drawer *</label>
+                    <label style={{ fontSize: '12px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '6px' }}>
+                      Receiving Account / Drawer *
+                    </label>
                     <select
                       value={hpPayForm.accountId}
                       onChange={(e) => setHpPayForm({ ...hpPayForm, accountId: e.target.value })}
-                      className="pos-input"
-                      style={{ fontSize: '12px', background: '#fff', color: '#0f172a' }}
+                      style={{
+                        width: '100%',
+                        padding: '12px 14px',
+                        fontSize: '13px',
+                        fontWeight: '600',
+                        color: '#0f172a',
+                        background: '#ffffff',
+                        border: '2px solid #cbd5e1',
+                        borderRadius: '12px',
+                        outline: 'none'
+                      }}
                     >
                       <option value="">Select Account</option>
                       {accounts.map(acc => (
@@ -3661,14 +3760,25 @@ const POSScreen = () => {
                     </select>
                   </div>
                   <div>
-                    <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#334155' }}>Ref No / Notes</label>
+                    <label style={{ fontSize: '12px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '6px' }}>
+                      Ref No / Notes
+                    </label>
                     <input
                       type="text"
                       value={hpPayForm.referenceNo}
                       onChange={(e) => setHpPayForm({ ...hpPayForm, referenceNo: e.target.value })}
                       placeholder="e.g. Card slip # / Txn ID"
-                      className="pos-input"
-                      style={{ fontSize: '12px', background: '#fff', color: '#0f172a' }}
+                      style={{
+                        width: '100%',
+                        padding: '12px 14px',
+                        fontSize: '13px',
+                        fontWeight: '500',
+                        color: '#0f172a',
+                        background: '#ffffff',
+                        border: '2px solid #cbd5e1',
+                        borderRadius: '12px',
+                        outline: 'none'
+                      }}
                     />
                   </div>
                 </div>
@@ -3676,38 +3786,65 @@ const POSScreen = () => {
                 {/* Submit button */}
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <button
-                    className="pos-btn-green pos-btn-lg"
-                    style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: 'bold' }}
+                    style={{
+                      flex: 1,
+                      display: 'flex',
+                      justify: 'center',
+                      alignItems: 'center',
+                      gap: '10px',
+                      fontSize: '15px',
+                      fontWeight: '800',
+                      padding: '14px 24px',
+                      color: '#ffffff',
+                      background: 'linear-gradient(135deg, #10b981 0%, #047857 100%)',
+                      border: 'none',
+                      borderRadius: '14px',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
+                      transition: 'all 0.2s'
+                    }}
                     onClick={handleSubmitHpPayment}
                     disabled={submittingHpPay || !hpPayForm.amount || !hpPayForm.accountId}
                   >
-                    {submittingHpPay ? <RefreshCw size={18} className="animate-spin" /> : <CreditCard size={18} />}
+                    {submittingHpPay ? <RefreshCw size={20} className="animate-spin" /> : <CreditCard size={20} />}
                     Record Payment & Generate Receipt
                   </button>
                 </div>
               </div>
             ) : hpSearchInput && hpRecordsList.length === 0 && !loadingHpSearch ? (
-              <div style={{ textAlign: 'center', padding: '24px', background: '#f8fafc', borderRadius: '12px', color: '#64748b' }}>
-                No active HP agreement found matching "{hpSearchInput}"
+              <div style={{ textAlign: 'center', padding: '32px', background: '#f8fafc', borderRadius: '16px', border: '1px solid #e2e8f0', color: '#64748b', fontSize: '14px', fontWeight: '600' }}>
+                ⚠️ No active HP agreement found matching "<strong style={{ color: '#0f172a' }}>{hpSearchInput}</strong>"
               </div>
             ) : null}
 
             {/* Receipt Modal Popup after success */}
             {hpReceiptData && (
-              <div style={{ marginTop: '20px', padding: '16px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                  <span style={{ fontWeight: 'bold', color: '#166534', fontSize: '14px' }}>✅ Payment Recorded Successfully!</span>
+              <div style={{ marginTop: '20px', padding: '18px', background: '#f0fdf4', border: '2px solid #86efac', borderRadius: '16px', boxShadow: '0 4px 12px rgba(34, 197, 94, 0.15)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontWeight: '800', color: '#15803d', fontSize: '15px' }}>✅ Payment Recorded Successfully!</span>
                   <button
                     onClick={handlePrintHpReceipt}
-                    className="pos-btn-blue"
-                    style={{ padding: '6px 14px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                    style={{
+                      padding: '8px 18px',
+                      fontSize: '13px',
+                      fontWeight: '800',
+                      color: '#ffffff',
+                      background: '#2563eb',
+                      border: 'none',
+                      borderRadius: '10px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      boxShadow: '0 2px 8px rgba(37, 99, 235, 0.3)'
+                    }}
                   >
-                    <Receipt size={16} /> Print Thermal Receipt
+                    <Receipt size={18} /> Print Thermal Receipt
                   </button>
                 </div>
-                <div style={{ fontSize: '12px', color: '#374151', lineHeight: '1.6' }}>
-                  Amount Paid: <strong>Rs. {Number(hpReceiptData.payment.amount).toLocaleString()}</strong> | 
-                  Remaining Balance: <strong>Rs. {Number(Math.max(0, hpReceiptData.newBalance)).toLocaleString()}</strong>
+                <div style={{ fontSize: '13px', color: '#166534', lineHeight: '1.6', fontWeight: '500' }}>
+                  Amount Paid: <strong style={{ fontSize: '14px' }}>Rs. {Number(hpReceiptData.payment.amount).toLocaleString()}</strong> | 
+                  Remaining Due Balance: <strong style={{ fontSize: '14px', color: '#b45309' }}>Rs. {Number(Math.max(0, hpReceiptData.newBalance)).toLocaleString()}</strong>
                 </div>
               </div>
             )}
