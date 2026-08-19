@@ -2046,39 +2046,45 @@ body {
   color: #f59e0b;
 }
 
-.pos-discount-input {
+.pos-discount-input,
+.pos-discount-modal .pos-input {
   margin-bottom: 1rem;
   font-size: 1.15rem;
   font-weight: 700;
   text-align: center;
-  background: #0d1117 !important;
-  color: #ffffff !important;
-  border: 1px solid #30363d !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
 }
 
 .pos-discount-input:focus,
 .pos-discount-modal .pos-input:focus {
-  background: #161b22 !important;
-  color: #ffffff !important;
-  border-color: #38bdf8 !important;
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25) !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2) !important;
+}
+
+.pos-discount-input::placeholder,
+.pos-discount-modal .pos-input::placeholder {
+  color: #64748b !important;
 }
 
 .pos-modal-overlay .pos-input {
-  background: #0d1117;
-  color: #ffffff;
-  border: 1px solid #30363d;
+  background: #ffffff;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
 }
 
 .pos-modal-overlay .pos-input:focus {
-  background: #161b22;
-  color: #ffffff;
-  border-color: #38bdf8;
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
+  background: #ffffff;
+  color: #0f172a;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
 }
 
 .pos-modal-overlay .pos-input::placeholder {
-  color: #8b949e;
+  color: #64748b;
 }
 
 /* Shift Summary Modal */
