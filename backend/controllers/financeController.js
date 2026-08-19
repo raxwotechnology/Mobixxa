@@ -750,8 +750,151 @@ const getProfitReport = async (req, res, next) => {
   }
 };
 
+// @desc    Get detailed Daily Balance Report
+// @route   GET /api/finance/balance-report
+// @access  Private
+const getBalanceReport = async (req, res, next) => {
+  try {
+    const { date, storeId } = req.query;
+    const targetDate = date ? new Date(date) : new Date();
+    
+    const startOfDay = new Date(targetDate);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(targetDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    let storeFilter = {};
+    if (req.user.role === 'manager') {
+      const store = await Store.findOne({ managerId: req.user._id });
+      if (store) storeFilter = { storeId: store._id };
+    } else if (storeId && storeId !== 'all') {
+      storeFilter = { storeId };
+    }
+
+    const dateQuery = { createdAt: { $gte: startOfDay, $lte: endOfDay } };
+    const txDateQuery = { date: { $gte: startOfDay, $lte: endOfDay } };
+
+    // Fetch Orders
+    const orderFilter = { ...storeFilter, ...dateQuery, orderStatus: { $nin: ['cancelled'] } };
+    const orders = await Order.find(orderFilter).lean();
+
+    // Populate products for category mapping
+    const Product = require('../models/Product');
+    const productIds = [];
+    orders.forEach(o => (o.items || []).forEach(it => { if (it.productId) productIds.push(it.productId); }));
+    const products = await Product.find({ _id: { $in: productIds } }).populate('categoryId').lean();
+    
+    const productCategoryMap = new Map();
+    products.forEach(p => {
+      const catName = (p.categoryId?.name || '').toLowerCase();
+      if (/sim|card|phone card/i.test(catName)) {
+        productCategoryMap.set(p._id.toString(), 'sim');
+      } else if (/mobile|phone|tablet|smartphone/i.test(catName) || p.ram || p.storage || (p.imei && p.imei.length > 0)) {
+        productCategoryMap.set(p._id.toString(), 'mobile');
+      } else {
+        productCategoryMap.set(p._id.toString(), 'accessories');
+      }
+    });
+
+    let mobileIncome = 0;
+    let accessoriesIncome = 0;
+    let wholesaleIncome = 0;
+    let advanceIncome = 0;
+    let simCardIncome = 0;
+
+    orders.forEach(o => {
+      if (o.orderType === 'wholesale') {
+        wholesaleIncome += o.totalAmount || 0;
+      } else {
+        if (o.amountPaid && o.orderStatus === 'pending') {
+          advanceIncome += o.amountPaid || 0;
+        }
+        (o.items || []).forEach(it => {
+          const cat = productCategoryMap.get(it.productId?.toString()) || 'accessories';
+          const itemTotal = (it.price || 0) * (it.quantity || 0);
+          if (cat === 'mobile') mobileIncome += itemTotal;
+          else if (cat === 'sim') simCardIncome += itemTotal;
+          else accessoriesIncome += itemTotal;
+        });
+      }
+    });
+
+    // Fetch Repairs
+    const Repair = require('../models/Repair');
+    let repairingIncomeNormal = 0;
+    let repairingIncomeCompany = 0;
+    try {
+      const repairs = await Repair.find({ ...storeFilter, ...dateQuery }).lean();
+      repairs.forEach(r => {
+        const cost = r.cost || r.estimatedCost || 0;
+        if (r.repairType === 'company' || r.isCompanyWarranty) {
+          repairingIncomeCompany += cost;
+        } else {
+          repairingIncomeNormal += cost;
+        }
+      });
+    } catch (e) {}
+
+    // Fetch Reloads
+    const Reload = require('../models/Reload');
+    let reloadIncome = 0;
+    try {
+      const reloads = await Reload.find({ ...storeFilter, ...dateQuery }).lean();
+      reloadIncome = reloads.reduce((sum, r) => sum + (r.amount || 0), 0);
+    } catch (e) {}
+
+    // Fetch Transactions & Expenses (Service Costs & Supplier Costs)
+    const transactions = await Transaction.find({ ...storeFilter, ...txDateQuery }).lean();
+    let serviceCost = 0;
+    let supplierCost = 0;
+
+    transactions.forEach(t => {
+      if (t.type === 'expense') {
+        if (t.category === 'Supplier Payment' || t.category === 'GRN Purchase') {
+          supplierCost += t.amount || 0;
+        } else {
+          serviceCost += t.amount || 0;
+        }
+      }
+    });
+
+    // Fetch Supplier Payments directly
+    const SupplierPayment = require('../models/SupplierPayment');
+    try {
+      const supplierPayments = await SupplierPayment.find({ ...storeFilter, ...dateQuery }).lean();
+      const spTotal = supplierPayments.reduce((sum, sp) => sum + (sp.amount || 0), 0);
+      supplierCost = Math.max(supplierCost, spTotal);
+    } catch (e) {}
+
+    const totalIncome = mobileIncome + accessoriesIncome + wholesaleIncome + advanceIncome + repairingIncomeNormal + repairingIncomeCompany + simCardIncome + reloadIncome;
+    const totalCost = serviceCost + supplierCost;
+    const balanceAmount = totalIncome - totalCost;
+
+    res.json({
+      date: startOfDay.toISOString().split('T')[0],
+      mobileIncome,
+      accessoriesIncome,
+      wholesaleIncome,
+      advanceIncome,
+      repairingIncomeNormal,
+      repairingIncomeCompany,
+      simCardIncome,
+      reloadIncome,
+      serviceCost,
+      supplierCost,
+      totalIncome,
+      totalCost,
+      balanceAmount
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getFinancialDashboard,
+  getBalanceReport,
   createTransaction,
   getTransactions,
   updateTransaction,

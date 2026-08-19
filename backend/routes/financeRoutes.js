@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {
   getFinancialDashboard,
+  getBalanceReport,
   createTransaction,
   getTransactions,
   updateTransaction,
@@ -22,6 +23,7 @@ router.use(requirePermission('finance'));
 
 // Financial Dashboard (Aggregated stats & charts)
 router.get('/dashboard', getFinancialDashboard);
+router.get('/balance-report', getBalanceReport);
 router.get('/profit-report', getProfitReport);
 
 // Transaction Ledger (Incomes & Expenses)

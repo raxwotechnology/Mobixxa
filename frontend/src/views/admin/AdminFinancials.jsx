@@ -5,6 +5,7 @@ import { DollarSign, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Ref
 import DashboardLayout from '../../components/DashboardLayout';
 import {
   getFinancialDashboard,
+  getBalanceReport,
   getTransactions,
   getPettyCashLog,
   createPettyCashEntry,
@@ -68,6 +69,27 @@ const AdminFinancials = () => {
   const [profitBrand, setProfitBrand] = useState('all');
   const [profitStartDate, setProfitStartDate] = useState('');
   const [profitEndDate, setProfitEndDate] = useState('');
+
+  // Balance Report states
+  const [balanceDate, setBalanceDate] = useState(new Date().toISOString().split('T')[0]);
+  const [balanceData, setBalanceData] = useState(null);
+  const [balanceLoading, setBalanceLoading] = useState(false);
+
+  const fetchBalanceReport = async () => {
+    try {
+      setBalanceLoading(true);
+      const params = {
+        date: balanceDate,
+        ...(selectedStoreId !== 'all' ? { storeId: selectedStoreId } : {})
+      };
+      const { data } = await getBalanceReport(params);
+      setBalanceData(data);
+    } catch (err) {
+      toast.error('Failed to load balance report');
+    } finally {
+      setBalanceLoading(false);
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -171,6 +193,8 @@ const AdminFinancials = () => {
       fetchTaxPayments();
     } else if (activeTab === 'profit') {
       fetchProfitReportData();
+    } else if (activeTab === 'balance-report') {
+      fetchBalanceReport();
     }
   }, [
     period,
@@ -408,6 +432,12 @@ const AdminFinancials = () => {
             className={`py-2.5 px-5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-2 ${activeTab === 'overview' ? 'bg-white text-brand-fuchsia shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 border border-transparent'}`}
           >
             📊 Financial Overview
+          </button>
+          <button
+            onClick={() => setActiveTab('balance-report')}
+            className={`py-2.5 px-5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-2 ${activeTab === 'balance-report' ? 'bg-amber-500 text-slate-950 shadow-md font-extrabold' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 border border-transparent'}`}
+          >
+            📋 Balance Report
           </button>
           <button
             onClick={() => setActiveTab('profit')}
@@ -1123,6 +1153,147 @@ const AdminFinancials = () => {
                 </table>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* BALANCE REPORT TAB */}
+        {activeTab === 'balance-report' && (
+          <div className="bg-[#181f2a] rounded-3xl p-6 sm:p-8 text-white border border-slate-700/80 shadow-2xl space-y-6">
+            {/* Header & Date Picker */}
+            <div className="border-b border-slate-700/80 pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-black text-[#eab308] tracking-widest uppercase flex items-center gap-2">
+                  <span>📋</span> BALANCE REPORT
+                </h2>
+                <p className="text-xs font-bold text-slate-400 mt-1">Real-time Daily Income, Costs, and Net Balance Summary</p>
+              </div>
+
+              {/* Date Filter & Search */}
+              <div className="flex items-center gap-3 bg-[#0b1220] p-2.5 rounded-2xl border border-slate-700/80 shadow-inner">
+                <span className="text-xs font-black text-slate-300 uppercase tracking-wider pl-2">DATE</span>
+                <input
+                  type="date"
+                  value={balanceDate}
+                  onChange={(e) => setBalanceDate(e.target.value)}
+                  className="bg-[#181f2a] text-amber-300 border border-slate-600 rounded-xl px-3 py-2 text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer"
+                />
+                <button
+                  onClick={fetchBalanceReport}
+                  className="bg-amber-400 hover:bg-amber-300 text-slate-950 p-2.5 rounded-xl transition-all shadow-md flex items-center justify-center font-bold"
+                  title="Search Balance Report"
+                >
+                  <Search size={18} strokeWidth={3} />
+                </button>
+              </div>
+            </div>
+
+            {balanceLoading ? (
+              <div className="py-20 text-center text-slate-400 font-bold text-sm animate-pulse">
+                Fetching Balance Report Data...
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 gap-6 pt-2 font-mono">
+                {/* Left Column: Income Categories */}
+                <div className="space-y-4">
+                  {/* MOBILE INCOME */}
+                  <div className="bg-[#0b1220] p-4.5 rounded-2xl border border-slate-700/60 shadow-md">
+                    <div className="text-[11px] font-black uppercase text-slate-300 tracking-wider mb-2">MOBILE INCOME</div>
+                    <div className="text-lg font-bold text-[#22c55e]">
+                      Rs. {Number(balanceData?.mobileIncome || 0).toFixed(2)}
+                    </div>
+                  </div>
+
+                  {/* ACCESSORIES INCOME */}
+                  <div className="bg-[#0b1220] p-4.5 rounded-2xl border border-slate-700/60 shadow-md">
+                    <div className="text-[11px] font-black uppercase text-slate-300 tracking-wider mb-2">ACCESSORIES INCOME</div>
+                    <div className="text-lg font-bold text-[#22c55e]">
+                      Rs. {Number(balanceData?.accessoriesIncome || 0).toFixed(2)}
+                    </div>
+                  </div>
+
+                  {/* WHOLESALE | ADVANCE INCOME */}
+                  <div className="bg-[#0b1220] p-4.5 rounded-2xl border border-slate-700/60 shadow-md">
+                    <div className="text-[11px] font-black uppercase text-slate-300 tracking-wider mb-2">WHOLESALE | ADVANCE INCOME</div>
+                    <div className="text-lg font-bold text-[#22c55e] flex items-center gap-4 flex-wrap">
+                      <span>Rs. {Number(balanceData?.wholesaleIncome || 0).toFixed(2)}</span>
+                      <span className="text-slate-600">|</span>
+                      <span>Rs. {Number(balanceData?.advanceIncome || 0).toFixed(2)}</span>
+                    </div>
+                  </div>
+
+                  {/* REPAIRING INCOME (Normal | Company) */}
+                  <div className="bg-[#0b1220] p-4.5 rounded-2xl border border-slate-700/60 shadow-md">
+                    <div className="text-[11px] font-black uppercase text-slate-300 tracking-wider mb-2">REPAIRING INCOME (Normal | Company)</div>
+                    <div className="text-lg font-bold text-[#22c55e] flex items-center gap-4 flex-wrap">
+                      <span>Rs. {Number(balanceData?.repairingIncomeNormal || 0).toFixed(2)}</span>
+                      <span className="text-slate-600">|</span>
+                      <span>Rs. {Number(balanceData?.repairingIncomeCompany || 0).toFixed(2)}</span>
+                    </div>
+                  </div>
+
+                  {/* PHONE CARD | SIM CARD INCOME */}
+                  <div className="bg-[#0b1220] p-4.5 rounded-2xl border border-slate-700/60 shadow-md">
+                    <div className="text-[11px] font-black uppercase text-slate-300 tracking-wider mb-2">PHONE CARD | SIM CARD INCOME</div>
+                    <div className="text-lg font-bold text-[#22c55e] flex items-center gap-4 flex-wrap">
+                      <span>Rs. {Number(balanceData?.simCardIncome || 0).toFixed(2)}</span>
+                      <span className="text-slate-600">|</span>
+                      <span>Rs. 00.00</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column: Costs & Totals */}
+                <div className="space-y-4">
+                  {/* RELOAD INCOME */}
+                  <div className="bg-[#0b1220] p-4.5 rounded-2xl border border-slate-700/60 shadow-md">
+                    <div className="text-[11px] font-black uppercase text-slate-300 tracking-wider mb-2">RELOAD INCOME</div>
+                    <div className="text-lg font-bold text-[#22c55e]">
+                      Rs. {Number(balanceData?.reloadIncome || 0).toFixed(2)}
+                    </div>
+                  </div>
+
+                  {/* SERVICE COST */}
+                  <div className="bg-[#0b1220] p-4.5 rounded-2xl border border-slate-700/60 shadow-md">
+                    <div className="text-[11px] font-black uppercase text-slate-300 tracking-wider mb-2">SERVICE COST</div>
+                    <div className="text-lg font-bold text-[#ef4444]">
+                      Rs. {Number(balanceData?.serviceCost || 0).toFixed(2)}
+                    </div>
+                  </div>
+
+                  {/* SUPPLIER COST */}
+                  <div className="bg-[#0b1220] p-4.5 rounded-2xl border border-slate-700/60 shadow-md">
+                    <div className="text-[11px] font-black uppercase text-slate-300 tracking-wider mb-2">SUPPLIER COST</div>
+                    <div className="text-lg font-bold text-[#ef4444]">
+                      Rs. {Number(balanceData?.supplierCost || 0).toFixed(2)}
+                    </div>
+                  </div>
+
+                  {/* TOTAL INCOME */}
+                  <div className="bg-[#0b1220] p-4.5 rounded-2xl border border-emerald-500/40 shadow-lg">
+                    <div className="text-[11px] font-black uppercase text-slate-300 tracking-wider mb-2">TOTAL INCOME</div>
+                    <div className="text-xl font-black text-cyan-400">
+                      Rs. {Number(balanceData?.totalIncome || 0).toFixed(2)}
+                    </div>
+                  </div>
+
+                  {/* TOTAL COST */}
+                  <div className="bg-[#0b1220] p-4.5 rounded-2xl border border-rose-500/40 shadow-lg">
+                    <div className="text-[11px] font-black uppercase text-slate-300 tracking-wider mb-2">TOTAL COST</div>
+                    <div className="text-xl font-black text-rose-400">
+                      Rs. {Number(balanceData?.totalCost || 0).toFixed(2)}
+                    </div>
+                  </div>
+
+                  {/* BALANCE AMOUNT */}
+                  <div className="bg-[#0b1220] p-5 rounded-2xl border-2 border-amber-400/80 shadow-xl bg-gradient-to-r from-amber-500/10 via-transparent to-transparent">
+                    <div className="text-[11px] font-black uppercase text-amber-400 tracking-wider mb-2">BALANCE AMOUNT</div>
+                    <div className="text-2xl font-black text-amber-400">
+                      Rs. {Number(balanceData?.balanceAmount || 0).toFixed(2)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

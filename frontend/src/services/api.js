@@ -274,6 +274,7 @@ export const deleteExpense = (id) => API.delete(`/expenses/${id}`);
 
 // Finance
 export const getFinancialDashboard = (params) => API.get('/finance/dashboard', { params });
+export const getBalanceReport = (params) => API.get('/finance/balance-report', { params });
 export const getTransactions = (params) => API.get('/finance/transactions', { params });
 export const createTransaction = (data) => API.post('/finance/transactions', data);
 export const updateTransaction = (id, data) => API.put(`/finance/transactions/${id}`, data);

@@ -3329,8 +3329,15 @@ const POSScreen = () => {
                                 <div style={{ fontWeight: 600, color: '#f8fafc' }}>{order.customerName || 'Walk-in Customer'}</div>
                                 <div style={{ color: '#94a3b8', marginTop: '2px' }}>{order.customerPhone || '-'}</div>
                               </td>
-                              <td style={{ padding: '8px', color: '#cbd5e1' }}>
-                                {(order.itemDetails || []).map((it) => `${it.name} x${it.quantity} @ Rs.${Number(it.unitPrice || 0).toFixed(2)}`).join(', ')}
+                              <td style={{ padding: '8px', color: '#cbd5e1', verticalAlign: 'top' }}>
+                                {(order.itemDetails || []).map((it, idx) => (
+                                  <div key={idx} style={{ marginBottom: idx < (order.itemDetails?.length - 1) ? '6px' : '0' }}>
+                                    <div style={{ fontWeight: 600, color: '#f8fafc' }}>{it.name}</div>
+                                    <div style={{ color: '#94a3b8', fontSize: '11px', marginTop: '1px' }}>
+                                      x{it.quantity} @ Rs.{Number(it.unitPrice || 0).toFixed(2)}
+                                    </div>
+                                  </div>
+                                ))}
                               </td>
                               <td style={{ padding: '8px', color: '#e2e8f0', textTransform: 'uppercase' }}>
                                 {order.paymentMethod}
