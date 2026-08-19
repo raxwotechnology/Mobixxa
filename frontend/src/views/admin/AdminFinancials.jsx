@@ -465,7 +465,7 @@ const AdminFinancials = () => {
           </button>
           <button
             onClick={() => setActiveTab('balance-report')}
-            className={`py-2.5 px-5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-2 ${activeTab === 'balance-report' ? 'bg-amber-500 text-slate-950 shadow-md font-extrabold' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 border border-transparent'}`}
+            className={`py-2.5 px-5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-2 ${activeTab === 'balance-report' ? 'bg-white text-brand-fuchsia shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 border border-transparent'}`}
           >
             📋 Balance Report
           </button>
@@ -1189,13 +1189,13 @@ const AdminFinancials = () => {
         {/* BALANCE REPORT TAB */}
         {activeTab === 'balance-report' && (
           <div className="bg-white rounded-3xl p-6 sm:p-8 text-slate-900 border border-slate-100 shadow-sm space-y-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-brand-fuchsia/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
 
             {/* Header & Date Picker */}
             <div className="border-b border-slate-100 pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
               <div>
                 <h2 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600">
+                  <div className="w-8 h-8 rounded-xl bg-brand-fuchsia/10 flex items-center justify-center text-brand-fuchsia">
                     <span className="text-lg">📋</span>
                   </div>
                   BALANCE REPORT
@@ -1211,11 +1211,11 @@ const AdminFinancials = () => {
                     type="date"
                     value={balanceDate}
                     onChange={(e) => setBalanceDate(e.target.value)}
-                    className="bg-white text-slate-800 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-amber-500/20 cursor-pointer shadow-sm"
+                    className="bg-white text-slate-800 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 cursor-pointer shadow-sm"
                   />
                   <button
                     onClick={fetchBalanceReport}
-                    className="bg-amber-500 hover:bg-amber-600 text-white p-2 rounded-xl transition-all shadow-sm flex items-center justify-center font-bold"
+                    className="bg-brand-indigo hover:bg-brand-indigo/90 text-white p-2 rounded-xl transition-all shadow-sm flex items-center justify-center font-bold"
                     title="Search Balance Report"
                   >
                     <Search size={16} strokeWidth={2.5} />
@@ -1351,9 +1351,9 @@ const AdminFinancials = () => {
                   </div>
 
                   {/* BALANCE AMOUNT */}
-                  <div className="bg-amber-50 p-5 rounded-2xl border-2 border-amber-300 shadow-md">
-                    <div className="text-[10px] font-black uppercase text-amber-800 tracking-wider mb-1.5">BALANCE AMOUNT</div>
-                    <div className="text-2xl font-black text-amber-800">
+                  <div className="bg-brand-indigo/5 p-5 rounded-2xl border-2 border-brand-indigo/30 shadow-sm">
+                    <div className="text-[10px] font-black uppercase text-brand-indigo tracking-wider mb-1.5">BALANCE AMOUNT</div>
+                    <div className="text-2xl font-black text-brand-indigo">
                       Rs. {Number(balanceData?.balanceAmount || 0).toFixed(2)}
                     </div>
                   </div>
