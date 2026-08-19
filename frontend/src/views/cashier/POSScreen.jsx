@@ -2500,18 +2500,19 @@ const POSScreen = () => {
                       <div>
                         <label style={{ fontSize: '10px', fontWeight: 'bold', color: '#92400e' }}>Down Payment (Rs.) *</label>
                         <input type="number" value={pos.hirePurchaseData?.downPayment || 0}
+                          onWheel={(e) => e.target.blur()}
                           onChange={(e) => {
                             const dp = Number(e.target.value);
                             const interest = Number(pos.hirePurchaseData?.interestAmount || 0);
 
                             const netTotal = grandTotal + interest;
                             const bal = netTotal - dp;
+                            const ni = pos.hirePurchaseData?.numberOfInstallments || 1;
                             pos.setHirePurchaseData({
                               ...pos.hirePurchaseData,
                               downPayment: dp,
                               netTotal: netTotal,
-                              installmentAmount: bal / (pos.hirePurchaseData?.numberOfInstallments || 1)
-
+                              installmentAmount: ni > 0 ? bal / ni : bal
                             });
                           }}
                           placeholder="0.00" className="pos-input" style={{ fontSize: '12px', background: '#fff', fontWeight: 'bold', color: '#1e293b' }} />
@@ -2554,7 +2555,6 @@ const POSScreen = () => {
                             {accounts.map(a => (
                               <option key={a._id} value={a._id}>
                                 {a.name}
-
                               </option>
                             ))}
                           </select>
@@ -2563,16 +2563,18 @@ const POSScreen = () => {
                       <div>
                         <label style={{ fontSize: '10px', fontWeight: 'bold', color: '#92400e' }}>Interest Amount (Rs.)</label>
                         <input type="number" value={pos.hirePurchaseData.interestAmount || 0}
+                          onWheel={(e) => e.target.blur()}
                           onChange={(e) => {
                             const interest = Number(e.target.value);
                             const dp = Number(pos.hirePurchaseData.downPayment || 0);
                             const netTotal = grandTotal + interest;
                             const bal = netTotal - dp;
+                            const ni = pos.hirePurchaseData.numberOfInstallments || 1;
                             pos.setHirePurchaseData({
                               ...pos.hirePurchaseData,
                               interestAmount: interest,
                               netTotal: netTotal,
-                              installmentAmount: bal / (pos.hirePurchaseData.numberOfInstallments || 1)
+                              installmentAmount: ni > 0 ? bal / ni : bal
                             });
                           }}
                           placeholder="0.00" className="pos-input" style={{ fontSize: '12px', background: '#fff', fontWeight: 'bold', color: '#1e293b' }} />
@@ -2589,11 +2591,15 @@ const POSScreen = () => {
                             pos.setHirePurchaseData({
                               ...pos.hirePurchaseData,
                               numberOfInstallments: ni,
-                              installmentAmount: bal / ni
+                              installmentAmount: ni > 0 ? bal / ni : bal
                             });
                           }}
                           className="pos-input" style={{ fontSize: '12px', background: '#fff', color: '#1e293b' }}>
-                          {[3, 6, 9, 10, 12, 18, 24].map(n => <option key={n} value={n}>{n} Months</option>)}
+                          {[0, 1, 2, 3, 6, 9, 10, 12, 18, 24].map(n => (
+                            <option key={n} value={n}>
+                              {n === 0 ? '0 Months (0% Interest / Full Due)' : `${n} Months`}
+                            </option>
+                          ))}
                         </select>
                       </div>
                       <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '10px', padding: '10px', background: 'rgba(255,255,255,0.5)', borderRadius: '10px' }}>
