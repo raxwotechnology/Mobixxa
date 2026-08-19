@@ -33,7 +33,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 
-import { getPosProducts, getProductByBarcode, posCheckout, getPosOrders, applyVoucher, getSettings, getActivePosSession, startPosSession, endPosSession, getPosPayHereHash, redeemPoints, getMyLoyaltyPoints, getCreditOrders, settleCreditOrder, getCategories, createQuotation, createProduct, getAccounts, loginUser, getCashiers, posLogin, getPosOrderByInvoice, createCustomerReturn } from '../../services/api';
+import { getPosProducts, getProductByBarcode, posCheckout, getPosOrders, applyVoucher, getSettings, getActivePosSession, startPosSession, endPosSession, getPosPayHereHash, redeemPoints, getMyLoyaltyPoints, getCreditOrders, settleCreditOrder, getCategories, createQuotation, createProduct, getAccounts, loginUser, getCashiers, posLogin, getPosOrderByInvoice, createCustomerReturn, getHPRecords, recordHPPayment } from '../../services/api';
 
 
 
@@ -118,6 +118,22 @@ const POSScreen = () => {
   const [showReloadModal, setShowReloadModal] = useState(false);
   const [showCustomerHistory, setShowCustomerHistory] = useState(false);
   const [showTradeInModal, setShowTradeInModal] = useState(false);
+
+  // Quick HP Payment Modal States
+  const [showHpQuickPayModal, setShowHpQuickPayModal] = useState(false);
+  const [hpSearchInput, setHpSearchInput] = useState('');
+  const [hpRecordsList, setHpRecordsList] = useState([]);
+  const [selectedHpRecord, setSelectedHpRecord] = useState(null);
+  const [loadingHpSearch, setLoadingHpSearch] = useState(false);
+  const [hpPayForm, setHpPayForm] = useState({
+    amount: '',
+    paymentMethod: 'cash',
+    accountId: '',
+    referenceNo: '',
+    notes: ''
+  });
+  const [submittingHpPay, setSubmittingHpPay] = useState(false);
+  const [hpReceiptData, setHpReceiptData] = useState(null);
 
   // Cashier Verification Lockscreen States
   const [isUnlocked, setIsUnlocked] = useState(!!user);
@@ -312,21 +328,207 @@ const POSScreen = () => {
     }, 300);
   };
 
-  // Handle search enter (add first result)
-  const handleSearchKeyDown = (e) => {
+  // Handle search enter (physical barcode scanner or enter key)
+  const handleSearchKeyDown = async (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
+      const q = searchQuery.trim();
+      if (!q) return;
+
+      // 1. Check exact barcode/SKU/id match in current product list
+      const exactMatch = products.find(
+        (p) =>
+          (p.barcode && p.barcode.toLowerCase() === q.toLowerCase()) ||
+          (p.sku && p.sku.toLowerCase() === q.toLowerCase()) ||
+          p._id === q
+      );
+
+      if (exactMatch) {
+        addToCache(exactMatch);
+        pos.addItem(exactMatch);
+        toast.success(`Scanned: ${exactMatch.name}`, { autoClose: 1000 });
+        setSearchQuery('');
+        loadProducts();
+        return;
+      }
+
+      // 2. Query barcode API if not in current loaded list
+      try {
+        const { data } = await getProductByBarcode(q);
+        if (data && data._id) {
+          addToCache(data);
+          pos.addItem(data);
+          toast.success(`Scanned: ${data.name}`, { autoClose: 1000 });
+          setSearchQuery('');
+          loadProducts();
+          return;
+        }
+      } catch (barcodeErr) {
+        // Fallthrough if not matched by barcode
+      }
+
+      // 3. Fallback to first filtered product
       if (products.length > 0) {
         pos.addItem(products[0]);
         toast.success(`Added ${products[0].name}`, { autoClose: 1000 });
         setSearchQuery('');
         loadProducts();
-      } else if (searchQuery.trim()) {
+      } else {
         // No results, prompt quick add
-        setQuickAddForm({ ...quickAddForm, name: searchQuery });
+        setQuickAddForm({ ...quickAddForm, name: q });
         setShowQuickAdd(true);
       }
     }
+  };
+
+  // Fetch/Search HP Records for POS Quick Pay
+  const handleSearchHpRecords = async (query = hpSearchInput) => {
+    try {
+      setLoadingHpSearch(true);
+      const { data } = await getHPRecords({ search: query, status: 'all' });
+      const records = data || [];
+      setHpRecordsList(records);
+      if (records.length === 1) {
+        handleSelectHpRecord(records[0]);
+      } else if (records.length === 0) {
+        setSelectedHpRecord(null);
+      }
+    } catch (err) {
+      toast.error('Failed to search HP records');
+    } finally {
+      setLoadingHpSearch(false);
+    }
+  };
+
+  const handleSelectHpRecord = (rec) => {
+    setSelectedHpRecord(rec);
+    setHpPayForm(prev => ({
+      ...prev,
+      amount: rec.installmentAmount || rec.remainingBalance || '',
+      accountId: accounts.length > 0 ? accounts[0]._id : ''
+    }));
+  };
+
+  const handleSubmitHpPayment = async () => {
+    if (!selectedHpRecord) {
+      toast.error('Please select an HP agreement first');
+      return;
+    }
+    const amt = Number(hpPayForm.amount);
+    if (!amt || amt <= 0) {
+      toast.error('Please enter a valid payment amount');
+      return;
+    }
+    if (!hpPayForm.accountId) {
+      toast.error('Please select a receiving account');
+      return;
+    }
+
+    try {
+      setSubmittingHpPay(true);
+      const { data } = await recordHPPayment(selectedHpRecord._id, {
+        amount: amt,
+        paymentMethod: hpPayForm.paymentMethod,
+        accountId: hpPayForm.accountId,
+        referenceNo: hpPayForm.referenceNo,
+        notes: hpPayForm.notes
+      });
+
+      toast.success('Installment payment recorded successfully! 💳');
+      
+      const newBal = (selectedHpRecord.remainingBalance || 0) - amt;
+      setHpReceiptData({
+        payment: {
+          amount: amt,
+          paymentMethod: hpPayForm.paymentMethod,
+          date: new Date().toLocaleDateString('en-GB'),
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          referenceNo: hpPayForm.referenceNo,
+          notes: hpPayForm.notes,
+          receivedBy: user?.name || 'Cashier'
+        },
+        hpRecord: data || selectedHpRecord,
+        newBalance: newBal
+      });
+
+      // Refresh accounts & records
+      handleSearchHpRecords(hpSearchInput);
+      if (getAccounts) {
+        getAccounts().then(res => setAccounts(res.data || [])).catch(() => {});
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to record installment payment');
+    } finally {
+      setSubmittingHpPay(false);
+    }
+  };
+
+  const handlePrintHpReceipt = () => {
+    if (!hpReceiptData) return;
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast.error('Popup blocked! Please allow popups to print receipt.');
+      return;
+    }
+
+    const { payment, hpRecord, newBalance } = hpReceiptData;
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Installment Payment Receipt - ${hpRecord.invoiceNo}</title>
+          <style>
+            body { font-family: 'Courier New', monospace; width: 80mm; margin: 0 auto; padding: 10px; color: #000; }
+            .text-center { text-align: center; }
+            .bold { font-weight: bold; }
+            .header { margin-bottom: 10px; border-bottom: 1px dashed #000; padding-bottom: 8px; }
+            .title { font-size: 16px; font-weight: bold; text-transform: uppercase; }
+            .subtitle { font-size: 11px; margin-top: 2px; }
+            .row { display: flex; justify-content: space-between; font-size: 12px; margin: 4px 0; }
+            .divider { border-top: 1px dashed #000; margin: 8px 0; }
+            .total-box { border: 1px solid #000; padding: 6px; margin: 8px 0; text-align: center; }
+            .footer { margin-top: 12px; text-align: center; font-size: 10px; border-top: 1px dashed #000; padding-top: 8px; }
+          </style>
+        </head>
+        <body>
+          <div class="header text-center">
+            <div class="title">${brandName}</div>
+            <div class="subtitle">INSTALLMENT PAYMENT RECEIPT</div>
+            <div class="subtitle">Date: ${payment.date} ${payment.time}</div>
+          </div>
+
+          <div class="row"><span>Invoice No:</span><span class="bold">${hpRecord.invoiceNo}</span></div>
+          <div class="row"><span>Customer:</span><span>${hpRecord.customer?.name || 'N/A'}</span></div>
+          <div class="row"><span>Phone:</span><span>${hpRecord.customer?.phone || 'N/A'}</span></div>
+          <div class="row"><span>Cashier:</span><span>${payment.receivedBy}</span></div>
+
+          <div class="divider"></div>
+
+          <div class="total-box">
+            <div style="font-size: 11px;">AMOUNT PAID</div>
+            <div style="font-size: 18px; font-weight: bold;">Rs. ${Number(payment.amount).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</div>
+            <div style="font-size: 10px; text-transform: uppercase; margin-top: 2px;">Method: ${payment.paymentMethod}</div>
+          </div>
+
+          <div class="row"><span>Prev Balance:</span><span>Rs. ${Number(hpRecord.remainingBalance).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
+          <div class="row"><span class="bold">Remaining Due:</span><span class="bold">Rs. ${Number(Math.max(0, newBalance)).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
+
+          <div class="footer">
+            <p style="margin: 2px 0;">Thank you for your payment!</p>
+            <p style="margin: 2px 0;">Keep this receipt for your records.</p>
+          </div>
+
+          <script>
+            window.onload = function() {
+              window.print();
+              window.close();
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
   };
 
   const handleQuickAdd = async () => {
@@ -1550,6 +1752,10 @@ const POSScreen = () => {
           <button className="pos-topbar-btn" onClick={() => setShowReturnModal(true)} title="Return / Exchange" style={{ background: '#fef2f2', color: '#991b1b', borderColor: '#fee2e2' }}>
             <RefreshCw size={18} />
             <span className="pos-topbar-btn-text">Return</span>
+          </button>
+          <button className="pos-topbar-btn" onClick={() => { setShowHpQuickPayModal(true); handleSearchHpRecords(''); }} title="Record HP Installment Payment" style={{ background: '#fff7ed', color: '#c2410c', borderColor: '#ffedd5', fontWeight: 'bold' }}>
+            <CreditCard size={18} />
+            <span className="pos-topbar-btn-text">HP Payment</span>
           </button>
           <button className="pos-topbar-btn" onClick={() => setShowTradeInModal(true)} title="Used Phone Trade-In Estimator" style={{ background: '#e0f2fe', color: '#0369a1', borderColor: '#bae6fd', fontWeight: 'bold' }}>
             <Smartphone size={18} />
@@ -3249,6 +3455,241 @@ const POSScreen = () => {
           </div>
         </div>
       )}
+      {/* ──────────────── Quick HP Installment Payment Modal ──────────────── */}
+      {showHpQuickPayModal && (
+        <div className="pos-modal-overlay">
+          <div className="pos-modal" style={{ maxWidth: '650px', width: '95%', padding: '24px', borderRadius: '16px' }}>
+            <div className="pos-modal-header" style={{ borderBottom: '1px solid #e2e8f0', paddingBottom: '14px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ background: '#fef3c7', padding: '10px', borderRadius: '12px', color: '#b45309', display: 'flex' }}>
+                  <CreditCard size={22} />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', color: '#1e293b' }}>
+                    Quick Installment (HP) Payment 💳
+                  </h3>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>
+                    Search HP Invoice Number or Customer Phone to record payment & print receipt
+                  </p>
+                </div>
+              </div>
+              <button className="pos-modal-close" onClick={() => { setShowHpQuickPayModal(false); setSelectedHpRecord(null); setHpReceiptData(null); }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Step 1: Search HP Invoice */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#334155', display: 'block', marginBottom: '6px' }}>
+                Search HP Invoice Number, Customer Phone, or Name *
+              </label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ position: 'relative', flex: 1 }}>
+                  <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                  <input
+                    type="text"
+                    value={hpSearchInput}
+                    onChange={(e) => setHpSearchInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleSearchHpRecords(); }}
+                    placeholder="Enter Invoice No (e.g. #HP-INV-10025, INV-001) or Phone..."
+                    className="pos-input"
+                    style={{ paddingLeft: '38px', fontSize: '13px', background: '#fff', color: '#0f172a', fontWeight: '500' }}
+                  />
+                </div>
+                <button
+                  className="pos-btn-blue"
+                  onClick={() => handleSearchHpRecords()}
+                  disabled={loadingHpSearch}
+                  style={{ padding: '0 18px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  {loadingHpSearch ? <RefreshCw size={16} className="animate-spin" /> : <Search size={16} />}
+                  Search
+                </button>
+              </div>
+            </div>
+
+            {/* List of matching HP records if multiple */}
+            {hpRecordsList.length > 0 && !selectedHpRecord && (
+              <div style={{ maxHeight: '200px', overflowY: 'auto', marginBottom: '16px', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
+                {hpRecordsList.map((rec) => (
+                  <div
+                    key={rec._id}
+                    onClick={() => handleSelectHpRecord(rec)}
+                    style={{
+                      padding: '10px 14px',
+                      borderBottom: '1px solid #f1f5f9',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      justify: 'space-between',
+                      alignItems: 'center',
+                      background: '#fff',
+                      transition: 'background 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = '#f8fafc'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = '#fff'}
+                  >
+                    <div>
+                      <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#1e293b' }}>
+                        {rec.invoiceNo} — {rec.customer?.name}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#64748b' }}>
+                        📞 {rec.customer?.phone} | Due: Rs. {rec.remainingBalance?.toLocaleString()}
+                      </div>
+                    </div>
+                    <span style={{
+                      fontSize: '11px',
+                      padding: '2px 8px',
+                      borderRadius: '12px',
+                      fontWeight: 'bold',
+                      background: rec.status === 'Completed' ? '#dcfce7' : rec.status === 'Overdue' ? '#fee2e2' : '#fef3c7',
+                      color: rec.status === 'Completed' ? '#166534' : rec.status === 'Overdue' ? '#991b1b' : '#92400e'
+                    }}>
+                      {rec.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Step 2: Selected HP Agreement Details & Payment Form */}
+            {selectedHpRecord ? (
+              <div>
+                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '14px', marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                    <div>
+                      <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#1e293b' }}>{selectedHpRecord.invoiceNo}</span>
+                      <span style={{ fontSize: '12px', color: '#64748b', marginLeft: '8px' }}>({selectedHpRecord.customer?.name})</span>
+                    </div>
+                    <button
+                      onClick={() => setSelectedHpRecord(null)}
+                      style={{ border: 'none', background: 'none', color: '#0284c7', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
+                    >
+                      Change Agreement
+                    </button>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', background: '#fff', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
+                    <div>
+                      <div style={{ fontSize: '10px', color: '#64748b', textTransform: 'uppercase' }}>Total Net</div>
+                      <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#334155' }}>Rs. {selectedHpRecord.netTotal?.toLocaleString()}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '10px', color: '#166534', textTransform: 'uppercase' }}>Total Paid</div>
+                      <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#166534' }}>Rs. {selectedHpRecord.totalPaid?.toLocaleString()}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '10px', color: '#b45309', textTransform: 'uppercase' }}>Remaining Due</div>
+                      <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#d97706' }}>Rs. {selectedHpRecord.remainingBalance?.toLocaleString()}</div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px', fontSize: '11px', color: '#475569' }}>
+                    <span>📞 {selectedHpRecord.customer?.phone}</span>
+                    <span>Monthly Installment: <strong>Rs. {selectedHpRecord.installmentAmount?.toLocaleString()}</strong></span>
+                  </div>
+                </div>
+
+                {/* Form fields */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '14px' }}>
+                  <div>
+                    <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#334155' }}>Amount to Pay (Rs.) *</label>
+                    <input
+                      type="number"
+                      onWheel={(e) => e.target.blur()}
+                      value={hpPayForm.amount}
+                      onChange={(e) => setHpPayForm({ ...hpPayForm, amount: e.target.value })}
+                      placeholder="Enter amount"
+                      className="pos-input"
+                      style={{ fontSize: '14px', fontWeight: 'bold', color: '#0f172a', background: '#fff' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#334155' }}>Payment Method *</label>
+                    <select
+                      value={hpPayForm.paymentMethod}
+                      onChange={(e) => setHpPayForm({ ...hpPayForm, paymentMethod: e.target.value })}
+                      className="pos-input"
+                      style={{ fontSize: '13px', background: '#fff', color: '#0f172a' }}
+                    >
+                      <option value="cash">💵 Cash</option>
+                      <option value="card">💳 Card</option>
+                      <option value="bank_transfer">🏛️ Bank Transfer</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                  <div>
+                    <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#334155' }}>Receiving Account / Drawer *</label>
+                    <select
+                      value={hpPayForm.accountId}
+                      onChange={(e) => setHpPayForm({ ...hpPayForm, accountId: e.target.value })}
+                      className="pos-input"
+                      style={{ fontSize: '12px', background: '#fff', color: '#0f172a' }}
+                    >
+                      <option value="">Select Account</option>
+                      {accounts.map(acc => (
+                        <option key={acc._id} value={acc._id}>
+                          {acc.name} ({acc.accountType})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#334155' }}>Ref No / Notes</label>
+                    <input
+                      type="text"
+                      value={hpPayForm.referenceNo}
+                      onChange={(e) => setHpPayForm({ ...hpPayForm, referenceNo: e.target.value })}
+                      placeholder="e.g. Card slip # / Txn ID"
+                      className="pos-input"
+                      style={{ fontSize: '12px', background: '#fff', color: '#0f172a' }}
+                    />
+                  </div>
+                </div>
+
+                {/* Submit button */}
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    className="pos-btn-green pos-btn-lg"
+                    style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: 'bold' }}
+                    onClick={handleSubmitHpPayment}
+                    disabled={submittingHpPay || !hpPayForm.amount || !hpPayForm.accountId}
+                  >
+                    {submittingHpPay ? <RefreshCw size={18} className="animate-spin" /> : <CreditCard size={18} />}
+                    Record Payment & Generate Receipt
+                  </button>
+                </div>
+              </div>
+            ) : hpSearchInput && hpRecordsList.length === 0 && !loadingHpSearch ? (
+              <div style={{ textAlign: 'center', padding: '24px', background: '#f8fafc', borderRadius: '12px', color: '#64748b' }}>
+                No active HP agreement found matching "{hpSearchInput}"
+              </div>
+            ) : null}
+
+            {/* Receipt Modal Popup after success */}
+            {hpReceiptData && (
+              <div style={{ marginTop: '20px', padding: '16px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <span style={{ fontWeight: 'bold', color: '#166534', fontSize: '14px' }}>✅ Payment Recorded Successfully!</span>
+                  <button
+                    onClick={handlePrintHpReceipt}
+                    className="pos-btn-blue"
+                    style={{ padding: '6px 14px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <Receipt size={16} /> Print Thermal Receipt
+                  </button>
+                </div>
+                <div style={{ fontSize: '12px', color: '#374151', lineHeight: '1.6' }}>
+                  Amount Paid: <strong>Rs. {Number(hpReceiptData.payment.amount).toLocaleString()}</strong> | 
+                  Remaining Balance: <strong>Rs. {Number(Math.max(0, hpReceiptData.newBalance)).toLocaleString()}</strong>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Reload Modal */}
       <ReloadModal 
         isOpen={showReloadModal} 
