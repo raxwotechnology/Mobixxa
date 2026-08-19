@@ -2051,6 +2051,34 @@ body {
   font-size: 1.15rem;
   font-weight: 700;
   text-align: center;
+  background: #0d1117 !important;
+  color: #ffffff !important;
+  border: 1px solid #30363d !important;
+}
+
+.pos-discount-input:focus,
+.pos-discount-modal .pos-input:focus {
+  background: #161b22 !important;
+  color: #ffffff !important;
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25) !important;
+}
+
+.pos-modal-overlay .pos-input {
+  background: #0d1117;
+  color: #ffffff;
+  border: 1px solid #30363d;
+}
+
+.pos-modal-overlay .pos-input:focus {
+  background: #161b22;
+  color: #ffffff;
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
+}
+
+.pos-modal-overlay .pos-input::placeholder {
+  color: #8b949e;
 }
 
 /* Shift Summary Modal */
