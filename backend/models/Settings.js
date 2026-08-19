@@ -60,6 +60,9 @@ const settingsSchema = new mongoose.Schema({
     warrantyTerms: { type: String, default: 'Standard 1-year manufacturer warranty applies unless otherwise stated.' },
     termsAndConditions: { type: String, default: 'Thank you for your business! Goods sold are not returnable/exchangeable unless there is a manufacturing defect.' },
     showWarranty: { type: Boolean, default: true },
+    showLogo: { type: Boolean, default: true },
+    logoWidth: { type: Number, default: 120 },
+    logoAlignment: { type: String, default: 'center' },
     layoutStyle: { type: String, default: 'receipt' }, // 'receipt' | 'a4'
     themeColor: { type: String, default: '#3b82f6' },
     headerTitle: { type: String, default: 'Mobixa' },

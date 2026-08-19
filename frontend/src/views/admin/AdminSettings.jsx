@@ -414,6 +414,77 @@ const AdminSettings = () => {
                     placeholder="e.g. 88 Tech Avenue, Colombo 03"
                   />
 
+                  {/* Shop Bill Logo Upload & Formatting */}
+                  <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">Printed Bill Logo Image</label>
+                        <p className="text-[11px] font-bold text-slate-600 mt-0.5">Upload shop logo image displayed at top of printed receipts and A4 invoices.</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleChange('receiptSettings', { ...settings.receiptSettings, showLogo: !(settings.receiptSettings?.showLogo !== false) })}
+                        className={`w-12 h-6 rounded-full transition-colors relative ${settings.receiptSettings?.showLogo !== false ? 'bg-brand-indigo' : 'bg-slate-300'}`}
+                      >
+                        <div className={`w-4 h-4 bg-white rounded-full absolute top-[4px] transition-all shadow-sm ${settings.receiptSettings?.showLogo !== false ? 'right-[4px]' : 'left-[4px]'}`} />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-6 pt-2">
+                      <div className="w-20 h-20 rounded-xl border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden bg-white shadow-sm p-1">
+                        {(settings.logoUrl || settings.logo) ? (
+                          <img src={getImageUrl(settings.logoUrl || settings.logo)} alt="Shop Logo" className="w-full h-full object-contain" />
+                        ) : (
+                          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">No Logo</span>
+                        )}
+                      </div>
+                      <div className="flex-1 space-y-3">
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() => fileRef.current?.click()}
+                            className="flex items-center gap-2 bg-brand-indigo hover:bg-brand-indigo-dark text-white text-[11px] font-black uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all shadow-sm"
+                          >
+                            <Upload size={14} strokeWidth={2.5} /> Upload Shop Logo
+                          </button>
+                        </div>
+                        <p className="text-[10px] font-bold text-slate-400">Recommended format: PNG / JPG with transparent or white background.</p>
+                      </div>
+                    </div>
+
+                    {/* Logo Alignment & Width Controllers */}
+                    {settings.receiptSettings?.showLogo !== false && (
+                      <div className="grid grid-cols-2 gap-4 pt-3 border-t border-slate-200/60">
+                        <div>
+                          <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-1.5">Logo Alignment</label>
+                          <select
+                            value={settings.receiptSettings?.logoAlignment || 'center'}
+                            onChange={(e) => handleChange('receiptSettings', { ...settings.receiptSettings, logoAlignment: e.target.value })}
+                            className="w-full bg-white border border-slate-200 rounded-xl py-2 px-3 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 shadow-sm"
+                          >
+                            <option value="center">🎯 Center Aligned</option>
+                            <option value="left">👈 Left Aligned</option>
+                            <option value="right">👉 Right Aligned</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-1.5">
+                            Logo Print Width ({settings.receiptSettings?.logoWidth || 120}px)
+                          </label>
+                          <input
+                            type="range"
+                            min="60"
+                            max="220"
+                            step="10"
+                            value={settings.receiptSettings?.logoWidth || 120}
+                            onChange={(e) => handleChange('receiptSettings', { ...settings.receiptSettings, logoWidth: Number(e.target.value) })}
+                            className="w-full accent-brand-indigo cursor-pointer mt-1"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                   {/* Official Store Seal Upload */}
                   <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
                     <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-4">Official Store Seal Image</label>
@@ -531,9 +602,16 @@ const AdminSettings = () => {
               {/* Thermal Receipt Preview */}
               {(settings.receiptSettings?.layoutStyle || 'receipt') === 'receipt' ? (
                 <div className="w-[300px] bg-white border border-slate-300 shadow-xl p-5 font-mono text-[11px] text-slate-900 relative overflow-hidden rounded-md" style={{ minHeight: '400px', borderStyle: 'dashed' }}>
-                  <div className="text-center mb-4">
-                    {(settings.logoUrl || settings.logo) && (
-                      <img src={getImageUrl(settings.logoUrl || settings.logo)} alt="Logo" className="w-12 h-12 object-contain mx-auto mb-2 opacity-80" />
+                  <div className={`mb-4 ${settings.receiptSettings?.logoAlignment === 'left' ? 'text-left' : settings.receiptSettings?.logoAlignment === 'right' ? 'text-right' : 'text-center'}`}>
+                    {(settings.logoUrl || settings.logo) && settings.receiptSettings?.showLogo !== false && (
+                      <div className={`flex ${settings.receiptSettings?.logoAlignment === 'left' ? 'justify-start' : settings.receiptSettings?.logoAlignment === 'right' ? 'justify-end' : 'justify-center'} mb-2`}>
+                        <img
+                          src={getImageUrl(settings.logoUrl || settings.logo)}
+                          alt="Logo"
+                          style={{ width: `${Math.min(160, settings.receiptSettings?.logoWidth || 120)}px`, maxHeight: '80px' }}
+                          className="object-contain"
+                        />
+                      </div>
                     )}
                     <h4 className="font-bold text-sm uppercase text-slate-800">{settings.receiptSettings?.headerTitle || settings.shopName}</h4>
                     <p className="text-[10px] text-slate-600">{settings.receiptSettings?.subtitle || settings.address}</p>

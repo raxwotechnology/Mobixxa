@@ -472,6 +472,14 @@ const POSScreen = () => {
     }
 
     const { payment, hpRecord, newBalance } = hpReceiptData;
+    const logoUrl = getImageUrl(settings?.logoUrl || settings?.logo);
+    const showLogo = settings?.receiptSettings?.showLogo !== false && logoUrl;
+    const logoWidth = settings?.receiptSettings?.logoWidth || 120;
+    const logoAlign = settings?.receiptSettings?.logoAlignment || 'center';
+    const headerTitle = settings?.receiptSettings?.headerTitle || brandName;
+    const subtitle = settings?.receiptSettings?.subtitle || settings?.address || '';
+    const footerMsg = settings?.receiptSettings?.footerMessage || 'Thank you for your payment!';
+    const terms = settings?.receiptSettings?.termsAndConditions || '';
 
     printWindow.document.write(`
       <!DOCTYPE html>
@@ -481,6 +489,8 @@ const POSScreen = () => {
           <style>
             body { font-family: 'Courier New', monospace; width: 80mm; margin: 0 auto; padding: 10px; color: #000; }
             .text-center { text-align: center; }
+            .text-left { text-align: left; }
+            .text-right { text-align: right; }
             .bold { font-weight: bold; }
             .header { margin-bottom: 10px; border-bottom: 1px dashed #000; padding-bottom: 8px; }
             .title { font-size: 16px; font-weight: bold; text-transform: uppercase; }
@@ -492,10 +502,12 @@ const POSScreen = () => {
           </style>
         </head>
         <body>
-          <div class="header text-center">
-            <div class="title">${brandName}</div>
-            <div class="subtitle">INSTALLMENT PAYMENT RECEIPT</div>
-            <div class="subtitle">Date: ${payment.date} ${payment.time}</div>
+          <div class="header text-${logoAlign}">
+            ${showLogo ? `<div style="text-align:${logoAlign}; margin-bottom: 6px;"><img src="${logoUrl}" style="width:${logoWidth}px; max-height:80px; object-contain:contain;" /></div>` : ''}
+            <div class="title text-${logoAlign}">${headerTitle}</div>
+            ${subtitle ? `<div class="subtitle text-${logoAlign}">${subtitle}</div>` : ''}
+            <div class="subtitle text-${logoAlign}">INSTALLMENT PAYMENT RECEIPT</div>
+            <div class="subtitle text-${logoAlign}">Date: ${payment.date} ${payment.time}</div>
           </div>
 
           <div class="row"><span>Invoice No:</span><span class="bold">${hpRecord.invoiceNo}</span></div>
@@ -515,8 +527,8 @@ const POSScreen = () => {
           <div class="row"><span class="bold">Remaining Due:</span><span class="bold">Rs. ${Number(Math.max(0, newBalance)).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
 
           <div class="footer">
-            <p style="margin: 2px 0;">Thank you for your payment!</p>
-            <p style="margin: 2px 0;">Keep this receipt for your records.</p>
+            <p style="margin: 2px 0; font-weight: bold;">${footerMsg}</p>
+            ${terms ? `<p style="margin: 4px 0 2px 0; font-size: 9px; font-style: italic;">${terms}</p>` : ''}
           </div>
 
           <script>

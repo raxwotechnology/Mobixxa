@@ -172,8 +172,18 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale }) => {
               {/* Corporate Header */}
               <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #e2e8f0', paddingBottom: '16px', marginBottom: '16px' }}>
                 <div>
-                  {settings?.logo && (
-                    <img src={getImageUrl(settings.logo)} alt="" style={{ width: '48px', height: '48px', objectFit: 'contain', marginBottom: '8px', display: 'block', borderRadius: '8px' }} />
+                  {(settings?.logoUrl || settings?.logo) && settings?.receiptSettings?.showLogo !== false && (
+                    <img
+                      src={getImageUrl(settings.logoUrl || settings.logo)}
+                      alt="Shop Logo"
+                      style={{
+                        width: `${settings?.receiptSettings?.logoWidth || 120}px`,
+                        maxHeight: '80px',
+                        objectFit: 'contain',
+                        marginBottom: '8px',
+                        display: 'block'
+                      }}
+                    />
                   )}
                   {settings?.letterheadHeader ? (
                     <div style={{ fontSize: '11px', whiteSpace: 'pre-line', color: '#334155', lineHeight: '1.4', fontFamily: 'inherit', textAlign: 'left' }}>
@@ -351,16 +361,26 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale }) => {
             /* ═══════ Narrow POS Receipt Layout (80mm Style) ═══════ */
             <div style={{ fontFamily: "'Courier New', Courier, monospace" }}>
               {/* Store Header */}
-              <div style={{ textAlign: 'center', borderBottom: '2px solid #111', paddingBottom: '12px', marginBottom: '10px' }}>
-                {settings?.logo && (
-                  <img src={getImageUrl(settings.logo)} alt="" style={{ width: '48px', height: '48px', objectFit: 'contain', margin: '0 auto 6px', display: 'block', borderRadius: '8px' }} />
+              <div style={{ textAlign: settings?.receiptSettings?.logoAlignment || 'center', borderBottom: '2px solid #111', paddingBottom: '12px', marginBottom: '10px' }}>
+                {(settings?.logoUrl || settings?.logo) && settings?.receiptSettings?.showLogo !== false && (
+                  <img
+                    src={getImageUrl(settings.logoUrl || settings.logo)}
+                    alt="Shop Logo"
+                    style={{
+                      width: `${settings?.receiptSettings?.logoWidth || 120}px`,
+                      maxHeight: '80px',
+                      objectFit: 'contain',
+                      margin: settings?.receiptSettings?.logoAlignment === 'left' ? '0 0 6px 0' : settings?.receiptSettings?.logoAlignment === 'right' ? '0 0 6px auto' : '0 auto 6px',
+                      display: 'block'
+                    }}
+                  />
                 )}
                 <h2 style={{ fontSize: '18px', fontWeight: 800, margin: '0 0 2px', color: '#111', letterSpacing: '1px' }}>
-                  {order.storeId?.name || brandName}
+                  {settings?.receiptSettings?.headerTitle || order.storeId?.name || brandName}
                 </h2>
-                {(order.storeId?.address || brandAddress) && (
+                {(settings?.receiptSettings?.subtitle || order.storeId?.address || brandAddress) && (
                   <p style={{ fontSize: '10px', margin: '0', color: '#555' }}>
-                    {order.storeId?.address || brandAddress}
+                    {settings?.receiptSettings?.subtitle || order.storeId?.address || brandAddress}
                   </p>
                 )}
                 {(order.storeId?.phone || brandPhone) && (
