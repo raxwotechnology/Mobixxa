@@ -1,4 +1,5 @@
 const Reload = require('../models/Reload');
+const ReloadStock = require('../models/ReloadStock');
 const Transaction = require('../models/Transaction');
 const Store = require('../models/Store');
 
@@ -110,7 +111,126 @@ const getReloads = async (req, res, next) => {
   }
 };
 
+// @desc    Get daily reload stocks
+// @route   GET /api/reloads/stocks
+// @access  Private
+const getReloadStocks = async (req, res, next) => {
+  try {
+    const { date, storeId } = req.query;
+    const targetDate = date || new Date().toISOString().split('T')[0];
+    const filter = { date: targetDate };
+
+    let assignedStore = storeId;
+    if (assignedStore && assignedStore !== 'all') {
+      filter.storeId = assignedStore;
+    } else if (req.user.role === 'manager') {
+      const store = await Store.findOne({ managerId: req.user._id });
+      if (store) filter.storeId = store._id;
+    }
+
+    const stocks = await ReloadStock.find(filter)
+      .populate('recordedBy', 'name')
+      .sort({ operator: 1, cardValue: 1 });
+
+    res.json(stocks);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Add or update reload stock (Opening / Added stock)
+// @route   POST /api/reloads/stocks/add
+// @access  Private
+const addReloadStock = async (req, res, next) => {
+  try {
+    const { storeId, operator, cardValue, openingStock, addedStock, notes, date } = req.body;
+    const targetDate = date || new Date().toISOString().split('T')[0];
+
+    let assignedStore = storeId;
+    if (!assignedStore) {
+      if (req.user.role === 'manager') {
+        const store = await Store.findOne({ managerId: req.user._id });
+        if (store) assignedStore = store._id;
+      } else if (req.user.assignedStore) {
+        assignedStore = req.user.assignedStore;
+      } else if (req.user.role === 'admin') {
+        const store = await Store.findOne({ isActive: true });
+        if (store) assignedStore = store._id;
+      }
+    }
+
+    let stockItem = await ReloadStock.findOne({
+      storeId: assignedStore,
+      date: targetDate,
+      operator,
+      cardValue: Number(cardValue || 1),
+    });
+
+    if (stockItem) {
+      if (openingStock !== undefined && openingStock !== '') stockItem.openingStock = Number(openingStock);
+      if (addedStock !== undefined && addedStock !== '') stockItem.addedStock += Number(addedStock);
+      stockItem.totalStock = stockItem.openingStock + stockItem.addedStock;
+      stockItem.sellOutAmount = Math.max(0, stockItem.totalStock - stockItem.closingStock);
+      stockItem.sellOutValue = stockItem.sellOutAmount * stockItem.cardValue;
+      if (notes) stockItem.notes = notes;
+      stockItem.recordedBy = req.user._id;
+      await stockItem.save();
+    } else {
+      const openVal = Number(openingStock || 0);
+      const addVal = Number(addedStock || 0);
+      const totalVal = openVal + addVal;
+      stockItem = await ReloadStock.create({
+        storeId: assignedStore,
+        date: targetDate,
+        operator,
+        cardValue: Number(cardValue || 1),
+        openingStock: openVal,
+        addedStock: addVal,
+        totalStock: totalVal,
+        closingStock: 0,
+        sellOutAmount: totalVal,
+        sellOutValue: totalVal * Number(cardValue || 1),
+        notes,
+        recordedBy: req.user._id,
+      });
+    }
+
+    res.status(200).json({ success: true, data: stockItem });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Close evening shop stock balance & auto-calculate Sell-Out
+// @route   POST /api/reloads/stocks/close
+// @access  Private
+const closeReloadStock = async (req, res, next) => {
+  try {
+    const { stockId, closingStock, notes } = req.body;
+
+    const stockItem = await ReloadStock.findById(stockId);
+    if (!stockItem) {
+      res.status(404);
+      return next(new Error('Reload stock record not found'));
+    }
+
+    stockItem.closingStock = Number(closingStock);
+    stockItem.sellOutAmount = Math.max(0, stockItem.totalStock - stockItem.closingStock);
+    stockItem.sellOutValue = stockItem.sellOutAmount * stockItem.cardValue;
+    if (notes) stockItem.notes = notes;
+    stockItem.recordedBy = req.user._id;
+    await stockItem.save();
+
+    res.status(200).json({ success: true, data: stockItem });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createReload,
   getReloads,
+  getReloadStocks,
+  addReloadStock,
+  closeReloadStock,
 };

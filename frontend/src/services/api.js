@@ -371,9 +371,12 @@ export const getCustomerHistory = (phone) => API.get(`/hp/customer/${phone}/hist
 export const getAllCustomers = () => API.get('/hp/customers/all');
 export const deleteHPRecord = (id) => API.delete(`/hp/${id}`);
 
-// Reloads
+// Reloads & Stock API
 export const createReload = (data) => API.post('/reloads', data);
 export const getReloads = (params) => API.get('/reloads', { params });
+export const getReloadStocks = (params) => API.get('/reloads/stocks', { params });
+export const addReloadStock = (data) => API.post('/reloads/stocks/add', data);
+export const closeReloadStock = (data) => API.post('/reloads/stocks/close', data);
 
 // Repairs
 export const getRepairs = (params) => API.get('/repairs', { params });
