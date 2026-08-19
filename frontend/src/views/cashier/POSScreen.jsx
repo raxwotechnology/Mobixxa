@@ -170,12 +170,119 @@ const POSScreen = () => {
   const [exchangeReturnId, setExchangeReturnId] = useState(null);
   const [searchingInvoice, setSearchingInvoice] = useState(false);
   const [processingReturn, setProcessingReturn] = useState(false);
-
-
-
+  const [showShortcutsHelp, setShowShortcutsHelp] = useState(false);
 
   const searchRef = useRef(null);
   const searchTimeoutRef = useRef(null);
+  const customerNameRef = useRef(null);
+  const customerPhoneRef = useRef(null);
+  const customerNicRef = useRef(null);
+  const customerAddressRef = useRef(null);
+  const tenderedAmountRef = useRef(null);
+
+  // Global POS Keyboard Shortcuts
+  useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      // F1: Toggle Keyboard Shortcuts Help
+      if (e.key === 'F1') {
+        e.preventDefault();
+        setShowShortcutsHelp(prev => !prev);
+        return;
+      }
+
+      // F2 or Slash (when not in an input): Focus Product / Barcode Search
+      if (e.key === 'F2' || (e.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName))) {
+        e.preventDefault();
+        searchRef.current?.focus();
+        searchRef.current?.select();
+        return;
+      }
+
+      // F3 or Alt+C: Open Customer Info & Focus Customer Name
+      if (e.key === 'F3' || (e.altKey && e.key.toLowerCase() === 'c')) {
+        e.preventDefault();
+        setShowCustomerInfo(true);
+        setTimeout(() => {
+          customerNameRef.current?.focus();
+          customerNameRef.current?.select();
+        }, 80);
+        return;
+      }
+
+      // F4 or Alt+T: Focus Amount Tendered
+      if (e.key === 'F4' || (e.altKey && e.key.toLowerCase() === 't')) {
+        e.preventDefault();
+        tenderedAmountRef.current?.focus();
+        tenderedAmountRef.current?.select();
+        return;
+      }
+
+      // F6: Open Discount / Voucher Modal
+      if (e.key === 'F6') {
+        e.preventDefault();
+        setShowDiscount(true);
+        return;
+      }
+
+      // F7: Open Return / Exchange Modal
+      if (e.key === 'F7') {
+        e.preventDefault();
+        setShowReturnModal(true);
+        return;
+      }
+
+      // F8: Cycle Payment Methods
+      if (e.key === 'F8') {
+        e.preventDefault();
+        const methods = ['cash', 'card', 'bank_transfer', 'cheque', 'hire_purchase'];
+        const currIdx = methods.indexOf(pos.paymentMethod);
+        const nextMethod = methods[(currIdx + 1) % methods.length];
+        pos.setPaymentMethod(nextMethod);
+        toast.info(`Payment Method: ${nextMethod.replace('_', ' ').toUpperCase()}`);
+        return;
+      }
+
+      // F9 or Ctrl+Enter: Trigger Checkout / Complete Sale
+      if (e.key === 'F9' || (e.ctrlKey && e.key === 'Enter')) {
+        e.preventDefault();
+        if (pos.cart.length > 0 && !checkingOut) {
+          handleCheckout();
+        } else if (pos.cart.length === 0) {
+          toast.warning('Cart is empty. Add products first.');
+        }
+        return;
+      }
+
+      // F10: Create Quotation
+      if (e.key === 'F10') {
+        e.preventDefault();
+        if (pos.cart.length > 0 && !checkingOut) {
+          handleCreateQuotation();
+        }
+        return;
+      }
+
+      // Escape: Close open modals / Return focus to search
+      if (e.key === 'Escape') {
+        if (showShortcutsHelp) setShowShortcutsHelp(false);
+        else if (showDiscount) setShowDiscount(false);
+        else if (showReturnModal) setShowReturnModal(false);
+        else if (showHpQuickPayModal) setShowHpQuickPayModal(false);
+        else if (showBalanceModal) setShowBalanceModal(false);
+        else if (showEndSession) setShowEndSession(false);
+        else if (showCreditPanel) setShowCreditPanel(false);
+        else if (showReloadModal) setShowReloadModal(false);
+        else if (showTradeInModal) setShowTradeInModal(false);
+        else if (showCustomerHistory) setShowCustomerHistory(false);
+        else {
+          searchRef.current?.focus();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [pos.cart, checkingOut, pos.paymentMethod, showShortcutsHelp, showDiscount, showReturnModal, showHpQuickPayModal, showBalanceModal, showEndSession, showCreditPanel, showReloadModal, showTradeInModal, showCustomerHistory]);
 
   // Fetch Cashiers for Lockscreen on Mount
   useEffect(() => {
@@ -1815,6 +1922,10 @@ const POSScreen = () => {
             <Smartphone size={18} />
             <span className="pos-topbar-btn-text">Reload</span>
           </button>
+          <button className="pos-topbar-btn" onClick={() => setShowShortcutsHelp(true)} title="Keyboard Shortcuts (F1)" style={{ background: '#f8fafc', color: '#334155', borderColor: '#cbd5e1' }}>
+            <span style={{ fontSize: '15px' }}>⌨️</span>
+            <span className="pos-topbar-btn-text">Shortcuts (F1)</span>
+          </button>
           <button className="pos-topbar-btn" onClick={handleSwitchCashier} title="Switch Cashier" style={{ background: '#f5f3ff', color: '#5b21b6', borderColor: '#ddd6fe' }}>
             <Lock size={18} />
             <span className="pos-topbar-btn-text">Switch Cashier</span>
@@ -1838,7 +1949,7 @@ const POSScreen = () => {
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
                 onKeyDown={handleSearchKeyDown}
-                placeholder="Search by name, barcode, or SKU... (Enter to quick-add)"
+                placeholder="Search / Scan Product (F2 / Enter to add)..."
                 className="pos-search-input"
               />
               {searchQuery && (
@@ -2376,29 +2487,56 @@ const POSScreen = () => {
                 {/* Customer Info Toggle */}
                 <button
                   className="pos-apply-discount-btn"
-                  onClick={() => setShowCustomerInfo(!showCustomerInfo)}
-                  style={{ marginTop: '4px', background: showCustomerInfo ? '#dbeafe' : undefined, color: showCustomerInfo ? '#2563eb' : undefined }}
+                  onClick={() => {
+                    setShowCustomerInfo(!showCustomerInfo);
+                    if (!showCustomerInfo) {
+                      setTimeout(() => customerNameRef.current?.focus(), 80);
+                    }
+                  }}
+                  style={{ marginTop: '4px', background: showCustomerInfo ? '#dbeafe' : undefined, color: showCustomerInfo ? '#2563eb' : undefined, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                 >
-                  <User size={16} />
-                  {pos.customerName ? `Customer: ${pos.customerName}` : 'Add Customer Info'}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <User size={16} />
+                    <span>{pos.customerName ? `Customer: ${pos.customerName}` : 'Add Customer Info'}</span>
+                  </div>
+                  <span style={{ fontSize: '10px', background: '#f1f5f9', color: '#64748b', padding: '1px 5px', borderRadius: '4px', border: '1px solid #cbd5e1' }}>F3</span>
                 </button>
                 {showCustomerInfo && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '6px' }}>
                     <div style={{ display: 'flex', gap: '6px' }}>
                       <input
+                        ref={customerNameRef}
                         type="text"
                         value={pos.customerName}
                         onChange={(e) => pos.setCustomerInfo(e.target.value, pos.customerPhone, pos.customerNic, pos.customerAddress)}
-                        placeholder="Customer name (e.g., John Doe)"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            customerPhoneRef.current?.focus();
+                          }
+                        }}
+                        placeholder="Customer name (Enter ↵ for Phone)"
                         className="pos-input"
                         style={{ flex: 1, fontSize: '12px' }}
                       />
                       <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flex: 1 }}>
                         <input
+                          ref={customerPhoneRef}
                           type="tel"
                           value={pos.customerPhone}
                           onChange={(e) => pos.setCustomerInfo(pos.customerName, e.target.value, pos.customerNic, pos.customerAddress)}
-                          placeholder="Phone (e.g., 0771234567)"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              if (pos.paymentMethod === 'cash') {
+                                tenderedAmountRef.current?.focus();
+                                tenderedAmountRef.current?.select();
+                              } else {
+                                customerNicRef.current?.focus();
+                              }
+                            }
+                          }}
+                          placeholder="Phone (Enter ↵ for Cash)"
                           className="pos-input"
                           style={{ flex: 1, fontSize: '12px' }}
                         />
@@ -2420,18 +2558,33 @@ const POSScreen = () => {
                     </div>
                     <div style={{ display: 'flex', gap: '6px' }}>
                       <input
+                        ref={customerNicRef}
                         type="text"
                         value={pos.customerNic}
                         onChange={(e) => pos.setCustomerInfo(pos.customerName, pos.customerPhone, e.target.value, pos.customerAddress)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            customerAddressRef.current?.focus();
+                          }
+                        }}
                         placeholder="NIC (e.g., 991234567V)"
                         className="pos-input"
                         style={{ flex: 1, fontSize: '12px' }}
                       />
                       <input
+                        ref={customerAddressRef}
                         type="text"
                         value={pos.customerAddress}
                         onChange={(e) => pos.setCustomerInfo(pos.customerName, pos.customerPhone, pos.customerNic, e.target.value)}
-                        placeholder="Address (e.g., Colombo)"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            tenderedAmountRef.current?.focus();
+                            tenderedAmountRef.current?.select();
+                          }
+                        }}
+                        placeholder="Address (Enter ↵ for Cash)"
                         className="pos-input"
                         style={{ flex: 1, fontSize: '12px' }}
                       />
@@ -2913,14 +3066,26 @@ const POSScreen = () => {
 
                 {pos.paymentMethod === 'cash' && !isCredit && (
                   <div className="pos-cash-section">
-                    <label className="pos-cash-label">Amount Tendered</label>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <label className="pos-cash-label">Amount Tendered</label>
+                      <span style={{ fontSize: '10px', background: '#f1f5f9', color: '#64748b', padding: '1px 5px', borderRadius: '4px', border: '1px solid #cbd5e1' }}>F4</span>
+                    </div>
                     <div className="pos-cash-input-wrapper">
                       <span className="pos-cash-icon" style={{ fontSize: '14px', fontWeight: 'bold', color: '#9ca3af' }}>Rs.</span>
                       <input
+                        ref={tenderedAmountRef}
                         type="number"
                         value={pos.tenderedAmount}
                         onChange={(e) => pos.setTenderedAmount(e.target.value)}
-                        placeholder="0.00"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            if (pos.cart.length > 0 && !checkingOut) {
+                              handleCheckout();
+                            }
+                          }
+                        }}
+                        placeholder="0.00 (Enter ↵ for Checkout)"
                         className="pos-cash-input"
                         min={grandTotal}
                         step="0.01"
@@ -3069,22 +3234,26 @@ const POSScreen = () => {
                   className="pos-checkout-btn"
                   onClick={handleCreateQuotation}
                   disabled={checkingOut || pos.cart.length === 0}
-                  style={{ background: '#f3f4f6', color: '#374151', border: '1px solid #d1d5db', height: '54px', fontSize: '14px' }}
+                  style={{ background: '#f3f4f6', color: '#374151', border: '1px solid #d1d5db', height: '54px', fontSize: '13px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px' }}
                 >
-                  📄 GIVE QUOTATION
+                  <span style={{ fontWeight: 'bold' }}>📄 GIVE QUOTATION</span>
+                  <span style={{ fontSize: '10px', color: '#6b7280', fontWeight: 'bold' }}>[F10]</span>
                 </button>
                 <button
                   className="pos-checkout-btn"
                   onClick={() => handleCheckout()}
                   disabled={checkingOut || pos.cart.length === 0}
-                  style={isCredit ? { background: 'linear-gradient(135deg,#f59e0b,#d97706)', height: '54px' } : { height: '54px' }}
+                  style={isCredit ? { background: 'linear-gradient(135deg,#f59e0b,#d97706)', height: '54px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px' } : { height: '54px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px' }}
                 >
                   {checkingOut ? (
                     <span className="pos-spinner-sm" />
                   ) : (
                     <>
-                      <Receipt size={22} />
-                      {isCredit ? `CREDIT SALE` : `CHECKOUT`}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Receipt size={18} />
+                        <span style={{ fontWeight: '800' }}>{isCredit ? `CREDIT SALE` : `CHECKOUT`}</span>
+                      </div>
+                      <span style={{ fontSize: '10px', opacity: 0.9, fontWeight: 'bold' }}>[F9 / Ctrl+↵]</span>
                     </>
                   )}
                 </button>
@@ -3921,6 +4090,75 @@ const POSScreen = () => {
           toast.success(`Trade-In discount of LKR ${amount.toLocaleString()} applied to cart! 📱`);
         }}
       />
+
+      {/* Keyboard Shortcuts Help Modal (F1) */}
+      {showShortcutsHelp && (
+        <div className="pos-modal-overlay" onClick={() => setShowShortcutsHelp(false)}>
+          <div className="pos-modal-card" onClick={e => e.stopPropagation()} style={{ maxWidth: '580px', width: '90%', padding: '24px', background: '#ffffff', borderRadius: '24px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', border: '1px solid #e2e8f0' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', paddingBottom: '14px', marginBottom: '18px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '24px' }}>⌨️</span>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>POS Keyboard Shortcuts</h3>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#64748b', fontWeight: '500' }}>Lightning-fast hands-free keyboard navigation</p>
+                </div>
+              </div>
+              <button onClick={() => setShowShortcutsHelp(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#64748b' }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '13px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                <span style={{ color: '#334155', fontWeight: '600' }}>Search / Scan Product</span>
+                <kbd style={{ background: '#0f172a', color: '#fff', padding: '3px 8px', borderRadius: '6px', fontWeight: 'bold', fontSize: '11px' }}>F2 or /</kbd>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                <span style={{ color: '#334155', fontWeight: '600' }}>Customer Details</span>
+                <kbd style={{ background: '#0f172a', color: '#fff', padding: '3px 8px', borderRadius: '6px', fontWeight: 'bold', fontSize: '11px' }}>F3 / Alt+C</kbd>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                <span style={{ color: '#334155', fontWeight: '600' }}>Amount Tendered (Cash)</span>
+                <kbd style={{ background: '#0f172a', color: '#fff', padding: '3px 8px', borderRadius: '6px', fontWeight: 'bold', fontSize: '11px' }}>F4 / Alt+T</kbd>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                <span style={{ color: '#334155', fontWeight: '600' }}>Switch Payment Method</span>
+                <kbd style={{ background: '#0f172a', color: '#fff', padding: '3px 8px', borderRadius: '6px', fontWeight: 'bold', fontSize: '11px' }}>F8</kbd>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: '#f0fdf4', borderRadius: '12px', border: '1.5px solid #86efac' }}>
+                <span style={{ color: '#166534', fontWeight: '800' }}>COMPLETE CHECKOUT</span>
+                <kbd style={{ background: '#15803d', color: '#fff', padding: '3px 8px', borderRadius: '6px', fontWeight: 'bold', fontSize: '11px' }}>F9 / Ctrl+↵</kbd>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                <span style={{ color: '#334155', fontWeight: '600' }}>Give Quotation</span>
+                <kbd style={{ background: '#0f172a', color: '#fff', padding: '3px 8px', borderRadius: '6px', fontWeight: 'bold', fontSize: '11px' }}>F10</kbd>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                <span style={{ color: '#334155', fontWeight: '600' }}>Discount / Voucher</span>
+                <kbd style={{ background: '#0f172a', color: '#fff', padding: '3px 8px', borderRadius: '6px', fontWeight: 'bold', fontSize: '11px' }}>F6</kbd>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                <span style={{ color: '#334155', fontWeight: '600' }}>Customer Return</span>
+                <kbd style={{ background: '#0f172a', color: '#fff', padding: '3px 8px', borderRadius: '6px', fontWeight: 'bold', fontSize: '11px' }}>F7</kbd>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                <span style={{ color: '#334155', fontWeight: '600' }}>Jump to Next Field</span>
+                <kbd style={{ background: '#64748b', color: '#fff', padding: '3px 8px', borderRadius: '6px', fontWeight: 'bold', fontSize: '11px' }}>Enter ↵</kbd>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                <span style={{ color: '#334155', fontWeight: '600' }}>Close Modal / Cancel</span>
+                <kbd style={{ background: '#64748b', color: '#fff', padding: '3px 8px', borderRadius: '6px', fontWeight: 'bold', fontSize: '11px' }}>Escape</kbd>
+              </div>
+            </div>
+
+            <div style={{ marginTop: '18px', textAlign: 'center' }}>
+              <button onClick={() => setShowShortcutsHelp(false)} className="pos-btn-blue" style={{ width: '100%', height: '40px', fontSize: '13px', fontWeight: 'bold' }}>
+                Got it (Press Esc to Close)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
 
   );
