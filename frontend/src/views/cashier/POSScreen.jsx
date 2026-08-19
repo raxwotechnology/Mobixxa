@@ -633,32 +633,45 @@ const POSScreen = () => {
     }
   };
 
-  // Search Return Invoice
+  // Search Return Invoice, Barcode or IMEI
   const handleSearchReturnInvoice = async () => {
-    if (!returnInvoiceNo) {
-      toast.warning('Please enter an invoice number');
+    if (!returnInvoiceNo || !returnInvoiceNo.trim()) {
+      toast.warning('Please scan or enter Barcode, IMEI or Invoice number');
       return;
     }
     try {
       setSearchingInvoice(true);
-      // Clean leading '#' and whitespace to prevent browser URL fragment truncation
-      const cleanedInvoiceNo = returnInvoiceNo.trim().replace(/^[#\s]+/, '');
-      const { data } = await getPosOrderByInvoice(cleanedInvoiceNo);
+      const cleanedQuery = returnInvoiceNo.trim().replace(/^[#\s]+/, '');
+      const { data } = await getPosOrderByInvoice(cleanedQuery);
 
       setReturnOrder(data);
-      setReturnItems(data.items.map(it => ({
-        productId: it.productId,
-        name: it.name,
-        qty: it.quantity,
-        price: it.price,
-        condition: 'good',
-        reason: '',
-        maxQty: it.quantity,
-        checked: false
-      })));
-      toast.success('Invoice details loaded!');
+      const matchedProdId = data.matchedSearch?.matchedProductId?.toString();
+      
+      setReturnItems(data.items.map(it => {
+        const isMatched = matchedProdId && (it.productId?.toString() === matchedProdId || it._id?.toString() === matchedProdId);
+        return {
+          productId: it.productId,
+          name: it.name,
+          qty: isMatched ? 1 : it.quantity,
+          price: it.price,
+          condition: 'good',
+          reason: isMatched ? `Scanned ${data.matchedSearch?.type?.toUpperCase()}: ${data.matchedSearch?.query}` : '',
+          maxQty: it.quantity,
+          checked: !!isMatched,
+          isScannedMatch: !!isMatched,
+          imei: it.imei,
+          barcode: it.barcode
+        };
+      }));
+
+      const searchType = data.matchedSearch?.type;
+      if (searchType && searchType !== 'invoice') {
+        toast.success(`Order loaded! Auto-matched item by ${searchType.toUpperCase()}: ${data.matchedSearch.query}`);
+      } else {
+        toast.success('Invoice details loaded!');
+      }
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Invoice not found');
+      toast.error(err.response?.data?.message || 'Invoice, IMEI, or Barcode not found in sales history');
       setReturnOrder(null);
       setReturnItems([]);
     } finally {
@@ -1597,25 +1610,33 @@ const POSScreen = () => {
               </button>
             </div>
 
-            {/* Invoice Search Input */}
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-              <input
-                type="text"
-                placeholder="Search Invoice Number (e.g. INV-20260605-0001)"
-                value={returnInvoiceNo}
-                onChange={e => setReturnInvoiceNo(e.target.value)}
-                className="pos-input"
-                style={{ flex: 1, fontSize: '13px', background: '#fff', color: '#1e293b' }}
-                onKeyDown={e => e.key === 'Enter' && handleSearchReturnInvoice()}
-              />
-              <button
-                onClick={handleSearchReturnInvoice}
-                disabled={searchingInvoice}
-                className="pos-btn-blue"
-                style={{ padding: '0 16px', fontSize: '13px', height: '38px', whiteSpace: 'nowrap' }}
-              >
-                {searchingInvoice ? 'Searching...' : 'Search'}
-              </button>
+            {/* Barcode / IMEI / Invoice Search Input */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input
+                  type="text"
+                  placeholder="Scan Barcode, IMEI or type Invoice # (Press Enter)"
+                  value={returnInvoiceNo}
+                  onChange={e => setReturnInvoiceNo(e.target.value)}
+                  className="pos-input"
+                  style={{ flex: 1, fontSize: '13px', background: '#fff', color: '#1e293b', border: '1.5px solid #cbd5e1' }}
+                  onKeyDown={e => e.key === 'Enter' && handleSearchReturnInvoice()}
+                  autoFocus
+                />
+                <button
+                  onClick={handleSearchReturnInvoice}
+                  disabled={searchingInvoice}
+                  className="pos-btn-blue"
+                  style={{ padding: '0 18px', fontSize: '13px', height: '38px', whiteSpace: 'nowrap', fontWeight: 'bold' }}
+                >
+                  {searchingInvoice ? 'Searching...' : 'Search / Scan'}
+                </button>
+              </div>
+              <div style={{ display: 'flex', gap: '8px', fontSize: '11px', color: '#64748b' }}>
+                <span style={{ background: '#f1f5f9', padding: '2px 8px', borderRadius: '6px' }}>📱 Scan IMEI</span>
+                <span style={{ background: '#f1f5f9', padding: '2px 8px', borderRadius: '6px' }}>🏷️ Scan Barcode</span>
+                <span style={{ background: '#f1f5f9', padding: '2px 8px', borderRadius: '6px' }}>🧾 Invoice No</span>
+              </div>
             </div>
 
             {/* Invoice Details & Returnable Items */}
@@ -1634,7 +1655,7 @@ const POSScreen = () => {
                   <h4 style={{ margin: '0 0 8px 0', fontSize: '13px', fontWeight: 'bold', color: '#334155' }}>Select Items to Return</h4>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {returnItems.map((item, index) => (
-                      <div key={item.productId} style={{ display: 'flex', flexDirection: 'column', gap: '6px', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '12px', background: item.checked ? '#f0fdf4' : '#fff' }}>
+                      <div key={item.productId || index} style={{ display: 'flex', flexDirection: 'column', gap: '6px', padding: '12px', border: item.isScannedMatch ? '2px solid #22c55e' : '1px solid #e2e8f0', borderRadius: '12px', background: item.checked ? '#f0fdf4' : '#fff' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <input
                             type="checkbox"
@@ -1645,8 +1666,15 @@ const POSScreen = () => {
                               setReturnItems(newItems);
                             }}
                           />
-                          <span style={{ fontSize: '13px', fontWeight: 600, color: '#1e293b', flex: 1 }}>{item.name}</span>
-                          <span style={{ fontSize: '12px', color: '#64748b' }}>Rs. {item.price.toFixed(2)}</span>
+                          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: '13px', fontWeight: 600, color: '#1e293b' }}>{item.name}</span>
+                            {item.isScannedMatch && (
+                              <span style={{ background: '#dcfce7', color: '#15803d', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '6px', border: '1px solid #bbf7d0' }}>
+                                ✓ Scanned Match
+                              </span>
+                            )}
+                          </div>
+                          <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>Rs. {item.price.toFixed(2)}</span>
                         </div>
 
                         {item.checked && (

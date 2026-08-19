@@ -1008,24 +1008,15 @@ const settleCreditOrder = async (req, res, next) => {
 };
 
 
-// @desc    Get POS order by invoice number
+// @desc    Get POS order by invoice number, IMEI, or Barcode
 // @route   GET /api/pos/orders/invoice/:invoiceNumber
 // @access  Private/Cashier/Manager/Admin
 const getPosOrderByInvoice = async (req, res, next) => {
   try {
     const rawInvoice = req.params.invoiceNumber || '';
-    const fs = require('fs');
-    const path = require('path');
-    const logPath = path.join(__dirname, '..', 'debug.log');
+    const trimmed = rawInvoice.trim();
 
-    const writeLog = (msg) => {
-      const ts = new Date().toISOString();
-      fs.appendFileSync(logPath, `[${ts}] ${msg}\n`);
-    };
-
-    writeLog(`Received search request for rawInvoice: "${rawInvoice}"`);
-
-    // Normalize and build relaxed search pattern
+    // 1. Try search by Invoice Number (relaxed pattern matching)
     let clean = rawInvoice.toUpperCase().trim().replace(/^[#\s]+/, '').replace(/^INV-?/, '').replace(/\s+/g, '');
     clean = clean.replace(/[\u2010\u2011\u2012\u2013\u2014\u2212]/g, '-');
     clean = clean.replace(/-/g, '');
@@ -1039,28 +1030,101 @@ const getPosOrderByInvoice = async (req, res, next) => {
       pattern = `^INV-?${clean}$`;
     }
 
-    writeLog(`Normalized to: "${clean}". Regex pattern: "${pattern}"`);
-
-    const order = await Order.findOne({ invoiceNumber: { $regex: new RegExp(pattern, 'i') } })
+    let order = await Order.findOne({ invoiceNumber: { $regex: new RegExp(pattern, 'i') } })
       .populate('storeId', 'name address phone email logo')
       .populate('cashierId', 'name')
       .lean();
 
-    if (!order) {
-      writeLog(`Order not found for pattern "${pattern}"`);
-      res.status(404);
-      return next(new Error('Invoice not found'));
+    let matchedType = 'invoice';
+    let matchedProductId = null;
+    let matchedImei = null;
+    let matchedBarcode = null;
+
+    // 2. If not found by invoice, try searching by IMEI
+    if (!order && trimmed.length >= 8) {
+      order = await Order.findOne({
+        'items.imei': { $regex: new RegExp(trimmed.replace(/[^\w]/g, ''), 'i') }
+      })
+        .populate('storeId', 'name address phone email logo')
+        .populate('cashierId', 'name')
+        .sort({ createdAt: -1 })
+        .lean();
+
+      if (order) {
+        matchedType = 'imei';
+        matchedImei = trimmed;
+        const matchedItem = (order.items || []).find(it => 
+          Array.isArray(it.imei) 
+            ? it.imei.some(im => String(im).toLowerCase().includes(trimmed.toLowerCase()))
+            : String(it.imei || '').toLowerCase().includes(trimmed.toLowerCase())
+        );
+        if (matchedItem) matchedProductId = matchedItem.productId;
+      }
     }
 
-    writeLog(`Order found! Invoice: ${order.invoiceNumber}, ID: ${order._id}`);
-    res.json(order);
+    // 3. If still not found, try searching by Barcode or SKU
+    if (!order && trimmed.length >= 2) {
+      // First check if any order directly contains this barcode / SKU
+      order = await Order.findOne({
+        $or: [
+          { 'items.barcode': { $regex: new RegExp(trimmed, 'i') } },
+          { 'items.sku': { $regex: new RegExp(trimmed, 'i') } }
+        ]
+      })
+        .populate('storeId', 'name address phone email logo')
+        .populate('cashierId', 'name')
+        .sort({ createdAt: -1 })
+        .lean();
+
+      if (order) {
+        matchedType = 'barcode';
+        matchedBarcode = trimmed;
+        const matchedItem = (order.items || []).find(it => 
+          String(it.barcode || '').toLowerCase() === trimmed.toLowerCase() ||
+          String(it.sku || '').toLowerCase() === trimmed.toLowerCase()
+        );
+        if (matchedItem) matchedProductId = matchedItem.productId;
+      } else {
+        // Find product by barcode, then get most recent order containing this product
+        const product = await Product.findOne({
+          $or: [
+            { barcode: trimmed },
+            { sku: trimmed }
+          ]
+        }).select('_id barcode sku name').lean();
+
+        if (product) {
+          order = await Order.findOne({ 'items.productId': product._id })
+            .populate('storeId', 'name address phone email logo')
+            .populate('cashierId', 'name')
+            .sort({ createdAt: -1 })
+            .lean();
+
+          if (order) {
+            matchedType = 'barcode';
+            matchedBarcode = trimmed;
+            matchedProductId = product._id;
+          }
+        }
+      }
+    }
+
+    if (!order) {
+      res.status(404);
+      return next(new Error('Invoice, IMEI, or Barcode not found in sales history'));
+    }
+
+    res.json({
+      ...order,
+      matchedSearch: {
+        type: matchedType,
+        query: trimmed,
+        matchedProductId,
+        matchedImei,
+        matchedBarcode
+      }
+    });
   } catch (error) {
-    try {
-      const fs = require('fs');
-      const path = require('path');
-      const logPath = path.join(__dirname, '..', 'debug.log');
-      fs.appendFileSync(logPath, `[${new Date().toISOString()}] Error: ${error.message}\n`);
-    } catch (e) { }
     next(error);
   }
 };
