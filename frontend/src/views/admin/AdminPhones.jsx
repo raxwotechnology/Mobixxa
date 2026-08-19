@@ -520,7 +520,48 @@ const AdminPhones = () => {
                     </div>
                     <div>
                       <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Brand / Manufacturer *</label>
-                      <input required value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" placeholder="e.g. Apple, Samsung, Xiaomi" />
+                      <select 
+                        required 
+                        value={['Apple', 'Samsung', 'Xiaomi', 'Google Pixel', 'OnePlus', 'Vivo', 'Oppo', 'Realme', 'Infinix', 'Huawei', 'Tecno', 'ZTE', 'Nokia', 'Honor', 'Sony', 'HTC', 'LG'].includes(form.brand) ? form.brand : (form.brand ? 'Other' : '')} 
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val === 'Other') {
+                            setForm({ ...form, brand: '' });
+                          } else {
+                            setForm({ ...form, brand: val });
+                          }
+                        }} 
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all mb-2"
+                      >
+                        <option value="">Select Brand</option>
+                        <option value="Apple">Apple</option>
+                        <option value="Samsung">Samsung</option>
+                        <option value="Xiaomi">Xiaomi</option>
+                        <option value="Google Pixel">Google Pixel</option>
+                        <option value="OnePlus">OnePlus</option>
+                        <option value="Vivo">Vivo</option>
+                        <option value="Oppo">Oppo</option>
+                        <option value="Realme">Realme</option>
+                        <option value="Infinix">Infinix</option>
+                        <option value="Huawei">Huawei</option>
+                        <option value="Tecno">Tecno</option>
+                        <option value="ZTE">ZTE</option>
+                        <option value="Nokia">Nokia</option>
+                        <option value="Honor">Honor</option>
+                        <option value="Sony">Sony</option>
+                        <option value="HTC">HTC</option>
+                        <option value="LG">LG</option>
+                        <option value="Other">Other / Custom Brand</option>
+                      </select>
+                      {(!['Apple', 'Samsung', 'Xiaomi', 'Google Pixel', 'OnePlus', 'Vivo', 'Oppo', 'Realme', 'Infinix', 'Huawei', 'Tecno', 'ZTE', 'Nokia', 'Honor', 'Sony', 'HTC', 'LG'].includes(form.brand) || form.brand === '') && (
+                        <input 
+                          required 
+                          value={form.brand} 
+                          onChange={(e) => setForm({ ...form, brand: e.target.value })} 
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" 
+                          placeholder="Type custom brand name..." 
+                        />
+                      )}
                     </div>
                     <div>
                       <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Model Number</label>

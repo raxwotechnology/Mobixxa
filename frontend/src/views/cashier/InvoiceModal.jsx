@@ -17,7 +17,7 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale }) => {
   const brandEmail = settings?.email || '';
   const receiptTemplate = settings?.documentTemplates?.posReceipt || {};
   const invoiceTemplate = settings?.documentTemplates?.invoice || {};
-  
+
   const [layoutMode, setLayoutMode] = useState('receipt'); // 'receipt' or 'invoice'
   const [smsRecipient, setSmsRecipient] = useState('');
   const [emailRecipient, setEmailRecipient] = useState('');
@@ -130,15 +130,15 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale }) => {
 
         {/* Layout Mode Selector — hidden when printing */}
         <div className="flex justify-center border-b border-gray-100 p-3 no-print" style={{ gap: '10px' }}>
-          <button 
+          <button
             type="button"
-            onClick={() => setLayoutMode('receipt')} 
-            style={{ 
-              padding: '6px 16px', 
-              fontSize: '12px', 
-              fontWeight: 'bold', 
-              borderRadius: '8px', 
-              border: layoutMode === 'receipt' ? 'none' : '1px solid #e2e8f0', 
+            onClick={() => setLayoutMode('receipt')}
+            style={{
+              padding: '6px 16px',
+              fontSize: '12px',
+              fontWeight: 'bold',
+              borderRadius: '8px',
+              border: layoutMode === 'receipt' ? 'none' : '1px solid #e2e8f0',
               background: layoutMode === 'receipt' ? '#2563eb' : 'transparent',
               color: layoutMode === 'receipt' ? '#fff' : '#64748b',
               cursor: 'pointer'
@@ -146,15 +146,15 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale }) => {
           >
             POS Receipt (80mm)
           </button>
-          <button 
+          <button
             type="button"
-            onClick={() => setLayoutMode('invoice')} 
-            style={{ 
-              padding: '6px 16px', 
-              fontSize: '12px', 
-              fontWeight: 'bold', 
-              borderRadius: '8px', 
-              border: layoutMode === 'invoice' ? 'none' : '1px solid #e2e8f0', 
+            onClick={() => setLayoutMode('invoice')}
+            style={{
+              padding: '6px 16px',
+              fontSize: '12px',
+              fontWeight: 'bold',
+              borderRadius: '8px',
+              border: layoutMode === 'invoice' ? 'none' : '1px solid #e2e8f0',
               background: layoutMode === 'invoice' ? '#2563eb' : 'transparent',
               color: layoutMode === 'invoice' ? '#fff' : '#64748b',
               cursor: 'pointer'
@@ -333,7 +333,7 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale }) => {
                   {settings?.receiptSettings?.termsAndConditions && <p style={{ margin: '0 0 4px 0', fontSize: '9px', fontStyle: 'italic' }}>T&C: {settings.receiptSettings.termsAndConditions}</p>}
                   {showWarranty && settings?.receiptSettings?.warrantyTerms && <p style={{ margin: 0, fontSize: '9px', fontStyle: 'italic' }}>Warranty: {settings.receiptSettings.warrantyTerms}</p>}
                 </div>
-                
+
                 <div style={{ width: '30%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end' }}>
                   {(settings?.sealUrl || settings?.seal) && (
                     <div style={{ textAlign: 'center', marginBottom: '8px' }}>
@@ -565,7 +565,7 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale }) => {
               {/* Barcode */}
               <div style={{ textAlign: 'center', margin: '10px 0 6px', borderTop: '1px dashed #999', paddingTop: '8px' }}>
                 {showBarcode && <svg ref={barcodeRef} style={{ maxWidth: '200px', display: 'block', margin: '0 auto' }}></svg>}
-                
+
                 {(settings?.sealUrl || settings?.seal) && (
                   <img src={getImageUrl(settings.sealUrl || settings.seal)} alt="Seal" style={{ width: '48px', height: '48px', objectFit: 'contain', margin: '6px auto', display: 'block', opacity: 0.8 }} />
                 )}
@@ -598,16 +598,16 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale }) => {
           <h4 style={{ margin: 0, fontSize: '11px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             Send Invoice / Receipt
           </h4>
-          
+
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px', alignItems: 'center' }}>
-            <input 
-              type="text" 
-              placeholder="WhatsApp Number (e.g., 0771234567)" 
+            <input
+              type="text"
+              placeholder="WhatsApp Number (e.g., 0771234567)"
               value={smsRecipient}
               onChange={(e) => setSmsRecipient(e.target.value)}
               style={{ fontSize: '12px', padding: '8px 12px', border: '1px solid #10b981', borderRadius: '8px', background: '#fff', color: '#1e293b' }}
             />
-            <button 
+            <button
               type="button"
               onClick={() => sendWhatsAppInvoice({ ...order, customerPhone: smsRecipient || order.customerPhone }, brandName, brandPhone)}
               style={{ padding: '8px 14px', fontSize: '12px', fontWeight: 'bold', background: '#10b981', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', items: 'center', gap: '4px' }}
@@ -617,14 +617,14 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale }) => {
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px', alignItems: 'center' }}>
-            <input 
-              type="text" 
-              placeholder="SMS Phone Number (+947XXXXXXXX)" 
+            <input
+              type="text"
+              placeholder="SMS Phone Number (+947XXXXXXXX)"
               value={smsRecipient}
               onChange={(e) => setSmsRecipient(e.target.value)}
               style={{ fontSize: '12px', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', background: '#fff', color: '#1e293b' }}
             />
-            <button 
+            <button
               type="button"
               onClick={handleSendSms}
               disabled={sendingSms}
@@ -635,14 +635,14 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale }) => {
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px', alignItems: 'center' }}>
-            <input 
-              type="email" 
-              placeholder="Email Address" 
+            <input
+              type="email"
+              placeholder="Email Address"
               value={emailRecipient}
               onChange={(e) => setEmailRecipient(e.target.value)}
               style={{ fontSize: '12px', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', background: '#fff', color: '#1e293b' }}
             />
-            <button 
+            <button
               type="button"
               onClick={handleSendEmail}
               disabled={sendingEmail}

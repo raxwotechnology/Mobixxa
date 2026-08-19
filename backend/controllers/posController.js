@@ -229,14 +229,14 @@ const getProductByBarcode = async (req, res, next) => {
 const createQuotation = async (req, res, next) => {
   try {
     const { items, customerName, customerPhone, discount, discountType, notes } = req.body;
-    
+
     if (!items || items.length === 0) {
       res.status(400);
       return next(new Error('No items for quotation'));
     }
 
     const storeId = await resolveStoreId(req.user);
-    
+
     let subtotal = 0;
     const quotItems = [];
     for (const item of items) {
@@ -259,10 +259,10 @@ const createQuotation = async (req, res, next) => {
     }
 
     const totalAmount = subtotal - discountAmt;
-    
+
     // Generate quotation number (QUO-YYYYMMDD-XXXX)
     const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-    const count = await Quotation.countDocuments({ createdAt: { $gte: new Date().setHours(0,0,0,0) } });
+    const count = await Quotation.countDocuments({ createdAt: { $gte: new Date().setHours(0, 0, 0, 0) } });
     const quotationNumber = `QUO-${dateStr}-${String(count + 1).padStart(4, '0')}`;
 
     const quotation = await Quotation.create({
@@ -496,7 +496,7 @@ const posCheckout = async (req, res, next) => {
         const Settings = require('../models/Settings');
         const settings = await Settings.findOne();
         if (settings?.taxRate !== undefined) taxRate = settings.taxRate;
-        
+
         // Apply Koko Interest
         if (paymentMethod === 'koko' && settings?.kokoInterestRate > 0) {
           const kokoInterest = (subtotal - totalDiscount) * (settings.kokoInterestRate / 100);
@@ -1016,19 +1016,19 @@ const getPosOrderByInvoice = async (req, res, next) => {
     const fs = require('fs');
     const path = require('path');
     const logPath = path.join(__dirname, '..', 'debug.log');
-    
+
     const writeLog = (msg) => {
       const ts = new Date().toISOString();
       fs.appendFileSync(logPath, `[${ts}] ${msg}\n`);
     };
 
     writeLog(`Received search request for rawInvoice: "${rawInvoice}"`);
-    
+
     // Normalize and build relaxed search pattern
     let clean = rawInvoice.toUpperCase().trim().replace(/^[#\s]+/, '').replace(/^INV-?/, '').replace(/\s+/g, '');
     clean = clean.replace(/[\u2010\u2011\u2012\u2013\u2014\u2212]/g, '-');
     clean = clean.replace(/-/g, '');
-    
+
     let pattern;
     if (/^\d{12}$/.test(clean)) {
       const datePart = clean.slice(0, 8);
@@ -1059,7 +1059,7 @@ const getPosOrderByInvoice = async (req, res, next) => {
       const path = require('path');
       const logPath = path.join(__dirname, '..', 'debug.log');
       fs.appendFileSync(logPath, `[${new Date().toISOString()}] Error: ${error.message}\n`);
-    } catch (e) {}
+    } catch (e) { }
     next(error);
   }
 };
