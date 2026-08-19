@@ -126,6 +126,16 @@ const POSScreen = () => {
   const [cashiersList, setCashiersList] = useState([]);
   const [selectedCashier, setSelectedCashier] = useState(null);
   const [loadingCashiers, setLoadingCashiers] = useState(false);
+  // Prevent mouse wheel scrolling from changing price/quantity/discount numeric inputs
+  useEffect(() => {
+    const handleWheel = () => {
+      if (document.activeElement && document.activeElement.type === 'number') {
+        document.activeElement.blur();
+      }
+    };
+    window.addEventListener('wheel', handleWheel, { passive: true });
+    return () => window.removeEventListener('wheel', handleWheel);
+  }, []);
 
   // Split Payment Allocation States
   const [payments, setPayments] = useState([
@@ -2197,39 +2207,6 @@ const POSScreen = () => {
                     Card
                   </button>
                   <button
-                    className={`pos-payment-btn ${pos.paymentMethod === 'koko' ? 'active' : ''}`}
-                    onClick={() => pos.setPaymentMethod('koko')}
-                    title="Koko Pay - Buy Now Pay Later"
-                  >
-                    <Smartphone size={20} />
-                    Koko
-                  </button>
-                  <button
-                    className={`pos-payment-btn ${pos.paymentMethod === 'bank_transfer' ? 'active' : ''}`}
-                    onClick={() => pos.setPaymentMethod('bank_transfer')}
-                    title="Bank Transfer"
-                  >
-                    <Landmark size={20} />
-                    Bank
-                  </button>
-                  <button
-                    className={`pos-payment-btn ${pos.paymentMethod === 'cheque' ? 'active' : ''}`}
-                    onClick={() => pos.setPaymentMethod('cheque')}
-                    title="Cheque Payment"
-                  >
-                    <Receipt size={20} />
-                    Cheque
-                  </button>
-                  <button
-                    className={`pos-payment-btn ${pos.paymentMethod === 'payhere' ? 'active' : ''}`}
-                    onClick={() => pos.setPaymentMethod('payhere')}
-                    title="PayHere - Online Payment"
-                    style={{ background: pos.paymentMethod === 'payhere' ? '#6d28d9' : undefined, color: pos.paymentMethod === 'payhere' ? '#fff' : undefined }}
-                  >
-                    <CreditCard size={20} />
-                    PayHere
-                  </button>
-                  <button
                     className={`pos-payment-btn ${pos.paymentMethod === 'hire_purchase' ? 'active' : ''}`}
                     onClick={() => {
                       pos.setPaymentMethod('hire_purchase');
@@ -2253,6 +2230,39 @@ const POSScreen = () => {
                   >
                     <Clock size={20} />
                     Installment
+                  </button>
+                  <button
+                    className={`pos-payment-btn ${pos.paymentMethod === 'bank_transfer' ? 'active' : ''}`}
+                    onClick={() => pos.setPaymentMethod('bank_transfer')}
+                    title="Bank Transfer"
+                  >
+                    <Landmark size={20} />
+                    Bank
+                  </button>
+                  <button
+                    className={`pos-payment-btn ${pos.paymentMethod === 'koko' ? 'active' : ''}`}
+                    onClick={() => pos.setPaymentMethod('koko')}
+                    title="Koko Pay - Buy Now Pay Later"
+                  >
+                    <Smartphone size={20} />
+                    Koko
+                  </button>
+                  <button
+                    className={`pos-payment-btn ${pos.paymentMethod === 'cheque' ? 'active' : ''}`}
+                    onClick={() => pos.setPaymentMethod('cheque')}
+                    title="Cheque Payment"
+                  >
+                    <Receipt size={20} />
+                    Cheque
+                  </button>
+                  <button
+                    className={`pos-payment-btn ${pos.paymentMethod === 'payhere' ? 'active' : ''}`}
+                    onClick={() => pos.setPaymentMethod('payhere')}
+                    title="PayHere - Online Payment"
+                    style={{ background: pos.paymentMethod === 'payhere' ? '#6d28d9' : undefined, color: pos.paymentMethod === 'payhere' ? '#fff' : undefined }}
+                  >
+                    <CreditCard size={20} />
+                    PayHere
                   </button>
                 </div>
 
