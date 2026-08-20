@@ -37,7 +37,7 @@ import {
   Store,
 } from 'lucide-react';
 
-import { getPosProducts, getProductByBarcode, posCheckout, getPosOrders, applyVoucher, getSettings, getActivePosSession, startPosSession, endPosSession, getPosPayHereHash, redeemPoints, getMyLoyaltyPoints, getCreditOrders, settleCreditOrder, getCategories, createQuotation, createProduct, getAccounts, loginUser, getCashiers, posLogin, getPosOrderByInvoice, createCustomerReturn, getHPRecords, recordHPPayment } from '../../services/api';
+import { getPosProducts, getProductByBarcode, posCheckout, getPosOrders, applyVoucher, getSettings, getActivePosSession, startPosSession, endPosSession, getPosPayHereHash, redeemPoints, getMyLoyaltyPoints, getCreditOrders, settleCreditOrder, getCategories, createQuotation, createProduct, getAccounts, loginUser, getCashiers, posLogin, getPosOrderByInvoice, createCustomerReturn, getHPRecords, recordHPPayment, createExpense } from '../../services/api';
 
 
 
@@ -121,6 +121,9 @@ const POSScreen = () => {
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [quickAddForm, setQuickAddForm] = useState({ name: '', price: '', stock: 10, categoryId: '' });
   const [showReloadModal, setShowReloadModal] = useState(false);
+  const [showPettyCashModal, setShowPettyCashModal] = useState(false);
+  const [pettyCashForm, setPettyCashForm] = useState({ amount: '', category: 'Tea & Refreshments', description: '', paymentMethod: 'Cash' });
+  const [submittingPettyCash, setSubmittingPettyCash] = useState(false);
   const [showCustomerHistory, setShowCustomerHistory] = useState(false);
   const [showTradeInModal, setShowTradeInModal] = useState(false);
 
@@ -657,6 +660,33 @@ const POSScreen = () => {
       toast.error(err.response?.data?.message || 'Failed to record installment payment');
     } finally {
       setSubmittingHpPay(false);
+    }
+  };
+
+  const handleSavePettyCash = async (e) => {
+    e.preventDefault();
+    const amt = Number(pettyCashForm.amount);
+    if (!amt || amt <= 0) {
+      toast.error('Please enter a valid amount');
+      return;
+    }
+    try {
+      setSubmittingPettyCash(true);
+      await createExpense({
+        amount: amt,
+        category: pettyCashForm.category,
+        description: pettyCashForm.description || 'Counter Petty Cash',
+        paymentMethod: pettyCashForm.paymentMethod || 'Cash',
+        storeId: user?.assignedStore || user?.assignedStoreId || user?.storeId || posSession?.storeId,
+        date: new Date().toISOString().split('T')[0]
+      });
+      toast.success('Petty cash expense recorded! ☕💰');
+      setShowPettyCashModal(false);
+      setPettyCashForm({ amount: '', category: 'Tea & Refreshments', description: '', paymentMethod: 'Cash' });
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to record expense');
+    } finally {
+      setSubmittingPettyCash(false);
     }
   };
 
@@ -2023,6 +2053,10 @@ const POSScreen = () => {
           <button className="pos-topbar-btn" onClick={() => setShowReloadModal(true)} title="Reload & Bill Payments" style={{ background: '#f0fdf4', color: '#166534', borderColor: '#bbf7d0' }}>
             <Smartphone size={18} />
             <span className="pos-topbar-btn-text">Reload</span>
+          </button>
+          <button className="pos-topbar-btn" onClick={() => setShowPettyCashModal(true)} title="Record Petty Cash / Counter Expense" style={{ background: '#fffbeb', color: '#92400e', borderColor: '#fde68a' }}>
+            <DollarSign size={18} />
+            <span className="pos-topbar-btn-text">Petty Cash</span>
           </button>
           <button className="pos-topbar-btn" onClick={() => setShowShortcutsHelp(true)} title="Keyboard Shortcuts (F1)" style={{ background: '#f8fafc', color: '#334155', borderColor: '#cbd5e1' }}>
             <span style={{ fontSize: '15px' }}>⌨️</span>
@@ -4454,6 +4488,86 @@ const POSScreen = () => {
           toast.success(`Trade-In discount of LKR ${amount.toLocaleString()} applied to cart! 📱`);
         }}
       />
+
+      {/* Petty Cash / Quick Expense Modal */}
+      {showPettyCashModal && (
+        <div className="pos-modal-overlay" onClick={() => setShowPettyCashModal(false)}>
+          <div className="pos-modal-card" onClick={e => e.stopPropagation()} style={{ maxWidth: '440px', width: '90%', padding: '24px', background: '#ffffff', borderRadius: '24px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', border: '1px solid #e2e8f0' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', paddingBottom: '14px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '24px' }}>☕</span>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>Counter Petty Cash</h3>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#64748b', fontWeight: '500' }}>Record shop / drawer expense</p>
+                </div>
+              </div>
+              <button onClick={() => setShowPettyCashModal(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#64748b' }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSavePettyCash} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '6px' }}>Expense Amount (Rs.) *</label>
+                <input
+                  type="number"
+                  required
+                  min="1"
+                  placeholder="0.00"
+                  value={pettyCashForm.amount}
+                  onChange={(e) => setPettyCashForm({ ...pettyCashForm, amount: e.target.value })}
+                  style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '2px solid #cbd5e1', fontSize: '16px', fontWeight: '800', color: '#0f172a', outline: 'none' }}
+                  autoFocus
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '6px' }}>Expense Category</label>
+                <select
+                  value={pettyCashForm.category}
+                  onChange={(e) => setPettyCashForm({ ...pettyCashForm, category: e.target.value })}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: '12px', border: '1px solid #cbd5e1', fontSize: '13px', fontWeight: '600', color: '#334155' }}
+                >
+                  <option value="Tea & Refreshments">Tea & Refreshments</option>
+                  <option value="Lunch / Meals">Lunch / Staff Meals</option>
+                  <option value="Transport / Travel">Transport / Delivery Travel</option>
+                  <option value="Supplies & Stationery">Shop Supplies & Stationery</option>
+                  <option value="Cleaning & Maintenance">Cleaning & Maintenance</option>
+                  <option value="Other">Other Miscellaneous</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '6px' }}>Notes / Description (Optional)</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Afternoon tea for 3 staff"
+                  value={pettyCashForm.description}
+                  onChange={(e) => setPettyCashForm({ ...pettyCashForm, description: e.target.value })}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: '12px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowPettyCashModal(false)}
+                  style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc', color: '#475569', fontWeight: '700', fontSize: '13px', cursor: 'pointer' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingPettyCash}
+                  style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', background: '#d97706', color: '#ffffff', fontWeight: '800', fontSize: '13px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(217, 119, 6, 0.3)' }}
+                >
+                  {submittingPettyCash ? 'Saving...' : 'Record Expense'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Keyboard Shortcuts Help Modal (F1) */}
       {showShortcutsHelp && (

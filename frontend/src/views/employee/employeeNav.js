@@ -32,13 +32,22 @@ const getEmployeeNavGroups = (role) => {
   // Cashier Tools
   if (role === 'cashier') {
     groups.push({
-      label: 'Cashier & Store Tools',
+      label: 'Cashier Finance Suite',
       items: [
-        { path: '/pos',                label: 'POS Terminal',        icon: Monitor },
-        { path: '/admin/reloads',      label: 'Reload & Card Stock', icon: Smartphone },
-        { path: '/employee/repairs',   label: 'Device Repairs',      icon: Wrench },
-        { path: '/employee/stock',     label: 'Stock View',          icon: Package },
-        { path: '/barcode-generator',  label: 'Barcode Generator',   icon: Barcode },
+        { path: '/pos',                label: 'POS Terminal',               icon: Monitor },
+        { path: '/admin/reloads',      label: 'Reload & Card Stock',       icon: Smartphone },
+        { path: '/admin/expenses',     label: 'Petty Cash & Expenses',     icon: DollarSign },
+        { path: '/admin/hp',           label: 'Installments (HP)',          icon: CreditCard },
+        { path: '/admin/cheques',      label: 'Cheque Management',          icon: FileText },
+      ],
+    });
+
+    groups.push({
+      label: 'Store Operations',
+      items: [
+        { path: '/employee/repairs',   label: 'Device Repairs',     icon: Wrench },
+        { path: '/employee/stock',     label: 'Stock View',         icon: Package },
+        { path: '/barcode-generator',  label: 'Barcode Generator',  icon: Barcode },
       ],
     });
   } else {
