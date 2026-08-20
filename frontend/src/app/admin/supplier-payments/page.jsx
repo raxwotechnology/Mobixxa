@@ -4,7 +4,7 @@ import AdminSupplierPayments from '../../../views/admin/AdminSupplierPayments';
 
 export default function AdminSupplierPaymentsRoute() {
   return (
-    <ProtectedRoute roles={['admin']} permission="suppliers">
+    <ProtectedRoute roles={['admin', 'manager']} permission="suppliers">
       <AdminSupplierPayments />
     </ProtectedRoute>
   );

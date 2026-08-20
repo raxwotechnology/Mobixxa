@@ -4,7 +4,7 @@ import AdminExpenses from '../../../views/admin/AdminExpenses';
 
 export default function AdminExpensesRoute() {
   return (
-    <ProtectedRoute roles={['admin']} permission="finance">
+    <ProtectedRoute roles={['admin', 'manager']} permission="finance">
       <AdminExpenses />
     </ProtectedRoute>
   );

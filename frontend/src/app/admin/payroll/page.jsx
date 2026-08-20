@@ -4,7 +4,7 @@ import AdminPayroll from '../../../views/admin/AdminPayroll';
 
 export default function AdminPayrollRoute() {
   return (
-    <ProtectedRoute roles={['admin']} permission="employees">
+    <ProtectedRoute roles={['admin', 'manager']} permission="employees">
       <AdminPayroll />
     </ProtectedRoute>
   );

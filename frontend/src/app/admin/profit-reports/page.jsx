@@ -4,7 +4,7 @@ import AdminProfitReports from '../../../views/admin/AdminProfitReports';
 
 export default function AdminProfitReportsRoute() {
   return (
-    <ProtectedRoute roles={['admin']} permission="finance">
+    <ProtectedRoute roles={['admin', 'manager']} permission="finance">
       <AdminProfitReports />
     </ProtectedRoute>
   );

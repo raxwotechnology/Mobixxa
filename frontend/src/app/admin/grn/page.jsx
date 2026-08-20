@@ -4,7 +4,7 @@ import AdminGRN from '../../../views/admin/AdminGRN';
 
 export default function AdminGRNRoute() {
   return (
-    <ProtectedRoute roles={['admin']} permission="suppliers">
+    <ProtectedRoute roles={['admin', 'manager']} permission="suppliers">
       <AdminGRN />
     </ProtectedRoute>
   );
