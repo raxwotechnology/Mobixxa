@@ -7,7 +7,10 @@ import { getTransactions, createTransaction, updateTransaction, deleteTransactio
 
 import { toast } from 'react-toastify';
 import { exportToCSV, exportToExcel, exportToPDF } from '../../utils/exportUtils';
-import { adminNavGroups as navItems } from './adminNavItems';
+import { adminNavGroups } from './adminNavItems';
+import { managerNavGroups } from '../storeOwner/managerNavItems';
+import { getEmployeeNavGroups } from '../employee/employeeNav';
+import useAuthStore from '../../store/authStore';
 import useAdminStoreStore from '../../store/adminStoreStore';
 import DeleteConfirmationModal from '../../components/DeleteConfirmationModal';
 
@@ -28,7 +31,15 @@ const emptyForm = {
 };
 
 
-const AdminExpenses = () => {
+const AdminExpenses = ({ navItems: propNavItems }) => {
+  const { user } = useAuthStore();
+  const navItems = propNavItems || (
+    user?.role === 'cashier'
+      ? getEmployeeNavGroups('cashier')
+      : user?.role === 'manager'
+      ? managerNavGroups
+      : adminNavGroups
+  );
   const [transactions, setTransactions] = useState([]);
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);

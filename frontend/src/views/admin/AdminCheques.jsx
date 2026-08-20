@@ -7,10 +7,21 @@ import DeleteConfirmationModal from '../../components/DeleteConfirmationModal';
 
 import { getCheques, updateChequeStatus, deleteTransaction, getStores, getAccounts, createTransaction } from '../../services/api';
 import { toast } from 'react-toastify';
-import { adminNavGroups as navItems } from './adminNavItems';
+import { adminNavGroups } from './adminNavItems';
+import { managerNavGroups } from '../storeOwner/managerNavItems';
+import { getEmployeeNavGroups } from '../employee/employeeNav';
+import useAuthStore from '../../store/authStore';
 import useAdminStoreStore from '../../store/adminStoreStore';
 
-const AdminCheques = () => {
+const AdminCheques = ({ navItems: propNavItems }) => {
+  const { user } = useAuthStore();
+  const navItems = propNavItems || (
+    user?.role === 'cashier'
+      ? getEmployeeNavGroups('cashier')
+      : user?.role === 'manager'
+      ? managerNavGroups
+      : adminNavGroups
+  );
   const { selectedStoreId } = useAdminStoreStore();
   const [cheques, setCheques] = useState([]);
   const [loading, setLoading] = useState(true);

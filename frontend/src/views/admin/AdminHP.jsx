@@ -23,10 +23,20 @@ import { getHPRecords, recordHPPayment, deleteHPRecord, updateHPRecord, getAccou
 import { toast } from 'react-toastify';
 import DashboardLayout from '../../components/DashboardLayout';
 import { adminNavGroups as defaultNavItems } from './adminNavItems';
+import { managerNavGroups } from '../storeOwner/managerNavItems';
+import { getEmployeeNavGroups } from '../employee/employeeNav';
+import useAuthStore from '../../store/authStore';
 import DeleteConfirmationModal from '../../components/DeleteConfirmationModal';
 
 const AdminHP = ({ navItems: propNavItems }) => {
-  const navItems = propNavItems || defaultNavItems;
+  const { user } = useAuthStore();
+  const navItems = propNavItems || (
+    user?.role === 'cashier'
+      ? getEmployeeNavGroups('cashier')
+      : user?.role === 'manager'
+      ? managerNavGroups
+      : defaultNavItems
+  );
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');

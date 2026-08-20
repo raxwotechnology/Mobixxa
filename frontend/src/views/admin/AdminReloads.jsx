@@ -4,11 +4,22 @@ import React, { useState, useEffect } from 'react';
 import { Smartphone, Search, Filter, Download, Calendar, ArrowUpRight, Phone, User as UserIcon, Plus, CheckCircle2, Layers, DollarSign, Calculator, RefreshCw } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
 import { getReloads, getReloadStocks, addReloadStock, closeReloadStock } from '../../services/api';
-import { adminNavGroups as navItems } from './adminNavItems';
+import { adminNavGroups } from './adminNavItems';
+import { managerNavGroups } from '../storeOwner/managerNavItems';
+import { getEmployeeNavGroups } from '../employee/employeeNav';
 import { toast } from 'react-toastify';
 import useAdminStoreStore from '../../store/adminStoreStore';
+import useAuthStore from '../../store/authStore';
 
-const AdminReloads = () => {
+const AdminReloads = ({ navItems: propNavItems }) => {
+  const { user } = useAuthStore();
+  const navItems = propNavItems || (
+    user?.role === 'cashier'
+      ? getEmployeeNavGroups('cashier')
+      : user?.role === 'manager'
+      ? managerNavGroups
+      : adminNavGroups
+  );
   const [activeTab, setActiveTab] = useState('stocks'); // 'stocks' or 'history'
   const [reloads, setReloads] = useState([]);
   const [stocks, setStocks] = useState([]);

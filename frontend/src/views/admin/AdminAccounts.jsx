@@ -10,14 +10,25 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 import { toast } from 'react-toastify';
-import { adminNavGroups as navItems } from './adminNavItems';
+import { adminNavGroups } from './adminNavItems';
+import { managerNavGroups } from '../storeOwner/managerNavItems';
+import { getEmployeeNavGroups } from '../employee/employeeNav';
+import useAuthStore from '../../store/authStore';
 import useAdminStoreStore from '../../store/adminStoreStore';
 
 const emptyForm = {
   name: '', type: 'Cash', accountNumber: '', bankName: '', balance: 0, isDefault: false, storeId: ''
 };
 
-const AdminAccounts = () => {
+const AdminAccounts = ({ navItems: propNavItems }) => {
+  const { user } = useAuthStore();
+  const navItems = propNavItems || (
+    user?.role === 'cashier'
+      ? getEmployeeNavGroups('cashier')
+      : user?.role === 'manager'
+      ? managerNavGroups
+      : adminNavGroups
+  );
   const { selectedStoreId } = useAdminStoreStore();
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
