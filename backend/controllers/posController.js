@@ -769,14 +769,41 @@ const posCheckout = async (req, res, next) => {
 // @access  Private/Cashier
 const getPosOrders = async (req, res, next) => {
   try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    let startOfDay, endOfDay;
+    if (req.query.date) {
+      const parts = req.query.date.split(/[-/]/);
+      if (parts.length === 3) {
+        startOfDay = new Date(Date.UTC(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 0, 0, 0, 0));
+        endOfDay = new Date(Date.UTC(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 23, 59, 59, 999));
+      } else {
+        startOfDay = new Date(req.query.date);
+        startOfDay.setHours(0, 0, 0, 0);
+        endOfDay = new Date(req.query.date);
+        endOfDay.setHours(23, 59, 59, 999);
+      }
+    } else {
+      startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+      endOfDay = new Date();
+      endOfDay.setHours(23, 59, 59, 999);
+    }
 
-    const orders = await Order.find({
-      cashierId: req.user._id,
+    const orderFilter = {
       isPosOrder: true,
-      createdAt: { $gte: today },
-    })
+      createdAt: { $gte: startOfDay, $lte: endOfDay },
+    };
+
+    if (req.user.role === 'cashier') {
+      orderFilter.$or = [
+        { cashierId: req.user._id },
+        { storeId: req.user.assignedStore || req.user.assignedStoreId || req.user.storeId }
+      ].filter(Boolean);
+    } else if (req.user.role === 'manager') {
+      const storeId = await resolveStoreId(req.user);
+      if (storeId) orderFilter.storeId = storeId;
+    }
+
+    const orders = await Order.find(orderFilter)
       .sort({ createdAt: -1 })
       .populate('storeId', 'name')
       .lean();
@@ -785,20 +812,109 @@ const getPosOrders = async (req, res, next) => {
       ...new Set(
         orders
           .flatMap((o) => (o.items || [])
-            .filter((it) => it.unitCostAtSale === undefined || it.unitCostAtSale === null)
             .map((it) => String(it.productId || ''))
             .filter(Boolean))
       ),
     ];
     const products = productIds.length > 0
-      ? await Product.find({ _id: { $in: productIds } }).select('_id avgCost lastCost').lean()
+      ? await Product.find({ _id: { $in: productIds } }).populate('categoryId').select('_id name categoryId avgCost lastCost imei ram storage').lean()
       : [];
-    const productCostMap = new Map(
-      products.map((p) => [String(p._id), Number(p.avgCost || p.lastCost || 0)])
-    );
+
+    const productCategoryMap = new Map();
+    const productCostMap = new Map();
+    products.forEach((p) => {
+      const catName = p.categoryId?.name || '';
+      const isMobile = /mobile|phone|tablet|smartphone/i.test(catName) || !!p.ram || !!p.storage || (p.imei && p.imei.length > 0);
+      const isPhoneSimCard = /sim|phone card|card/i.test(catName) || /sim|phone card/i.test(p.name);
+
+      let itemType = 'accessories';
+      if (isMobile) itemType = 'mobile';
+      else if (isPhoneSimCard) itemType = 'sim_card';
+
+      productCategoryMap.set(String(p._id), itemType);
+      productCostMap.set(String(p._id), Number(p.avgCost || p.lastCost || 0));
+    });
+
+    let mobileIncome = 0;
+    let accessoriesIncome = 0;
+    let wholesaleIncome = 0;
+    let advanceIncome = 0;
+    let simCardIncome = 0;
+    let phoneCardIncome = 0;
+
+    orders.forEach((o) => {
+      if (o.orderType === 'wholesale') {
+        wholesaleIncome += (o.totalAmount || 0);
+      }
+      if (o.paymentMethod === 'hire_purchase' || (o.payments || []).some(p => p.method === 'hire_purchase')) {
+        const hpDp = (o.payments || []).filter(p => p.method === 'hire_purchase').reduce((s, p) => s + (p.amount || 0), 0) || o.totalAmount;
+        advanceIncome += hpDp;
+      }
+
+      (o.items || []).forEach((it) => {
+        const itemTotal = (it.price || 0) * (it.quantity || 0);
+        const itemType = productCategoryMap.get(String(it.productId || '')) || 'accessories';
+        if (itemType === 'mobile') mobileIncome += itemTotal;
+        else if (itemType === 'sim_card') simCardIncome += itemTotal;
+        else accessoriesIncome += itemTotal;
+      });
+    });
+
+    // Query Reloads in date range
+    let reloadIncome = 0;
+    try {
+      const Reload = require('../models/Reload');
+      const reloads = await Reload.find({
+        createdAt: { $gte: startOfDay, $lte: endOfDay },
+        status: { $ne: 'failed' },
+      }).lean();
+      reloadIncome = reloads.reduce((sum, r) => sum + (r.amount || 0), 0);
+    } catch { /* ignore if model not present */ }
+
+    // Query Repair Jobs in date range
+    let repairIncomeNormal = 0;
+    let repairIncomeCompany = 0;
+    let serviceCost = 0;
+    try {
+      const RepairJob = require('../models/RepairJob');
+      const repairs = await RepairJob.find({
+        createdAt: { $gte: startOfDay, $lte: endOfDay },
+        status: { $nin: ['cancelled'] },
+      }).lean();
+      repairs.forEach((rp) => {
+        const price = Number(rp.cost || rp.estimatedCost || 0);
+        if (rp.repairType === 'company') repairIncomeCompany += price;
+        else repairIncomeNormal += price;
+        serviceCost += Number(rp.actualCost || 0);
+      });
+    } catch { /* ignore */ }
+
+    // Query Supplier Payments & Expenses in date range
+    let supplierCost = 0;
+    try {
+      const SupplierPayment = require('../models/SupplierPayment');
+      const supplierPayments = await SupplierPayment.find({
+        paymentDate: { $gte: startOfDay, $lte: endOfDay },
+      }).lean();
+      supplierCost = supplierPayments.reduce((sum, sp) => sum + (sp.amount || 0), 0);
+    } catch { /* ignore */ }
+
+    let expenseCost = 0;
+    try {
+      const Expense = require('../models/Expense');
+      const expenses = await Expense.find({
+        date: { $gte: startOfDay, $lte: endOfDay },
+      }).lean();
+      expenseCost = expenses.reduce((sum, ex) => sum + (ex.amount || 0), 0);
+    } catch { /* ignore */ }
+
+    const orderRevenue = orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+    const totalIncome = orderRevenue + reloadIncome + repairIncomeNormal + repairIncomeCompany + advanceIncome;
+    const totalCost = serviceCost + supplierCost + expenseCost;
+    const balanceAmount = totalIncome - totalCost;
 
     // Calculate shift summary
-    const totalSales = orders.reduce((sum, o) => sum + o.totalAmount, 0);
+    const totalSales = orderRevenue;
     const totalOrders = orders.length;
     let cashSales = 0;
     let cardSales = 0;
@@ -816,10 +932,7 @@ const getPosOrders = async (req, res, next) => {
         else if (o.paymentMethod === 'koko') kokoSales += (o.totalAmount || 0);
       }
     });
-    const totalItemsSold = orders.reduce(
-      (sum, o) => sum + (o.items || []).reduce((line, item) => line + Number(item.quantity || 0), 0),
-      0
-    );
+
     const enrichedOrders = orders.map((order) => {
       const itemDetails = (order.items || []).map((it) => {
         const qty = Number(it.quantity || 0);
@@ -845,17 +958,35 @@ const getPosOrders = async (req, res, next) => {
         estimatedProfit: Number(estimatedProfit.toFixed(2)),
       };
     });
+
     const profitOfDay = enrichedOrders.reduce((sum, o) => sum + Number(o.estimatedProfit || 0), 0);
 
     res.json({
       orders: enrichedOrders,
+      financials: {
+        date: req.query.date || new Date().toISOString().split('T')[0],
+        mobileIncome: Number(mobileIncome.toFixed(2)),
+        accessoriesIncome: Number(accessoriesIncome.toFixed(2)),
+        wholesaleIncome: Number(wholesaleIncome.toFixed(2)),
+        advanceIncome: Number(advanceIncome.toFixed(2)),
+        repairIncomeNormal: Number(repairIncomeNormal.toFixed(2)),
+        repairIncomeCompany: Number(repairIncomeCompany.toFixed(2)),
+        phoneCardIncome: Number(phoneCardIncome.toFixed(2)),
+        simCardIncome: Number(simCardIncome.toFixed(2)),
+        reloadIncome: Number(reloadIncome.toFixed(2)),
+        serviceCost: Number(serviceCost.toFixed(2)),
+        supplierCost: Number((supplierCost + expenseCost).toFixed(2)),
+        totalIncome: Number(totalIncome.toFixed(2)),
+        totalCost: Number(totalCost.toFixed(2)),
+        balanceAmount: Number(balanceAmount.toFixed(2)),
+      },
       summary: {
         totalSales: parseFloat(totalSales.toFixed(2)),
         totalOrders,
         cashSales: parseFloat(cashSales.toFixed(2)),
         cardSales: parseFloat(cardSales.toFixed(2)),
         kokoSales: parseFloat(kokoSales.toFixed(2)),
-        totalItemsSold,
+        totalItemsSold: orders.reduce((sum, o) => sum + (o.items || []).reduce((line, item) => line + Number(item.quantity || 0), 0), 0),
         systemRevenue: parseFloat(totalSales.toFixed(2)),
         profitOfDay: parseFloat(profitOfDay.toFixed(2)),
       },

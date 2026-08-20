@@ -147,7 +147,7 @@ export const deleteAdminOrder = (id, data) => API.delete(`/admin/orders/${id}`, 
 export const getPosProducts = (params) => API.get('/pos/products', { params });
 export const getProductByBarcode = (code) => API.get(`/pos/products/barcode/${code}`);
 export const posCheckout = (data) => API.post('/pos/checkout', data);
-export const getPosOrders = () => API.get('/pos/orders');
+export const getPosOrders = (params) => API.get('/pos/orders', { params });
 export const getPosOrderById = (id) => API.get(`/pos/orders/${id}`);
 export const getActivePosSession = () => API.get('/pos/session/active');
 export const startPosSession = (data) => API.post('/pos/session/start', data);

@@ -99,6 +99,7 @@ const POSScreen = () => {
   const [balanceOrders, setBalanceOrders] = useState([]);
   const [showBalanceModal, setShowBalanceModal] = useState(false);
   const [balanceLoading, setBalanceLoading] = useState(false);
+  const [balanceDate, setBalanceDate] = useState(new Date().toISOString().split('T')[0]);
   const [sessionForm, setSessionForm] = useState({
     opening: { 5000: 0, 1000: 0, 500: 0, 100: 0, 50: 0, 20: 0 },
     closing: { 5000: 0, 1000: 0, 500: 0, 100: 0, 50: 0, 20: 0 },
@@ -381,11 +382,11 @@ const POSScreen = () => {
     setShowEndSession(true);
   };
 
-  const openBalanceModal = async () => {
+  const openBalanceModal = async (selectedDate = balanceDate) => {
     try {
       setBalanceLoading(true);
-      const { data } = await getPosOrders();
-      setDailyFinancials(data?.summary || null);
+      const { data } = await getPosOrders({ date: selectedDate });
+      setDailyFinancials(data?.financials || data?.summary || null);
       setBalanceOrders(data?.orders || []);
       setShowBalanceModal(true);
     } catch {
@@ -3652,113 +3653,277 @@ const POSScreen = () => {
       )}
 
       {showBalanceModal && (
-        <div className="pos-modal-overlay" onClick={() => setShowBalanceModal(false)}>
+        <div className="pos-modal-overlay" onClick={() => setShowBalanceModal(false)} style={{ zIndex: 1050 }}>
           <div
             className="pos-shift-modal"
             onClick={(e) => e.stopPropagation()}
-            style={{ background: '#0b1220', border: '1px solid #1f2937', color: '#e2e8f0', width: 'min(1200px, 96vw)', maxHeight: '92vh' }}
+            style={{ 
+              background: '#1a1f2c', 
+              border: '1px solid #334155', 
+              borderRadius: '16px',
+              color: '#ffffff', 
+              width: 'min(1100px, 96vw)', 
+              maxHeight: '92vh',
+              overflowY: 'auto',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)'
+            }}
           >
-            <div className="pos-shift-header">
-              <DollarSign size={22} />
-              <h3>Daily Cash Balance</h3>
-              <button onClick={() => setShowBalanceModal(false)}><X size={20} /></button>
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 24px', borderBottom: '1px solid #334155' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '24px' }}>📋</span>
+                <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '900', color: '#facc15', letterSpacing: '0.5px' }}>
+                  BALANCE REPORT
+                </h2>
+              </div>
+              <button 
+                onClick={() => setShowBalanceModal(false)}
+                style={{ background: '#334155', border: 'none', color: '#94a3b8', width: '32px', height: '32px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <X size={18} />
+              </button>
             </div>
-            <div style={{ padding: '16px', color: '#e2e8f0' }}>
-              {balanceLoading ? (
-                <p style={{ margin: 0, fontSize: '14px', color: '#94a3b8' }}>Loading balance...</p>
-              ) : (
-                <>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px', fontSize: '13px' }}>
-                    {[
-                      ['Opening Cash', `Rs. ${Number(posSession?.openingCashAmount || 0).toFixed(2)}`],
-                      ['Total Sales', `Rs. ${Number(dailyFinancials?.totalSales || 0).toFixed(2)}`],
-                      ['Cash Sales', `Rs. ${Number(dailyFinancials?.cashSales || 0).toFixed(2)}`],
-                      ['Card Sales', `Rs. ${Number(dailyFinancials?.cardSales || 0).toFixed(2)}`],
-                      ['Koko Sales', `Rs. ${Number(dailyFinancials?.kokoSales || 0).toFixed(2)}`],
-                      ['Items Sold', `${Number(dailyFinancials?.totalItemsSold || 0)}`],
-                      ['System Revenue', `Rs. ${Number(dailyFinancials?.systemRevenue || 0).toFixed(2)}`],
-                      ['Profit of Day', `Rs. ${Number(dailyFinancials?.profitOfDay || 0).toFixed(2)}`],
-                    ].map(([label, value]) => (
-                      <div
-                        key={label}
-                        style={{
-                          background: '#111827',
-                          border: '1px solid #374151',
-                          borderRadius: '10px',
-                          padding: '10px',
-                        }}
-                      >
-                        <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '4px' }}>{label}</div>
-                        <div style={{ fontWeight: 700, color: '#f8fafc' }}>{value}</div>
+
+            <div style={{ padding: '24px' }}>
+              {/* Date Filter */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '24px', flexWrap: 'wrap' }}>
+                <span style={{ fontWeight: '800', fontSize: '13px', color: '#ffffff', letterSpacing: '0.5px' }}>DATE</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <input
+                    type="date"
+                    value={balanceDate}
+                    onChange={(e) => setBalanceDate(e.target.value)}
+                    style={{
+                      padding: '8px 14px',
+                      background: '#0f172a',
+                      border: '1.5px solid #ca8a04',
+                      borderRadius: '6px',
+                      color: '#ffffff',
+                      fontSize: '13px',
+                      fontWeight: 'bold',
+                      outline: 'none',
+                    }}
+                  />
+                  <button
+                    onClick={() => openBalanceModal(balanceDate)}
+                    disabled={balanceLoading}
+                    style={{
+                      padding: '8px 16px',
+                      background: 'linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)',
+                      border: 'none',
+                      borderRadius: '6px',
+                      color: '#ffffff',
+                      fontWeight: 'bold',
+                      fontSize: '13px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      boxShadow: '0 2px 8px rgba(37, 99, 235, 0.4)'
+                    }}
+                  >
+                    <Search size={14} />
+                    {balanceLoading ? 'Loading...' : 'Search'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Main 2-Column Grid matching user's photo */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '24px' }}>
+                
+                {/* ──────── LEFT COLUMN: Incomes ──────── */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  
+                  {/* Mobile Income */}
+                  <div>
+                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#ffffff', marginBottom: '6px', letterSpacing: '0.5px' }}>
+                      MOBILE INCOME
+                    </div>
+                    <div style={{ padding: '10px 14px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '6px', color: '#ffffff', fontWeight: 'bold', fontSize: '14px', fontFamily: 'monospace' }}>
+                      Rs. {Number(dailyFinancials?.mobileIncome || 0).toFixed(2)}
+                    </div>
+                  </div>
+
+                  {/* Accessories Income */}
+                  <div>
+                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#ffffff', marginBottom: '6px', letterSpacing: '0.5px' }}>
+                      ACCESSORIES INCOME
+                    </div>
+                    <div style={{ padding: '10px 14px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '6px', color: '#ffffff', fontWeight: 'bold', fontSize: '14px', fontFamily: 'monospace' }}>
+                      Rs. {Number(dailyFinancials?.accessoriesIncome || 0).toFixed(2)}
+                    </div>
+                  </div>
+
+                  {/* Wholesale | Advance Income */}
+                  <div>
+                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#ffffff', marginBottom: '6px', letterSpacing: '0.5px' }}>
+                      WHOLESALE | ADVANCE INCOME
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                      <div style={{ padding: '10px 12px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '6px', color: '#ffffff', fontWeight: 'bold', fontSize: '13px', fontFamily: 'monospace' }}>
+                        Rs. {Number(dailyFinancials?.wholesaleIncome || 0).toFixed(2)}
                       </div>
-                    ))}
-                  </div>
-                  <div style={{ marginTop: '14px', padding: '12px', borderRadius: '10px', background: '#0f172a', border: '1px solid #334155' }}>
-                    <div style={{ fontSize: '13px', color: '#cbd5e1' }}>
-                      Expected Physical Cash: <strong>Rs. {(Number(posSession?.openingCashAmount || 0) + Number(dailyFinancials?.cashSales || 0)).toFixed(2)}</strong>
-                    </div>
-                    <div style={{ marginTop: '4px', fontSize: '12px', color: '#94a3b8' }}>
-                      Formula: Opening cash + Cash sales
+                      <div style={{ padding: '10px 12px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '6px', color: '#ffffff', fontWeight: 'bold', fontSize: '13px', fontFamily: 'monospace' }}>
+                        Rs. {Number(dailyFinancials?.advanceIncome || 0).toFixed(2)}
+                      </div>
                     </div>
                   </div>
-                  <div style={{ marginTop: '14px' }}>
-                    <h4 style={{ margin: '0 0 8px 0', fontSize: '13px', color: '#cbd5e1' }}>Sales History</h4>
-                    <div style={{ maxHeight: '420px', overflow: 'auto', border: '1px solid #334155', borderRadius: '10px' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
-                        <thead style={{ background: '#111827', position: 'sticky', top: 0 }}>
-                          <tr>
-                            <th style={{ textAlign: 'left', padding: '8px', color: '#94a3b8' }}>Time</th>
-                            <th style={{ textAlign: 'left', padding: '8px', color: '#94a3b8' }}>Customer</th>
-                            <th style={{ textAlign: 'left', padding: '8px', color: '#94a3b8' }}>Items</th>
-                            <th style={{ textAlign: 'left', padding: '8px', color: '#94a3b8' }}>Payment</th>
-                            <th style={{ textAlign: 'right', padding: '8px', color: '#94a3b8' }}>Total</th>
-                            <th style={{ textAlign: 'right', padding: '8px', color: '#94a3b8' }}>Profit</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {balanceOrders.map((order) => (
-                            <tr key={order._id} style={{ borderTop: '1px solid #1f2937' }}>
-                              <td style={{ padding: '8px', color: '#e2e8f0', verticalAlign: 'top' }}>
-                                {new Date(order.createdAt).toLocaleTimeString()}
-                              </td>
-                              <td style={{ padding: '8px', color: '#cbd5e1', verticalAlign: 'top' }}>
-                                <div style={{ fontWeight: 600, color: '#f8fafc' }}>{order.customerName || 'Walk-in Customer'}</div>
-                                <div style={{ color: '#94a3b8', marginTop: '2px' }}>{order.customerPhone || '-'}</div>
-                              </td>
-                              <td style={{ padding: '8px', color: '#cbd5e1', verticalAlign: 'top' }}>
-                                {(order.itemDetails || []).map((it, idx) => (
-                                  <div key={idx} style={{ marginBottom: idx < (order.itemDetails?.length - 1) ? '6px' : '0' }}>
-                                    <div style={{ fontWeight: 600, color: '#f8fafc' }}>{it.name}</div>
-                                    <div style={{ color: '#94a3b8', fontSize: '11px', marginTop: '1px' }}>
-                                      x{it.quantity} @ Rs.{Number(it.unitPrice || 0).toFixed(2)}
-                                    </div>
-                                  </div>
-                                ))}
-                              </td>
-                              <td style={{ padding: '8px', color: '#e2e8f0', textTransform: 'uppercase' }}>
-                                {order.paymentMethod}
-                              </td>
-                              <td style={{ padding: '8px', color: '#f8fafc', textAlign: 'right' }}>
-                                Rs. {Number(order.totalAmount || 0).toFixed(2)}
-                              </td>
-                              <td style={{ padding: '8px', color: Number(order.estimatedProfit || 0) < 0 ? '#fca5a5' : '#86efac', textAlign: 'right', fontWeight: 700 }}>
-                                Rs. {Number(order.estimatedProfit || 0).toFixed(2)}
-                              </td>
-                            </tr>
-                          ))}
-                          {balanceOrders.length === 0 && (
-                            <tr>
-                              <td colSpan={6} style={{ padding: '10px', color: '#94a3b8', textAlign: 'center' }}>
-                                No sales history for today.
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
+
+                  {/* Repairing Income */}
+                  <div>
+                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#ffffff', marginBottom: '6px', letterSpacing: '0.5px' }}>
+                      REPAIRING INCOME (Normal | Company)
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                      <div style={{ padding: '10px 12px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '6px', color: '#ffffff', fontWeight: 'bold', fontSize: '13px', fontFamily: 'monospace' }}>
+                        Rs. {Number(dailyFinancials?.repairIncomeNormal || 0).toFixed(2)}
+                      </div>
+                      <div style={{ padding: '10px 12px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '6px', color: '#ffffff', fontWeight: 'bold', fontSize: '13px', fontFamily: 'monospace' }}>
+                        Rs. {Number(dailyFinancials?.repairIncomeCompany || 0).toFixed(2)}
+                      </div>
                     </div>
                   </div>
-                </>
-              )}
+
+                  {/* Phone Card | SIM Card Income */}
+                  <div>
+                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#ffffff', marginBottom: '6px', letterSpacing: '0.5px' }}>
+                      PHONE CARD | SIM CARD INCOME
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                      <div style={{ padding: '10px 12px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '6px', color: '#ffffff', fontWeight: 'bold', fontSize: '13px', fontFamily: 'monospace' }}>
+                        Rs. {Number(dailyFinancials?.phoneCardIncome || 0).toFixed(2)}
+                      </div>
+                      <div style={{ padding: '10px 12px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '6px', color: '#ffffff', fontWeight: 'bold', fontSize: '13px', fontFamily: 'monospace' }}>
+                        Rs. {Number(dailyFinancials?.simCardIncome || 0).toFixed(2)}
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* ──────── RIGHT COLUMN: Costs & Balances ──────── */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  
+                  {/* Reload Income */}
+                  <div>
+                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#ffffff', marginBottom: '6px', letterSpacing: '0.5px' }}>
+                      RELOAD INCOME
+                    </div>
+                    <div style={{ padding: '10px 14px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '6px', color: '#4ade80', fontWeight: 'bold', fontSize: '14px', fontFamily: 'monospace' }}>
+                      Rs. {Number(dailyFinancials?.reloadIncome || 0).toFixed(2)}
+                    </div>
+                  </div>
+
+                  {/* Service Cost */}
+                  <div>
+                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#ffffff', marginBottom: '6px', letterSpacing: '0.5px' }}>
+                      SERVICE COST
+                    </div>
+                    <div style={{ padding: '10px 14px', background: '#0f172a', border: '1.5px solid #ef4444', borderRadius: '6px', color: '#f87171', fontWeight: 'bold', fontSize: '14px', fontFamily: 'monospace' }}>
+                      Rs. {Number(dailyFinancials?.serviceCost || 0).toFixed(2)}
+                    </div>
+                  </div>
+
+                  {/* Supplier Cost */}
+                  <div>
+                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#ffffff', marginBottom: '6px', letterSpacing: '0.5px' }}>
+                      SUPPLIER COST
+                    </div>
+                    <div style={{ padding: '10px 14px', background: '#0f172a', border: '1.5px solid #ef4444', borderRadius: '6px', color: '#f87171', fontWeight: 'bold', fontSize: '14px', fontFamily: 'monospace' }}>
+                      Rs. {Number(dailyFinancials?.supplierCost || 0).toFixed(2)}
+                    </div>
+                  </div>
+
+                  {/* Total Income */}
+                  <div>
+                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#ffffff', marginBottom: '6px', letterSpacing: '0.5px' }}>
+                      TOTAL INCOME
+                    </div>
+                    <div style={{ padding: '10px 14px', background: '#0f172a', border: '1.5px solid #38bdf8', borderRadius: '6px', color: '#38bdf8', fontWeight: 'bold', fontSize: '14px', fontFamily: 'monospace' }}>
+                      Rs. {Number(dailyFinancials?.totalIncome || dailyFinancials?.totalSales || 0).toFixed(2)}
+                    </div>
+                  </div>
+
+                  {/* Total Cost */}
+                  <div>
+                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#ffffff', marginBottom: '6px', letterSpacing: '0.5px' }}>
+                      TOTAL COST
+                    </div>
+                    <div style={{ padding: '10px 14px', background: '#0f172a', border: '1.5px solid #38bdf8', borderRadius: '6px', color: '#38bdf8', fontWeight: 'bold', fontSize: '14px', fontFamily: 'monospace' }}>
+                      Rs. {Number(dailyFinancials?.totalCost || 0).toFixed(2)}
+                    </div>
+                  </div>
+
+                  {/* Balance Amount */}
+                  <div>
+                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#ffffff', marginBottom: '6px', letterSpacing: '0.5px' }}>
+                      BALANCE AMOUNT
+                    </div>
+                    <div style={{ padding: '12px 14px', background: '#0f172a', border: '2px solid #ffffff', borderRadius: '6px', color: '#ffffff', fontWeight: '900', fontSize: '16px', fontFamily: 'monospace', boxShadow: '0 0 10px rgba(255,255,255,0.15)' }}>
+                      Rs. {Number(dailyFinancials?.balanceAmount !== undefined ? dailyFinancials.balanceAmount : (dailyFinancials?.totalSales || 0)).toFixed(2)}
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+
+              {/* ──────── Sales History ──────── */}
+              <div style={{ marginTop: '30px' }}>
+                <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: '800', color: '#facc15', letterSpacing: '0.5px' }}>
+                  SALES HISTORY ({balanceOrders.length} Transactions)
+                </h4>
+                <div style={{ maxHeight: '350px', overflow: 'auto', border: '1px solid #334155', borderRadius: '10px', background: '#0f172a' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+                    <thead style={{ background: '#1e293b', position: 'sticky', top: 0, zIndex: 1 }}>
+                      <tr>
+                        <th style={{ textAlign: 'left', padding: '10px', color: '#94a3b8' }}>Time</th>
+                        <th style={{ textAlign: 'left', padding: '10px', color: '#94a3b8' }}>Customer</th>
+                        <th style={{ textAlign: 'left', padding: '10px', color: '#94a3b8' }}>Items</th>
+                        <th style={{ textAlign: 'left', padding: '10px', color: '#94a3b8' }}>Payment</th>
+                        <th style={{ textAlign: 'right', padding: '10px', color: '#94a3b8' }}>Total Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {balanceOrders.map((order) => (
+                        <tr key={order._id} style={{ borderTop: '1px solid #1e293b' }}>
+                          <td style={{ padding: '10px', color: '#e2e8f0', verticalAlign: 'top', fontFamily: 'monospace' }}>
+                            {new Date(order.createdAt).toLocaleTimeString()}
+                          </td>
+                          <td style={{ padding: '10px', color: '#cbd5e1', verticalAlign: 'top' }}>
+                            <div style={{ fontWeight: 600, color: '#f8fafc' }}>{order.customerName || 'Walk-in Customer'}</div>
+                            <div style={{ color: '#94a3b8', marginTop: '2px', fontSize: '11px' }}>{order.customerPhone || '-'}</div>
+                          </td>
+                          <td style={{ padding: '10px', color: '#cbd5e1', verticalAlign: 'top' }}>
+                            {(order.itemDetails || order.items || []).map((it, idx) => (
+                              <div key={idx} style={{ marginBottom: idx < ((order.itemDetails || order.items)?.length - 1) ? '6px' : '0' }}>
+                                <div style={{ fontWeight: 600, color: '#f8fafc' }}>{it.name}</div>
+                                <div style={{ color: '#94a3b8', fontSize: '11px', marginTop: '1px' }}>
+                                  x{it.quantity} @ Rs.{Number(it.unitPrice || it.price || 0).toFixed(2)}
+                                </div>
+                              </div>
+                            ))}
+                          </td>
+                          <td style={{ padding: '10px', color: '#38bdf8', textTransform: 'uppercase', fontWeight: 'bold' }}>
+                            {order.paymentMethod}
+                          </td>
+                          <td style={{ padding: '10px', color: '#4ade80', textAlign: 'right', fontWeight: 'bold', fontFamily: 'monospace', fontSize: '13px' }}>
+                            Rs. {Number(order.totalAmount || 0).toFixed(2)}
+                          </td>
+                        </tr>
+                      ))}
+                      {balanceOrders.length === 0 && (
+                        <tr>
+                          <td colSpan={5} style={{ padding: '24px', color: '#94a3b8', textAlign: 'center' }}>
+                            No sales transactions recorded for this date.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
