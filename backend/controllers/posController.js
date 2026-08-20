@@ -908,8 +908,30 @@ const getPosOrders = async (req, res, next) => {
       expenseCost = expenses.reduce((sum, ex) => sum + (ex.amount || 0), 0);
     } catch { /* ignore */ }
 
+    // Query HP Installment payments in date range
+    let hpTotalIncome = 0;
+    let hpCashIncome = 0;
+    try {
+      const HPRecord = require('../models/HPRecord');
+      const hpRecords = await HPRecord.find({
+        'paymentHistory.date': { $gte: startOfDay, $lte: endOfDay }
+      }).lean();
+      hpRecords.forEach(rec => {
+        (rec.paymentHistory || []).forEach(p => {
+          const pDate = new Date(p.date);
+          if (pDate >= startOfDay && pDate <= endOfDay) {
+            const amt = Number(p.amount || 0);
+            hpTotalIncome += amt;
+            if (!p.paymentMethod || p.paymentMethod.toLowerCase() === 'cash') {
+              hpCashIncome += amt;
+            }
+          }
+        });
+      });
+    } catch { /* ignore */ }
+
     const orderRevenue = orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
-    const totalIncome = orderRevenue + reloadIncome + repairIncomeNormal + repairIncomeCompany + advanceIncome;
+    const totalIncome = orderRevenue + reloadIncome + repairIncomeNormal + repairIncomeCompany + advanceIncome + hpTotalIncome;
     const totalCost = serviceCost + supplierCost + expenseCost;
     const balanceAmount = totalIncome - totalCost;
 
@@ -974,8 +996,11 @@ const getPosOrders = async (req, res, next) => {
         phoneCardIncome: Number(phoneCardIncome.toFixed(2)),
         simCardIncome: Number(simCardIncome.toFixed(2)),
         reloadIncome: Number(reloadIncome.toFixed(2)),
+        hpIncome: Number(hpTotalIncome.toFixed(2)),
+        hpCashIncome: Number(hpCashIncome.toFixed(2)),
         serviceCost: Number(serviceCost.toFixed(2)),
         supplierCost: Number((supplierCost + expenseCost).toFixed(2)),
+        expenseCost: Number(expenseCost.toFixed(2)),
         totalIncome: Number(totalIncome.toFixed(2)),
         totalCost: Number(totalCost.toFixed(2)),
         balanceAmount: Number(balanceAmount.toFixed(2)),
@@ -986,8 +1011,12 @@ const getPosOrders = async (req, res, next) => {
         cashSales: parseFloat(cashSales.toFixed(2)),
         cardSales: parseFloat(cardSales.toFixed(2)),
         kokoSales: parseFloat(kokoSales.toFixed(2)),
+        hpIncome: parseFloat(hpTotalIncome.toFixed(2)),
+        hpCashIncome: parseFloat(hpCashIncome.toFixed(2)),
+        reloadIncome: parseFloat(reloadIncome.toFixed(2)),
+        expenseCost: parseFloat(expenseCost.toFixed(2)),
         totalItemsSold: orders.reduce((sum, o) => sum + (o.items || []).reduce((line, item) => line + Number(item.quantity || 0), 0), 0),
-        systemRevenue: parseFloat(totalSales.toFixed(2)),
+        systemRevenue: parseFloat(totalIncome.toFixed(2)),
         profitOfDay: parseFloat(profitOfDay.toFixed(2)),
       },
     });

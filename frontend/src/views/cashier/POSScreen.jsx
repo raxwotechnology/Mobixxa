@@ -35,6 +35,8 @@ import {
   Users,
   ShieldCheck,
   Store,
+  Printer,
+  CheckCircle2,
 } from 'lucide-react';
 
 import { getPosProducts, getProductByBarcode, posCheckout, getPosOrders, applyVoucher, getSettings, getActivePosSession, startPosSession, endPosSession, getPosPayHereHash, redeemPoints, getMyLoyaltyPoints, getCreditOrders, settleCreditOrder, getCategories, createQuotation, createProduct, getAccounts, loginUser, getCashiers, posLogin, getPosOrderByInvoice, createCustomerReturn, getHPRecords, recordHPPayment, createExpense } from '../../services/api';
@@ -96,10 +98,13 @@ const POSScreen = () => {
   const [showStartSession, setShowStartSession] = useState(false);
   const [showEndSession, setShowEndSession] = useState(false);
   const [dailyFinancials, setDailyFinancials] = useState(null);
+  const [posDailySummary, setPosDailySummary] = useState(null);
   const [balanceOrders, setBalanceOrders] = useState([]);
   const [showBalanceModal, setShowBalanceModal] = useState(false);
   const [balanceLoading, setBalanceLoading] = useState(false);
   const [balanceDate, setBalanceDate] = useState(new Date().toISOString().split('T')[0]);
+  const [balanceTab, setBalanceTab] = useState('shift'); // 'shift' or 'financials'
+  const [drawerCountInput, setDrawerCountInput] = useState('');
   const [sessionForm, setSessionForm] = useState({
     opening: { 5000: 0, 1000: 0, 500: 0, 100: 0, 50: 0, 20: 0 },
     closing: { 5000: 0, 1000: 0, 500: 0, 100: 0, 50: 0, 20: 0 },
@@ -389,11 +394,13 @@ const POSScreen = () => {
     try {
       setBalanceLoading(true);
       const { data } = await getPosOrders({ date: selectedDate });
-      setDailyFinancials(data?.financials || data?.summary || null);
+      setDailyFinancials(data?.financials || null);
+      setPosDailySummary(data?.summary || null);
       setBalanceOrders(data?.orders || []);
       setShowBalanceModal(true);
     } catch {
       setDailyFinancials(null);
+      setPosDailySummary(null);
       setBalanceOrders([]);
       setShowBalanceModal(true);
     } finally {
@@ -688,6 +695,110 @@ const POSScreen = () => {
     } finally {
       setSubmittingPettyCash(false);
     }
+  };
+
+  const handlePrintShiftSlip = () => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast.error('Popup blocked! Please allow popups to print shift slip.');
+      return;
+    }
+
+    const headerTitle = settings?.receiptSettings?.headerTitle || brandName;
+    const subtitle = settings?.receiptSettings?.subtitle || settings?.address || '';
+    const dateStr = balanceDate || new Date().toISOString().split('T')[0];
+    const cashierName = user?.name || 'Staff';
+
+    const cashSales = Number(posDailySummary?.cashSales || 0);
+    const cardSales = Number(posDailySummary?.cardSales || 0);
+    const kokoSales = Number(posDailySummary?.kokoSales || 0);
+    const hpCashIncome = Number(posDailySummary?.hpCashIncome || dailyFinancials?.hpCashIncome || 0);
+    const reloadIncome = Number(posDailySummary?.reloadIncome || dailyFinancials?.reloadIncome || 0);
+    const expenseCost = Number(posDailySummary?.expenseCost || dailyFinancials?.expenseCost || 0);
+    const totalRevenue = Number(posDailySummary?.systemRevenue || dailyFinancials?.totalIncome || 0);
+
+    const netDrawerCash = (cashSales + hpCashIncome + reloadIncome) - expenseCost;
+    const actualCount = drawerCountInput !== '' ? Number(drawerCountInput) : netDrawerCash;
+    const discrepancy = actualCount - netDrawerCash;
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>POS Shift Summary Slip - ${dateStr}</title>
+          <style>
+            body { font-family: 'Courier New', monospace; width: 80mm; margin: 0 auto; padding: 10px; color: #000; font-size: 12px; }
+            .text-center { text-align: center; }
+            .text-left { text-align: left; }
+            .text-right { text-align: right; }
+            .bold { font-weight: bold; }
+            .header { margin-bottom: 8px; border-bottom: 1px dashed #000; padding-bottom: 8px; text-align: center; }
+            .title { font-size: 15px; font-weight: bold; text-transform: uppercase; }
+            .subtitle { font-size: 11px; margin-top: 2px; }
+            .row { display: flex; justify-content: space-between; font-size: 12px; margin: 4px 0; }
+            .divider { border-top: 1px dashed #000; margin: 8px 0; }
+            .total-box { border: 1.5px solid #000; padding: 8px; margin: 10px 0; text-align: center; }
+            .sign-box { display: flex; justify-content: space-between; margin-top: 30px; font-size: 11px; border-top: 1px dashed #aaa; padding-top: 15px; }
+            .footer { margin-top: 14px; text-align: center; font-size: 10px; border-top: 1px dashed #000; padding-top: 8px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="title">${headerTitle}</div>
+            <div class="subtitle">${subtitle}</div>
+            <div class="subtitle bold" style="margin-top:4px;">*** DAILY SHIFT / BALANCE SLIP ***</div>
+          </div>
+          <div class="row"><span>Date:</span><span class="bold">${dateStr}</span></div>
+          <div class="row"><span>Staff/Cashier:</span><span class="bold">${cashierName}</span></div>
+          <div class="row"><span>Printed At:</span><span>${new Date().toLocaleTimeString()}</span></div>
+          
+          <div class="divider"></div>
+          <div class="row bold"><span>REVENUE BREAKDOWN</span><span>AMOUNT</span></div>
+          <div class="row"><span>Counter Cash Sales:</span><span>Rs. ${cashSales.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
+          <div class="row"><span>Card / Digital Sales:</span><span>Rs. ${cardSales.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
+          ${kokoSales > 0 ? `<div class="row"><span>Koko / Installment:</span><span>Rs. ${kokoSales.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>` : ''}
+          <div class="row"><span>HP Collections (Cash):</span><span>Rs. ${hpCashIncome.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
+          <div class="row"><span>Reload & Card Sales:</span><span>Rs. ${reloadIncome.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
+          <div class="row bold" style="border-top:1px dashed #ddd; padding-top:4px;"><span>Total Day Revenue:</span><span>Rs. ${totalRevenue.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
+
+          <div class="divider"></div>
+          <div class="row bold"><span>CASH DRAWER RECONCILIATION</span></div>
+          <div class="row"><span>(+) Cash Sales In:</span><span>Rs. ${cashSales.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
+          <div class="row"><span>(+) HP Cash In:</span><span>Rs. ${hpCashIncome.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
+          <div class="row"><span>(+) Reload Cash In:</span><span>Rs. ${reloadIncome.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
+          <div class="row" style="color:#b91c1c;"><span>(-) Petty Cash Out:</span><span>Rs. ${expenseCost.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
+          
+          <div class="total-box bold">
+            <div style="font-size: 11px;">EXPECTED DRAWER CASH:</div>
+            <div style="font-size: 16px; margin-top: 4px;">Rs. ${netDrawerCash.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</div>
+          </div>
+
+          <div class="row"><span>Actual Counted Cash:</span><span class="bold">Rs. ${actualCount.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
+          <div class="row bold"><span>Discrepancy:</span><span>${discrepancy === 0 ? 'Rs. 0.00 (EXACT MATCH)' : (discrepancy > 0 ? `+Rs. ${discrepancy.toLocaleString('en-LK', { minimumFractionDigits: 2 })} (OVERAGE)` : `-Rs. ${Math.abs(discrepancy).toLocaleString('en-LK', { minimumFractionDigits: 2 })} (SHORTAGE)`)}</span></div>
+
+          <div class="sign-box">
+            <div class="text-center">
+              <div>______________________</div>
+              <div class="bold" style="margin-top:4px;">Cashier Signature</div>
+            </div>
+            <div class="text-center">
+              <div>______________________</div>
+              <div class="bold" style="margin-top:4px;">Manager Signature</div>
+            </div>
+          </div>
+
+          <div class="footer">
+            <div>SR Mobile Official POS System</div>
+            <div>Shift handover confirmed & verified</div>
+          </div>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+    }, 500);
   };
 
   const handlePrintHpReceipt = () => {
@@ -3692,37 +3803,107 @@ const POSScreen = () => {
             className="pos-shift-modal"
             onClick={(e) => e.stopPropagation()}
             style={{ 
-              background: '#1a1f2c', 
-              border: '1px solid #334155', 
-              borderRadius: '16px',
+              background: '#111827', 
+              border: '1px solid #374151', 
+              borderRadius: '20px',
               color: '#ffffff', 
-              width: 'min(1100px, 96vw)', 
+              width: 'min(1150px, 96vw)', 
               maxHeight: '92vh',
               overflowY: 'auto',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)'
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.85)'
             }}
           >
             {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 24px', borderBottom: '1px solid #334155' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '24px' }}>📋</span>
-                <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '900', color: '#facc15', letterSpacing: '0.5px' }}>
-                  BALANCE REPORT
-                </h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 24px', borderBottom: '1px solid #374151', flexWrap: 'wrap', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 4px 12px rgba(245, 158, 11, 0.35)' }}>
+                  <Receipt size={22} />
+                </div>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '900', color: '#facc15', letterSpacing: '0.5px' }}>
+                    BALANCE & SHIFT SUMMARY
+                  </h2>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#9ca3af', fontWeight: '500' }}>
+                    Real-time daily financial reconciliation for Cashier & Manager
+                  </p>
+                </div>
               </div>
-              <button 
-                onClick={() => setShowBalanceModal(false)}
-                style={{ background: '#334155', border: 'none', color: '#94a3b8', width: '32px', height: '32px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-              >
-                <X size={18} />
-              </button>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <button
+                  onClick={handlePrintShiftSlip}
+                  style={{
+                    padding: '8px 16px',
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    border: 'none',
+                    borderRadius: '10px',
+                    color: '#ffffff',
+                    fontWeight: 'bold',
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.35)'
+                  }}
+                  title="Print 80mm Thermal Shift Handover Receipt"
+                >
+                  <Printer size={16} />
+                  Print Shift Slip
+                </button>
+
+                <button 
+                  onClick={() => setShowBalanceModal(false)}
+                  style={{ background: '#374151', border: 'none', color: '#9ca3af', width: '36px', height: '36px', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <X size={20} />
+                </button>
+              </div>
             </div>
 
             <div style={{ padding: '24px' }}>
-              {/* Date Filter */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '24px', flexWrap: 'wrap' }}>
-                <span style={{ fontWeight: '800', fontSize: '13px', color: '#ffffff', letterSpacing: '0.5px' }}>DATE</span>
+              {/* Date Filter & Tab Switcher */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '14px', marginBottom: '24px', flexWrap: 'wrap' }}>
+                
+                {/* Tabs */}
+                <div style={{ display: 'flex', background: '#1f2937', padding: '4px', borderRadius: '12px', border: '1px solid #374151' }}>
+                  <button
+                    onClick={() => setBalanceTab('shift')}
+                    style={{
+                      padding: '8px 18px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      background: balanceTab === 'shift' ? 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)' : 'transparent',
+                      color: balanceTab === 'shift' ? '#ffffff' : '#9ca3af',
+                      fontWeight: '800',
+                      fontSize: '13px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    ⚖️ Shift Register & Cash Drawer
+                  </button>
+                  <button
+                    onClick={() => setBalanceTab('financials')}
+                    style={{
+                      padding: '8px 18px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      background: balanceTab === 'financials' ? 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)' : 'transparent',
+                      color: balanceTab === 'financials' ? '#ffffff' : '#9ca3af',
+                      fontWeight: '800',
+                      fontSize: '13px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    📊 Category Incomes & Costs
+                  </button>
+                </div>
+
+                {/* Date Selector */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontWeight: '800', fontSize: '12px', color: '#9ca3af', letterSpacing: '0.5px' }}>DATE:</span>
                   <input
                     type="date"
                     value={balanceDate}
@@ -3731,7 +3912,7 @@ const POSScreen = () => {
                       padding: '8px 14px',
                       background: '#0f172a',
                       border: '1.5px solid #ca8a04',
-                      borderRadius: '6px',
+                      borderRadius: '8px',
                       color: '#ffffff',
                       fontSize: '13px',
                       fontWeight: 'bold',
@@ -3745,7 +3926,7 @@ const POSScreen = () => {
                       padding: '8px 16px',
                       background: 'linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)',
                       border: 'none',
-                      borderRadius: '6px',
+                      borderRadius: '8px',
                       color: '#ffffff',
                       fontWeight: 'bold',
                       fontSize: '13px',
@@ -3762,177 +3943,300 @@ const POSScreen = () => {
                 </div>
               </div>
 
-              {/* Main 2-Column Grid matching user's photo */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '24px' }}>
-                
-                {/* ──────── LEFT COLUMN: Incomes ──────── */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {/* ──────── TAB 1: SHIFT REGISTER & CASH DRAWER ──────── */}
+              {balanceTab === 'shift' && (
+                <div>
+                  {/* Top Stats Grid */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginBottom: '24px' }}>
+                    
+                    {/* Cash Sales */}
+                    <div style={{ padding: '16px', borderRadius: '14px', background: '#1f2937', border: '1px solid #374151' }}>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#9ca3af', textTransform: 'uppercase' }}>💵 Counter Cash Sales</div>
+                      <div style={{ fontSize: '18px', fontWeight: '900', color: '#34d399', marginTop: '6px', fontFamily: 'monospace' }}>
+                        Rs. {Number(posDailySummary?.cashSales || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '4px' }}>Cash receipts at counter</div>
+                    </div>
+
+                    {/* Card / Digital */}
+                    <div style={{ padding: '16px', borderRadius: '14px', background: '#1f2937', border: '1px solid #374151' }}>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#9ca3af', textTransform: 'uppercase' }}>💳 Card / Digital Sales</div>
+                      <div style={{ fontSize: '18px', fontWeight: '900', color: '#60a5fa', marginTop: '6px', fontFamily: 'monospace' }}>
+                        Rs. {Number(posDailySummary?.cardSales || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '4px' }}>Visa / Master / QR / Koko</div>
+                    </div>
+
+                    {/* Reloads */}
+                    <div style={{ padding: '16px', borderRadius: '14px', background: '#1f2937', border: '1px solid #374151' }}>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#9ca3af', textTransform: 'uppercase' }}>📱 Reload & Scratch Cards</div>
+                      <div style={{ fontSize: '18px', fontWeight: '900', color: '#2dd4bf', marginTop: '6px', fontFamily: 'monospace' }}>
+                        Rs. {Number(posDailySummary?.reloadIncome || dailyFinancials?.reloadIncome || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '4px' }}>Daily reload card sell-out</div>
+                    </div>
+
+                    {/* HP Collections */}
+                    <div style={{ padding: '16px', borderRadius: '14px', background: '#1f2937', border: '1px solid #374151' }}>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#9ca3af', textTransform: 'uppercase' }}>📑 HP Installment Cash</div>
+                      <div style={{ fontSize: '18px', fontWeight: '900', color: '#c084fc', marginTop: '6px', fontFamily: 'monospace' }}>
+                        Rs. {Number(posDailySummary?.hpCashIncome || dailyFinancials?.hpCashIncome || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '4px' }}>Collected at checkout counter</div>
+                    </div>
+
+                    {/* Petty Cash Out */}
+                    <div style={{ padding: '16px', borderRadius: '14px', background: '#1f2937', border: '1px solid #ef444455' }}>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#f87171', textTransform: 'uppercase' }}>☕ Petty Cash Out (Expenses)</div>
+                      <div style={{ fontSize: '18px', fontWeight: '900', color: '#f87171', marginTop: '6px', fontFamily: 'monospace' }}>
+                        - Rs. {Number(posDailySummary?.expenseCost || dailyFinancials?.expenseCost || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '4px' }}>Tea, meals, supplies paid out</div>
+                    </div>
+
+                    {/* Total Revenue */}
+                    <div style={{ padding: '16px', borderRadius: '14px', background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)', border: '1px solid #6366f1' }}>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#a5b4fc', textTransform: 'uppercase' }}>🏦 Total Day Revenue</div>
+                      <div style={{ fontSize: '18px', fontWeight: '900', color: '#ffffff', marginTop: '6px', fontFamily: 'monospace' }}>
+                        Rs. {Number(posDailySummary?.systemRevenue || dailyFinancials?.totalIncome || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#c7d2fe', marginTop: '4px' }}>{posDailySummary?.totalOrders || balanceOrders.length} Completed transactions</div>
+                    </div>
+
+                  </div>
+
+                  {/* Cash Drawer Handover Reconciliation Box */}
+                  {(() => {
+                    const cashIn = Number(posDailySummary?.cashSales || 0) + Number(posDailySummary?.hpCashIncome || dailyFinancials?.hpCashIncome || 0) + Number(posDailySummary?.reloadIncome || dailyFinancials?.reloadIncome || 0);
+                    const expenseOut = Number(posDailySummary?.expenseCost || dailyFinancials?.expenseCost || 0);
+                    const expectedDrawer = cashIn - expenseOut;
+                    const counted = drawerCountInput !== '' ? Number(drawerCountInput) : expectedDrawer;
+                    const diff = counted - expectedDrawer;
+
+                    return (
+                      <div style={{ padding: '20px', borderRadius: '16px', background: '#0f172a', border: '2px solid #10b981', marginBottom: '28px', boxShadow: '0 10px 25px -5px rgba(16, 185, 129, 0.2)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px', borderBottom: '1px solid #1e293b', paddingBottom: '14px', marginBottom: '16px' }}>
+                          <div>
+                            <span style={{ fontSize: '11px', fontWeight: '900', textTransform: 'uppercase', color: '#10b981', letterSpacing: '0.5px' }}>
+                              SHIFT HANDOVER RECONCILIATION
+                            </span>
+                            <h3 style={{ margin: '2px 0 0 0', fontSize: '18px', fontWeight: '900', color: '#ffffff' }}>
+                              Net Cash in Drawer to Handover
+                            </h3>
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            <div style={{ fontSize: '11px', color: '#9ca3af', fontWeight: 'bold' }}>EXPECTED CASH:</div>
+                            <div style={{ fontSize: '24px', fontWeight: '900', color: '#34d399', fontFamily: 'monospace' }}>
+                              Rs. {expectedDrawer.toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px', alignItems: 'center' }}>
+                          <div>
+                            <label style={{ fontSize: '12px', fontWeight: '700', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>
+                              Count Actual Cash in Drawer (Rs.):
+                            </label>
+                            <input
+                              type="number"
+                              placeholder={`Expected: ${expectedDrawer.toFixed(2)}`}
+                              value={drawerCountInput}
+                              onChange={(e) => setDrawerCountInput(e.target.value)}
+                              style={{
+                                width: '100%',
+                                padding: '12px 14px',
+                                borderRadius: '10px',
+                                border: '2px solid #334155',
+                                background: '#1e293b',
+                                color: '#ffffff',
+                                fontSize: '16px',
+                                fontWeight: '800',
+                                outline: 'none',
+                                fontFamily: 'monospace'
+                              }}
+                            />
+                          </div>
+
+                          <div style={{ padding: '14px', borderRadius: '12px', background: diff === 0 ? '#064e3b' : (diff > 0 ? '#1e3a8a' : '#7f1d1d'), border: '1px solid rgba(255,255,255,0.15)' }}>
+                            <div style={{ fontSize: '11px', fontWeight: '800', color: '#e2e8f0', textTransform: 'uppercase' }}>
+                              Cash Drawer Status
+                            </div>
+                            <div style={{ fontSize: '16px', fontWeight: '900', color: '#ffffff', marginTop: '2px' }}>
+                              {diff === 0 ? '✅ Exact Match (No Discrepancy)' : (diff > 0 ? `+ Rs. ${diff.toLocaleString('en-LK', { minimumFractionDigits: 2 })} (Overage)` : `- Rs. ${Math.abs(diff).toLocaleString('en-LK', { minimumFractionDigits: 2 })} (Shortage)`)}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+
+              {/* ──────── TAB 2: CATEGORY INCOMES & COSTS ──────── */}
+              {balanceTab === 'financials' && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '24px', marginBottom: '28px' }}>
                   
-                  {/* Mobile Income */}
-                  <div>
-                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#ffffff', marginBottom: '6px', letterSpacing: '0.5px' }}>
-                      MOBILE INCOME
+                  {/* ──────── LEFT COLUMN: Incomes ──────── */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    <div style={{ fontSize: '13px', fontWeight: '900', color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      INCOME BREAKDOWN
                     </div>
-                    <div style={{ padding: '10px 14px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '6px', color: '#ffffff', fontWeight: 'bold', fontSize: '14px', fontFamily: 'monospace' }}>
-                      Rs. {Number(dailyFinancials?.mobileIncome || 0).toFixed(2)}
+
+                    {/* Mobile Income */}
+                    <div>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#cbd5e1', marginBottom: '4px' }}>MOBILE INCOME</div>
+                      <div style={{ padding: '10px 14px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '8px', color: '#ffffff', fontWeight: 'bold', fontSize: '14px', fontFamily: 'monospace' }}>
+                        Rs. {Number(dailyFinancials?.mobileIncome || 0).toFixed(2)}
+                      </div>
                     </div>
+
+                    {/* Accessories Income */}
+                    <div>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#cbd5e1', marginBottom: '4px' }}>ACCESSORIES INCOME</div>
+                      <div style={{ padding: '10px 14px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '8px', color: '#ffffff', fontWeight: 'bold', fontSize: '14px', fontFamily: 'monospace' }}>
+                        Rs. {Number(dailyFinancials?.accessoriesIncome || 0).toFixed(2)}
+                      </div>
+                    </div>
+
+                    {/* Wholesale | Advance Income */}
+                    <div>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#cbd5e1', marginBottom: '4px' }}>WHOLESALE | ADVANCE INCOME</div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                        <div style={{ padding: '10px 12px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '8px', color: '#ffffff', fontWeight: 'bold', fontSize: '13px', fontFamily: 'monospace' }}>
+                          Rs. {Number(dailyFinancials?.wholesaleIncome || 0).toFixed(2)}
+                        </div>
+                        <div style={{ padding: '10px 12px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '8px', color: '#ffffff', fontWeight: 'bold', fontSize: '13px', fontFamily: 'monospace' }}>
+                          Rs. {Number(dailyFinancials?.advanceIncome || 0).toFixed(2)}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Repairing Income */}
+                    <div>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#cbd5e1', marginBottom: '4px' }}>REPAIRING INCOME (Normal | Company)</div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                        <div style={{ padding: '10px 12px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '8px', color: '#ffffff', fontWeight: 'bold', fontSize: '13px', fontFamily: 'monospace' }}>
+                          Rs. {Number(dailyFinancials?.repairIncomeNormal || 0).toFixed(2)}
+                        </div>
+                        <div style={{ padding: '10px 12px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '8px', color: '#ffffff', fontWeight: 'bold', fontSize: '13px', fontFamily: 'monospace' }}>
+                          Rs. {Number(dailyFinancials?.repairIncomeCompany || 0).toFixed(2)}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Phone Card | SIM Card Income */}
+                    <div>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#cbd5e1', marginBottom: '4px' }}>PHONE CARD | SIM CARD INCOME</div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                        <div style={{ padding: '10px 12px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '8px', color: '#ffffff', fontWeight: 'bold', fontSize: '13px', fontFamily: 'monospace' }}>
+                          Rs. {Number(dailyFinancials?.phoneCardIncome || 0).toFixed(2)}
+                        </div>
+                        <div style={{ padding: '10px 12px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '8px', color: '#ffffff', fontWeight: 'bold', fontSize: '13px', fontFamily: 'monospace' }}>
+                          Rs. {Number(dailyFinancials?.simCardIncome || 0).toFixed(2)}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* HP Collections Income */}
+                    <div>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#cbd5e1', marginBottom: '4px' }}>HP INSTALLMENT COLLECTIONS</div>
+                      <div style={{ padding: '10px 14px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '8px', color: '#c084fc', fontWeight: 'bold', fontSize: '14px', fontFamily: 'monospace' }}>
+                        Rs. {Number(dailyFinancials?.hpIncome || 0).toFixed(2)}
+                      </div>
+                    </div>
+
                   </div>
 
-                  {/* Accessories Income */}
-                  <div>
-                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#ffffff', marginBottom: '6px', letterSpacing: '0.5px' }}>
-                      ACCESSORIES INCOME
+                  {/* ──────── RIGHT COLUMN: Costs & Balances ──────── */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    <div style={{ fontSize: '13px', fontWeight: '900', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      COSTS & NET BALANCE
                     </div>
-                    <div style={{ padding: '10px 14px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '6px', color: '#ffffff', fontWeight: 'bold', fontSize: '14px', fontFamily: 'monospace' }}>
-                      Rs. {Number(dailyFinancials?.accessoriesIncome || 0).toFixed(2)}
-                    </div>
-                  </div>
 
-                  {/* Wholesale | Advance Income */}
-                  <div>
-                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#ffffff', marginBottom: '6px', letterSpacing: '0.5px' }}>
-                      WHOLESALE | ADVANCE INCOME
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                      <div style={{ padding: '10px 12px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '6px', color: '#ffffff', fontWeight: 'bold', fontSize: '13px', fontFamily: 'monospace' }}>
-                        Rs. {Number(dailyFinancials?.wholesaleIncome || 0).toFixed(2)}
-                      </div>
-                      <div style={{ padding: '10px 12px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '6px', color: '#ffffff', fontWeight: 'bold', fontSize: '13px', fontFamily: 'monospace' }}>
-                        Rs. {Number(dailyFinancials?.advanceIncome || 0).toFixed(2)}
+                    {/* Reload Income */}
+                    <div>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#cbd5e1', marginBottom: '4px' }}>RELOAD INCOME</div>
+                      <div style={{ padding: '10px 14px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '8px', color: '#4ade80', fontWeight: 'bold', fontSize: '14px', fontFamily: 'monospace' }}>
+                        Rs. {Number(dailyFinancials?.reloadIncome || 0).toFixed(2)}
                       </div>
                     </div>
-                  </div>
 
-                  {/* Repairing Income */}
-                  <div>
-                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#ffffff', marginBottom: '6px', letterSpacing: '0.5px' }}>
-                      REPAIRING INCOME (Normal | Company)
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                      <div style={{ padding: '10px 12px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '6px', color: '#ffffff', fontWeight: 'bold', fontSize: '13px', fontFamily: 'monospace' }}>
-                        Rs. {Number(dailyFinancials?.repairIncomeNormal || 0).toFixed(2)}
-                      </div>
-                      <div style={{ padding: '10px 12px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '6px', color: '#ffffff', fontWeight: 'bold', fontSize: '13px', fontFamily: 'monospace' }}>
-                        Rs. {Number(dailyFinancials?.repairIncomeCompany || 0).toFixed(2)}
+                    {/* Service Cost */}
+                    <div>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#cbd5e1', marginBottom: '4px' }}>SERVICE COST</div>
+                      <div style={{ padding: '10px 14px', background: '#0f172a', border: '1.5px solid #ef4444', borderRadius: '8px', color: '#f87171', fontWeight: 'bold', fontSize: '14px', fontFamily: 'monospace' }}>
+                        Rs. {Number(dailyFinancials?.serviceCost || 0).toFixed(2)}
                       </div>
                     </div>
-                  </div>
 
-                  {/* Phone Card | SIM Card Income */}
-                  <div>
-                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#ffffff', marginBottom: '6px', letterSpacing: '0.5px' }}>
-                      PHONE CARD | SIM CARD INCOME
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                      <div style={{ padding: '10px 12px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '6px', color: '#ffffff', fontWeight: 'bold', fontSize: '13px', fontFamily: 'monospace' }}>
-                        Rs. {Number(dailyFinancials?.phoneCardIncome || 0).toFixed(2)}
-                      </div>
-                      <div style={{ padding: '10px 12px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '6px', color: '#ffffff', fontWeight: 'bold', fontSize: '13px', fontFamily: 'monospace' }}>
-                        Rs. {Number(dailyFinancials?.simCardIncome || 0).toFixed(2)}
+                    {/* Supplier & Expense Cost */}
+                    <div>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#cbd5e1', marginBottom: '4px' }}>SUPPLIER & EXPENSE COST</div>
+                      <div style={{ padding: '10px 14px', background: '#0f172a', border: '1.5px solid #ef4444', borderRadius: '8px', color: '#f87171', fontWeight: 'bold', fontSize: '14px', fontFamily: 'monospace' }}>
+                        Rs. {Number(dailyFinancials?.supplierCost || 0).toFixed(2)}
                       </div>
                     </div>
+
+                    {/* Total Income */}
+                    <div>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#cbd5e1', marginBottom: '4px' }}>TOTAL INCOME</div>
+                      <div style={{ padding: '10px 14px', background: '#0f172a', border: '1.5px solid #38bdf8', borderRadius: '8px', color: '#38bdf8', fontWeight: 'bold', fontSize: '14px', fontFamily: 'monospace' }}>
+                        Rs. {Number(dailyFinancials?.totalIncome || dailyFinancials?.totalSales || 0).toFixed(2)}
+                      </div>
+                    </div>
+
+                    {/* Total Cost */}
+                    <div>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#cbd5e1', marginBottom: '4px' }}>TOTAL COST</div>
+                      <div style={{ padding: '10px 14px', background: '#0f172a', border: '1.5px solid #38bdf8', borderRadius: '8px', color: '#38bdf8', fontWeight: 'bold', fontSize: '14px', fontFamily: 'monospace' }}>
+                        Rs. {Number(dailyFinancials?.totalCost || 0).toFixed(2)}
+                      </div>
+                    </div>
+
+                    {/* Balance Amount */}
+                    <div>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#ffffff', marginBottom: '4px' }}>NET BALANCE AMOUNT</div>
+                      <div style={{ padding: '12px 14px', background: '#0f172a', border: '2px solid #ffffff', borderRadius: '8px', color: '#ffffff', fontWeight: '900', fontSize: '16px', fontFamily: 'monospace', boxShadow: '0 0 10px rgba(255,255,255,0.15)' }}>
+                        Rs. {Number(dailyFinancials?.balanceAmount !== undefined ? dailyFinancials.balanceAmount : (dailyFinancials?.totalSales || 0)).toFixed(2)}
+                      </div>
+                    </div>
+
                   </div>
 
                 </div>
-
-                {/* ──────── RIGHT COLUMN: Costs & Balances ──────── */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  
-                  {/* Reload Income */}
-                  <div>
-                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#ffffff', marginBottom: '6px', letterSpacing: '0.5px' }}>
-                      RELOAD INCOME
-                    </div>
-                    <div style={{ padding: '10px 14px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '6px', color: '#4ade80', fontWeight: 'bold', fontSize: '14px', fontFamily: 'monospace' }}>
-                      Rs. {Number(dailyFinancials?.reloadIncome || 0).toFixed(2)}
-                    </div>
-                  </div>
-
-                  {/* Service Cost */}
-                  <div>
-                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#ffffff', marginBottom: '6px', letterSpacing: '0.5px' }}>
-                      SERVICE COST
-                    </div>
-                    <div style={{ padding: '10px 14px', background: '#0f172a', border: '1.5px solid #ef4444', borderRadius: '6px', color: '#f87171', fontWeight: 'bold', fontSize: '14px', fontFamily: 'monospace' }}>
-                      Rs. {Number(dailyFinancials?.serviceCost || 0).toFixed(2)}
-                    </div>
-                  </div>
-
-                  {/* Supplier Cost */}
-                  <div>
-                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#ffffff', marginBottom: '6px', letterSpacing: '0.5px' }}>
-                      SUPPLIER COST
-                    </div>
-                    <div style={{ padding: '10px 14px', background: '#0f172a', border: '1.5px solid #ef4444', borderRadius: '6px', color: '#f87171', fontWeight: 'bold', fontSize: '14px', fontFamily: 'monospace' }}>
-                      Rs. {Number(dailyFinancials?.supplierCost || 0).toFixed(2)}
-                    </div>
-                  </div>
-
-                  {/* Total Income */}
-                  <div>
-                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#ffffff', marginBottom: '6px', letterSpacing: '0.5px' }}>
-                      TOTAL INCOME
-                    </div>
-                    <div style={{ padding: '10px 14px', background: '#0f172a', border: '1.5px solid #38bdf8', borderRadius: '6px', color: '#38bdf8', fontWeight: 'bold', fontSize: '14px', fontFamily: 'monospace' }}>
-                      Rs. {Number(dailyFinancials?.totalIncome || dailyFinancials?.totalSales || 0).toFixed(2)}
-                    </div>
-                  </div>
-
-                  {/* Total Cost */}
-                  <div>
-                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#ffffff', marginBottom: '6px', letterSpacing: '0.5px' }}>
-                      TOTAL COST
-                    </div>
-                    <div style={{ padding: '10px 14px', background: '#0f172a', border: '1.5px solid #38bdf8', borderRadius: '6px', color: '#38bdf8', fontWeight: 'bold', fontSize: '14px', fontFamily: 'monospace' }}>
-                      Rs. {Number(dailyFinancials?.totalCost || 0).toFixed(2)}
-                    </div>
-                  </div>
-
-                  {/* Balance Amount */}
-                  <div>
-                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#ffffff', marginBottom: '6px', letterSpacing: '0.5px' }}>
-                      BALANCE AMOUNT
-                    </div>
-                    <div style={{ padding: '12px 14px', background: '#0f172a', border: '2px solid #ffffff', borderRadius: '6px', color: '#ffffff', fontWeight: '900', fontSize: '16px', fontFamily: 'monospace', boxShadow: '0 0 10px rgba(255,255,255,0.15)' }}>
-                      Rs. {Number(dailyFinancials?.balanceAmount !== undefined ? dailyFinancials.balanceAmount : (dailyFinancials?.totalSales || 0)).toFixed(2)}
-                    </div>
-                  </div>
-
-                </div>
-
-              </div>
+              )}
 
               {/* ──────── Sales History ──────── */}
-              <div style={{ marginTop: '30px' }}>
+              <div style={{ marginTop: '20px' }}>
                 <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: '800', color: '#facc15', letterSpacing: '0.5px' }}>
-                  SALES HISTORY ({balanceOrders.length} Transactions)
+                  SALES TRANSACTION LOG ({balanceOrders.length} Transactions)
                 </h4>
-                <div style={{ maxHeight: '350px', overflow: 'auto', border: '1px solid #334155', borderRadius: '10px', background: '#0f172a' }}>
+                <div style={{ maxHeight: '320px', overflow: 'auto', border: '1px solid #374151', borderRadius: '12px', background: '#0f172a' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
-                    <thead style={{ background: '#1e293b', position: 'sticky', top: 0, zIndex: 1 }}>
+                    <thead style={{ background: '#1f2937', position: 'sticky', top: 0, zIndex: 1 }}>
                       <tr>
-                        <th style={{ textAlign: 'left', padding: '10px', color: '#94a3b8' }}>Time</th>
-                        <th style={{ textAlign: 'left', padding: '10px', color: '#94a3b8' }}>Customer</th>
-                        <th style={{ textAlign: 'left', padding: '10px', color: '#94a3b8' }}>Items</th>
-                        <th style={{ textAlign: 'left', padding: '10px', color: '#94a3b8' }}>Payment</th>
-                        <th style={{ textAlign: 'right', padding: '10px', color: '#94a3b8' }}>Total Amount</th>
+                        <th style={{ textAlign: 'left', padding: '10px', color: '#9ca3af' }}>Time</th>
+                        <th style={{ textAlign: 'left', padding: '10px', color: '#9ca3af' }}>Customer</th>
+                        <th style={{ textAlign: 'left', padding: '10px', color: '#9ca3af' }}>Items</th>
+                        <th style={{ textAlign: 'left', padding: '10px', color: '#9ca3af' }}>Payment</th>
+                        <th style={{ textAlign: 'right', padding: '10px', color: '#9ca3af' }}>Total Amount</th>
                       </tr>
                     </thead>
                     <tbody>
                       {balanceOrders.map((order) => (
-                        <tr key={order._id} style={{ borderTop: '1px solid #1e293b' }}>
-                          <td style={{ padding: '10px', color: '#e2e8f0', verticalAlign: 'top', fontFamily: 'monospace' }}>
+                        <tr key={order._id} style={{ borderTop: '1px solid #1f2937' }}>
+                          <td style={{ padding: '10px', color: '#e5e7eb', verticalAlign: 'top', fontFamily: 'monospace' }}>
                             {new Date(order.createdAt).toLocaleTimeString()}
                           </td>
                           <td style={{ padding: '10px', color: '#cbd5e1', verticalAlign: 'top' }}>
-                            <div style={{ fontWeight: 600, color: '#f8fafc' }}>{order.customerName || 'Walk-in Customer'}</div>
-                            <div style={{ color: '#94a3b8', marginTop: '2px', fontSize: '11px' }}>{order.customerPhone || '-'}</div>
+                            <div style={{ fontWeight: 600, color: '#f9fafb' }}>{order.customerName || 'Walk-in Customer'}</div>
+                            <div style={{ color: '#9ca3af', marginTop: '2px', fontSize: '11px' }}>{order.customerPhone || '-'}</div>
                           </td>
                           <td style={{ padding: '10px', color: '#cbd5e1', verticalAlign: 'top' }}>
                             {(order.itemDetails || order.items || []).map((it, idx) => (
                               <div key={idx} style={{ marginBottom: idx < ((order.itemDetails || order.items)?.length - 1) ? '6px' : '0' }}>
-                                <div style={{ fontWeight: 600, color: '#f8fafc' }}>{it.name}</div>
-                                <div style={{ color: '#94a3b8', fontSize: '11px', marginTop: '1px' }}>
+                                <div style={{ fontWeight: 600, color: '#f9fafb' }}>{it.name}</div>
+                                <div style={{ color: '#9ca3af', fontSize: '11px', marginTop: '1px' }}>
                                   x{it.quantity} @ Rs.{Number(it.unitPrice || it.price || 0).toFixed(2)}
                                 </div>
                               </div>
@@ -3941,14 +4245,14 @@ const POSScreen = () => {
                           <td style={{ padding: '10px', color: '#38bdf8', textTransform: 'uppercase', fontWeight: 'bold' }}>
                             {order.paymentMethod}
                           </td>
-                          <td style={{ padding: '10px', color: '#4ade80', textAlign: 'right', fontWeight: 'bold', fontFamily: 'monospace', fontSize: '13px' }}>
+                          <td style={{ padding: '10px', color: '#34d399', textAlign: 'right', fontWeight: 'bold', fontFamily: 'monospace', fontSize: '13px' }}>
                             Rs. {Number(order.totalAmount || 0).toFixed(2)}
                           </td>
                         </tr>
                       ))}
                       {balanceOrders.length === 0 && (
                         <tr>
-                          <td colSpan={5} style={{ padding: '24px', color: '#94a3b8', textAlign: 'center' }}>
+                          <td colSpan={5} style={{ textAlign: 'center', padding: '24px', color: '#6b7280' }}>
                             No sales transactions recorded for this date.
                           </td>
                         </tr>
