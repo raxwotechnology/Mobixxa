@@ -4031,9 +4031,9 @@ const POSScreen = () => {
                         {Math.abs(discrepancy) <= 0.01 ? (
                           <span>✅ BALANCED: Exact match (Rs. 0.00 discrepancy)</span>
                         ) : discrepancy < 0 ? (
-                          <span>⚠️ ARREARS / SHORTAGE: - Rs. {Math.abs(discrepancy).toLocaleString('en-LK', { minimumFractionDigits: 2 })} (මුදල් අඩුවක්)</span>
+                          <span>⚠️ ARREARS / SHORTAGE: - Rs. {Math.abs(discrepancy).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
                         ) : (
-                          <span>💡 OVERAGE / EXCESS: + Rs. {discrepancy.toLocaleString('en-LK', { minimumFractionDigits: 2 })} (මුදල් වැඩිවීමක්)</span>
+                          <span>💡 OVERAGE / EXCESS: + Rs. {discrepancy.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
                         )}
                       </div>
                     </div>
