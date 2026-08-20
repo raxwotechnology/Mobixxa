@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Link } from '../../utils/navigation';
-import { Clock, Calendar, CheckCircle, AlertCircle, TrendingUp, Coffee, Target, Award, User, Zap, Package, ShoppingBag, Barcode, ArrowRight, RotateCcw } from 'lucide-react';
+import { Clock, Calendar, CheckCircle, AlertCircle, TrendingUp, Coffee, Target, Award, User, Zap, Package, ShoppingBag, Barcode, ArrowRight, RotateCcw, Monitor, Smartphone, DollarSign, CreditCard, FileText, Landmark } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
 import useAuthStore from '../../store/authStore';
 import { getEmployeeNavGroups } from './employeeNav';
@@ -193,14 +193,27 @@ const EmployeeDashboard = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[
-              { title: 'Clock In & Attendance', desc: 'Mark attendance & break logs', path: '/employee/attendance', icon: Clock, gradient: 'from-sky-500 to-blue-600', badge: 'Attendance' },
-              { title: 'Stock & Price Lookup', desc: 'Check available products & IMEI', path: '/employee/stock', icon: Package, gradient: 'from-emerald-600 to-teal-600', badge: 'Inventory' },
-              { title: 'Order History List', desc: 'View past customer orders & sales', path: '/employee/orders', icon: ShoppingBag, gradient: 'from-violet-600 to-purple-600', badge: 'Orders' },
-              { title: 'Barcode Label Generator', desc: 'Generate & print product labels', path: '/barcode-generator', icon: Barcode, gradient: 'from-amber-500 to-orange-600', badge: 'Labels' },
-              { title: 'Item Returns & Refunds', desc: 'Process customer returns', path: '/employee/returns', icon: RotateCcw, gradient: 'from-rose-600 to-pink-600', badge: 'Returns' },
-              { title: 'My Profile & Paysheets', desc: 'View profile & salary slips', path: '/employee/profile', icon: User, gradient: 'from-slate-700 to-slate-900', badge: 'Profile' },
-            ].map((q) => (
+            {(user?.role === 'cashier'
+              ? [
+                  { title: 'POS Terminal', desc: 'Open billing & checkout terminal', path: '/pos', icon: Monitor, gradient: 'from-blue-600 to-indigo-700', badge: 'Billing' },
+                  { title: 'Reload & Card Stock', desc: 'Track opening, added & sell-out', path: '/admin/reloads', icon: Smartphone, gradient: 'from-emerald-600 to-teal-600', badge: 'Reloads' },
+                  { title: 'Shop Expenses (Petty Cash)', desc: 'Record daily shop expenses', path: '/admin/expenses', icon: DollarSign, gradient: 'from-amber-500 to-orange-600', badge: 'Expenses' },
+                  { title: 'Installments (HP)', desc: 'Collect customer installment payments', path: '/admin/hp', icon: CreditCard, gradient: 'from-purple-600 to-pink-600', badge: 'HP Pay' },
+                  { title: 'Cheque Management', desc: 'Manage customer cheque entries', path: '/admin/cheques', icon: FileText, gradient: 'from-sky-600 to-cyan-600', badge: 'Cheques' },
+                  { title: 'Manage Accounts', desc: 'View bank & cash accounts', path: '/admin/accounts', icon: Landmark, gradient: 'from-slate-700 to-slate-900', badge: 'Accounts' },
+                  { title: 'Stock & Price Lookup', desc: 'Check available products & IMEI', path: '/employee/stock', icon: Package, gradient: 'from-indigo-500 to-blue-600', badge: 'Inventory' },
+                  { title: 'Barcode Label Generator', desc: 'Generate & print product labels', path: '/barcode-generator', icon: Barcode, gradient: 'from-rose-500 to-red-600', badge: 'Labels' },
+                  { title: 'Clock In & Attendance', desc: 'Mark attendance & break logs', path: '/employee/attendance', icon: Clock, gradient: 'from-teal-500 to-emerald-700', badge: 'Attendance' },
+                ]
+              : [
+                  { title: 'Clock In & Attendance', desc: 'Mark attendance & break logs', path: '/employee/attendance', icon: Clock, gradient: 'from-sky-500 to-blue-600', badge: 'Attendance' },
+                  { title: 'Stock & Price Lookup', desc: 'Check available products & IMEI', path: '/employee/stock', icon: Package, gradient: 'from-emerald-600 to-teal-600', badge: 'Inventory' },
+                  { title: 'Order History List', desc: 'View past customer orders & sales', path: '/employee/orders', icon: ShoppingBag, gradient: 'from-violet-600 to-purple-600', badge: 'Orders' },
+                  { title: 'Barcode Label Generator', desc: 'Generate & print product labels', path: '/barcode-generator', icon: Barcode, gradient: 'from-amber-500 to-orange-600', badge: 'Labels' },
+                  { title: 'Item Returns & Refunds', desc: 'Process customer returns', path: '/employee/returns', icon: RotateCcw, gradient: 'from-rose-600 to-pink-600', badge: 'Returns' },
+                  { title: 'My Profile & Paysheets', desc: 'View profile & salary slips', path: '/employee/profile', icon: User, gradient: 'from-slate-700 to-slate-900', badge: 'Profile' },
+                ]
+            ).map((q) => (
               <Link
                 key={q.title}
                 to={q.path}

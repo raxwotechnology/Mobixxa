@@ -1,6 +1,7 @@
 import {
   LayoutDashboard, User, Clock, Calendar, CreditCard,
   Monitor, Truck, Package, Barcode, Timer, Globe, Wrench,
+  Smartphone, DollarSign, FileText, Landmark
 } from 'lucide-react';
 
 const getEmployeeNavGroups = (role) => {
@@ -28,23 +29,41 @@ const getEmployeeNavGroups = (role) => {
     },
   ];
 
-  // Role-specific tools
-  const tools = [];
+  // Cashier Financial & Operating Tools
   if (role === 'cashier') {
-    tools.push({ path: '/pos',                label: 'POS Terminal',       icon: Monitor });
-    tools.push({ path: '/employee/repairs',   label: 'Device Repairs',     icon: Wrench });
-    tools.push({ path: '/employee/stock',     label: 'Stock View',         icon: Package });
-    tools.push({ path: '/barcode-generator',  label: 'Barcode Generator',  icon: Barcode });
-  }
-  if (role === 'stockEmployee') {
-    tools.push({ path: '/employee/stock', label: 'Stock View', icon: Package });
-  }
-  if (role === 'deliveryGuy') {
-    tools.push({ path: '/delivery', label: 'Deliveries', icon: Truck });
-  }
+    groups.push({
+      label: 'Financial & Cashier Tools',
+      items: [
+        { path: '/pos',                label: 'POS Terminal',               icon: Monitor },
+        { path: '/admin/reloads',      label: 'Reload & Card Stock',       icon: Smartphone },
+        { path: '/admin/expenses',     label: 'Shop Expenses (Petty Cash)', icon: DollarSign },
+        { path: '/admin/hp',           label: 'Installments (HP)',          icon: CreditCard },
+        { path: '/admin/cheques',      label: 'Cheque Management',          icon: FileText },
+        { path: '/admin/accounts',     label: 'Manage Accounts',            icon: Landmark },
+      ],
+    });
 
-  if (tools.length > 0) {
-    groups.push({ label: 'My Tools', items: tools });
+    groups.push({
+      label: 'Store Operations',
+      items: [
+        { path: '/employee/repairs',   label: 'Device Repairs',     icon: Wrench },
+        { path: '/employee/stock',     label: 'Stock View',         icon: Package },
+        { path: '/barcode-generator',  label: 'Barcode Generator',  icon: Barcode },
+      ],
+    });
+  } else {
+    // Role-specific tools for non-cashiers
+    const tools = [];
+    if (role === 'stockEmployee') {
+      tools.push({ path: '/employee/stock', label: 'Stock View', icon: Package });
+    }
+    if (role === 'deliveryGuy') {
+      tools.push({ path: '/delivery', label: 'Deliveries', icon: Truck });
+    }
+
+    if (tools.length > 0) {
+      groups.push({ label: 'My Tools', items: tools });
+    }
   }
 
   groups.push({
