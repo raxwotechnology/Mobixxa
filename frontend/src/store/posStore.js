@@ -89,6 +89,14 @@ const usePosStore = create((set, get) => ({
     });
   },
 
+  setCartItemBarcode: (productId, barcode) => {
+    set({
+      cart: get().cart.map((item) =>
+        item.productId === productId ? { ...item, barcode, verifiedBarcode: barcode } : item
+      ),
+    });
+  },
+
   setDiscount: (value, type) => {
     set({ discount: value, discountType: type });
   },

@@ -183,6 +183,8 @@ const POSScreen = () => {
   const customerNicRef = useRef(null);
   const customerAddressRef = useRef(null);
   const tenderedAmountRef = useRef(null);
+  const cartScanRef = useRef(null);
+  const [cartScanInput, setCartScanInput] = useState('');
 
   // Global POS Keyboard Shortcuts
   useEffect(() => {
@@ -507,6 +509,70 @@ const POSScreen = () => {
         // No results, prompt quick add
         setQuickAddForm({ ...quickAddForm, name: q });
         setShowQuickAdd(true);
+      }
+    }
+  };
+
+  // Handle direct cart scanning (Barcode / IMEI)
+  const handleCartScanKeyDown = async (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const q = cartScanInput.trim();
+      if (!q) return;
+
+      // 1. Check exact barcode/SKU/id/IMEI match in loaded products
+      const exactMatch = products.find(
+        (p) =>
+          (p.barcode && p.barcode.toLowerCase() === q.toLowerCase()) ||
+          (p.sku && p.sku.toLowerCase() === q.toLowerCase()) ||
+          p._id === q ||
+          (Array.isArray(p.imei) && p.imei.some(im => im.toLowerCase() === q.toLowerCase()))
+      );
+
+      if (exactMatch) {
+        const matchedImei = Array.isArray(exactMatch.imei)
+          ? exactMatch.imei.find(im => im.toLowerCase() === q.toLowerCase())
+          : null;
+
+        addToCache(exactMatch);
+        pos.addItem(exactMatch, matchedImei);
+        if (!matchedImei) {
+          pos.setCartItemBarcode(exactMatch._id, q);
+        }
+        toast.success(
+          matchedImei
+            ? `📱 Added Phone: ${exactMatch.name} (IMEI: ${matchedImei})`
+            : `🏷️ Added Accessory: ${exactMatch.name} (Barcode: ${q})`,
+          { autoClose: 1500 }
+        );
+        setCartScanInput('');
+        return;
+      }
+
+      // 2. Query barcode & IMEI API if not in currently loaded list
+      try {
+        const { data } = await getProductByBarcode(q);
+        if (data && data._id) {
+          const matchedImei = data.scannedImei || (
+            Array.isArray(data.imei) ? data.imei.find(im => im.toLowerCase() === q.toLowerCase()) : null
+          );
+
+          addToCache(data);
+          pos.addItem(data, matchedImei);
+          if (!matchedImei) {
+            pos.setCartItemBarcode(data._id, q);
+          }
+          toast.success(
+            matchedImei
+              ? `📱 Added Phone: ${data.name} (IMEI: ${matchedImei})`
+              : `🏷️ Added Accessory: ${data.name} (Barcode: ${q})`,
+            { autoClose: 1500 }
+          );
+          setCartScanInput('');
+          return;
+        }
+      } catch (barcodeErr) {
+        toast.error(`No product, accessory, or IMEI found matching "${q}"`);
       }
     }
   };
@@ -2176,6 +2242,35 @@ const POSScreen = () => {
             <span className="pos-cart-count">{pos.cart.length} items</span>
           </div>
 
+          {/* Cart Top Quick Barcode / IMEI Scanner */}
+          <div style={{ padding: '8px 12px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '15px' }}>⚡</span>
+            <input
+              ref={cartScanRef}
+              type="text"
+              value={cartScanInput}
+              onChange={(e) => setCartScanInput(e.target.value)}
+              onKeyDown={handleCartScanKeyDown}
+              placeholder="Scan Barcode or IMEI to Cart (Enter ↵)..."
+              style={{
+                flex: 1,
+                padding: '7px 10px',
+                fontSize: '12px',
+                fontWeight: '600',
+                background: '#ffffff',
+                border: '1.5px solid #cbd5e1',
+                borderRadius: '8px',
+                outline: 'none',
+                color: '#0f172a'
+              }}
+            />
+            {cartScanInput && (
+              <button onClick={() => setCartScanInput('')} style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#64748b' }}>
+                <X size={14} />
+              </button>
+            )}
+          </div>
+
           {/* Cart Items */}
           <div className="pos-cart-items">
             {pos.cart.length === 0 ? (
@@ -2352,6 +2447,75 @@ const POSScreen = () => {
                             />
                           </div>
                         )}
+                      </div>
+                    );
+                  })()}
+
+                  {/* Accessory Barcode Scan & Verification Block */}
+                  {(() => {
+                    const dbProduct = productCache[item.productId] || products.find(p => p._id === item.productId);
+                    const catName = dbProduct?.categoryId?.name || '';
+                    const isMobile = /mobile|phone|tablet|smartphone/i.test(catName) || (dbProduct?.imei && dbProduct.imei.length > 0) || dbProduct?.ram || dbProduct?.storage;
+                    
+                    if (isMobile) return null;
+                    
+                    const registeredBarcode = item.barcode || dbProduct?.barcode || item.sku || dbProduct?.sku;
+                    const isVerified = !!item.verifiedBarcode || (registeredBarcode && item.verifiedBarcode === registeredBarcode);
+
+                    return (
+                      <div style={{ marginTop: '8px', background: isVerified ? '#f0fdf4' : '#f8fafc', border: isVerified ? '1.5px solid #86efac' : '1px solid #e2e8f0', borderRadius: '12px', padding: '8px 10px', fontSize: '11px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                            <span style={{ fontWeight: 'bold', color: isVerified ? '#15803d' : '#475569' }}>
+                              {isVerified ? '✓ Barcode Verified' : '🏷️ Accessory Barcode / SKU'}
+                            </span>
+                            {registeredBarcode && (
+                              <span style={{ fontFamily: 'monospace', fontWeight: 'bold', background: '#ffffff', color: '#1e293b', padding: '1px 6px', borderRadius: '4px', border: '1px solid #cbd5e1' }}>
+                                {registeredBarcode}
+                              </span>
+                            )}
+                          </div>
+                          {isVerified && (
+                            <span style={{ color: '#16a34a', fontWeight: '800', fontSize: '10px' }}>READY</span>
+                          )}
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <input
+                            type="text"
+                            placeholder={registeredBarcode ? `Scan/type ${registeredBarcode} + Enter` : "Scan/type accessory barcode + Enter"}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                const val = e.target.value.trim();
+                                if (!val) return;
+                                pos.setCartItemBarcode(item.productId, val);
+                                toast.success(`✓ Barcode verified for ${item.name}!`);
+                                e.target.value = '';
+                              }
+                            }}
+                            style={{
+                              flex: 1,
+                              padding: '5px 8px',
+                              fontSize: '11px',
+                              background: '#ffffff',
+                              border: '1px solid #cbd5e1',
+                              borderRadius: '6px',
+                              outline: 'none',
+                              color: '#0f172a'
+                            }}
+                          />
+                          {item.verifiedBarcode && (
+                            <button
+                              type="button"
+                              onClick={() => pos.setCartItemBarcode(item.productId, '')}
+                              style={{ padding: '3px 8px', background: '#fee2e2', color: '#991b1b', border: '1px solid #fca5a5', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
+                              title="Reset verification"
+                            >
+                              Reset
+                            </button>
+                          )}
+                        </div>
                       </div>
                     );
                   })()}
