@@ -115,14 +115,15 @@ const Home = () => {
 
             {/* Right Visual Showcase Card */}
             <div className="w-full lg:w-2/5 flex justify-center">
-              <div className="w-full max-w-sm sm:max-w-md bg-white rounded-3xl p-4 sm:p-6 shadow-2xl border border-white/30 flex items-center justify-center">
+              <div className="w-full max-w-sm sm:max-w-md lg:max-w-lg bg-gradient-to-tr from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-3 sm:p-4 shadow-2xl border border-white/20 flex items-center justify-center overflow-hidden hover:scale-[1.02] transition-transform duration-300">
                 <img
-                  src="/hero-products.jpg"
+                  src="/hero-products.png"
                   alt="Mobixa Flagship Smart Devices"
-                  className="w-full h-auto max-h-[320px] object-contain rounded-2xl"
+                  className="w-full h-auto max-h-[360px] object-cover rounded-2xl shadow-lg"
+                  loading="eager"
                   onError={(e) => {
                     e.target.onerror = null;
-                    e.target.src = 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&auto=format&fit=crop&q=80';
+                    e.target.src = '/hero-products.jpg';
                   }}
                 />
               </div>
