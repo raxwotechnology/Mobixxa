@@ -60,6 +60,8 @@ const AdminHP = ({ navItems: propNavItems }) => {
   });
 
   const [passcode, setPasscode] = useState('');
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
 
   const [payForm, setPayForm] = useState({ amount: '', paymentMethod: 'Cash', accountId: '', referenceNo: '', notes: '' });
   const [accounts, setAccounts] = useState([]);
