@@ -94,8 +94,20 @@ const endSession = async (req, res, next) => {
     const storeId = await resolveStoreId(req.user);
     if (!storeId) { res.status(400); return next(new Error('No store found for your account')); }
 
-    const session = await PosSession.findOne({ storeId, cashierId: req.user._id, status: 'open' });
-    if (!session) { res.status(404); return next(new Error('No open POS session found')); }
+    let session = await PosSession.findOne({ storeId, cashierId: req.user._id, status: 'open' });
+    if (!session) {
+      // Find any open session in store or create one to close
+      session = await PosSession.findOne({ storeId, status: 'open' });
+      if (!session) {
+        session = new PosSession({
+          storeId,
+          cashierId: req.user._id,
+          openingCashAmount: 0,
+          startedAt: new Date(new Date().setHours(0, 0, 0, 0)),
+          status: 'open'
+        });
+      }
+    }
 
     const closingDenoms = Array.isArray(req.body.closingDenoms) ? req.body.closingDenoms : [];
     for (const l of closingDenoms) {
@@ -107,7 +119,16 @@ const endSession = async (req, res, next) => {
       ? Number(req.body.closingCashCountedAmount || 0)
       : calcDenomsTotal(closingDenoms);
 
-    const orders = await Order.find({ posSessionId: session._id, isPosOrder: true });
+    const sessionStart = session.startedAt || new Date(new Date().setHours(0, 0, 0, 0));
+    const sessionEnd = new Date();
+
+    const orders = await Order.find({
+      $or: [
+        { posSessionId: session._id, isPosOrder: true },
+        { createdAt: { $gte: sessionStart, $lte: sessionEnd }, isPosOrder: true }
+      ]
+    });
+
     let cashSales = 0;
     let nonCashSales = 0;
     orders.forEach((o) => {
@@ -122,26 +143,81 @@ const endSession = async (req, res, next) => {
       }
     });
 
+    // Query HP Installments in session
+    let hpCashIncome = 0;
+    try {
+      const HPRecord = require('../models/HPRecord');
+      const hpRecords = await HPRecord.find({
+        'paymentHistory.date': { $gte: sessionStart, $lte: sessionEnd }
+      }).lean();
+      hpRecords.forEach(rec => {
+        (rec.paymentHistory || []).forEach(p => {
+          const pDate = new Date(p.date);
+          if (pDate >= sessionStart && pDate <= sessionEnd) {
+            if (!p.paymentMethod || p.paymentMethod.toLowerCase() === 'cash') {
+              hpCashIncome += Number(p.amount || 0);
+            }
+          }
+        });
+      });
+    } catch { /* ignore */ }
+
+    // Query Reloads in session
+    let reloadIncome = 0;
+    try {
+      const Reload = require('../models/Reload');
+      const reloads = await Reload.find({
+        createdAt: { $gte: sessionStart, $lte: sessionEnd },
+        status: { $ne: 'failed' }
+      }).lean();
+      reloadIncome = reloads.reduce((sum, r) => sum + (r.amount || 0), 0);
+    } catch { /* ignore */ }
+
+    // Query Petty Cash / Expenses in session
+    let expenseCost = 0;
+    try {
+      const Expense = require('../models/Expense');
+      const expenses = await Expense.find({
+        date: { $gte: sessionStart, $lte: sessionEnd }
+      }).lean();
+      expenseCost = expenses.reduce((sum, ex) => sum + (ex.amount || 0), 0);
+    } catch { /* ignore */ }
+
     const totalSales = orders.reduce((s, o) => s + (o.totalAmount || 0), 0);
     const totalItemsSold = orders.reduce((s, o) => s + (o.items || []).reduce((x, it) => x + (it.quantity || 0), 0), 0);
 
-    const expectedCash = Number(session.openingCashAmount || 0) + Number(cashSales || 0);
+    const expectedCash = Number(session.openingCashAmount || 0) + Number(cashSales || 0) + Number(hpCashIncome || 0) + Number(reloadIncome || 0) - Number(expenseCost || 0);
     const variance = Number(closingCashCountedAmount || 0) - expectedCash;
 
     session.closingDenoms = closingDenoms;
-    session.closingCashCountedAmount = closingCashCountedAmount;
+    session.closingCashCountedAmount = Number(closingCashCountedAmount.toFixed(2));
     session.expectedCash = Number(expectedCash.toFixed(2));
     session.expectedNonCash = Number(nonCashSales.toFixed(2));
     session.totalSales = Number(totalSales.toFixed(2));
     session.totalItemsSold = totalItemsSold;
     session.variance = Number(variance.toFixed(2));
     session.varianceFlagged = Math.abs(session.variance) > 0.01;
-    session.varianceNote = req.body.varianceNote || session.varianceNote;
+    session.varianceNote = req.body.notes || req.body.varianceNote || session.varianceNote;
     session.status = 'closed';
-    session.endedAt = new Date();
+    session.endedAt = sessionEnd;
 
     await session.save();
-    res.json(session);
+    res.json({
+      ...session.toObject(),
+      breakdown: {
+        openingFloat: Number(session.openingCashAmount || 0),
+        cashSales,
+        hpCashIncome,
+        reloadIncome,
+        expenseCost,
+        expectedCash,
+        actualCount: closingCashCountedAmount,
+        variance,
+        isBalanced: Math.abs(variance) <= 0.01,
+        isArrears: variance < -0.01,
+        isExcess: variance > 0.01
+      }
+    });
   } catch (error) { next(error); }
 };
 

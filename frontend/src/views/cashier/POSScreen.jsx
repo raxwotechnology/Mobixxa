@@ -105,6 +105,10 @@ const POSScreen = () => {
   const [balanceDate, setBalanceDate] = useState(new Date().toISOString().split('T')[0]);
   const [balanceTab, setBalanceTab] = useState('shift'); // 'shift' or 'financials'
   const [drawerCountInput, setDrawerCountInput] = useState('');
+  const [closingNotes, setClosingNotes] = useState('');
+  const [useDirectCount, setUseDirectCount] = useState(false);
+  const [directCountAmount, setDirectCountAmount] = useState('');
+  const [settlingSession, setSettlingSession] = useState(false);
   const [sessionForm, setSessionForm] = useState({
     opening: { 5000: 0, 1000: 0, 500: 0, 100: 0, 50: 0, 20: 0 },
     closing: { 5000: 0, 1000: 0, 500: 0, 100: 0, 50: 0, 20: 0 },
@@ -374,19 +378,58 @@ const POSScreen = () => {
 
   const handleEndSession = async () => {
     try {
+      setSettlingSession(true);
       const closingDenoms = denomsToLines(sessionForm.closing);
-      const closingCashCountedAmount = calcTotal(sessionForm.closing);
-      const { data } = await endPosSession({ closingDenoms, closingCashCountedAmount });
+      const cashSales = Number(posDailySummary?.cashSales || 0);
+      const hpCashIncome = Number(posDailySummary?.hpCashIncome || dailyFinancials?.hpCashIncome || 0);
+      const reloadIncome = Number(posDailySummary?.reloadIncome || dailyFinancials?.reloadIncome || 0);
+      const expenseCost = Number(posDailySummary?.expenseCost || dailyFinancials?.expenseCost || 0);
+      const expectedDrawerCash = (Number(posSession?.openingCashAmount || 0) + cashSales + hpCashIncome + reloadIncome) - expenseCost;
+
+      const closingCashCountedAmount = useDirectCount
+        ? Number(directCountAmount || 0)
+        : calcTotal(sessionForm.closing);
+
+      const { data } = await endPosSession({
+        closingDenoms: useDirectCount ? [] : closingDenoms,
+        closingCashCountedAmount,
+        notes: closingNotes,
+        expectedDrawerCash
+      });
+
       setPosSession(null);
       setShowEndSession(false);
-      toast.success(data.varianceFlagged ? `Session closed (variance Rs. ${data.variance})` : 'Session closed');
+
+      const variance = Number(data.variance || (closingCashCountedAmount - expectedDrawerCash));
+      if (Math.abs(variance) <= 0.01) {
+        toast.success('Shop session settled & closed! ✅ Exact match (No variance)');
+      } else if (variance < 0) {
+        toast.warning(`Shop session closed with Arrears (Shortage): -Rs. ${Math.abs(variance).toLocaleString()}`);
+      } else {
+        toast.info(`Shop session closed with Excess (Overage): +Rs. ${variance.toLocaleString()}`);
+      }
+
+      // Trigger automatic 80mm Settlement Receipt printing
+      handlePrintShiftSlip();
+
+      // Reset form
+      setDirectCountAmount('');
+      setClosingNotes('');
       setShowStartSession(true);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to close session');
+    } finally {
+      setSettlingSession(false);
     }
   };
 
   const openEndSessionModal = async () => {
+    try {
+      const { data } = await getPosOrders({ date: new Date().toISOString().split('T')[0] });
+      setDailyFinancials(data?.financials || null);
+      setPosDailySummary(data?.summary || null);
+      setBalanceOrders(data?.orders || []);
+    } catch { /* ignore */ }
     setShowEndSession(true);
   };
 
@@ -3762,37 +3805,316 @@ const POSScreen = () => {
         </div>
       )}
 
-      {/* End Session Modal */}
+      {/* End of Day Shop Close & Cash Settlement Modal */}
       {showEndSession && (
-        <div className="pos-modal-overlay" onClick={() => setShowEndSession(false)}>
-          <div className="pos-shift-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="pos-shift-header">
-              <Clock size={22} />
-              <h3>Close Day (Closing Cash)</h3>
-              <button onClick={() => setShowEndSession(false)}><X size={20} /></button>
-            </div>
-            <div style={{ padding: '16px' }}>
-              <p style={{ marginTop: 0, color: '#64748b', fontSize: '13px' }}>Count physical cash by denomination. Variance will be flagged automatically.</p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
-                {[5000, 1000, 500, 100, 50, 20].map((d) => (
-                  <div key={d}>
-                    <label style={{ fontSize: '12px', color: '#374151' }}>{d} LKR</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={sessionForm.closing[d]}
-                      onChange={(e) => setSessionForm((s) => ({ ...s, closing: { ...s.closing, [d]: Number(e.target.value || 0) } }))}
-                      className="pos-input"
-                      style={{ fontSize: '12px' }}
-                    />
-                  </div>
-                ))}
+        <div className="pos-modal-overlay" onClick={() => setShowEndSession(false)} style={{ zIndex: 1060 }}>
+          <div
+            className="pos-shift-modal"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: '#0f172a',
+              border: '1.5px solid #334155',
+              borderRadius: '24px',
+              color: '#ffffff',
+              width: 'min(980px, 96vw)',
+              maxHeight: '94vh',
+              overflowY: 'auto',
+              boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.9)'
+            }}
+          >
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 26px', borderBottom: '1px solid #1e293b' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '44px', height: '44px', borderRadius: '14px', background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 4px 14px rgba(239, 68, 68, 0.4)' }}>
+                  <Store size={24} />
+                </div>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '900', color: '#ffffff', letterSpacing: '0.5px' }}>
+                    SHOP CLOSE & CASH SETTLEMENT (EOD)
+                  </h2>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#94a3b8', fontWeight: '500' }}>
+                    Reconcile cash drawer, verify shortages / overages, and close register
+                  </p>
+                </div>
               </div>
-              <div style={{ marginTop: '12px', fontWeight: 700 }}>Total: Rs. {calcTotal(sessionForm.closing).toFixed(2)}</div>
-              <button className="pos-btn-green pos-btn-lg" style={{ marginTop: '14px' }} onClick={handleEndSession}>
-                Close Session
+              <button 
+                onClick={() => setShowEndSession(false)}
+                style={{ background: '#1e293b', border: 'none', color: '#94a3b8', width: '36px', height: '36px', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <X size={20} />
               </button>
             </div>
+
+            {(() => {
+              const openingFloat = Number(posSession?.openingCashAmount || 0);
+              const cashSales = Number(posDailySummary?.cashSales || 0);
+              const hpCashIncome = Number(posDailySummary?.hpCashIncome || dailyFinancials?.hpCashIncome || 0);
+              const reloadIncome = Number(posDailySummary?.reloadIncome || dailyFinancials?.reloadIncome || 0);
+              const expenseCost = Number(posDailySummary?.expenseCost || dailyFinancials?.expenseCost || 0);
+              const cardSales = Number(posDailySummary?.cardSales || 0);
+
+              const expectedDrawer = (openingFloat + cashSales + hpCashIncome + reloadIncome) - expenseCost;
+              const countedCash = useDirectCount
+                ? Number(directCountAmount || 0)
+                : calcTotal(sessionForm.closing);
+              const discrepancy = countedCash - expectedDrawer;
+
+              return (
+                <div style={{ padding: '24px' }}>
+                  {/* 2-Column Main Section */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '20px', marginBottom: '20px' }}>
+                    
+                    {/* LEFT COLUMN: System Expected Cash */}
+                    <div style={{ background: '#1e293b', borderRadius: '18px', padding: '20px', border: '1px solid #334155' }}>
+                      <div style={{ fontSize: '12px', fontWeight: '900', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span>📊</span> SYSTEM CALCULATED CASH MOVEMENTS
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', background: '#0f172a', borderRadius: '10px' }}>
+                          <span style={{ color: '#94a3b8' }}>Opening Cash / Float:</span>
+                          <span style={{ fontWeight: 'bold', color: '#ffffff', fontFamily: 'monospace' }}>Rs. {openingFloat.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', background: '#0f172a', borderRadius: '10px' }}>
+                          <span style={{ color: '#34d399' }}>(+) POS Cash Sales In:</span>
+                          <span style={{ fontWeight: 'bold', color: '#34d399', fontFamily: 'monospace' }}>+ Rs. {cashSales.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', background: '#0f172a', borderRadius: '10px' }}>
+                          <span style={{ color: '#c084fc' }}>(+) HP Installment Cash In:</span>
+                          <span style={{ fontWeight: 'bold', color: '#c084fc', fontFamily: 'monospace' }}>+ Rs. {hpCashIncome.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', background: '#0f172a', borderRadius: '10px' }}>
+                          <span style={{ color: '#2dd4bf' }}>(+) Reload & Card Cash In:</span>
+                          <span style={{ fontWeight: 'bold', color: '#2dd4bf', fontFamily: 'monospace' }}>+ Rs. {reloadIncome.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', background: '#0f172a', borderRadius: '10px', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
+                          <span style={{ color: '#f87171' }}>(-) Petty Cash Out (Expenses):</span>
+                          <span style={{ fontWeight: 'bold', color: '#f87171', fontFamily: 'monospace' }}>- Rs. {expenseCost.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+                        </div>
+                      </div>
+
+                      {/* Total Expected Box */}
+                      <div style={{ marginTop: '16px', padding: '16px', borderRadius: '14px', background: 'linear-gradient(135deg, #064e3b 0%, #047857 100%)', border: '1.5px solid #10b981', textAlign: 'center', boxShadow: '0 8px 20px rgba(16, 185, 129, 0.25)' }}>
+                        <div style={{ fontSize: '11px', fontWeight: '900', color: '#a7f3d0', textTransform: 'uppercase' }}>
+                          EXPECTED PHYSICAL CASH IN DRAWER:
+                        </div>
+                        <div style={{ fontSize: '26px', fontWeight: '900', color: '#ffffff', fontFamily: 'monospace', marginTop: '4px' }}>
+                          Rs. {expectedDrawer.toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                        </div>
+                      </div>
+
+                      <div style={{ marginTop: '12px', fontSize: '11px', color: '#94a3b8', textAlign: 'center' }}>
+                        💳 Card & Digital Sales (Non-Drawer): <strong>Rs. {cardSales.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</strong>
+                      </div>
+                    </div>
+
+                    {/* RIGHT COLUMN: Physical Cash Count */}
+                    <div style={{ background: '#1e293b', borderRadius: '18px', padding: '20px', border: '1px solid #334155' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                        <div style={{ fontSize: '12px', fontWeight: '900', color: '#facc15', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                          🔢 PHYSICAL CASH COUNT
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setUseDirectCount(!useDirectCount)}
+                          style={{
+                            padding: '4px 10px',
+                            borderRadius: '6px',
+                            border: '1px solid #475569',
+                            background: '#0f172a',
+                            color: '#cbd5e1',
+                            fontSize: '11px',
+                            fontWeight: '700',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          {useDirectCount ? '🪙 Switch to Denominations' : '💵 Enter Total Amount Directly'}
+                        </button>
+                      </div>
+
+                      {!useDirectCount ? (
+                        <div>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
+                            {[5000, 1000, 500, 100, 50, 20].map((d) => (
+                              <div key={d} style={{ background: '#0f172a', padding: '8px 10px', borderRadius: '10px', border: '1px solid #334155' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#94a3b8', marginBottom: '4px' }}>
+                                  <span style={{ fontWeight: 'bold', color: '#f8fafc' }}>Rs. {d}</span>
+                                  <span>= Rs. {((sessionForm.closing[d] || 0) * d).toLocaleString()}</span>
+                                </div>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  placeholder="0 notes"
+                                  value={sessionForm.closing[d] || ''}
+                                  onChange={(e) => setSessionForm((s) => ({ ...s, closing: { ...s.closing, [d]: Number(e.target.value || 0) } }))}
+                                  style={{
+                                    width: '100%',
+                                    padding: '6px 8px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #475569',
+                                    background: '#1e293b',
+                                    color: '#ffffff',
+                                    fontSize: '14px',
+                                    fontWeight: 'bold',
+                                    outline: 'none',
+                                    fontFamily: 'monospace'
+                                  }}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <div style={{ padding: '20px 0' }}>
+                          <label style={{ fontSize: '13px', fontWeight: '800', color: '#cbd5e1', display: 'block', marginBottom: '8px' }}>
+                            Enter Actual Counted Cash Amount (Rs.) *
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            placeholder="0.00"
+                            value={directCountAmount}
+                            onChange={(e) => setDirectCountAmount(e.target.value)}
+                            style={{
+                              width: '100%',
+                              padding: '14px',
+                              borderRadius: '12px',
+                              border: '2px solid #ca8a04',
+                              background: '#0f172a',
+                              color: '#ffffff',
+                              fontSize: '22px',
+                              fontWeight: '900',
+                              outline: 'none',
+                              fontFamily: 'monospace'
+                            }}
+                            autoFocus
+                          />
+                        </div>
+                      )}
+
+                      {/* Total Counted Box */}
+                      <div style={{ marginTop: '16px', padding: '16px', borderRadius: '14px', background: '#0f172a', border: '1.5px solid #facc15', textAlign: 'center' }}>
+                        <div style={{ fontSize: '11px', fontWeight: '900', color: '#facc15', textTransform: 'uppercase' }}>
+                          TOTAL COUNTED CASH IN DRAWER:
+                        </div>
+                        <div style={{ fontSize: '26px', fontWeight: '900', color: '#ffffff', fontFamily: 'monospace', marginTop: '4px' }}>
+                          Rs. {countedCash.toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                        </div>
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                  {/* SETTLEMENT STATUS ALERT BANNER */}
+                  <div style={{
+                    padding: '16px 20px',
+                    borderRadius: '16px',
+                    marginBottom: '20px',
+                    background: Math.abs(discrepancy) <= 0.01 ? '#064e3b' : (discrepancy < 0 ? '#7f1d1d' : '#1e3a8a'),
+                    border: `1.5px solid ${Math.abs(discrepancy) <= 0.01 ? '#10b981' : (discrepancy < 0 ? '#ef4444' : '#3b82f6')}`,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: '12px'
+                  }}>
+                    <div>
+                      <div style={{ fontSize: '12px', fontWeight: '900', textTransform: 'uppercase', color: '#e2e8f0', letterSpacing: '0.5px' }}>
+                        RECONCILIATION & SETTLEMENT STATUS
+                      </div>
+                      <div style={{ fontSize: '18px', fontWeight: '900', color: '#ffffff', marginTop: '2px' }}>
+                        {Math.abs(discrepancy) <= 0.01 ? (
+                          <span>✅ BALANCED: Exact match (Rs. 0.00 discrepancy)</span>
+                        ) : discrepancy < 0 ? (
+                          <span>⚠️ ARREARS / SHORTAGE: - Rs. {Math.abs(discrepancy).toLocaleString('en-LK', { minimumFractionDigits: 2 })} (මුදල් අඩුවක්)</span>
+                        ) : (
+                          <span>💡 OVERAGE / EXCESS: + Rs. {discrepancy.toLocaleString('en-LK', { minimumFractionDigits: 2 })} (මුදල් වැඩිවීමක්)</span>
+                        )}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '11px', color: '#cbd5e1' }}>Variance:</div>
+                      <div style={{ fontSize: '18px', fontWeight: '900', fontFamily: 'monospace', color: '#ffffff' }}>
+                        {discrepancy >= 0 ? `+Rs. ${discrepancy.toFixed(2)}` : `-Rs. ${Math.abs(discrepancy).toFixed(2)}`}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Closing Notes */}
+                  <div style={{ marginBottom: '20px' }}>
+                    <label style={{ fontSize: '12px', fontWeight: '700', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>
+                      Handover Notes / Reason for Discrepancy (Optional):
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Handed over to Manager Mr. Perera / Cash deposited in safe"
+                      value={closingNotes}
+                      onChange={(e) => setClosingNotes(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '10px 14px',
+                        borderRadius: '10px',
+                        border: '1px solid #334155',
+                        background: '#1e293b',
+                        color: '#ffffff',
+                        fontSize: '13px',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div style={{ display: 'flex', gap: '14px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setShowEndSession(false)}
+                      style={{
+                        flex: 1,
+                        padding: '14px',
+                        borderRadius: '12px',
+                        border: '1px solid #334155',
+                        background: '#1e293b',
+                        color: '#cbd5e1',
+                        fontWeight: '800',
+                        fontSize: '14px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      disabled={settlingSession}
+                      onClick={handleEndSession}
+                      style={{
+                        flex: 2,
+                        padding: '14px',
+                        borderRadius: '12px',
+                        border: 'none',
+                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                        color: '#ffffff',
+                        fontWeight: '900',
+                        fontSize: '14px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        boxShadow: '0 4px 15px rgba(16, 185, 129, 0.4)'
+                      }}
+                    >
+                      <Printer size={18} />
+                      {settlingSession ? 'Settling & Printing...' : 'Settle & Close Shop Register (Print EOD Slip)'}
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </div>
       )}
