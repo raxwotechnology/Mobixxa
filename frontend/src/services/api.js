@@ -36,16 +36,23 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
-// Response interceptor: auto-logout on 401 (expired/invalid token)
+// Response interceptor: auto-logout on 401 (expired/invalid token), except for login/credential check endpoints
 API.interceptors.response.use(
   (response) => response,
   (error) => {
     if (typeof window !== 'undefined' && error.response && error.response.status === 401) {
-      localStorage.removeItem('userInfo');
-      sessionStorage.clear();
+      const requestUrl = error.config?.url || '';
+      const isAuthCheck = requestUrl.includes('/auth/login') ||
+        requestUrl.includes('/auth/pos-login') ||
+        requestUrl.includes('/auth/verify-password') ||
+        requestUrl.includes('/auth/register');
 
       const path = window.location.pathname;
-      if (path !== '/login' && path !== '/cashier-login' && path !== '/register') {
+
+      // Do NOT force logout or redirect if the 401 is simply an invalid password/PIN attempt
+      if (!isAuthCheck && path !== '/login' && path !== '/cashier-login' && path !== '/register' && path !== '/pos') {
+        localStorage.removeItem('userInfo');
+        sessionStorage.clear();
         window.location.href = '/login';
       }
     }

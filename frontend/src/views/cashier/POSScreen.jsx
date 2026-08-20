@@ -303,21 +303,29 @@ const POSScreen = () => {
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
   }, [pos.cart, checkingOut, pos.paymentMethod, showShortcutsHelp, showDiscount, showReturnModal, showHpQuickPayModal, showBalanceModal, showEndSession, showCreditPanel, showReloadModal, showTradeInModal, showCustomerHistory]);
 
-  // Fetch Cashiers for Lockscreen on Mount
-  useEffect(() => {
-    const fetchCashiers = async () => {
-      try {
-        setLoadingCashiers(true);
-        const { data } = await getCashiers();
-        setCashiersList(data || []);
-      } catch (err) {
-        console.error('Failed to load cashiers list');
-      } finally {
-        setLoadingCashiers(false);
-      }
-    };
-    fetchCashiers();
+  // Fetch Cashiers for Lockscreen
+  const fetchCashiersList = useCallback(async () => {
+    try {
+      setLoadingCashiers(true);
+      const { data } = await getCashiers();
+      setCashiersList(data || []);
+    } catch (err) {
+      console.error('Failed to load cashiers list:', err);
+    } finally {
+      setLoadingCashiers(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchCashiersList();
+  }, [fetchCashiersList]);
+
+  // When lockscreen is shown, refresh staff list
+  useEffect(() => {
+    if (!isUnlocked) {
+      fetchCashiersList();
+    }
+  }, [isUnlocked, fetchCashiersList]);
 
   // Load initial products + settings for tax rate when user is authenticated
   useEffect(() => {
@@ -1459,6 +1467,7 @@ const POSScreen = () => {
     setUnlockCode('');
     setUnlockError('');
     setSelectedCashier(null);
+    fetchCashiersList();
   };
 
   // Logout
@@ -1660,8 +1669,36 @@ const POSScreen = () => {
             </p>
 
             {loadingCashiers ? (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
-                <div style={{ width: '32px', height: '32px', border: '3px solid rgba(59, 130, 246, 0.2)', borderTopColor: '#3b82f6', borderRadius: '50%', className: 'animate-spin' }} />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, minHeight: '180px' }}>
+                <div style={{ width: '36px', height: '36px', border: '3px solid rgba(59, 130, 246, 0.2)', borderTopColor: '#3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+              </div>
+            ) : cashiersList.length === 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, padding: '30px 16px', textAlign: 'center' }}>
+                <div style={{ fontSize: '36px', marginBottom: '10px' }}>👥</div>
+                <div style={{ fontSize: '14px', fontWeight: '700', color: '#f8fafc', marginBottom: '6px' }}>No Staff Profiles Loaded</div>
+                <p style={{ fontSize: '12px', color: '#94a3b8', margin: '0 0 16px 0', maxWidth: '240px' }}>
+                  Click below to load active store staff profiles or enter passcode directly on the right.
+                </p>
+                <button
+                  type="button"
+                  onClick={fetchCashiersList}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: '12px',
+                    background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                    color: '#ffffff',
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)'
+                  }}
+                >
+                  <span>🔄</span> Load Staff List
+                </button>
               </div>
             ) : (
               <div style={{
