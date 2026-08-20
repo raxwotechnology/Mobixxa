@@ -4,7 +4,7 @@ import AdminAccounts from '../../../views/admin/AdminAccounts';
 
 export default function AdminAccountsRoute() {
   return (
-    <ProtectedRoute roles={['admin', 'manager']} permission="finance">
+    <ProtectedRoute roles={['admin', 'manager', 'cashier']} permission="finance">
       <AdminAccounts />
     </ProtectedRoute>
   );

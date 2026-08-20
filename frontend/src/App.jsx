@@ -235,7 +235,7 @@ function App() {
           <Route path="/admin/vouchers" element={<ProtectedRoute roles={['admin']} permission="sales"><AdminVouchers /></ProtectedRoute>} />
           <Route path="/admin/reports" element={<ProtectedRoute roles={['admin']} permission="reports"><AdminReports /></ProtectedRoute>} />
           <Route path="/admin/settings" element={<ProtectedRoute roles={['admin']} permission="settings"><AdminSettings /></ProtectedRoute>} />
-          <Route path="/admin/expenses" element={<ProtectedRoute roles={['admin', 'manager']} permission="finance"><AdminExpenses /></ProtectedRoute>} />
+          <Route path="/admin/expenses" element={<ProtectedRoute roles={['admin', 'manager', 'cashier']} permission="finance"><AdminExpenses /></ProtectedRoute>} />
           <Route path="/admin/financials" element={<ProtectedRoute roles={['admin', 'manager']} permission="finance"><AdminFinancials /></ProtectedRoute>} />
           <Route path="/admin/profit-reports" element={<ProtectedRoute roles={['admin', 'manager']} permission="finance"><AdminProfitReports /></ProtectedRoute>} />
           <Route path="/admin/promotions" element={<ProtectedRoute roles={['admin']} permission="sales"><AdminPromotions /></ProtectedRoute>} />
@@ -250,12 +250,12 @@ function App() {
 
           <Route path="/admin/predictions" element={<ProtectedRoute roles={['admin']} permission="reports"><AdminPredictions /></ProtectedRoute>} />
           <Route path="/admin/payroll" element={<ProtectedRoute roles={['admin', 'manager']} permission="finance"><AdminPayroll /></ProtectedRoute>} />
-          <Route path="/admin/accounts" element={<ProtectedRoute roles={['admin', 'manager']} permission="finance"><AdminAccounts /></ProtectedRoute>} />
-          <Route path="/admin/cheques" element={<ProtectedRoute roles={['admin', 'manager']} permission="finance"><AdminCheques /></ProtectedRoute>} />
-          <Route path="/admin/hp" element={<ProtectedRoute roles={['admin', 'manager']} permission="finance"><AdminHP /></ProtectedRoute>} />
+          <Route path="/admin/accounts" element={<ProtectedRoute roles={['admin', 'manager', 'cashier']} permission="finance"><AdminAccounts /></ProtectedRoute>} />
+          <Route path="/admin/cheques" element={<ProtectedRoute roles={['admin', 'manager', 'cashier']} permission="finance"><AdminCheques /></ProtectedRoute>} />
+          <Route path="/admin/hp" element={<ProtectedRoute roles={['admin', 'manager', 'cashier']} permission="finance"><AdminHP /></ProtectedRoute>} />
           <Route path="/admin/customer-history" element={<ProtectedRoute roles={['admin']} permission="reports"><AdminCustomerHistory /></ProtectedRoute>} />
           <Route path="/admin/overtime" element={<ProtectedRoute roles={['admin', 'manager']} permission="finance"><AdminOvertime /></ProtectedRoute>} />
-          <Route path="/admin/reloads" element={<ProtectedRoute roles={['admin', 'manager']} permission="sales"><AdminReloads /></ProtectedRoute>} />
+          <Route path="/admin/reloads" element={<ProtectedRoute roles={['admin', 'manager', 'cashier']} permission="sales"><AdminReloads /></ProtectedRoute>} />
           <Route path="/admin/repairs" element={<ProtectedRoute roles={['admin', 'manager']} permission="sales"><AdminRepairs /></ProtectedRoute>} />
 
 

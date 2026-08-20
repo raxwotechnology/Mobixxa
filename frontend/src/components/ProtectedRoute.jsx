@@ -22,7 +22,7 @@ const ProtectedRoute = ({ children, roles, permission }) => {
     }
 
     if (permission) {
-      const isSuperAdmin = user.email === 'admin@mobilehub.com' || user.isSuperAdmin || user.role === 'admin' || user.role === 'manager';
+      const isSuperAdmin = user.email === 'admin@mobilehub.com' || user.isSuperAdmin || user.role === 'admin' || user.role === 'manager' || user.role === 'cashier';
       if (!isSuperAdmin) {
         if (!user.permissions || user.permissions[permission] !== true) {
           router.replace(user.role === 'admin' ? '/admin' : (user.role === 'manager' ? '/manager' : '/'));
@@ -48,7 +48,7 @@ const ProtectedRoute = ({ children, roles, permission }) => {
   }
 
   if (permission) {
-    const isSuperAdmin = user.email === 'admin@mobilehub.com' || user.isSuperAdmin || user.role === 'admin' || user.role === 'manager';
+    const isSuperAdmin = user.email === 'admin@mobilehub.com' || user.isSuperAdmin || user.role === 'admin' || user.role === 'manager' || user.role === 'cashier';
     if (!isSuperAdmin) {
       if (!user.permissions || user.permissions[permission] !== true) {
         return null;

@@ -11,7 +11,7 @@ const {
 const { protect, authorize } = require('../middleware/authMiddleware');
 
 router.use(protect);
-router.use(authorize('admin', 'manager'));
+router.use(authorize('admin', 'manager', 'cashier'));
 
 router.get('/summary', getExpenseSummary);
 router.route('/').get(getExpenses).post(createExpense);
