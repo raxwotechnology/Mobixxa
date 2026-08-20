@@ -24,16 +24,20 @@ const usePosStore = create((set, get) => ({
 
 
 
-  addItem: (product) => {
+  addItem: (product, initialImei = null) => {
     const { cart } = get();
     const existing = cart.find((item) => item.productId === product._id);
 
     if (existing) {
       if (existing.quantity >= product.stock) return;
+      const updatedImeis = initialImei && !existing.imei?.includes(initialImei)
+        ? [...(existing.imei || []), initialImei]
+        : (existing.imei || []);
+
       set({
         cart: cart.map((item) =>
           item.productId === product._id
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: item.quantity + 1, imei: updatedImeis }
             : item
         ),
       });
@@ -52,7 +56,7 @@ const usePosStore = create((set, get) => ({
             barcode: product.barcode || '',
             warranty: product.warranty || '',
             quantity: 1,
-            imei: [],
+            imei: initialImei ? [initialImei] : [],
           },
         ],
       });

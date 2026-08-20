@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from '../utils/navigation';
-import { Menu, X, ChevronRight, User, Settings, LayoutDashboard, ChevronDown, LogOut } from 'lucide-react';
+import { Menu, X, ChevronRight, User, Settings, LayoutDashboard, ChevronDown, LogOut, Monitor } from 'lucide-react';
 import useAuthStore from '../store/authStore';
 import useSettingsStore from '../store/settingsStore';
 import { adminNavGroups, getAdminNavGroups } from '../views/admin/adminNavItems';
@@ -309,6 +309,15 @@ const DashboardLayout = ({ children, navItems, title }) => {
               {user?.role === 'admin' ? 'Executive' : user?.role === 'manager' ? 'Operations' : 'Staff'} • {title}
             </span>
           )}
+
+          <Link
+            to="/pos"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200/80 border border-slate-200/80 transition-all shadow-xs"
+            title="Open Cashier POS Terminal"
+          >
+            <Monitor size={15} className="text-brand-indigo" />
+            <span className="hidden sm:inline">POS Terminal</span>
+          </Link>
 
           <div className="flex items-center p-1.5 sm:p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors">
             <NotificationBell />

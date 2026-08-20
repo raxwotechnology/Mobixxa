@@ -168,10 +168,12 @@ const getPosProducts = async (req, res, next) => {
 
     let products;
     if (search) {
+      const trimmedSearch = search.trim();
       filter.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { barcode: search },
-        { sku: { $regex: search, $options: 'i' } },
+        { name: { $regex: trimmedSearch, $options: 'i' } },
+        { barcode: trimmedSearch },
+        { sku: { $regex: trimmedSearch, $options: 'i' } },
+        { imei: trimmedSearch },
       ];
       products = await Product.find(filter)
         .select('name price mrp minPrice stock images unit barcode sku variants discount allowKokoPos imei categoryId')
@@ -192,7 +194,7 @@ const getPosProducts = async (req, res, next) => {
   }
 };
 
-// @desc    Look up a product by barcode
+// @desc    Look up a product by barcode or IMEI
 // @route   GET /api/pos/products/barcode/:code
 // @access  Private/Cashier/Manager/Admin
 const getProductByBarcode = async (req, res, next) => {
@@ -203,8 +205,13 @@ const getProductByBarcode = async (req, res, next) => {
       return next(new Error('No store found for your account'));
     }
 
+    const code = req.params.code.trim();
     const product = await Product.findOne({
-      barcode: req.params.code,
+      $or: [
+        { barcode: code },
+        { sku: code },
+        { imei: code },
+      ],
       storeId,
       status: 'active',
     })
@@ -214,10 +221,14 @@ const getProductByBarcode = async (req, res, next) => {
 
     if (!product) {
       res.status(404);
-      return next(new Error('Product not found with this barcode'));
+      return next(new Error('Product not found with this barcode or IMEI'));
     }
 
-    res.json(product);
+    const isImeiMatch = Array.isArray(product.imei) && product.imei.includes(code);
+    res.json({
+      ...product,
+      scannedImei: isImeiMatch ? code : undefined,
+    });
   } catch (error) {
     next(error);
   }

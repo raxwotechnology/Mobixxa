@@ -31,6 +31,10 @@ import {
   Unlock,
   FileText,
   RefreshCw,
+  LayoutDashboard,
+  Users,
+  ShieldCheck,
+  Store,
 } from 'lucide-react';
 
 import { getPosProducts, getProductByBarcode, posCheckout, getPosOrders, applyVoucher, getSettings, getActivePosSession, startPosSession, endPosSession, getPosPayHereHash, redeemPoints, getMyLoyaltyPoints, getCreditOrders, settleCreditOrder, getCategories, createQuotation, createProduct, getAccounts, loginUser, getCashiers, posLogin, getPosOrderByInvoice, createCustomerReturn, getHPRecords, recordHPPayment } from '../../services/api';
@@ -442,36 +446,55 @@ const POSScreen = () => {
       const q = searchQuery.trim();
       if (!q) return;
 
-      // 1. Check exact barcode/SKU/id match in current product list
+      // 1. Check exact barcode/SKU/id/IMEI match in current loaded product list
       const exactMatch = products.find(
         (p) =>
           (p.barcode && p.barcode.toLowerCase() === q.toLowerCase()) ||
           (p.sku && p.sku.toLowerCase() === q.toLowerCase()) ||
-          p._id === q
+          p._id === q ||
+          (Array.isArray(p.imei) && p.imei.some(im => im.toLowerCase() === q.toLowerCase()))
       );
 
       if (exactMatch) {
+        const matchedImei = Array.isArray(exactMatch.imei)
+          ? exactMatch.imei.find(im => im.toLowerCase() === q.toLowerCase())
+          : null;
+
         addToCache(exactMatch);
-        pos.addItem(exactMatch);
-        toast.success(`Scanned: ${exactMatch.name}`, { autoClose: 1000 });
+        pos.addItem(exactMatch, matchedImei);
+        toast.success(
+          matchedImei
+            ? `📱 Scanned Phone: ${exactMatch.name} (IMEI: ${matchedImei})`
+            : `🏷️ Scanned: ${exactMatch.name}`,
+          { autoClose: 1500 }
+        );
         setSearchQuery('');
         loadProducts();
         return;
       }
 
-      // 2. Query barcode API if not in current loaded list
+      // 2. Query barcode & IMEI API if not in current loaded list
       try {
         const { data } = await getProductByBarcode(q);
         if (data && data._id) {
+          const matchedImei = data.scannedImei || (
+            Array.isArray(data.imei) ? data.imei.find(im => im.toLowerCase() === q.toLowerCase()) : null
+          );
+
           addToCache(data);
-          pos.addItem(data);
-          toast.success(`Scanned: ${data.name}`, { autoClose: 1000 });
+          pos.addItem(data, matchedImei);
+          toast.success(
+            matchedImei
+              ? `📱 Scanned Phone: ${data.name} (IMEI: ${matchedImei})`
+              : `🏷️ Scanned: ${data.name}`,
+            { autoClose: 1500 }
+          );
           setSearchQuery('');
           loadProducts();
           return;
         }
       } catch (barcodeErr) {
-        // Fallthrough if not matched by barcode
+        // Fallthrough if not matched by barcode/IMEI
       }
 
       // 3. Fallback to first filtered product
@@ -1876,6 +1899,18 @@ const POSScreen = () => {
           <span className="pos-topbar-store">{user?.assignedStoreName || 'Store'}</span>
         </div>
         <div className="pos-topbar-right">
+          {user?.role === 'admin' && (
+            <button className="pos-topbar-btn" onClick={() => navigate('/admin')} title="Switch to Admin Dashboard" style={{ background: '#fdf2f8', color: '#be185d', borderColor: '#fbcfe8', fontWeight: 'bold' }}>
+              <ShieldCheck size={18} />
+              <span className="pos-topbar-btn-text">Admin Panel</span>
+            </button>
+          )}
+          {user?.role === 'manager' && (
+            <button className="pos-topbar-btn" onClick={() => navigate('/manager')} title="Switch to Manager Dashboard" style={{ background: '#f0fdf4', color: '#15803d', borderColor: '#bbf7d0', fontWeight: 'bold' }}>
+              <Store size={18} />
+              <span className="pos-topbar-btn-text">Manager Panel</span>
+            </button>
+          )}
           <button className="pos-topbar-btn" onClick={handleBack} title="Back to Dashboard">
             <ArrowLeft size={18} />
             <span className="pos-topbar-btn-text">Back</span>
@@ -1926,8 +1961,8 @@ const POSScreen = () => {
             <span style={{ fontSize: '15px' }}>⌨️</span>
             <span className="pos-topbar-btn-text">Shortcuts (F1)</span>
           </button>
-          <button className="pos-topbar-btn" onClick={handleSwitchCashier} title="Switch Cashier" style={{ background: '#f5f3ff', color: '#5b21b6', borderColor: '#ddd6fe' }}>
-            <Lock size={18} />
+          <button className="pos-topbar-btn" onClick={handleSwitchCashier} title="Switch Cashier Profile" style={{ background: '#f5f3ff', color: '#5b21b6', borderColor: '#ddd6fe', fontWeight: 'bold' }}>
+            <Users size={18} />
             <span className="pos-topbar-btn-text">Switch Cashier</span>
           </button>
           <button className="pos-topbar-logout" onClick={handleLogout} title="Logout">
