@@ -2,6 +2,7 @@ import {
   LayoutDashboard, Package, ShoppingBag, Users, UsersRound, Clock,
   Calendar, Target, BarChart3, RotateCcw, Barcode,
   Wallet, Monitor, Globe, TrendingUp, Wrench, ShieldCheck, Smartphone,
+  Building2, Receipt, DollarSign, PieChart, Coins, SmartphoneCharging
 } from 'lucide-react';
 
 const managerNavGroups = [
@@ -29,7 +30,25 @@ const managerNavGroups = [
       { path: '/manager/warranty', label: 'IMEI Warranty', icon: ShieldCheck },
       { path: '/manager/returns',  label: 'Returns',   icon: RotateCcw },
       { path: '/manager/repairs',  label: 'Device Repairs', icon: Wrench },
-      { path: '/manager/hp',       label: 'Hire Purchase & Credit', icon: Wallet },
+      { path: '/admin/hp',         label: 'Hire Purchase & Credit', icon: Wallet },
+    ],
+  },
+  {
+    label: 'Financial Management',
+    items: [
+      { path: '/admin/accounts',       label: 'Manage Accounts',    icon: Building2 },
+      { path: '/admin/cheques',        label: 'Cheque Management',  icon: Receipt },
+      { path: '/admin/expenses',       label: 'Expenses & Income',  icon: DollarSign },
+      { path: '/admin/financials',     label: 'Financials & P&L',   icon: TrendingUp },
+      { path: '/admin/profit-reports', label: 'Profit Reports',     icon: PieChart },
+      { path: '/admin/reloads',        label: 'Reload & Card Stock',icon: SmartphoneCharging },
+    ],
+  },
+  {
+    label: 'Payroll & Compensation',
+    items: [
+      { path: '/admin/payroll',  label: 'Payroll',       icon: Coins },
+      { path: '/admin/overtime', label: 'Overtime Pay',  icon: Clock },
     ],
   },
   {
