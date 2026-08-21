@@ -79,7 +79,7 @@ export const getImageUrl = (path) => {
   }
 
   // 4. Local path — prepend backend base URL
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const apiUrl = (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_API_URL) || (typeof window !== 'undefined' ? window.location.origin : '') || '';
   const backendBase = apiUrl.replace(/\/api\/?$/, '').replace(/\/$/, '');
   const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
   return `${backendBase}${cleanPath}`;

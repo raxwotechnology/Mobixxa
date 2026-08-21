@@ -17,8 +17,8 @@ export const toAbsoluteUrl = (path) => {
     if (!path.startsWith('http')) return `https://${path}`;
     return path;
   }
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-  const backendBase = apiUrl.replace(/\/api\/?$/, '');
+  const apiUrl = (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_API_URL) || (typeof window !== 'undefined' ? window.location.origin : '') || '';
+  const backendBase = apiUrl.replace(/\/api\/?$/, '').replace(/\/$/, '');
   // Ensure path starts with /
   const p = path.startsWith('/') ? path : `/${path}`;
   return `${backendBase}${p}`;
