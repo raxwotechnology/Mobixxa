@@ -83,7 +83,7 @@ import useAuthStore from '../../store/authStore';
 const getFilteredManagerNavGroups = (user) => {
   const currentUser = user || (typeof window !== 'undefined' ? useAuthStore.getState()?.user : null);
   if (!currentUser) return managerNavGroups;
-  if (currentUser.role === 'admin' || currentUser.isSuperAdmin) return managerNavGroups;
+  if (currentUser.role === 'admin' || currentUser.isSuperAdmin || currentUser.role === 'manager') return managerNavGroups;
 
   const p = currentUser.permissions || {};
 
