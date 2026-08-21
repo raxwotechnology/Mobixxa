@@ -602,8 +602,6 @@ const getActiveBreak = async (req, res, next) => {
 
 // =================== TARGETS ===================
 
-const EmployeeTarget = require('../models/EmployeeTarget');
-
 // @desc    Create target for employee
 // @route   POST /api/hr/targets
 const createTarget = async (req, res, next) => {
