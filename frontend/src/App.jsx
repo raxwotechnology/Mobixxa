@@ -218,7 +218,7 @@ function App() {
 
           {/* Admin */}
           <Route path="/admin" element={<ProtectedRoute roles={['admin']}><AdminOverview /></ProtectedRoute>} />
-          <Route path="/admin/users" element={<Navigate to="/admin/employees" replace />} />
+          <Route path="/admin/users" element={<ProtectedRoute roles={['admin']}><AdminUsers /></ProtectedRoute>} />
           <Route path="/admin/employees" element={<ProtectedRoute roles={['admin']} permission="employees"><AdminEmployees /></ProtectedRoute>} />
           <Route path="/admin/attendance" element={<ProtectedRoute roles={['admin']} permission="employees"><AdminAttendance /></ProtectedRoute>} />
           <Route path="/admin/leaves" element={<ProtectedRoute roles={['admin']} permission="employees"><AdminLeaves /></ProtectedRoute>} />

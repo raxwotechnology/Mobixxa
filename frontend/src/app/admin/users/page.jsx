@@ -1,11 +1,11 @@
 'use client';
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import ProtectedRoute from '../../../components/ProtectedRoute';
+import AdminUsers from '../../../views/admin/AdminUsers';
 
 export default function AdminUsersRoute() {
-  const router = useRouter();
-  useEffect(() => {
-    router.replace('/admin/employees');
-  }, [router]);
-  return null;
+  return (
+    <ProtectedRoute roles={['admin']}>
+      <AdminUsers />
+    </ProtectedRoute>
+  );
 }
