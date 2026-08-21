@@ -359,8 +359,14 @@ const POSScreen = () => {
   const loadSession = async () => {
     try {
       const { data } = await getActivePosSession();
-      setPosSession(data || null);
-      if (!data) setShowStartSession(true);
+      if (data) {
+        setPosSession(data);
+        setShowStartSession(false);
+      } else {
+        const { data: newSession } = await startPosSession({ openingDenoms: [], openingCashAmount: 0 });
+        setPosSession(newSession);
+        setShowStartSession(false);
+      }
     } catch {
       // ignore
     }
@@ -3812,39 +3818,7 @@ const POSScreen = () => {
         </div>
       )}
 
-      {/* Start Session Modal */}
-      {showStartSession && (
-        <div className="pos-modal-overlay" onClick={() => { }}>
-          <div className="pos-shift-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="pos-shift-header">
-              <Clock size={22} />
-              <h3>Start Day (Opening Cash)</h3>
-            </div>
-            <div style={{ padding: '16px' }}>
-              <p style={{ marginTop: 0, color: '#64748b', fontSize: '13px' }}>Enter opening cash denominations. Total is calculated automatically.</p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
-                {[5000, 1000, 500, 100, 50, 20].map((d) => (
-                  <div key={d}>
-                    <label style={{ fontSize: '12px', color: '#374151' }}>{d} LKR</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={sessionForm.opening[d]}
-                      onChange={(e) => setSessionForm((s) => ({ ...s, opening: { ...s.opening, [d]: Number(e.target.value || 0) } }))}
-                      className="pos-input"
-                      style={{ fontSize: '12px' }}
-                    />
-                  </div>
-                ))}
-              </div>
-              <div style={{ marginTop: '12px', fontWeight: 700 }}>Total: Rs. {calcTotal(sessionForm.opening).toFixed(2)}</div>
-              <button className="pos-btn-green pos-btn-lg" style={{ marginTop: '14px' }} onClick={handleStartSession}>
-                Start Session
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* End of Day Shop Close & Cash Settlement Modal */}
       {showEndSession && (
