@@ -4,7 +4,7 @@ import EmployeeRepairs from '../../../views/employee/EmployeeRepairs';
 
 export default function EmployeeRepairsRoute() {
   return (
-    <ProtectedRoute roles={['cashier', 'stockEmployee']}>
+    <ProtectedRoute roles={['admin', 'manager', 'cashier', 'stockEmployee']}>
       <EmployeeRepairs />
     </ProtectedRoute>
   );

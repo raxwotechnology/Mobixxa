@@ -4,7 +4,7 @@ import CashierStock from '../../../views/employee/CashierStock';
 
 export default function EmployeeStockRoute() {
   return (
-    <ProtectedRoute roles={['cashier', 'stockEmployee']}>
+    <ProtectedRoute roles={['admin', 'manager', 'cashier', 'stockEmployee']}>
       <CashierStock />
     </ProtectedRoute>
   );

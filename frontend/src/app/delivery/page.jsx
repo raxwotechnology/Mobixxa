@@ -4,7 +4,7 @@ import DeliveryDashboard from '../../views/delivery/DeliveryDashboard';
 
 export default function DeliveryRoute() {
   return (
-    <ProtectedRoute roles={['deliveryGuy']}>
+    <ProtectedRoute roles={['admin', 'manager', 'deliveryGuy']}>
       <DeliveryDashboard />
     </ProtectedRoute>
   );
