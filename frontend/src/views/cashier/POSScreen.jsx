@@ -5064,9 +5064,9 @@ const POSScreen = () => {
                         outline: 'none'
                       }}
                     >
-                      <option value="cash">💵 Cash</option>
-                      <option value="card">💳 Card</option>
-                      <option value="bank_transfer">🏛️ Bank Transfer</option>
+                      <option value="Cash">💵 Cash</option>
+                      <option value="Card">💳 Card</option>
+                      <option value="Bank Transfer">🏛️ Bank Transfer</option>
                     </select>
                   </div>
                 </div>

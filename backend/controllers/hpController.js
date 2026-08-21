@@ -123,9 +123,13 @@ const recordHPPayment = async (req, res, next) => {
       if (defaultAcc) targetAccountId = defaultAcc._id;
     }
 
+    const normalizedMethod = (paymentMethod || 'Cash').toLowerCase() === 'card'
+      ? 'Card'
+      : ((paymentMethod || '').toLowerCase().includes('bank') ? 'Bank Transfer' : 'Cash');
+
     const payment = {
       amount: Number(amount),
-      paymentMethod: paymentMethod || 'Cash',
+      paymentMethod: normalizedMethod,
       accountId: targetAccountId || undefined,
       referenceNo,
       receivedBy: req.user._id,

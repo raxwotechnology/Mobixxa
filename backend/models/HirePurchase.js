@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const installmentPaymentSchema = mongoose.Schema({
   amount: { type: Number, required: true },
   date: { type: Date, default: Date.now },
-  paymentMethod: { type: String, enum: ['Cash', 'Bank Transfer', 'Card'], default: 'Cash' },
+  paymentMethod: { type: String, default: 'Cash' },
   accountId: { type: mongoose.Schema.Types.ObjectId, ref: 'Account' },
   referenceNo: { type: String },
   receivedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
