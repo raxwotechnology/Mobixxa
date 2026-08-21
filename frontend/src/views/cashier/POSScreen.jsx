@@ -39,6 +39,7 @@ import {
   CheckCircle2,
   Zap,
   ExternalLink,
+  ChevronDown,
 } from 'lucide-react';
 
 import { getPosProducts, getProductByBarcode, posCheckout, getPosOrders, applyVoucher, getSettings, getActivePosSession, startPosSession, endPosSession, getPosPayHereHash, redeemPoints, getMyLoyaltyPoints, getCreditOrders, getCustomerCreditSummary, settleCreditOrder, getCategories, createQuotation, createProduct, getAccounts, loginUser, getCashiers, posLogin, getPosOrderByInvoice, createCustomerReturn, getHPRecords, recordHPPayment, createExpense } from '../../services/api';
@@ -169,6 +170,18 @@ const POSScreen = () => {
   });
   const [submittingCreditSettle, setSubmittingCreditSettle] = useState(false);
   const [customerCreditSummary, setCustomerCreditSummary] = useState(null);
+  const [showToolsDropdown, setShowToolsDropdown] = useState(false);
+  const toolsDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (toolsDropdownRef.current && !toolsDropdownRef.current.contains(event.target)) {
+        setShowToolsDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Check customer credit balance when phone number is entered in POS
   useEffect(() => {
@@ -2544,7 +2557,7 @@ const POSScreen = () => {
           <span className="pos-topbar-store">{user?.assignedStoreName || 'Store'}</span>
         </div>
         <div className="pos-topbar-right">
-          {/* Client Web / Back / Navigation */}
+          {/* Navigation / Switch to Client Web */}
           <button className="pos-topbar-btn" onClick={() => navigate('/shop')} title="Switch to Customer Web Store" style={{ background: '#ecfdf5', color: '#047857', borderColor: '#a7f3d0', fontWeight: 'bold' }}>
             <ExternalLink size={15} />
             <span className="pos-topbar-btn-text">Client Web</span>
@@ -2566,7 +2579,7 @@ const POSScreen = () => {
             <span className="pos-topbar-btn-text">Leave</span>
           </button>
 
-          {/* Shift & Operations */}
+          {/* Shift & Daily Accounting */}
           <button className="pos-topbar-btn" onClick={openEndSessionModal} title="Close POS Session">
             <Clock size={15} />
             <span className="pos-topbar-btn-text">Close</span>
@@ -2580,7 +2593,7 @@ const POSScreen = () => {
             <span className="pos-topbar-btn-text">Shift</span>
           </button>
 
-          {/* Quick Counter Tools */}
+          {/* Direct Sales Features */}
           <button className="pos-topbar-btn" onClick={() => { setShowCreditSettleModal(true); handleSearchCreditOrders(''); }} title="Settle Customer Credit" style={{ background: '#fef3c7', color: '#92400e', borderColor: '#fde68a', fontWeight: 'bold' }}>
             <Clock size={15} />
             <span className="pos-topbar-btn-text">Credit</span>
@@ -2589,26 +2602,73 @@ const POSScreen = () => {
             <RefreshCw size={15} />
             <span className="pos-topbar-btn-text">Return</span>
           </button>
-          <button className="pos-topbar-btn" onClick={() => { setShowHpQuickPayModal(true); handleSearchHpRecords(''); }} title="Record HP Installment Payment" style={{ background: '#fff7ed', color: '#c2410c', borderColor: '#ffedd5', fontWeight: 'bold' }}>
-            <CreditCard size={15} />
-            <span className="pos-topbar-btn-text">HP Pay</span>
-          </button>
-          <button className="pos-topbar-btn" onClick={() => setShowTradeInModal(true)} title="Used Phone Trade-In Estimator" style={{ background: '#e0f2fe', color: '#0369a1', borderColor: '#bae6fd', fontWeight: 'bold' }}>
-            <Smartphone size={15} />
-            <span className="pos-topbar-btn-text">Trade-In</span>
-          </button>
-          <button className="pos-topbar-btn" onClick={() => setShowReloadModal(true)} title="Reload & Bill Payments" style={{ background: '#f0fdf4', color: '#166534', borderColor: '#bbf7d0' }}>
+          <button className="pos-topbar-btn" onClick={() => setShowReloadModal(true)} title="Reload & Bill Payments" style={{ background: '#f0fdf4', color: '#166534', borderColor: '#bbf7d0', fontWeight: 'bold' }}>
             <Smartphone size={15} />
             <span className="pos-topbar-btn-text">Reload</span>
           </button>
-          <button className="pos-topbar-btn" onClick={() => setShowPettyCashModal(true)} title="Record Petty Cash / Counter Expense" style={{ background: '#fffbeb', color: '#92400e', borderColor: '#fde68a' }}>
-            <DollarSign size={15} />
-            <span className="pos-topbar-btn-text">Petty</span>
-          </button>
-          <button className="pos-topbar-btn" onClick={() => setShowShortcutsHelp(true)} title="Keyboard Shortcuts (F1)" style={{ background: '#f8fafc', color: '#334155', borderColor: '#cbd5e1' }}>
-            <span style={{ fontSize: '13px' }}>⌨️</span>
-            <span className="pos-topbar-btn-text">F1</span>
-          </button>
+
+          {/* More Tools Dropdown */}
+          <div ref={toolsDropdownRef} style={{ position: 'relative' }}>
+            <button
+              className="pos-topbar-btn"
+              onClick={() => setShowToolsDropdown(!showToolsDropdown)}
+              title="More Counter Tools (HP, Trade-In, Petty Cash, Shortcuts)"
+              style={{ background: showToolsDropdown ? '#e0e7ff' : '#f8fafc', color: '#3730a3', borderColor: '#c7d2fe', fontWeight: 'bold' }}
+            >
+              <Zap size={15} className="text-amber-500" />
+              <span className="pos-topbar-btn-text">Tools</span>
+              <ChevronDown size={13} />
+            </button>
+
+            {showToolsDropdown && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 6px)',
+                  right: 0,
+                  background: '#ffffff',
+                  border: '1.5px solid #cbd5e1',
+                  borderRadius: '12px',
+                  boxShadow: '0 12px 28px -4px rgba(0,0,0,0.18)',
+                  padding: '6px',
+                  zIndex: 99999,
+                  minWidth: '220px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px'
+                }}
+              >
+                <button
+                  onClick={() => { setShowToolsDropdown(false); setShowHpQuickPayModal(true); handleSearchHpRecords(''); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 12px', borderRadius: '8px', border: 'none', background: '#fff7ed', color: '#c2410c', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}
+                >
+                  <CreditCard size={16} />
+                  <span>💳 HP Installment Pay</span>
+                </button>
+                <button
+                  onClick={() => { setShowToolsDropdown(false); setShowTradeInModal(true); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 12px', borderRadius: '8px', border: 'none', background: '#e0f2fe', color: '#0369a1', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}
+                >
+                  <Smartphone size={16} />
+                  <span>📱 Trade-In Estimator</span>
+                </button>
+                <button
+                  onClick={() => { setShowToolsDropdown(false); setShowPettyCashModal(true); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 12px', borderRadius: '8px', border: 'none', background: '#fffbeb', color: '#92400e', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}
+                >
+                  <DollarSign size={16} />
+                  <span>☕ Petty Cash Expense</span>
+                </button>
+                <button
+                  onClick={() => { setShowToolsDropdown(false); setShowShortcutsHelp(true); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 12px', borderRadius: '8px', border: 'none', background: '#f8fafc', color: '#334155', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}
+                >
+                  <span style={{ fontSize: '14px' }}>⌨️</span>
+                  <span>Keyboard Shortcuts (F1)</span>
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Cashier profile & Switch Cashier */}
           <div className="pos-topbar-cashier" title={`Logged in as ${user?.name || 'Cashier'}`}>
