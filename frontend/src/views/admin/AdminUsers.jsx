@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Trash2, Search, ToggleLeft, ToggleRight, Plus, Edit, X, Upload, CheckCircle, Eye, AlertCircle, Users } from 'lucide-react';
+import { Trash2, Search, ToggleLeft, ToggleRight, Plus, Edit, X, Upload, CheckCircle, Eye, AlertCircle, Users, ShieldCheck } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
 import { getAdminUsers, createUser, updateUser, toggleUserStatus, deleteUser, uploadImage, uploadDocument, getAdminStores } from '../../services/api';
 import { toast } from 'react-toastify';
@@ -262,6 +262,7 @@ const AdminUsers = () => {
                     <th className="text-left px-6 py-3.5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Employee / User</th>
                     <th className="text-left px-6 py-3.5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Contact</th>
                     <th className="text-left px-6 py-3.5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Role</th>
+                    <th className="text-left px-6 py-3.5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Module Permissions</th>
                     <th className="text-left px-6 py-3.5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Status</th>
                     <th className="text-right px-6 py-3.5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Actions</th>
                   </tr>
@@ -294,6 +295,22 @@ const AdminUsers = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4">
+                        {user.role === 'admin' ? (
+                          <span className="text-[11px] font-bold text-violet-700 bg-violet-50 px-2.5 py-1 rounded-lg border border-violet-200">
+                            Full Admin Access
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => handleOpenModal(user)}
+                            className="inline-flex items-center gap-1.5 text-[11px] font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg border border-indigo-200 transition-colors cursor-pointer"
+                            title="Click to edit module permissions"
+                          >
+                            <ShieldCheck size={12} className="text-indigo-600" />
+                            {Object.values(user.permissions || {}).filter(Boolean).length} / 11 Modules Enabled
+                          </button>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
                         <select
                           value={user.isActive !== false ? 'active' : 'inactive'}
                           onChange={() => handleToggleStatus(user._id, user.name, user.isActive !== false)}
@@ -308,9 +325,15 @@ const AdminUsers = () => {
                         </select>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <button onClick={() => handleOpenModal(user)} className="p-2 bg-slate-50 text-slate-500 rounded-lg hover:bg-brand-indigo/10 hover:text-brand-indigo transition-all cursor-pointer" title="View / Edit Details"><Eye size={15} /></button>
-                          <button onClick={() => handleDeleteClick(user)} className="p-2 bg-rose-50 text-rose-500 rounded-lg hover:bg-rose-100 hover:text-rose-600 transition-all cursor-pointer" title="Delete"><Trash2 size={15} /></button>
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => handleOpenModal(user)}
+                            className="px-3 py-1.5 bg-brand-indigo/10 text-brand-indigo font-bold text-xs rounded-xl hover:bg-brand-indigo hover:text-white flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+                            title="Edit User & Set Permissions"
+                          >
+                            <ShieldCheck size={14} /> Edit Permissions
+                          </button>
+                          <button onClick={() => handleDeleteClick(user)} className="p-2 bg-rose-50 text-rose-500 rounded-lg hover:bg-rose-100 hover:text-rose-600 transition-all cursor-pointer" title="Delete Account"><Trash2 size={15} /></button>
                         </div>
                       </td>
                     </tr>
