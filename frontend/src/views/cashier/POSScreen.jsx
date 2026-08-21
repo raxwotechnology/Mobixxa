@@ -760,6 +760,7 @@ const POSScreen = () => {
     const dateStr = balanceDate || new Date().toISOString().split('T')[0];
     const cashierName = user?.name || 'Staff';
 
+    const openingFloat = Number(posSession?.openingCashAmount || 0);
     const cashSales = Number(posDailySummary?.cashSales || 0);
     const cardSales = Number(posDailySummary?.cardSales || 0);
     const kokoSales = Number(posDailySummary?.kokoSales || 0);
@@ -768,8 +769,10 @@ const POSScreen = () => {
     const expenseCost = Number(posDailySummary?.expenseCost || dailyFinancials?.expenseCost || 0);
     const totalRevenue = Number(posDailySummary?.systemRevenue || dailyFinancials?.totalIncome || 0);
 
-    const netDrawerCash = (cashSales + hpCashIncome + reloadIncome) - expenseCost;
-    const actualCount = drawerCountInput !== '' ? Number(drawerCountInput) : netDrawerCash;
+    const netDrawerCash = (openingFloat + cashSales + hpCashIncome + reloadIncome) - expenseCost;
+    const actualCount = directCountAmount !== ''
+      ? Number(directCountAmount)
+      : (calcTotal(sessionForm.closing) > 0 ? calcTotal(sessionForm.closing) : (posSession?.closingCashCountedAmount !== undefined ? Number(posSession.closingCashCountedAmount) : netDrawerCash));
     const discrepancy = actualCount - netDrawerCash;
 
     printWindow.document.write(`
@@ -814,6 +817,7 @@ const POSScreen = () => {
 
           <div class="divider"></div>
           <div class="row bold"><span>CASH DRAWER RECONCILIATION</span></div>
+          <div class="row"><span>Opening Cash Float:</span><span>Rs. ${openingFloat.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
           <div class="row"><span>(+) Cash Sales In:</span><span>Rs. ${cashSales.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
           <div class="row"><span>(+) HP Cash In:</span><span>Rs. ${hpCashIncome.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
           <div class="row"><span>(+) Reload Cash In:</span><span>Rs. ${reloadIncome.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
