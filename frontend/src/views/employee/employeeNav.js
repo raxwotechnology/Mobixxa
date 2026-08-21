@@ -4,7 +4,12 @@ import {
   Smartphone, DollarSign, FileText, Landmark
 } from 'lucide-react';
 
-const getEmployeeNavGroups = (role) => {
+import useAuthStore from '../../store/authStore';
+
+const getEmployeeNavGroups = (role, user) => {
+  const currentUser = user || (typeof window !== 'undefined' ? useAuthStore.getState()?.user : null);
+  const p = currentUser?.permissions || {};
+
   const groups = [
     {
       label: 'My Dashboard',
@@ -70,7 +75,39 @@ const getEmployeeNavGroups = (role) => {
     items: [{ path: '/', label: 'Customer View', icon: Globe }],
   });
 
-  return groups;
+  // Filter groups according to permissions if user object has permissions defined
+  if (!currentUser || currentUser.role === 'admin' || currentUser.isSuperAdmin) {
+    return groups;
+  }
+
+  const permissionMap = {
+    '/employee': true,
+    '/employee/profile': true,
+    '/employee/attendance': true,
+    '/employee/leaves': true,
+    '/employee/overtime': true,
+    '/employee/salary': true,
+    '/pos': p.sales !== false,
+    '/admin/reloads': p.reloads === true || p.sales === true,
+    '/admin/expenses': p.expenses === true || p.finance === true,
+    '/admin/hp': p.customers === true || p.sales === true,
+    '/admin/cheques': p.finance === true,
+    '/employee/repairs': p.repairs === true || p.products === true,
+    '/employee/stock': p.inventory === true || p.products === true,
+    '/barcode-generator': p.products === true,
+    '/delivery': true,
+    '/': true,
+  };
+
+  return groups
+    .map((group) => {
+      const filteredItems = group.items.filter((item) => {
+        const allowed = permissionMap[item.path];
+        return allowed === undefined ? true : allowed === true;
+      });
+      return { ...group, items: filteredItems };
+    })
+    .filter((group) => group.items.length > 0);
 };
 
 // Flat list for backward compat
