@@ -670,9 +670,17 @@ const POSScreen = () => {
 
   const handleSelectHpRecord = (rec) => {
     setSelectedHpRecord(rec);
+    const net = Number(rec.netTotal || 0);
+    const paid = Number(rec.totalPaid || 0);
+    const rem = rec.balanceAmount !== undefined && rec.balanceAmount !== null
+      ? Number(rec.balanceAmount)
+      : (rec.remainingBalance !== undefined ? Number(rec.remainingBalance) : Math.max(0, net - paid));
+    const instAmt = Number(rec.installmentAmount || 0);
+    const defaultAmt = rem > 0 ? (instAmt > 0 && instAmt <= rem ? instAmt : rem) : '';
     setHpPayForm(prev => ({
       ...prev,
-      amount: rec.installmentAmount || rec.remainingBalance || '',
+      amount: defaultAmt,
+      paymentMethod: 'Cash',
       accountId: accounts.length > 0 ? accounts[0]._id : ''
     }));
   };
@@ -888,60 +896,70 @@ const POSScreen = () => {
     const subtitle = settings?.receiptSettings?.subtitle || settings?.address || '';
     const footerMsg = settings?.receiptSettings?.footerMessage || 'Thank you for your payment!';
     const terms = settings?.receiptSettings?.termsAndConditions || '';
-    const prevBalanceVal = hpRecord?.balanceAmount !== undefined && hpRecord?.balanceAmount !== null
-      ? (Number(hpRecord.balanceAmount) + Number(payment.amount))
-      : (hpRecord?.remainingBalance !== undefined
-        ? Number(hpRecord.remainingBalance)
-        : Math.max(0, (hpRecord?.netTotal || 0) - (hpRecord?.totalPaid || 0) + Number(payment.amount)));
+
+    const netTotalVal = Number(hpRecord?.netTotal || 0);
+    const thisPaymentVal = Number(payment?.amount || 0);
+    const currentRemaining = Math.max(0, Number(newBalance !== undefined ? newBalance : (hpRecord?.balanceAmount ?? (hpRecord?.remainingBalance ?? (netTotalVal - Number(hpRecord?.totalPaid || 0))))));
+    const cumulativePaid = Math.max(0, netTotalVal - currentRemaining);
+    const prevPaidVal = Math.max(0, cumulativePaid - thisPaymentVal);
+    const isCompleted = currentRemaining <= 0;
 
     printWindow.document.write(`
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Installment Payment Receipt - ${hpRecord?.invoiceNo || 'HP'}</title>
+          <title>HP Installment Payment Receipt - ${hpRecord?.invoiceNo || 'HP'}</title>
           <style>
             body { font-family: 'Courier New', monospace; width: 80mm; margin: 0 auto; padding: 10px; color: #000; }
             .text-center { text-align: center; }
             .text-left { text-align: left; }
             .text-right { text-align: right; }
             .bold { font-weight: bold; }
-            .header { margin-bottom: 10px; border-bottom: 1px dashed #000; padding-bottom: 8px; }
-            .title { font-size: 16px; font-weight: bold; text-transform: uppercase; }
-            .subtitle { font-size: 11px; margin-top: 2px; }
-            .row { display: flex; justify-content: space-between; font-size: 12px; margin: 4px 0; }
-            .divider { border-top: 1px dashed #000; margin: 8px 0; }
-            .total-box { border: 1px solid #000; padding: 6px; margin: 8px 0; text-align: center; }
-            .footer { margin-top: 12px; text-align: center; font-size: 10px; border-top: 1px dashed #000; padding-top: 8px; }
+            .header { margin-bottom: 8px; border-bottom: 1px dashed #000; padding-bottom: 6px; }
+            .title { font-size: 15px; font-weight: bold; text-transform: uppercase; }
+            .subtitle { font-size: 10px; margin-top: 2px; }
+            .row { display: flex; justify-content: space-between; font-size: 11px; margin: 3px 0; }
+            .divider { border-top: 1px dashed #000; margin: 6px 0; }
+            .total-box { border: 1.5px solid #000; padding: 6px; margin: 6px 0; text-align: center; border-radius: 4px; }
+            .status-badge { display: inline-block; padding: 2px 6px; font-size: 10px; font-weight: bold; border: 1px solid #000; margin-top: 4px; }
+            .footer { margin-top: 10px; text-align: center; font-size: 9px; border-top: 1px dashed #000; padding-top: 6px; }
           </style>
         </head>
         <body>
           <div class="header text-${logoAlign}">
-            ${showLogo ? `<div style="text-align:${logoAlign}; margin-bottom: 6px;"><img src="${logoUrl}" style="width:${logoWidth}px; max-height:80px; object-contain:contain;" /></div>` : ''}
+            ${showLogo ? `<div style="text-align:${logoAlign}; margin-bottom: 4px;"><img src="${logoUrl}" style="width:${logoWidth}px; max-height:70px; object-contain:contain;" /></div>` : ''}
             <div class="title text-${logoAlign}">${headerTitle}</div>
             ${subtitle ? `<div class="subtitle text-${logoAlign}">${subtitle}</div>` : ''}
-            <div class="subtitle text-${logoAlign}">INSTALLMENT PAYMENT RECEIPT</div>
-            <div class="subtitle text-${logoAlign}">Date: ${payment.date} ${payment.time}</div>
+            <div class="subtitle text-${logoAlign}" style="font-weight:bold; margin-top:3px;">HP INSTALLMENT PAYMENT RECEIPT</div>
+            <div class="subtitle text-${logoAlign}">Date: ${payment.date} ${payment.time || ''}</div>
           </div>
 
-          <div class="row"><span>Invoice No:</span><span class="bold">${hpRecord?.invoiceNo || 'N/A'}</span></div>
+          <div class="row"><span>Agreement / Inv:</span><span class="bold">${hpRecord?.invoiceNo || 'N/A'}</span></div>
           <div class="row"><span>Customer:</span><span>${hpRecord?.customer?.name || 'N/A'}</span></div>
           <div class="row"><span>Phone:</span><span>${hpRecord?.customer?.phone || 'N/A'}</span></div>
           <div class="row"><span>Cashier:</span><span>${payment.receivedBy}</span></div>
 
           <div class="divider"></div>
 
+          <div class="row"><span>Agreement Net Total:</span><span class="bold">Rs. ${netTotalVal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
+          <div class="row"><span>Total Paid Before:</span><span>Rs. ${prevPaidVal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
+
           <div class="total-box">
-            <div style="font-size: 11px;">AMOUNT PAID</div>
-            <div style="font-size: 18px; font-weight: bold;">Rs. ${Number(payment.amount).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</div>
-            <div style="font-size: 10px; text-transform: uppercase; margin-top: 2px;">Method: ${payment.paymentMethod}</div>
+            <div style="font-size: 10px; font-weight: bold;">THIS PAYMENT (PART / INSTALLMENT)</div>
+            <div style="font-size: 17px; font-weight: bold; margin: 2px 0;">Rs. ${thisPaymentVal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</div>
+            <div style="font-size: 10px; text-transform: uppercase;">Method: ${payment.paymentMethod} ${payment.referenceNo ? `| Ref: ${payment.referenceNo}` : ''}</div>
           </div>
 
-          <div class="row"><span>Prev Balance:</span><span>Rs. ${Number(prevBalanceVal).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
-          <div class="row"><span class="bold">Remaining Due:</span><span class="bold">Rs. ${Number(Math.max(0, newBalance)).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
+          <div class="row"><span class="bold">Total Paid To Date:</span><span class="bold">Rs. ${cumulativePaid.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
+          <div class="row" style="font-size: 12px; margin-top: 4px;"><span class="bold">REMAINING DUE BALANCE:</span><span class="bold">Rs. ${currentRemaining.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
+
+          <div class="text-center">
+            <span class="status-badge">${isCompleted ? '✓ AGREEMENT FULLY SETTLED' : 'PARTIAL SETTLEMENT - ACTIVE'}</span>
+          </div>
 
           <div class="footer">
             <p style="margin: 2px 0; font-weight: bold;">${footerMsg}</p>
-            ${terms ? `<p style="margin: 4px 0 2px 0; font-size: 9px; font-style: italic;">${terms}</p>` : ''}
+            ${terms ? `<p style="margin: 4px 0 2px 0; font-size: 8px; font-style: italic;">${terms}</p>` : ''}
           </div>
 
           <script>
@@ -5018,6 +5036,27 @@ const POSScreen = () => {
                     <span>📞 Customer Phone: <strong style={{ color: '#0f172a' }}>{selectedHpRecord.customer?.phone || 'N/A'}</strong></span>
                     <span>Monthly Installment: <strong style={{ color: '#2563eb' }}>Rs. {Number(selectedHpRecord.installmentAmount || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</strong></span>
                   </div>
+
+                  {/* Previous Payments List */}
+                  {selectedHpRecord.payments && selectedHpRecord.payments.length > 0 && (
+                    <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px dashed #cbd5e1' }}>
+                      <div style={{ fontSize: '11px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', marginBottom: '6px' }}>
+                        📜 Payment History ({selectedHpRecord.payments.length} Payments):
+                      </div>
+                      <div style={{ maxHeight: '90px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        {selectedHpRecord.payments.map((p, idx) => (
+                          <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', background: '#ffffff', padding: '4px 8px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                            <span style={{ color: '#334155' }}>
+                              <strong>#{idx + 1}</strong>: {new Date(p.date || Date.now()).toLocaleDateString('en-GB')} ({p.paymentMethod || 'Cash'})
+                            </span>
+                            <span style={{ fontWeight: '800', color: '#166534' }}>
+                              + Rs. {Number(p.amount).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Form fields */}
@@ -5031,7 +5070,7 @@ const POSScreen = () => {
                       onWheel={(e) => e.target.blur()}
                       value={hpPayForm.amount}
                       onChange={(e) => setHpPayForm({ ...hpPayForm, amount: e.target.value })}
-                      placeholder="Enter amount"
+                      placeholder="Enter amount (e.g. 50000)"
                       style={{
                         width: '100%',
                         padding: '12px 14px',
@@ -5094,7 +5133,7 @@ const POSScreen = () => {
                       <option value="">Default Counter Drawer</option>
                       {accounts.map(acc => (
                         <option key={acc._id} value={acc._id}>
-                          {acc.name} ({acc.accountType})
+                          {acc.name} {acc.accountType ? `(${acc.accountType})` : ''}
                         </option>
                       ))}
                     </select>
