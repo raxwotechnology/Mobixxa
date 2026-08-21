@@ -687,28 +687,26 @@ const POSScreen = () => {
       toast.error('Please enter a valid payment amount');
       return;
     }
-    if (!hpPayForm.accountId) {
-      toast.error('Please select a receiving account');
-      return;
-    }
+    const targetAccountId = hpPayForm.accountId || (accounts && accounts.length > 0 ? accounts[0]._id : undefined);
 
     try {
       setSubmittingHpPay(true);
       const { data } = await recordHPPayment(selectedHpRecord._id, {
         amount: amt,
-        paymentMethod: hpPayForm.paymentMethod,
-        accountId: hpPayForm.accountId,
+        paymentMethod: hpPayForm.paymentMethod || 'cash',
+        accountId: targetAccountId,
         referenceNo: hpPayForm.referenceNo,
         notes: hpPayForm.notes
       });
 
       toast.success('Installment payment recorded successfully! 💳');
       
-      const newBal = (selectedHpRecord.remainingBalance || 0) - amt;
+      const currentBal = selectedHpRecord.balanceAmount ?? (selectedHpRecord.remainingBalance ?? Math.max(0, (selectedHpRecord.netTotal || 0) - (selectedHpRecord.totalPaid || 0)));
+      const newBal = Math.max(0, currentBal - amt);
       setHpReceiptData({
         payment: {
           amount: amt,
-          paymentMethod: hpPayForm.paymentMethod,
+          paymentMethod: hpPayForm.paymentMethod || 'cash',
           date: new Date().toLocaleDateString('en-GB'),
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           referenceNo: hpPayForm.referenceNo,
@@ -4984,21 +4982,29 @@ const POSScreen = () => {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', background: '#ffffff', padding: '12px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
                     <div>
                       <div style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: '700' }}>Total Net</div>
-                      <div style={{ fontSize: '15px', fontWeight: '800', color: '#334155', marginTop: '2px' }}>Rs. {selectedHpRecord.netTotal?.toLocaleString()}</div>
+                      <div style={{ fontSize: '15px', fontWeight: '800', color: '#334155', marginTop: '2px' }}>Rs. {Number(selectedHpRecord.netTotal || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</div>
                     </div>
                     <div>
                       <div style={{ fontSize: '11px', color: '#166534', textTransform: 'uppercase', fontWeight: '700' }}>Total Paid</div>
-                      <div style={{ fontSize: '15px', fontWeight: '800', color: '#166534', marginTop: '2px' }}>Rs. {selectedHpRecord.totalPaid?.toLocaleString()}</div>
+                      <div style={{ fontSize: '15px', fontWeight: '800', color: '#166534', marginTop: '2px' }}>Rs. {Number(selectedHpRecord.totalPaid || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</div>
                     </div>
                     <div>
                       <div style={{ fontSize: '11px', color: '#b45309', textTransform: 'uppercase', fontWeight: '700' }}>Remaining Due</div>
-                      <div style={{ fontSize: '16px', fontWeight: '800', color: '#d97706', marginTop: '2px' }}>Rs. {(selectedHpRecord.remainingBalance !== undefined ? selectedHpRecord.remainingBalance : selectedHpRecord.balanceAmount)?.toLocaleString()}</div>
+                      <div style={{ fontSize: '16px', fontWeight: '800', color: '#d97706', marginTop: '2px' }}>
+                        Rs. {Number(
+                          selectedHpRecord.balanceAmount !== undefined && selectedHpRecord.balanceAmount !== null
+                            ? selectedHpRecord.balanceAmount
+                            : (selectedHpRecord.remainingBalance !== undefined && selectedHpRecord.remainingBalance !== null
+                              ? selectedHpRecord.remainingBalance
+                              : Math.max(0, (selectedHpRecord.netTotal || 0) - (selectedHpRecord.totalPaid || 0)))
+                        ).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                      </div>
                     </div>
                   </div>
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '12px', fontSize: '12px', color: '#475569', fontWeight: '500' }}>
                     <span>📞 Customer Phone: <strong style={{ color: '#0f172a' }}>{selectedHpRecord.customer?.phone || 'N/A'}</strong></span>
-                    <span>Monthly Installment: <strong style={{ color: '#2563eb' }}>Rs. {selectedHpRecord.installmentAmount?.toLocaleString()}</strong></span>
+                    <span>Monthly Installment: <strong style={{ color: '#2563eb' }}>Rs. {Number(selectedHpRecord.installmentAmount || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</strong></span>
                   </div>
                 </div>
 
@@ -5056,7 +5062,7 @@ const POSScreen = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '20px' }}>
                   <div>
                     <label style={{ fontSize: '12px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '6px' }}>
-                      Receiving Account / Drawer *
+                      Receiving Account / Drawer
                     </label>
                     <select
                       value={hpPayForm.accountId}
@@ -5073,7 +5079,7 @@ const POSScreen = () => {
                         outline: 'none'
                       }}
                     >
-                      <option value="">Select Account</option>
+                      <option value="">Default Counter Drawer</option>
                       {accounts.map(acc => (
                         <option key={acc._id} value={acc._id}>
                           {acc.name} ({acc.accountType})
@@ -5083,7 +5089,7 @@ const POSScreen = () => {
                   </div>
                   <div>
                     <label style={{ fontSize: '12px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '6px' }}>
-                      Ref No / Notes
+                      Ref No / Notes (Optional)
                     </label>
                     <input
                       type="text"
@@ -5111,7 +5117,7 @@ const POSScreen = () => {
                     style={{
                       flex: 1,
                       display: 'flex',
-                      justify: 'center',
+                      justifyContent: 'center',
                       alignItems: 'center',
                       gap: '10px',
                       fontSize: '15px',
@@ -5121,12 +5127,13 @@ const POSScreen = () => {
                       background: 'linear-gradient(135deg, #10b981 0%, #047857 100%)',
                       border: 'none',
                       borderRadius: '14px',
-                      cursor: 'pointer',
+                      cursor: (submittingHpPay || !hpPayForm.amount || Number(hpPayForm.amount) <= 0) ? 'not-allowed' : 'pointer',
+                      opacity: (submittingHpPay || !hpPayForm.amount || Number(hpPayForm.amount) <= 0) ? 0.6 : 1,
                       boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
                       transition: 'all 0.2s'
                     }}
                     onClick={handleSubmitHpPayment}
-                    disabled={submittingHpPay || !hpPayForm.amount || !hpPayForm.accountId}
+                    disabled={submittingHpPay || !hpPayForm.amount || Number(hpPayForm.amount) <= 0}
                   >
                     {submittingHpPay ? <RefreshCw size={20} className="animate-spin" /> : <CreditCard size={20} />}
                     Record Payment & Generate Receipt
