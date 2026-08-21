@@ -298,7 +298,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId }) => {
               {formData.paymentMethod === 'Credit' && (
                 <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl space-y-2">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-amber-800">
-                    <span>🏷️ Credit / ණයට Reload</span>
+                    <span>🏷️ Credit Reload (Pay Later)</span>
                   </div>
                   <p className="text-[11px] text-amber-700 leading-tight">
                     This reload will be tracked under customer debt. No physical cash will be added to the drawer.

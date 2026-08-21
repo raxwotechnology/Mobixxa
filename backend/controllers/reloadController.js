@@ -52,7 +52,7 @@ const createReload = async (req, res, next) => {
         category: isCredit ? 'Credit Reload' : 'Reload & Bill Payment',
         amount: Number(amount),
         paymentMethod: isCredit ? 'Credit' : (paymentMethod || 'Cash'),
-        description: `${isCredit ? '[CREDIT / ණයට] ' : ''}${type || 'Prepaid'} Reload: ${operator} - ${mobileNumber}${customerName ? ` (${customerName})` : ''}`,
+        description: `${isCredit ? '[CREDIT] ' : ''}${type || 'Prepaid'} Reload: ${operator} - ${mobileNumber}${customerName ? ` (${customerName})` : ''}`,
         date: new Date(),
         createdBy: req.user._id,
       });

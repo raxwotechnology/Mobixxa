@@ -2424,7 +2424,7 @@ const POSScreen = () => {
             <TrendingUp size={18} />
             <span className="pos-topbar-btn-text">Shift</span>
           </button>
-          <button className="pos-topbar-btn" onClick={() => { setShowCreditSettleModal(true); handleSearchCreditOrders(''); }} title="Settle Customer Credit / ණය පියවීම" style={{ background: '#fef3c7', color: '#92400e', borderColor: '#fde68a', fontWeight: 'bold' }}>
+          <button className="pos-topbar-btn" onClick={() => { setShowCreditSettleModal(true); handleSearchCreditOrders(''); }} title="Settle Customer Credit" style={{ background: '#fef3c7', color: '#92400e', borderColor: '#fde68a', fontWeight: 'bold' }}>
             <Clock size={18} />
             <span className="pos-topbar-btn-text">Credit Settle</span>
           </button>
@@ -3348,7 +3348,7 @@ const POSScreen = () => {
                         setTimeout(() => customerPhoneRef.current?.focus(), 100);
                       }
                     }}
-                    title="Credit Sale / ණයට දීම (Pay Later)"
+                    title="Credit Sale (Pay Later)"
                     style={{
                       background: pos.paymentMethod === 'credit' || isCredit ? '#fef3c7' : undefined,
                       color: pos.paymentMethod === 'credit' || isCredit ? '#92400e' : undefined,
@@ -3356,7 +3356,7 @@ const POSScreen = () => {
                     }}
                   >
                     <Clock size={20} />
-                    Credit (ණයට)
+                    Credit (Pay Later)
                   </button>
                 </div>
 
@@ -5430,7 +5430,7 @@ const POSScreen = () => {
                   📋
                 </div>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>Customer Credit / ණය පියවීම 🏷️</h3>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>Customer Credit Collection 🏷️</h3>
                   <p style={{ margin: 0, fontSize: '12px', color: '#64748b', fontWeight: '500' }}>Search customer phone or invoice to collect debt & print receipt</p>
                 </div>
               </div>
