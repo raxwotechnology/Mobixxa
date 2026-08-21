@@ -24,8 +24,20 @@ const ProtectedRoute = ({ children, roles, permission }) => {
     if (permission) {
       const isSuperAdmin = user.email === 'admin@mobilehub.com' || user.isSuperAdmin || user.role === 'admin';
       if (!isSuperAdmin) {
-        if (!user.permissions || user.permissions[permission] !== true) {
-          router.replace(user.role === 'manager' ? '/manager' : '/');
+        if (user.role === 'manager') {
+          // Managers have access to management pages unless permission is explicitly disabled (false)
+          if (user.permissions && user.permissions[permission] === false) {
+            router.replace('/manager');
+          }
+        } else {
+          // Cashiers & employees need explicit true permission or permission mapping
+          const hasAccess = user.permissions && (
+            user.permissions[permission] === true ||
+            (permission === 'reloads' && user.permissions.sales !== false)
+          );
+          if (!hasAccess) {
+            router.replace('/');
+          }
         }
       }
     }
@@ -50,8 +62,18 @@ const ProtectedRoute = ({ children, roles, permission }) => {
   if (permission) {
     const isSuperAdmin = user.email === 'admin@mobilehub.com' || user.isSuperAdmin || user.role === 'admin';
     if (!isSuperAdmin) {
-      if (!user.permissions || user.permissions[permission] !== true) {
-        return null;
+      if (user.role === 'manager') {
+        if (user.permissions && user.permissions[permission] === false) {
+          return null;
+        }
+      } else {
+        const hasAccess = user.permissions && (
+          user.permissions[permission] === true ||
+          (permission === 'reloads' && user.permissions.sales !== false)
+        );
+        if (!hasAccess) {
+          return null;
+        }
       }
     }
   }

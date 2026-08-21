@@ -255,7 +255,7 @@ function App() {
           <Route path="/admin/hp" element={<ProtectedRoute roles={['admin', 'manager', 'cashier']} permission="finance"><AdminHP /></ProtectedRoute>} />
           <Route path="/admin/customer-history" element={<ProtectedRoute roles={['admin']} permission="reports"><AdminCustomerHistory /></ProtectedRoute>} />
           <Route path="/admin/overtime" element={<ProtectedRoute roles={['admin', 'manager']} permission="finance"><AdminOvertime /></ProtectedRoute>} />
-          <Route path="/admin/reloads" element={<ProtectedRoute roles={['admin', 'manager', 'cashier']} permission="sales"><AdminReloads /></ProtectedRoute>} />
+          <Route path="/admin/reloads" element={<ProtectedRoute roles={['admin', 'manager', 'cashier']}><AdminReloads /></ProtectedRoute>} />
           <Route path="/admin/repairs" element={<ProtectedRoute roles={['admin', 'manager']} permission="sales"><AdminRepairs /></ProtectedRoute>} />
 
 
