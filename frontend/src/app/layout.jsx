@@ -21,7 +21,7 @@ export default function RootLayout({ children }) {
           rel="stylesheet"
         />
       </head>
-      <body className="antialiased bg-slate-50 text-slate-900 overflow-x-hidden min-h-screen">
+      <body className="antialiased bg-slate-50 text-slate-900 overflow-x-hidden min-h-screen" suppressHydrationWarning>
         <ClientProviders>
           <AppLayout>{children}</AppLayout>
         </ClientProviders>

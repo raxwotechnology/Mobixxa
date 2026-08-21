@@ -12,7 +12,10 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+const envOrigins = (process.env.CORS_ORIGINS || '').split(',').map(o => o.trim()).filter(Boolean);
 const defaultAllowedOrigins = [
+  'https://mobixa-official.vercel.app',
+  'https://www.mobixa-official.vercel.app',
   'https://www.max-durakathana.netlify.app',
   'https://mobilehubtech.netlify.app',
   'https://www.mobilehubtech.netlify.app',
