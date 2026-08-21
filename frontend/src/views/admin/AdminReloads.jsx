@@ -679,19 +679,28 @@ const AdminReloads = ({ navItems: propNavItems }) => {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Card Denomination / Float Type *</label>
-                  <select
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-indigo-600 cursor-pointer"
-                    value={addStockForm.cardValue}
-                    onChange={(e) => setAddStockForm({ ...addStockForm, cardValue: Number(e.target.value) })}
-                  >
-                    <option value={1}>📱 E-Reload Machine Float (Currency Value)</option>
-                    <option value={50}>🎴 Rs. 50 Cards</option>
-                    <option value={100}>🎴 Rs. 100 Cards</option>
-                    <option value={200}>🎴 Rs. 200 Cards</option>
-                    <option value={500}>🎴 Rs. 500 Cards</option>
-                    <option value={1000}>🎴 Rs. 1000 Cards</option>
-                  </select>
+                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Card Denomination / Float Value (Rs.) *</label>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400">Rs.</span>
+                    <input
+                      type="number"
+                      min="1"
+                      required
+                      placeholder="e.g. 100, 199, 350, 500 or 1 for E-Reload Float"
+                      className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-indigo-600 focus:bg-white transition-all"
+                      value={addStockForm.cardValue || ''}
+                      onChange={(e) => setAddStockForm({ ...addStockForm, cardValue: Number(e.target.value) })}
+                    />
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    <button type="button" onClick={() => setAddStockForm({ ...addStockForm, cardValue: 1 })} className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${addStockForm.cardValue === 1 ? 'bg-purple-600 text-white border-purple-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'}`}>📱 E-Reload Float (1)</button>
+                    <button type="button" onClick={() => setAddStockForm({ ...addStockForm, cardValue: 50 })} className={`px-2 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${addStockForm.cardValue === 50 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'}`}>Rs. 50</button>
+                    <button type="button" onClick={() => setAddStockForm({ ...addStockForm, cardValue: 100 })} className={`px-2 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${addStockForm.cardValue === 100 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'}`}>Rs. 100</button>
+                    <button type="button" onClick={() => setAddStockForm({ ...addStockForm, cardValue: 199 })} className={`px-2 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${addStockForm.cardValue === 199 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'}`}>Rs. 199</button>
+                    <button type="button" onClick={() => setAddStockForm({ ...addStockForm, cardValue: 350 })} className={`px-2 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${addStockForm.cardValue === 350 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'}`}>Rs. 350</button>
+                    <button type="button" onClick={() => setAddStockForm({ ...addStockForm, cardValue: 500 })} className={`px-2 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${addStockForm.cardValue === 500 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'}`}>Rs. 500</button>
+                    <button type="button" onClick={() => setAddStockForm({ ...addStockForm, cardValue: 1000 })} className={`px-2 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${addStockForm.cardValue === 1000 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'}`}>Rs. 1000</button>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
