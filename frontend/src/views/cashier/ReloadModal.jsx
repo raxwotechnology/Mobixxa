@@ -1,559 +1,689 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { X, Smartphone, Phone, CreditCard, CheckCircle, AlertCircle, Loader2, Plus, Calendar, Layers, RefreshCw, Calculator, DollarSign } from 'lucide-react';
-import { createReload, getReloadStocks, addReloadStock, closeReloadStock } from '../../services/api';
+import React, { useState, useEffect, useMemo } from 'react';
+import { 
+  X, 
+  Smartphone, 
+  Phone, 
+  CreditCard, 
+  CheckCircle, 
+  AlertCircle, 
+  Loader2, 
+  Plus, 
+  Calendar, 
+  Layers, 
+  RefreshCw, 
+  Calculator, 
+  DollarSign, 
+  Printer, 
+  Save, 
+  TrendingUp, 
+  ShieldCheck,
+  Zap,
+  ArrowRight
+} from 'lucide-react';
+import { createReload, getReloadStocks, saveReloadDailySheet } from '../../services/api';
 import { toast } from 'react-toastify';
 
-const ReloadModal = ({ isOpen, onClose, storeId, accountId }) => {
-  const [modalTab, setModalTab] = useState('quick'); // 'quick' | 'stock'
-  const [loading, setLoading] = useState(false);
+const DEFAULT_RELOAD_ITEMS = [
+  { operator: 'Dialog', cardValue: 1, label: 'Dialog E-Reload Float', color: '#e11d48', tag: 'E-Reload' },
+  { operator: 'Mobitel', cardValue: 1, label: 'Mobitel E-Reload Float', color: '#059669', tag: 'E-Reload' },
+  { operator: 'Airtel', cardValue: 1, label: 'Airtel E-Reload Float', color: '#ef4444', tag: 'E-Reload' },
+  { operator: 'Hutch', cardValue: 1, label: 'Hutch E-Reload Float', color: '#f59e0b', tag: 'E-Reload' },
+  { operator: 'EzCash', cardValue: 1, label: 'EzCash Float / Wallet', color: '#0284c7', tag: 'Wallet' },
+  { operator: 'mCash', cardValue: 1, label: 'mCash Float / Wallet', color: '#8b5cf6', tag: 'Wallet' },
+  { operator: 'Dialog', cardValue: 100, label: 'Dialog Rs. 100 Scratch Cards', color: '#e11d48', tag: 'Cards' },
+  { operator: 'Mobitel', cardValue: 100, label: 'Mobitel Rs. 100 Scratch Cards', color: '#059669', tag: 'Cards' },
+  { operator: 'Airtel', cardValue: 100, label: 'Airtel Rs. 100 Scratch Cards', color: '#ef4444', tag: 'Cards' },
+  { operator: 'Hutch', cardValue: 100, label: 'Hutch Rs. 100 Scratch Cards', color: '#f59e0b', tag: 'Cards' },
+  { operator: 'Other', cardValue: 50, label: 'Rs. 50 Cards (Mixed)', color: '#64748b', tag: 'Cards' },
+  { operator: 'Other', cardValue: 500, label: 'Rs. 500 Cards (Mixed)', color: '#64748b', tag: 'Cards' },
+];
 
-  // Quick reload form
-  const [formData, setFormData] = useState({
+const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => {
+  const [modalTab, setModalTab] = useState('sheet'); // 'sheet' | 'credit'
+  const [stockDate, setStockDate] = useState(new Date().toISOString().split('T')[0]);
+  const [loading, setLoading] = useState(false);
+  const [savingSheet, setSavingSheet] = useState(false);
+  const [sheetRows, setSheetRows] = useState([]);
+
+  // Quick Credit Reload Form
+  const [creditFormData, setCreditFormData] = useState({
     mobileNumber: '',
     customerName: '',
     operator: 'Dialog',
     amount: '',
-    type: 'Prepaid',
-    paymentMethod: 'Cash',
     notes: ''
   });
+  const [submittingCredit, setSubmittingCredit] = useState(false);
 
-  // Daily Stock tracker state
-  const [stockDate, setStockDate] = useState(new Date().toISOString().split('T')[0]);
-  const [stocks, setStocks] = useState([]);
-  const [loadingStocks, setLoadingStocks] = useState(false);
-  const [isAddStockOpen, setIsAddStockOpen] = useState(false);
-  const [isCloseStockOpen, setIsCloseStockOpen] = useState(false);
-  const [selectedStockItem, setSelectedStockItem] = useState(null);
-  const [closingInput, setClosingInput] = useState(0);
-
-  const [addStockForm, setAddStockForm] = useState({
-    operator: 'Dialog',
-    cardValue: 100, // 1 for total currency value, or 50, 100, 500 for card denomination
-    openingStock: 0,
-    addedStock: 0,
-    notes: ''
-  });
-
-  const operators = [
-    { name: 'Dialog', color: '#e11d48', logo: 'D' },
-    { name: 'Mobitel', color: '#059669', logo: 'M' },
-    { name: 'Hutch', color: '#f59e0b', logo: 'H' },
-    { name: 'Airtel', color: '#ef4444', logo: 'A' },
-    { name: 'SLT', color: '#0284c7', logo: 'S' },
-    { name: 'Other', color: '#64748b', logo: 'O' }
-  ];
-
-  const types = ['Prepaid', 'Postpaid', 'Bill Payment'];
-  const methods = ['Cash', 'Card', 'Bank Transfer', 'Credit'];
-
-  const fetchStocks = async () => {
+  // Load existing stock data and initialize rows
+  const loadSheetData = async () => {
     try {
-      setLoadingStocks(true);
+      setLoading(true);
       const params = {
         date: stockDate,
         ...(storeId ? { storeId } : {})
       };
       const { data } = await getReloadStocks(params);
-      setStocks(data || []);
-    } catch {
-      // ignore
+      const serverStocks = Array.isArray(data) ? data : [];
+
+      // Merge server data with default items
+      const merged = DEFAULT_RELOAD_ITEMS.map((template) => {
+        const found = serverStocks.find(
+          (s) => s.operator === template.operator && Number(s.cardValue || 1) === template.cardValue
+        );
+
+        if (found) {
+          return {
+            _id: found._id,
+            operator: found.operator,
+            cardValue: Number(found.cardValue || 1),
+            label: template.label,
+            color: template.color,
+            tag: template.tag,
+            openingStock: found.openingStock || 0,
+            addedStock: found.addedStock || 0,
+            closingStock: found.closingStock !== undefined && found.closingStock !== null ? found.closingStock : (found.openingStock + (found.addedStock || 0)),
+            notes: found.notes || ''
+          };
+        }
+
+        return {
+          operator: template.operator,
+          cardValue: template.cardValue,
+          label: template.label,
+          color: template.color,
+          tag: template.tag,
+          openingStock: 0,
+          addedStock: 0,
+          closingStock: 0,
+          notes: ''
+        };
+      });
+
+      // Also append any custom operators from server that aren't in template
+      serverStocks.forEach((s) => {
+        const alreadyIn = merged.some(
+          (m) => m.operator === s.operator && Number(m.cardValue || 1) === Number(s.cardValue || 1)
+        );
+        if (!alreadyIn) {
+          merged.push({
+            _id: s._id,
+            operator: s.operator,
+            cardValue: Number(s.cardValue || 1),
+            label: `${s.operator} (${s.cardValue === 1 ? 'E-Reload' : `Rs. ${s.cardValue} Cards`})`,
+            color: '#64748b',
+            tag: s.cardValue === 1 ? 'E-Reload' : 'Cards',
+            openingStock: s.openingStock || 0,
+            addedStock: s.addedStock || 0,
+            closingStock: s.closingStock !== undefined ? s.closingStock : (s.openingStock + (s.addedStock || 0)),
+            notes: s.notes || ''
+          });
+        }
+      });
+
+      setSheetRows(merged);
+    } catch (err) {
+      console.error('Failed to fetch reload sheet data:', err);
     } finally {
-      setLoadingStocks(false);
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (isOpen && modalTab === 'stock') {
-      fetchStocks();
+    if (isOpen) {
+      loadSheetData();
     }
-  }, [isOpen, modalTab, stockDate, storeId]);
+  }, [isOpen, stockDate, storeId]);
 
-  const handleSubmitQuick = async (e) => {
-    e.preventDefault();
-    if (!formData.mobileNumber || !formData.amount) {
-      toast.error('Please fill in all required fields');
+  // Handle cell changes in table
+  const handleCellChange = (index, field, value) => {
+    const updated = [...sheetRows];
+    updated[index] = {
+      ...updated[index],
+      [field]: field === 'notes' ? value : Math.max(0, Number(value) || 0)
+    };
+    setSheetRows(updated);
+  };
+
+  // Calculations
+  const calculatedTotals = useMemo(() => {
+    let totalOpeningVal = 0;
+    let totalAddedVal = 0;
+    let totalAvailableVal = 0;
+    let totalEveningInHandVal = 0;
+    let totalSellOutVal = 0;
+
+    const rowsWithCalc = sheetRows.map((r) => {
+      const open = Number(r.openingStock || 0);
+      const added = Number(r.addedStock || 0);
+      const total = open + added;
+      const closing = r.closingStock !== undefined && r.closingStock !== null && r.closingStock !== ''
+        ? Number(r.closingStock)
+        : total;
+      const soldQty = Math.max(0, total - closing);
+      const soldVal = soldQty * (r.cardValue || 1);
+
+      totalOpeningVal += open * (r.cardValue || 1);
+      totalAddedVal += added * (r.cardValue || 1);
+      totalAvailableVal += total * (r.cardValue || 1);
+      totalEveningInHandVal += closing * (r.cardValue || 1);
+      totalSellOutVal += soldVal;
+
+      return {
+        ...r,
+        totalStock: total,
+        sellOutAmount: soldQty,
+        sellOutValue: soldVal
+      };
+    });
+
+    const estimatedMargin = totalSellOutVal * 0.04; // 4% typical discount margin
+
+    return {
+      rows: rowsWithCalc,
+      totalOpeningVal,
+      totalAddedVal,
+      totalAvailableVal,
+      totalEveningInHandVal,
+      totalSellOutVal,
+      estimatedMargin
+    };
+  }, [sheetRows]);
+
+  // Save the entire Daily Sheet
+  const handleSaveDailySheet = async () => {
+    try {
+      setSavingSheet(true);
+      const payload = {
+        storeId,
+        date: stockDate,
+        items: sheetRows.map((r) => ({
+          operator: r.operator,
+          cardValue: r.cardValue,
+          openingStock: Number(r.openingStock || 0),
+          addedStock: Number(r.addedStock || 0),
+          closingStock: Number(r.closingStock || 0),
+          notes: r.notes || ''
+        }))
+      };
+
+      const res = await saveReloadDailySheet(payload);
+      toast.success(res.data?.message || 'Daily Reload Sheet saved & synced with drawer! 📊✅');
+      loadSheetData();
+      if (onSyncSuccess) onSyncSuccess();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to save daily reload sheet');
+    } finally {
+      setSavingSheet(false);
+    }
+  };
+
+  // Thermal Receipt Printing for Daily Summary Slip
+  const handlePrintDailySlip = () => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast.error('Popup blocked! Please allow popups to print summary.');
       return;
     }
 
-    if (formData.paymentMethod !== 'Credit' && !accountId) {
-      // If no target account is selected in POS, proceed with default
+    const rows = calculatedTotals.rows;
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Daily Reload Summary - ${stockDate}</title>
+          <style>
+            body { font-family: 'Courier New', monospace; width: 80mm; margin: 0 auto; padding: 8px; color: #000; }
+            .text-center { text-align: center; }
+            .text-left { text-align: left; }
+            .text-right { text-align: right; }
+            .bold { font-weight: bold; }
+            .header { border-bottom: 1.5px dashed #000; padding-bottom: 6px; margin-bottom: 8px; }
+            .title { font-size: 15px; font-weight: bold; }
+            .subtitle { font-size: 11px; }
+            .table { width: 100%; border-collapse: collapse; font-size: 10px; margin: 6px 0; }
+            .table th { border-bottom: 1px solid #000; padding: 3px 0; text-align: left; }
+            .table td { padding: 3px 0; }
+            .divider { border-top: 1px dashed #000; margin: 6px 0; }
+            .total-box { border: 1.5px solid #000; padding: 6px; margin: 8px 0; text-align: center; border-radius: 4px; }
+            .footer { font-size: 9px; text-align: center; margin-top: 10px; border-top: 1px dashed #000; padding-top: 4px; }
+          </style>
+        </head>
+        <body>
+          <div class="header text-center">
+            <div class="title">DAILY RELOAD SELL-OUT SLIP</div>
+            <div class="subtitle">Date: ${stockDate}</div>
+            <div class="subtitle">Generated: ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+          </div>
+
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Operator</th>
+                <th class="text-center">Avail</th>
+                <th class="text-center">Close</th>
+                <th class="text-right">Sold (Rs.)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.map(r => `
+                <tr>
+                  <td>${r.operator} ${r.cardValue > 1 ? `(${r.cardValue})` : ''}</td>
+                  <td class="text-center">${r.totalStock}</td>
+                  <td class="text-center">${r.closingStock}</td>
+                  <td class="text-right bold">${Number(r.sellOutValue || 0).toLocaleString()}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+
+          <div class="divider"></div>
+
+          <div class="total-box">
+            <div style="font-size: 10px; font-weight: bold;">TOTAL RELOAD SOLD TODAY</div>
+            <div style="font-size: 18px; font-weight: bold; margin: 3px 0;">Rs. ${Number(calculatedTotals.totalSellOutVal).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</div>
+            <div style="font-size: 9px;">Est. Commission (4%): Rs. ${Number(calculatedTotals.estimatedMargin).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</div>
+          </div>
+
+          <div class="footer">
+            <p style="margin: 0;">SR Mobile POS — In-Hand Reload Bookkeeping</p>
+          </div>
+
+          <script>
+            window.onload = function() {
+              window.print();
+              window.close();
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
+  // Submit Credit Reload Form
+  const handleSubmitCreditReload = async (e) => {
+    e.preventDefault();
+    if (!creditFormData.mobileNumber || !creditFormData.amount) {
+      toast.error('Please enter mobile number and amount');
+      return;
     }
 
     try {
-      setLoading(true);
+      setSubmittingCredit(true);
       await createReload({
-        ...formData,
+        ...creditFormData,
         storeId,
-        accountId: formData.paymentMethod === 'Credit' ? null : accountId
+        paymentMethod: 'Credit',
+        type: 'Prepaid',
+        accountId: null
       });
-      toast.success(formData.paymentMethod === 'Credit' ? 'Credit Reload recorded successfully! 🏷️✅' : 'Reload successful! ✅');
-      setFormData({
+      toast.success('Credit Reload recorded successfully! 🏷️✅');
+      setCreditFormData({
         mobileNumber: '',
         customerName: '',
         operator: 'Dialog',
         amount: '',
-        type: 'Prepaid',
-        paymentMethod: 'Cash',
         notes: ''
       });
-      onClose();
+      setModalTab('sheet');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to process reload');
+      toast.error(err.response?.data?.message || 'Failed to record credit reload');
     } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSaveStock = async (e) => {
-    e.preventDefault();
-    try {
-      setLoading(true);
-      await addReloadStock({
-        ...addStockForm,
-        date: stockDate,
-        storeId
-      });
-      toast.success('In-hand stock updated successfully! ✅');
-      setIsAddStockOpen(false);
-      setAddStockForm({ operator: 'Dialog', cardValue: 100, openingStock: 0, addedStock: 0, notes: '' });
-      fetchStocks();
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to save stock');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCloseStock = async (e) => {
-    e.preventDefault();
-    if (!selectedStockItem) return;
-    try {
-      setLoading(true);
-      await closeReloadStock({
-        stockId: selectedStockItem._id,
-        closingStock: Number(closingInput)
-      });
-      toast.success('Evening in-hand count updated & Sell-Out calculated! 🌙✅');
-      setIsCloseStockOpen(false);
-      setSelectedStockItem(null);
-      fetchStocks();
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to update evening balance');
-    } finally {
-      setLoading(false);
+      setSubmittingCredit(false);
     }
   };
 
   if (!isOpen) return null;
 
-  const totalSellOutRevenue = stocks.reduce((sum, s) => sum + (s.sellOutValue || 0), 0);
-
   return (
-    <div className="fixed inset-0 z-[1050] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300 max-h-[92vh] flex flex-col">
-        {/* Header */}
-        <div className="relative p-5 bg-gradient-to-r from-indigo-700 via-indigo-600 to-purple-600 text-white shrink-0">
+    <div className="fixed inset-0 z-[1050] flex items-center justify-center bg-black/75 backdrop-blur-sm p-3 sm:p-5">
+      <div className="bg-white w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 max-h-[94vh] flex flex-col border border-slate-200">
+        
+        {/* Top Header */}
+        <div className="relative p-5 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white shrink-0">
           <button 
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-colors"
           >
             <X size={20} />
           </button>
-          <div className="flex items-center justify-between pr-10">
+          
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pr-10">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-white/20 rounded-2xl">
-                <Smartphone size={28} />
+              <div className="w-12 h-12 rounded-2xl bg-indigo-600/30 border border-indigo-500/40 flex items-center justify-center text-indigo-400">
+                <Smartphone size={26} />
               </div>
               <div>
-                <h2 className="text-xl font-black tracking-wide">Reload & Card Management</h2>
-                <p className="text-white/80 text-xs">Top-ups & In-Hand Daily Sell-out Tracker</p>
+                <h2 className="text-xl font-black tracking-tight text-white flex items-center gap-2">
+                  Daily Reload & Scratch Card Bookkeeping
+                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    Live Sheet
+                  </span>
+                </h2>
+                <p className="text-slate-400 text-xs mt-0.5">
+                  Track in-hand SIM float, distributor stock & auto-calculate daily sell-out revenue
+                </p>
               </div>
             </div>
-            {/* Tabs */}
-            <div className="flex bg-black/20 p-1 rounded-xl">
-              <button
-                type="button"
-                onClick={() => setModalTab('quick')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${modalTab === 'quick' ? 'bg-white text-indigo-700 shadow-sm' : 'text-white/80 hover:text-white'}`}
-              >
-                ⚡ Quick Top-up
-              </button>
-              <button
-                type="button"
-                onClick={() => setModalTab('stock')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${modalTab === 'stock' ? 'bg-white text-indigo-700 shadow-sm' : 'text-white/80 hover:text-white'}`}
-              >
-                📊 In-Hand Stock Tracker
-              </button>
+
+            {/* Navigation Tabs & Date Selector */}
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <div className="flex items-center bg-slate-800/80 p-1 rounded-xl border border-slate-700">
+                <button
+                  type="button"
+                  onClick={() => setModalTab('sheet')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    modalTab === 'sheet' 
+                      ? 'bg-indigo-600 text-white shadow-md' 
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  📊 Daily Sheet
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setModalTab('credit')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    modalTab === 'credit' 
+                      ? 'bg-amber-600 text-white shadow-md' 
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  🏷️ Credit Reload
+                </button>
+              </div>
+
+              {modalTab === 'sheet' && (
+                <div className="flex items-center gap-1.5 bg-slate-800/80 px-2.5 py-1 rounded-xl border border-slate-700">
+                  <Calendar size={14} className="text-slate-400" />
+                  <input
+                    type="date"
+                    value={stockDate}
+                    onChange={(e) => setStockDate(e.target.value)}
+                    className="bg-transparent text-xs text-white font-bold outline-none cursor-pointer"
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 overflow-y-auto flex-1">
-          {modalTab === 'quick' ? (
-            <form onSubmit={handleSubmitQuick} className="space-y-5">
-              {/* Operator Selection */}
-              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2.5">
-                {operators.map((op) => (
-                  <button
-                    key={op.name}
-                    type="button"
-                    onClick={() => setFormData({ ...formData, operator: op.name })}
-                    className={`flex flex-col items-center gap-1 p-2 rounded-2xl border-2 transition-all ${
-                      formData.operator === op.name 
-                        ? 'border-indigo-600 bg-indigo-50 shadow-sm' 
-                        : 'border-slate-100 hover:border-slate-200'
-                    }`}
-                  >
-                    <div 
-                      className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-base shadow-md"
-                      style={{ backgroundColor: op.color }}
-                    >
-                      {op.logo}
-                    </div>
-                    <span className="text-[10px] font-semibold text-slate-600">{op.name}</span>
-                  </button>
-                ))}
-              </div>
+        <div className="p-5 overflow-y-auto flex-1 bg-slate-50/50 space-y-4">
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Mobile Number */}
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-700">Mobile Number</label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                    <input
-                      type="text"
-                      required
-                      placeholder="07x xxx xxxx"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
-                      value={formData.mobileNumber}
-                      onChange={(e) => setFormData({ ...formData, mobileNumber: e.target.value })}
-                    />
+          {modalTab === 'sheet' ? (
+            <>
+              {/* Summary Stats Banner */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm">
+                  <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Opening Float</div>
+                  <div className="text-base sm:text-lg font-black text-slate-800 mt-0.5">
+                    Rs. {Number(calculatedTotals.totalOpeningVal).toLocaleString()}
                   </div>
                 </div>
 
-                {/* Amount */}
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-700">Amount (Rs.)</label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">Rs.</span>
-                    <input
-                      type="number"
-                      required
-                      placeholder="0.00"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-indigo-600"
-                      value={formData.amount}
-                      onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                    />
+                <div className="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm">
+                  <div className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">(+) Added Today</div>
+                  <div className="text-base sm:text-lg font-black text-emerald-600 mt-0.5">
+                    + Rs. {Number(calculatedTotals.totalAddedVal).toLocaleString()}
+                  </div>
+                </div>
+
+                <div className="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm">
+                  <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Evening In-Hand</div>
+                  <div className="text-base sm:text-lg font-black text-slate-700 mt-0.5">
+                    Rs. {Number(calculatedTotals.totalEveningInHandVal).toLocaleString()}
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-emerald-600 to-teal-700 p-3.5 rounded-2xl text-white shadow-md">
+                  <div className="text-[11px] font-bold text-emerald-100 uppercase tracking-wider">🎯 Total Sold-Out Revenue</div>
+                  <div className="text-xl sm:text-2xl font-black mt-0.5">
+                    Rs. {Number(calculatedTotals.totalSellOutVal).toLocaleString()}
                   </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Type Selection */}
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-700">Reload Type</label>
-                  <div className="flex bg-slate-100 p-1 rounded-xl">
-                    {types.map((t) => (
-                      <button
-                        key={t}
-                        type="button"
-                        onClick={() => setFormData({ ...formData, type: t })}
-                        className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                          formData.type === t ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500'
-                        }`}
-                      >
-                        {t}
-                      </button>
-                    ))}
+              {/* Editable Sheet Table */}
+              <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+                <div className="p-3.5 bg-slate-100/70 border-b border-slate-200 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp size={16} className="text-indigo-600" />
+                    <span className="text-xs font-bold text-slate-800 uppercase tracking-wide">
+                      In-Hand Reload & Scratch Card Balance Grid
+                    </span>
                   </div>
+                  <span className="text-[11px] text-slate-500 font-medium hidden sm:inline">
+                    Formula: <strong>(Opening + Added) - Evening Remaining = Sold Out</strong>
+                  </span>
                 </div>
 
-                {/* Payment Method */}
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-700">Payment Method</label>
-                  <div className="flex bg-slate-100 p-1 rounded-xl">
-                    {methods.map((m) => (
-                      <button
-                        key={m}
-                        type="button"
-                        onClick={() => setFormData({ ...formData, paymentMethod: m })}
-                        className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                          formData.paymentMethod === m ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500'
-                        }`}
-                      >
-                        {m}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Credit Customer Details when Credit is selected */}
-              {formData.paymentMethod === 'Credit' && (
-                <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl space-y-2">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-amber-800">
-                    <span>🏷️ Credit Reload (Pay Later)</span>
-                  </div>
-                  <p className="text-[11px] text-amber-700 leading-tight">
-                    This reload will be tracked under customer debt. No physical cash will be added to the drawer.
-                  </p>
-                  <div>
-                    <label className="text-[11px] font-bold text-slate-700 block mb-1">Customer Name (Optional)</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Kamal Perera / Shop neighbor"
-                      className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white"
-                      value={formData.customerName}
-                      onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Notes */}
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700">Notes (Optional)</label>
-                <textarea
-                  placeholder="Any transaction notes..."
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none h-16"
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                />
-              </div>
-
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 rounded-xl text-white font-bold text-base shadow-md bg-indigo-600 hover:bg-indigo-700 flex items-center justify-center gap-2 transition-all"
-              >
-                {loading ? <Loader2 className="animate-spin" size={20} /> : <CheckCircle size={20} />}
-                Process Instant Reload
-              </button>
-            </form>
-          ) : (
-            /* ──────── In-Hand Stock & Daily Sell-Out Tracker Tab ──────── */
-            <div className="space-y-5">
-              <div className="flex items-center justify-between bg-slate-50 p-3 rounded-2xl border border-slate-200">
-                <div className="flex items-center gap-2">
-                  <Calendar size={16} className="text-indigo-600" />
-                  <span className="text-xs font-bold text-slate-700">Date:</span>
-                  <input
-                    type="date"
-                    value={stockDate}
-                    onChange={(e) => setStockDate(e.target.value)}
-                    className="px-2.5 py-1 text-xs border border-slate-300 rounded-lg font-bold outline-none"
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setIsAddStockOpen(true)}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-sm"
-                  >
-                    <Plus size={14} /> Add In-Hand Stock
-                  </button>
-                  <button
-                    onClick={fetchStocks}
-                    className="p-1.5 bg-slate-200 hover:bg-slate-300 rounded-lg text-slate-700"
-                    title="Refresh"
-                  >
-                    <RefreshCw size={14} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Total Summary Banner */}
-              <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-4 rounded-2xl shadow-sm flex items-center justify-between">
-                <div>
-                  <div className="text-xs text-white/80 font-semibold uppercase">Daily Sold-Out Revenue</div>
-                  <div className="text-2xl font-black">Rs. {totalSellOutRevenue.toLocaleString()}</div>
-                </div>
-                <div className="text-right text-xs text-white/90">
-                  Formula: <span className="font-bold">(Opening + Added) - Closing Remaining</span>
-                </div>
-              </div>
-
-              {/* Stocks Table */}
-              <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-100 border-b border-slate-200 text-slate-600 uppercase font-black tracking-wider text-[10px]">
-                    <tr>
-                      <th className="p-3">Operator / Item</th>
-                      <th className="p-3 text-center">Opening</th>
-                      <th className="p-3 text-center">Added</th>
-                      <th className="p-3 text-center">Total In-Hand</th>
-                      <th className="p-3 text-center">Evening In-Hand</th>
-                      <th className="p-3 text-center font-bold text-emerald-700">Sold Out</th>
-                      <th className="p-3 text-right">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {loadingStocks ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-extrabold uppercase text-[10px]">
                       <tr>
-                        <td colSpan={7} className="p-6 text-center text-slate-400">Loading stock records...</td>
+                        <th className="p-3 min-w-[180px]">Operator / Item</th>
+                        <th className="p-3 text-center min-w-[110px]">Opening Stock (Rs.)</th>
+                        <th className="p-3 text-center min-w-[110px] text-emerald-700">(+) Added Today</th>
+                        <th className="p-3 text-center min-w-[100px] bg-slate-100/50">Total Float</th>
+                        <th className="p-3 text-center min-w-[120px] text-indigo-700">Evening In-Hand (Rs.)</th>
+                        <th className="p-3 text-right min-w-[130px] font-black text-emerald-700 bg-emerald-50/50">Today Sold Out</th>
                       </tr>
-                    ) : stocks.length === 0 ? (
-                      <tr>
-                        <td colSpan={7} className="p-6 text-center text-slate-400">
-                          No reload card stock records found for this date. Click <strong>"Add In-Hand Stock"</strong> to record today's opening/added cards.
-                        </td>
-                      </tr>
-                    ) : (
-                      stocks.map((item) => {
-                        const cardLabel = item.cardValue === 1 ? 'E-Reload Balance' : `Rs. ${item.cardValue} Cards`;
-                        return (
-                          <tr key={item._id} className="hover:bg-slate-50 font-medium">
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {loading ? (
+                        <tr>
+                          <td colSpan={6} className="p-8 text-center text-slate-400">
+                            <Loader2 size={24} className="animate-spin mx-auto mb-2 text-indigo-600" />
+                            Loading daily reload sheet...
+                          </td>
+                        </tr>
+                      ) : (
+                        calculatedTotals.rows.map((row, idx) => (
+                          <tr key={`${row.operator}-${row.cardValue}`} className="hover:bg-slate-50/80 transition-colors">
+                            
+                            {/* Operator Name & Badge */}
                             <td className="p-3">
-                              <div className="font-bold text-slate-900">{item.operator}</div>
-                              <div className="text-[11px] text-slate-500">{cardLabel}</div>
+                              <div className="flex items-center gap-2.5">
+                                <div 
+                                  className="w-3 h-3 rounded-full shrink-0"
+                                  style={{ backgroundColor: row.color }}
+                                />
+                                <div>
+                                  <div className="font-bold text-slate-900 text-[13px]">{row.label}</div>
+                                  <div className="text-[10px] text-slate-400 font-semibold">{row.tag}</div>
+                                </div>
+                              </div>
                             </td>
-                            <td className="p-3 text-center font-mono">{item.openingStock}</td>
-                            <td className="p-3 text-center font-mono text-emerald-600 font-bold">+{item.addedStock}</td>
-                            <td className="p-3 text-center font-mono font-black text-indigo-700 bg-indigo-50/50">{item.totalStock}</td>
-                            <td className="p-3 text-center font-mono">
-                              {item.closingStock !== undefined && item.closingStock !== null ? (
-                                <span className="font-bold text-slate-800">{item.closingStock}</span>
-                              ) : (
-                                <span className="text-amber-600 italic text-[11px]">Pending EOD</span>
-                              )}
+
+                            {/* Opening Stock Input */}
+                            <td className="p-2 text-center">
+                              <input
+                                type="number"
+                                onWheel={(e) => e.target.blur()}
+                                value={row.openingStock || ''}
+                                onChange={(e) => handleCellChange(idx, 'openingStock', e.target.value)}
+                                placeholder="0"
+                                className="w-full text-center py-1.5 px-2 font-mono font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white focus:border-indigo-500 outline-none"
+                              />
                             </td>
-                            <td className="p-3 text-center font-mono font-black text-emerald-600 text-sm">
-                              {item.sellOutQty || 0}
-                              <div className="text-[10px] text-emerald-700 font-normal">Rs. {(item.sellOutValue || 0).toLocaleString()}</div>
+
+                            {/* Added Today Input */}
+                            <td className="p-2 text-center">
+                              <input
+                                type="number"
+                                onWheel={(e) => e.target.blur()}
+                                value={row.addedStock || ''}
+                                onChange={(e) => handleCellChange(idx, 'addedStock', e.target.value)}
+                                placeholder="0"
+                                className="w-full text-center py-1.5 px-2 font-mono font-bold text-emerald-700 bg-emerald-50/40 border border-emerald-200 rounded-lg text-xs focus:bg-white focus:border-emerald-500 outline-none"
+                              />
                             </td>
-                            <td className="p-3 text-right">
-                              <button
-                                onClick={() => {
-                                  setSelectedStockItem(item);
-                                  setClosingInput(item.closingStock || 0);
-                                  setIsCloseStockOpen(true);
-                                }}
-                                className="px-2.5 py-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-lg text-xs font-bold border border-indigo-200"
-                              >
-                                Count Evening
-                              </button>
+
+                            {/* Total Available Float (Calculated) */}
+                            <td className="p-3 text-center font-mono font-bold text-slate-700 bg-slate-100/50">
+                              Rs. {Number(row.totalStock * (row.cardValue || 1)).toLocaleString()}
+                            </td>
+
+                            {/* Evening In-Hand Input */}
+                            <td className="p-2 text-center">
+                              <input
+                                type="number"
+                                onWheel={(e) => e.target.blur()}
+                                value={row.closingStock !== undefined && row.closingStock !== null ? row.closingStock : ''}
+                                onChange={(e) => handleCellChange(idx, 'closingStock', e.target.value)}
+                                placeholder="0"
+                                className="w-full text-center py-1.5 px-2 font-mono font-black text-indigo-800 bg-indigo-50/40 border border-indigo-200 rounded-lg text-xs focus:bg-white focus:border-indigo-500 outline-none"
+                              />
+                            </td>
+
+                            {/* Total Sold Out Value */}
+                            <td className="p-3 text-right font-mono font-black text-emerald-600 text-sm bg-emerald-50/50">
+                              Rs. {Number(row.sellOutValue || 0).toLocaleString()}
                             </td>
                           </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
-          )}
-        </div>
-
-        {/* Add Stock Modal */}
-        {isAddStockOpen && (
-          <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/50 p-4">
-            <div className="bg-white w-full max-w-md rounded-2xl p-5 shadow-2xl space-y-4">
-              <div className="flex justify-between items-center border-b pb-3">
-                <h3 className="font-bold text-base text-slate-900">Add / Register In-Hand Stock</h3>
-                <button onClick={() => setIsAddStockOpen(false)}><X size={18} /></button>
-              </div>
-              <form onSubmit={handleSaveStock} className="space-y-3">
-                <div>
-                  <label className="text-xs font-bold text-slate-700">Operator</label>
-                  <select
-                    className="w-full p-2 border rounded-xl text-xs font-bold"
-                    value={addStockForm.operator}
-                    onChange={(e) => setAddStockForm({ ...addStockForm, operator: e.target.value })}
-                  >
-                    {operators.map(o => <option key={o.name} value={o.name}>{o.name}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-700">Card Value / Denomination (Rs.)</label>
-                  <select
-                    className="w-full p-2 border rounded-xl text-xs font-bold"
-                    value={addStockForm.cardValue}
-                    onChange={(e) => setAddStockForm({ ...addStockForm, cardValue: Number(e.target.value) })}
-                  >
-                    <option value={100}>Rs. 100 Scratch Cards</option>
-                    <option value={50}>Rs. 50 Scratch Cards</option>
-                    <option value={200}>Rs. 200 Scratch Cards</option>
-                    <option value={500}>Rs. 500 Scratch Cards</option>
-                    <option value={1000}>Rs. 1,000 Scratch Cards</option>
-                    <option value={1}>E-Reload Balance (LKR)</option>
-                  </select>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-bold text-slate-700">Opening Stock</label>
-                    <input
-                      type="number"
-                      className="w-full p-2 border rounded-xl text-xs font-bold"
-                      value={addStockForm.openingStock}
-                      onChange={(e) => setAddStockForm({ ...addStockForm, openingStock: Number(e.target.value) })}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold text-slate-700">Added Today</label>
-                    <input
-                      type="number"
-                      className="w-full p-2 border rounded-xl text-xs font-bold"
-                      value={addStockForm.addedStock}
-                      onChange={(e) => setAddStockForm({ ...addStockForm, addedStock: Number(e.target.value) })}
-                    />
-                  </div>
-                </div>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-2.5 bg-emerald-600 text-white font-bold rounded-xl text-xs shadow-md hover:bg-emerald-700"
-                >
-                  Save Stock Entry
-                </button>
-              </form>
-            </div>
-          </div>
-        )}
-
-        {/* Evening Close Modal */}
-        {isCloseStockOpen && selectedStockItem && (
-          <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/50 p-4">
-            <div className="bg-white w-full max-w-md rounded-2xl p-5 shadow-2xl space-y-4">
-              <div className="flex justify-between items-center border-b pb-3">
-                <h3 className="font-bold text-base text-slate-900">
-                  🌙 Count Evening Balance ({selectedStockItem.operator})
+            </>
+          ) : (
+            /* Quick Credit Reload Tab */
+            <div className="max-w-xl mx-auto bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-5">
+              <div className="border-b border-slate-100 pb-3">
+                <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+                  <span>🏷️ Record Credit Reload (ණයට දැමූ Reload)</span>
                 </h3>
-                <button onClick={() => setIsCloseStockOpen(false)}><X size={18} /></button>
+                <p className="text-xs text-slate-500 mt-1">
+                  Log reload given to a known customer on credit without adding cash into drawer float.
+                </p>
               </div>
-              <form onSubmit={handleCloseStock} className="space-y-4">
-                <div className="bg-slate-50 p-3 rounded-xl text-xs space-y-1 text-slate-600">
-                  <div>Opening Stock: <strong>{selectedStockItem.openingStock}</strong></div>
-                  <div>Added Stock: <strong>+{selectedStockItem.addedStock}</strong></div>
-                  <div>Total In-Hand: <strong className="text-indigo-600">{selectedStockItem.totalStock}</strong></div>
-                </div>
+
+              <form onSubmit={handleSubmitCreditReload} className="space-y-4">
                 <div>
-                  <label className="text-xs font-bold text-slate-700">Enter Evening Remaining In-Hand Cards / Balance:</label>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Select Operator *</label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {['Dialog', 'Mobitel', 'Airtel', 'Hutch'].map((op) => (
+                      <button
+                        key={op}
+                        type="button"
+                        onClick={() => setCreditFormData({ ...creditFormData, operator: op })}
+                        className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all ${
+                          creditFormData.operator === op 
+                            ? 'bg-amber-500 text-white border-amber-600 shadow-sm' 
+                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                        }`}
+                      >
+                        {op}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Customer Mobile Number *</label>
+                    <input
+                      type="tel"
+                      required
+                      value={creditFormData.mobileNumber}
+                      onChange={(e) => setCreditFormData({ ...creditFormData, mobileNumber: e.target.value })}
+                      placeholder="0771234567"
+                      className="w-full p-2.5 text-sm font-semibold border border-slate-200 rounded-xl outline-none focus:border-amber-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Customer Name (Optional)</label>
+                    <input
+                      type="text"
+                      value={creditFormData.customerName}
+                      onChange={(e) => setCreditFormData({ ...creditFormData, customerName: e.target.value })}
+                      placeholder="e.g. Kamal / Shop neighbor"
+                      className="w-full p-2.5 text-sm font-semibold border border-slate-200 rounded-xl outline-none focus:border-amber-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Reload Amount (Rs.) *</label>
                   <input
                     type="number"
                     required
-                    className="w-full p-3 border-2 border-indigo-500 rounded-xl text-base font-black text-indigo-700 outline-none"
-                    value={closingInput}
-                    onChange={(e) => setClosingInput(e.target.value)}
+                    value={creditFormData.amount}
+                    onChange={(e) => setCreditFormData({ ...creditFormData, amount: e.target.value })}
+                    placeholder="Enter amount (e.g. 500)"
+                    className="w-full p-3 text-lg font-black text-amber-700 border-2 border-amber-200 rounded-xl outline-none focus:border-amber-500"
                   />
                 </div>
-                <div className="bg-emerald-50 p-3 rounded-xl text-xs text-emerald-800 font-semibold">
-                  Estimated Sold Out: <strong>{Math.max(0, (selectedStockItem.totalStock || 0) - Number(closingInput))} cards</strong>
-                  {' '}(Rs. {(Math.max(0, (selectedStockItem.totalStock || 0) - Number(closingInput)) * (selectedStockItem.cardValue || 1)).toLocaleString()})
+
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Note / Reference (Optional)</label>
+                  <input
+                    type="text"
+                    value={creditFormData.notes}
+                    onChange={(e) => setCreditFormData({ ...creditFormData, notes: e.target.value })}
+                    placeholder="e.g. Promised to pay tomorrow"
+                    className="w-full p-2 text-xs font-medium border border-slate-200 rounded-xl outline-none"
+                  />
                 </div>
+
                 <button
                   type="submit"
-                  disabled={loading}
-                  className="w-full py-2.5 bg-indigo-600 text-white font-bold rounded-xl text-xs shadow-md hover:bg-indigo-700"
+                  disabled={submittingCredit}
+                  className="w-full py-3 bg-gradient-to-r from-amber-600 to-amber-700 text-white font-black rounded-xl text-sm shadow-md hover:from-amber-700 hover:to-amber-800 transition-all flex items-center justify-center gap-2"
                 >
-                  Save & Calculate Daily Sell-Out
+                  {submittingCredit ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle size={18} />}
+                  Save Credit Reload Entry
                 </button>
               </form>
+            </div>
+          )}
+
+        </div>
+
+        {/* Footer Actions */}
+        {modalTab === 'sheet' && (
+          <div className="p-4 bg-white border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+            <div className="flex items-center gap-2 text-xs text-slate-600 font-medium">
+              <ShieldCheck size={16} className="text-emerald-600" />
+              <span>
+                Total Sell-Out of <strong>Rs. {Number(calculatedTotals.totalSellOutVal).toLocaleString()}</strong> will sync with active POS shift drawer.
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2.5 w-full sm:w-auto">
+              <button
+                type="button"
+                onClick={handlePrintDailySlip}
+                className="flex-1 sm:flex-none px-4 py-2.5 border border-slate-300 hover:bg-slate-100 text-slate-700 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors"
+              >
+                <Printer size={15} />
+                Print 80mm Slip
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSaveDailySheet}
+                disabled={savingSheet}
+                className="flex-1 sm:flex-none px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-extrabold rounded-xl text-xs shadow-md flex items-center justify-center gap-2 transition-all"
+              >
+                {savingSheet ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    Saving Sheet...
+                  </>
+                ) : (
+                  <>
+                    <Save size={16} />
+                    Save & Sync to Cash Drawer
+                  </>
+                )}
+              </button>
             </div>
           </div>
         )}

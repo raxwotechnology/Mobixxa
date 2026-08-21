@@ -7,6 +7,7 @@ const {
   addReloadStock,
   closeReloadStock,
   addReloadSupplierPayment,
+  saveReloadDailySheet,
 } = require('../controllers/reloadController');
 
 const { protect } = require('../middleware/authMiddleware');
@@ -20,6 +21,7 @@ router.route('/')
 router.get('/stocks', getReloadStocks);
 router.post('/stocks/add', addReloadStock);
 router.post('/stocks/close', closeReloadStock);
+router.post('/stocks/save-sheet', saveReloadDailySheet);
 router.post('/supplier-payment', addReloadSupplierPayment);
 
 module.exports = router;

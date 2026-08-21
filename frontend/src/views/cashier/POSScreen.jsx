@@ -5864,6 +5864,10 @@ const POSScreen = () => {
         onClose={() => setShowReloadModal(false)}
         storeId={user?.assignedStore || user?.assignedStoreId || user?.storeId || posSession?.storeId}
         accountId={pos.accountId}
+        onSyncSuccess={() => {
+          if (fetchDailyFinancials) fetchDailyFinancials();
+          if (fetchSessionData) fetchSessionData();
+        }}
       />
 
       <CustomerHistoryModal

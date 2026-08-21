@@ -402,6 +402,101 @@ const addReloadSupplierPayment = async (req, res, next) => {
   }
 };
 
+// @desc    Bulk save whole Daily In-Hand Reload & Card Sheet with auto-calculated Sell-Out
+// @route   POST /api/reloads/stocks/save-sheet
+// @access  Private
+const saveReloadDailySheet = async (req, res, next) => {
+  try {
+    const { storeId, date, items } = req.body;
+    const targetDate = date || new Date().toISOString().split('T')[0];
+
+    let assignedStore = storeId;
+    if (!assignedStore) {
+      if (req.user.role === 'manager') {
+        const store = await Store.findOne({ managerId: req.user._id });
+        if (store) assignedStore = store._id;
+      } else if (req.user.assignedStore) {
+        assignedStore = req.user.assignedStore;
+      } else if (req.user.role === 'admin') {
+        const store = await Store.findOne({ isActive: true });
+        if (store) assignedStore = store._id;
+      }
+    }
+
+    if (!assignedStore) {
+      const anyStore = await Store.findOne({ isActive: true });
+      if (anyStore) assignedStore = anyStore._id;
+    }
+
+    if (!Array.isArray(items) || items.length === 0) {
+      res.status(400);
+      return next(new Error('No sheet items provided'));
+    }
+
+    const updatedRecords = [];
+    let totalDailySellOutRevenue = 0;
+
+    for (const item of items) {
+      const operator = item.operator;
+      const cardValue = Number(item.cardValue || 1);
+      const openingStock = Number(item.openingStock || 0);
+      const addedStock = Number(item.addedStock || 0);
+      const totalStock = openingStock + addedStock;
+      const closingStock = item.closingStock !== undefined && item.closingStock !== null && item.closingStock !== ''
+        ? Number(item.closingStock)
+        : totalStock;
+      const sellOutAmount = Math.max(0, totalStock - closingStock);
+      const sellOutValue = sellOutAmount * cardValue;
+
+      totalDailySellOutRevenue += sellOutValue;
+
+      let record = await ReloadStock.findOne({
+        storeId: assignedStore,
+        date: targetDate,
+        operator,
+        cardValue,
+      });
+
+      if (record) {
+        record.openingStock = openingStock;
+        record.addedStock = addedStock;
+        record.totalStock = totalStock;
+        record.closingStock = closingStock;
+        record.sellOutAmount = sellOutAmount;
+        record.sellOutValue = sellOutValue;
+        if (item.notes) record.notes = item.notes;
+        record.recordedBy = req.user._id;
+        await record.save();
+      } else {
+        record = await ReloadStock.create({
+          storeId: assignedStore,
+          date: targetDate,
+          operator,
+          cardValue,
+          openingStock,
+          addedStock,
+          totalStock,
+          closingStock,
+          sellOutAmount,
+          sellOutValue,
+          notes: item.notes || '',
+          recordedBy: req.user._id,
+        });
+      }
+      updatedRecords.push(record);
+    }
+
+    res.status(200).json({
+      success: true,
+      data: updatedRecords,
+      totalSellOutRevenue: totalDailySellOutRevenue,
+      message: 'Daily reload balance sheet saved & synced successfully! 📊✅'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createReload,
   getReloads,
@@ -409,4 +504,5 @@ module.exports = {
   addReloadStock,
   closeReloadStock,
   addReloadSupplierPayment,
+  saveReloadDailySheet,
 };
