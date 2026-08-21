@@ -92,8 +92,13 @@ const getHPById = async (req, res, next) => {
 // @access  Private/Admin/Manager
 const recordHPPayment = async (req, res, next) => {
   try {
-    const { amount, paymentMethod, accountId, referenceNo, notes } = req.body;
-    if (!accountId) {
+    let targetAccountId = accountId;
+    if (!targetAccountId) {
+      const Account = require('../models/Account');
+      const defaultAcc = await Account.findOne({ isDefault: true }) || await Account.findOne({});
+      if (defaultAcc) targetAccountId = defaultAcc._id;
+    }
+    if (!targetAccountId) {
       res.status(400);
       return next(new Error('Target account is required for payment'));
     }
@@ -104,8 +109,8 @@ const recordHPPayment = async (req, res, next) => {
 
     const payment = {
       amount,
-      paymentMethod,
-      accountId,
+      paymentMethod: paymentMethod || 'Cash',
+      accountId: targetAccountId,
       referenceNo,
       receivedBy: req.user._id,
       date: new Date(),

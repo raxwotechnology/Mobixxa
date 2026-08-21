@@ -4945,7 +4945,7 @@ const POSScreen = () => {
                         {rec.invoiceNo} — <span style={{ color: '#2563eb' }}>{rec.customer?.name}</span>
                       </div>
                       <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
-                        📞 {rec.customer?.phone} | Due: <strong style={{ color: '#d97706' }}>Rs. {rec.remainingBalance?.toLocaleString()}</strong>
+                        📞 {rec.customer?.phone} | Due: <strong style={{ color: '#d97706' }}>Rs. {(rec.remainingBalance !== undefined ? rec.remainingBalance : rec.balanceAmount)?.toLocaleString()}</strong>
                       </div>
                     </div>
                     <span style={{
@@ -4992,7 +4992,7 @@ const POSScreen = () => {
                     </div>
                     <div>
                       <div style={{ fontSize: '11px', color: '#b45309', textTransform: 'uppercase', fontWeight: '700' }}>Remaining Due</div>
-                      <div style={{ fontSize: '16px', fontWeight: '800', color: '#d97706', marginTop: '2px' }}>Rs. {selectedHpRecord.remainingBalance?.toLocaleString()}</div>
+                      <div style={{ fontSize: '16px', fontWeight: '800', color: '#d97706', marginTop: '2px' }}>Rs. {(selectedHpRecord.remainingBalance !== undefined ? selectedHpRecord.remainingBalance : selectedHpRecord.balanceAmount)?.toLocaleString()}</div>
                     </div>
                   </div>
 
