@@ -6,6 +6,8 @@ import { Menu, X, ChevronRight, User, Settings, LayoutDashboard, ChevronDown, Lo
 import useAuthStore from '../store/authStore';
 import useSettingsStore from '../store/settingsStore';
 import { adminNavGroups, getAdminNavGroups } from '../views/admin/adminNavItems';
+import { getFilteredManagerNavGroups } from '../views/storeOwner/managerNavItems';
+import { getEmployeeNavGroups } from '../views/employee/employeeNav';
 import useAdminStoreStore from '../store/adminStoreStore';
 import { getAdminStores } from '../services/api';
 import { getImageUrl } from '../utils/imageHelper';
@@ -154,13 +156,16 @@ const DashboardLayout = ({ children, navItems, title }) => {
   const [stores, setStores] = useState([]);
 
   let finalNavItems = navItems;
-  if (!finalNavItems && (user?.role === 'admin' || location.pathname.startsWith('/admin'))) {
+  if (user?.role === 'manager') {
+    finalNavItems = getFilteredManagerNavGroups(user);
+  } else if (user?.role === 'cashier' || user?.role === 'deliveryGuy' || user?.role === 'stockEmployee') {
+    finalNavItems = getEmployeeNavGroups(user.role, user);
+  } else if (user?.role === 'admin') {
+    finalNavItems = getAdminNavGroups(user);
+  } else if (!finalNavItems) {
     finalNavItems = adminNavGroups;
   }
-  const isAdminNav = user?.role === 'admin' && (finalNavItems === adminNavGroups || (Array.isArray(finalNavItems) && finalNavItems.length > 0 && finalNavItems[0]?.label === 'Dashboard'));
-  if (isAdminNav) {
-    finalNavItems = getAdminNavGroups(user);
-  }
+  const isAdminNav = user?.role === 'admin';
 
   useEffect(() => {
     fetchSettings();
