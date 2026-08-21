@@ -4,7 +4,7 @@ import AdminCheques from '../../../views/admin/AdminCheques';
 
 export default function AdminChequesRoute() {
   return (
-    <ProtectedRoute roles={['admin', 'manager', 'cashier']} permission="finance">
+    <ProtectedRoute roles={['admin', 'manager', 'cashier']}>
       <AdminCheques />
     </ProtectedRoute>
   );

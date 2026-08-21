@@ -4,7 +4,7 @@ import AdminHP from '../../../views/admin/AdminHP';
 
 export default function AdminHPRoute() {
   return (
-    <ProtectedRoute roles={['admin', 'manager', 'cashier']} permission="finance">
+    <ProtectedRoute roles={['admin', 'manager', 'cashier']}>
       <AdminHP />
     </ProtectedRoute>
   );

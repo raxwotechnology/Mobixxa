@@ -28,7 +28,6 @@ const ProtectedRoute = ({ children, roles, permission }) => {
     // Role authorization check
     if (roles && roles.length > 0) {
       const allowedRoles = [...roles];
-      // Always allow SuperAdmin and Admin
       if (!allowedRoles.includes('admin')) allowedRoles.push('admin');
 
       const isRoleAllowed = allowedRoles.includes(user.role) || user.isSuperAdmin || user.email === 'admin@mobilehub.com';
@@ -36,42 +35,30 @@ const ProtectedRoute = ({ children, roles, permission }) => {
         router.replace(getFallbackHomeForUser(user));
         return;
       }
+      // If role is authorized, grant access
+      return;
     }
 
-    // Granular Permission check (if specific permission is required)
+    // Granular Permission check (only if roles wasn't specified)
     if (permission) {
       const isSuperAdminOrAdmin = user.email === 'admin@mobilehub.com' || user.isSuperAdmin || user.role === 'admin' || user.role === 'manager';
 
       if (!isSuperAdminOrAdmin) {
         const p = user.permissions || {};
 
-        // If permission explicitly revoked by admin (false), deny
-        if (p[permission] === false) {
-          router.replace(getFallbackHomeForUser(user));
-          return;
-        }
-
-        // Standard operational tools for cashiers
         const isCashierStandardTool = user.role === 'cashier' && [
           'sales', 'pos', 'reloads', 'expenses', 'finance', 'hp', 'cheques', 'products', 'inventory', 'repairs', 'barcodes', 'attendance', 'leaves', 'overtime', 'salary'
         ].includes(permission);
 
-        // Standard operational tools for stock employees
         const isStockStandardTool = user.role === 'stockEmployee' && [
           'inventory', 'products', 'barcodes', 'repairs', 'returns', 'attendance', 'leaves', 'overtime', 'salary'
         ].includes(permission);
 
-        // Standard operational tools for delivery guys
         const isDeliveryStandardTool = user.role === 'deliveryGuy' && [
           'deliveries', 'orders', 'attendance', 'leaves', 'overtime', 'salary'
         ].includes(permission);
 
-        const hasGrantedPermission = p[permission] === true ||
-          (permission === 'reloads' && (p.reloads === true || p.sales === true)) ||
-          (permission === 'finance' && (p.finance === true || p.expenses === true || p.accounts === true || p.cheques === true)) ||
-          (permission === 'sales' && (p.sales === true || p.reloads === true || p.pos === true)) ||
-          (permission === 'inventory' && (p.inventory === true || p.products === true)) ||
-          (permission === 'products' && (p.products === true || p.inventory === true));
+        const hasGrantedPermission = p[permission] === true;
 
         const isAllowed = isCashierStandardTool || isStockStandardTool || isDeliveryStandardTool || hasGrantedPermission;
 
@@ -99,13 +86,13 @@ const ProtectedRoute = ({ children, roles, permission }) => {
     if (!allowedRoles.includes('admin')) allowedRoles.push('admin');
     const isRoleAllowed = allowedRoles.includes(user.role) || user.isSuperAdmin || user.email === 'admin@mobilehub.com';
     if (!isRoleAllowed) return null;
+    return children;
   }
 
   if (permission) {
     const isSuperAdminOrAdmin = user.email === 'admin@mobilehub.com' || user.isSuperAdmin || user.role === 'admin' || user.role === 'manager';
     if (!isSuperAdminOrAdmin) {
       const p = user.permissions || {};
-      if (p[permission] === false) return null;
 
       const isCashierStandardTool = user.role === 'cashier' && [
         'sales', 'pos', 'reloads', 'expenses', 'finance', 'hp', 'cheques', 'products', 'inventory', 'repairs', 'barcodes', 'attendance', 'leaves', 'overtime', 'salary'
@@ -119,12 +106,7 @@ const ProtectedRoute = ({ children, roles, permission }) => {
         'deliveries', 'orders', 'attendance', 'leaves', 'overtime', 'salary'
       ].includes(permission);
 
-      const hasGrantedPermission = p[permission] === true ||
-        (permission === 'reloads' && (p.reloads === true || p.sales === true)) ||
-        (permission === 'finance' && (p.finance === true || p.expenses === true || p.accounts === true || p.cheques === true)) ||
-        (permission === 'sales' && (p.sales === true || p.reloads === true || p.pos === true)) ||
-        (permission === 'inventory' && (p.inventory === true || p.products === true)) ||
-        (permission === 'products' && (p.products === true || p.inventory === true));
+      const hasGrantedPermission = p[permission] === true;
 
       const isAllowed = isCashierStandardTool || isStockStandardTool || isDeliveryStandardTool || hasGrantedPermission;
       if (!isAllowed) return null;
