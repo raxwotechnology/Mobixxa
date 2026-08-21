@@ -152,6 +152,8 @@ const DashboardLayout = ({ children, navItems, title }) => {
   const mainMinHeight = showDashboardHeader ? 'calc(100dvh - 3.5rem)' : 'calc(100vh - 100px)';
   const settings = useSettingsStore((s) => s.settings);
   const fetchSettings = useSettingsStore((s) => s.fetchSettings);
+  const { selectedStoreId, setSelectedStoreId } = useAdminStoreStore();
+  const [stores, setStores] = useState([]);
   const authUser = user || (typeof window !== 'undefined' ? (() => {
     try {
       const stored = localStorage.getItem('auth-storage');
