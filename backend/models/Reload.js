@@ -29,8 +29,22 @@ const reloadSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ['Cash', 'Card', 'Bank Transfer'],
       default: 'Cash',
+    },
+    customerName: {
+      type: String,
+      trim: true,
+    },
+    isCredit: {
+      type: Boolean,
+      default: false,
+    },
+    creditSettled: {
+      type: Boolean,
+      default: false,
+    },
+    creditSettledAt: {
+      type: Date,
     },
     status: {
       type: String,

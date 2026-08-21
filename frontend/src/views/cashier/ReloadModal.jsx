@@ -12,6 +12,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId }) => {
   // Quick reload form
   const [formData, setFormData] = useState({
     mobileNumber: '',
+    customerName: '',
     operator: 'Dialog',
     amount: '',
     type: 'Prepaid',
@@ -46,7 +47,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId }) => {
   ];
 
   const types = ['Prepaid', 'Postpaid', 'Bill Payment'];
-  const methods = ['Cash', 'Card', 'Bank Transfer'];
+  const methods = ['Cash', 'Card', 'Bank Transfer', 'Credit'];
 
   const fetchStocks = async () => {
     try {
@@ -77,9 +78,8 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId }) => {
       return;
     }
 
-    if (!accountId) {
-      toast.error('Please select a target account in POS first');
-      return;
+    if (formData.paymentMethod !== 'Credit' && !accountId) {
+      // If no target account is selected in POS, proceed with default
     }
 
     try {
@@ -87,11 +87,12 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId }) => {
       await createReload({
         ...formData,
         storeId,
-        accountId
+        accountId: formData.paymentMethod === 'Credit' ? null : accountId
       });
-      toast.success('Reload successful! ✅');
+      toast.success(formData.paymentMethod === 'Credit' ? 'Credit Reload recorded successfully! 🏷️✅' : 'Reload successful! ✅');
       setFormData({
         mobileNumber: '',
+        customerName: '',
         operator: 'Dialog',
         amount: '',
         type: 'Prepaid',
@@ -292,6 +293,28 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId }) => {
                   </div>
                 </div>
               </div>
+
+              {/* Credit Customer Details when Credit is selected */}
+              {formData.paymentMethod === 'Credit' && (
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl space-y-2">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-amber-800">
+                    <span>🏷️ Credit / ණයට Reload</span>
+                  </div>
+                  <p className="text-[11px] text-amber-700 leading-tight">
+                    This reload will be tracked under customer debt. No physical cash will be added to the drawer.
+                  </p>
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-700 block mb-1">Customer Name (Optional)</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Kamal Perera / Shop neighbor"
+                      className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white"
+                      value={formData.customerName}
+                      onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Notes */}
               <div className="space-y-1">

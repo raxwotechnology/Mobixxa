@@ -58,7 +58,7 @@ const orderSchema = mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ['card', 'upi', 'cod', 'wallet', 'payhere', 'cash', 'mobile_money', 'koko', 'bank_transfer', 'cheque', 'hire_purchase'],
+      enum: ['card', 'upi', 'cod', 'wallet', 'payhere', 'cash', 'mobile_money', 'koko', 'bank_transfer', 'cheque', 'hire_purchase', 'credit'],
       default: 'cod',
     },
 

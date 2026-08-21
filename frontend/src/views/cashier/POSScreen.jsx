@@ -153,6 +153,20 @@ const POSScreen = () => {
   const [submittingHpPay, setSubmittingHpPay] = useState(false);
   const [hpReceiptData, setHpReceiptData] = useState(null);
 
+  // Customer Credit Collection / Settle Modal States
+  const [showCreditSettleModal, setShowCreditSettleModal] = useState(false);
+  const [creditSearchInput, setCreditSearchInput] = useState('');
+  const [creditOrdersList, setCreditOrdersList] = useState([]);
+  const [selectedCreditOrder, setSelectedCreditOrder] = useState(null);
+  const [loadingCreditSearch, setLoadingCreditSearch] = useState(false);
+  const [creditSettleForm, setCreditSettleForm] = useState({
+    amount: '',
+    paymentMethod: 'Cash',
+    accountId: '',
+    notes: ''
+  });
+  const [submittingCreditSettle, setSubmittingCreditSettle] = useState(false);
+
   // Cashier Verification Lockscreen States
   const [isUnlocked, setIsUnlocked] = useState(!!user);
   const [unlockCode, setUnlockCode] = useState('');
@@ -740,6 +754,159 @@ const POSScreen = () => {
       toast.error(err.response?.data?.message || 'Failed to record installment payment');
     } finally {
       setSubmittingHpPay(false);
+    }
+  };
+
+  // Customer Credit Collection & Debt Settlement Handlers
+  const handleSearchCreditOrders = async (query = creditSearchInput) => {
+    try {
+      setLoadingCreditSearch(true);
+      const params = { status: 'pending' };
+      if (query && query.trim()) params.search = query.trim();
+      const res = await getCreditOrders(params);
+      setCreditOrdersList(res.data || []);
+      if ((!res.data || res.data.length === 0) && query) {
+        toast.info('No pending credit orders found');
+      }
+    } catch (err) {
+      toast.error('Failed to load credit orders');
+    } finally {
+      setLoadingCreditSearch(false);
+    }
+  };
+
+  const handleSelectCreditOrder = (ord) => {
+    setSelectedCreditOrder(ord);
+    setCreditSettleForm({
+      amount: ord.creditBalance || '',
+      paymentMethod: 'Cash',
+      accountId: accounts.length > 0 ? accounts[0]._id : '',
+      notes: ''
+    });
+  };
+
+  const handlePrintCreditReceipt = (ord, payAmt, method, newBal) => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast.error('Popup blocked! Please allow popups to print receipt.');
+      return;
+    }
+
+    const logoUrl = getImageUrl(settings?.logoUrl || settings?.logo);
+    const showLogo = settings?.receiptSettings?.showLogo !== false && logoUrl;
+    const logoWidth = settings?.receiptSettings?.logoWidth || 120;
+    const logoAlign = settings?.receiptSettings?.logoAlignment || 'center';
+    const headerTitle = settings?.receiptSettings?.headerTitle || brandName;
+    const subtitle = settings?.receiptSettings?.subtitle || settings?.address || '';
+    const footerMsg = settings?.receiptSettings?.footerMessage || 'Thank you for your payment!';
+    const terms = settings?.receiptSettings?.termsAndConditions || '';
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Credit Settlement Receipt - ${ord?.invoiceNumber || 'Credit'}</title>
+          <style>
+            body { font-family: 'Courier New', monospace; width: 80mm; margin: 0 auto; padding: 10px; color: #000; }
+            .text-center { text-align: center; }
+            .text-left { text-align: left; }
+            .text-right { text-align: right; }
+            .bold { font-weight: bold; }
+            .header { margin-bottom: 8px; border-bottom: 1px dashed #000; padding-bottom: 6px; }
+            .title { font-size: 15px; font-weight: bold; text-transform: uppercase; }
+            .subtitle { font-size: 10px; margin-top: 2px; }
+            .row { display: flex; justify-content: space-between; font-size: 11px; margin: 3px 0; }
+            .divider { border-top: 1px dashed #000; margin: 6px 0; }
+            .total-box { border: 1.5px solid #000; padding: 6px; margin: 6px 0; text-align: center; border-radius: 4px; }
+            .status-badge { display: inline-block; padding: 2px 6px; font-size: 10px; font-weight: bold; border: 1px solid #000; margin-top: 4px; }
+            .footer { margin-top: 10px; text-align: center; font-size: 9px; border-top: 1px dashed #000; padding-top: 6px; }
+          </style>
+        </head>
+        <body>
+          <div class="header text-${logoAlign}">
+            ${showLogo ? `<div style="text-align:${logoAlign}; margin-bottom: 4px;"><img src="${logoUrl}" style="width:${logoWidth}px; max-height:70px; object-contain:contain;" /></div>` : ''}
+            <div class="title text-${logoAlign}">${headerTitle}</div>
+            ${subtitle ? `<div class="subtitle text-${logoAlign}">${subtitle}</div>` : ''}
+            <div class="subtitle text-${logoAlign}" style="font-weight:bold; margin-top:3px;">CREDIT DEBT SETTLEMENT RECEIPT</div>
+            <div class="subtitle text-${logoAlign}">Date: ${new Date().toLocaleDateString('en-GB')} ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+          </div>
+
+          <div class="row"><span>Invoice / Order:</span><span class="bold">${ord?.invoiceNumber || 'N/A'}</span></div>
+          <div class="row"><span>Customer:</span><span>${ord?.customerName || 'N/A'}</span></div>
+          <div class="row"><span>Phone:</span><span>${ord?.customerPhone || 'N/A'}</span></div>
+          <div class="row"><span>Cashier:</span><span>${user?.name || 'Cashier'}</span></div>
+
+          <div class="divider"></div>
+
+          <div class="row"><span>Total Order Amount:</span><span class="bold">Rs. ${Number(ord?.totalAmount || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
+          <div class="row"><span>Prev Due Balance:</span><span>Rs. ${Number(ord?.creditBalance || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
+
+          <div class="total-box">
+            <div style="font-size: 10px; font-weight: bold;">SETTLEMENT AMOUNT PAID</div>
+            <div style="font-size: 17px; font-weight: bold; margin: 2px 0;">Rs. ${Number(payAmt).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</div>
+            <div style="font-size: 10px; text-transform: uppercase;">Method: ${method}</div>
+          </div>
+
+          <div class="row" style="font-size: 12px; margin-top: 4px;"><span class="bold">REMAINING DUE BALANCE:</span><span class="bold">Rs. ${Number(Math.max(0, newBal)).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
+
+          <div class="text-center">
+            <span class="status-badge">${newBal <= 0 ? '✓ DEBT FULLY SETTLED & CLEARED' : 'PARTIAL SETTLEMENT - ACTIVE'}</span>
+          </div>
+
+          <div class="footer">
+            <p style="margin: 2px 0; font-weight: bold;">${footerMsg}</p>
+            ${terms ? `<p style="margin: 4px 0 2px 0; font-size: 8px; font-style: italic;">${terms}</p>` : ''}
+          </div>
+
+          <script>
+            window.onload = function() {
+              window.print();
+              window.close();
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
+  const handleSubmitCreditSettle = async () => {
+    if (!selectedCreditOrder) {
+      toast.error('Please select a credit order first');
+      return;
+    }
+    const payAmt = Number(creditSettleForm.amount);
+    if (!payAmt || payAmt <= 0) {
+      toast.error('Please enter a valid settlement amount');
+      return;
+    }
+
+    try {
+      setSubmittingCreditSettle(true);
+      const res = await settleCreditOrder(selectedCreditOrder._id, {
+        amount: payAmt,
+        paymentMethod: creditSettleForm.paymentMethod,
+        accountId: creditSettleForm.accountId || undefined,
+        note: creditSettleForm.notes
+      });
+      const updatedOrder = res.data;
+      const newBal = updatedOrder?.creditBalance !== undefined ? updatedOrder.creditBalance : Math.max(0, (selectedCreditOrder.creditBalance || 0) - payAmt);
+      toast.success('Debt settlement recorded successfully! 🏷️✅');
+      
+      // Auto-trigger thermal receipt print window
+      setTimeout(() => {
+        handlePrintCreditReceipt(selectedCreditOrder, payAmt, creditSettleForm.paymentMethod, newBal);
+      }, 300);
+
+      setSelectedCreditOrder(null);
+      handleSearchCreditOrders(creditSearchInput);
+      if (getAccounts) {
+        getAccounts().then(res => setAccounts(res.data || [])).catch(() => {});
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to settle debt');
+    } finally {
+      setSubmittingCreditSettle(false);
     }
   };
 
@@ -2257,9 +2424,9 @@ const POSScreen = () => {
             <TrendingUp size={18} />
             <span className="pos-topbar-btn-text">Shift</span>
           </button>
-          <button className="pos-topbar-btn" onClick={() => { setShowCreditPanel(!showCreditPanel); if (!showCreditPanel) fetchCreditOrders(); }} title="Credit Sales" style={showCreditPanel ? { background: '#fef3c7', color: '#92400e' } : {}}>
-            📋
-            <span className="pos-topbar-btn-text">Credit</span>
+          <button className="pos-topbar-btn" onClick={() => { setShowCreditSettleModal(true); handleSearchCreditOrders(''); }} title="Settle Customer Credit / ණය පියවීම" style={{ background: '#fef3c7', color: '#92400e', borderColor: '#fde68a', fontWeight: 'bold' }}>
+            <Clock size={18} />
+            <span className="pos-topbar-btn-text">Credit Settle</span>
           </button>
           <button className="pos-topbar-btn" onClick={() => setShowReturnModal(true)} title="Return / Exchange" style={{ background: '#fef2f2', color: '#991b1b', borderColor: '#fee2e2' }}>
             <RefreshCw size={18} />
@@ -3169,6 +3336,27 @@ const POSScreen = () => {
                   >
                     <CreditCard size={20} />
                     PayHere
+                  </button>
+                  <button
+                    className={`pos-payment-btn ${pos.paymentMethod === 'credit' || isCredit ? 'active' : ''}`}
+                    onClick={() => {
+                      pos.setPaymentMethod('credit');
+                      setIsCredit(true);
+                      setCreditAmountPaid(0);
+                      if (!pos.customerPhone) {
+                        setShowCustomerInfo(true);
+                        setTimeout(() => customerPhoneRef.current?.focus(), 100);
+                      }
+                    }}
+                    title="Credit Sale / ණයට දීම (Pay Later)"
+                    style={{
+                      background: pos.paymentMethod === 'credit' || isCredit ? '#fef3c7' : undefined,
+                      color: pos.paymentMethod === 'credit' || isCredit ? '#92400e' : undefined,
+                      borderColor: pos.paymentMethod === 'credit' || isCredit ? '#fde68a' : undefined
+                    }}
+                  >
+                    <Clock size={20} />
+                    Credit (ණයට)
                   </button>
                 </div>
 
@@ -5228,6 +5416,302 @@ const POSScreen = () => {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Customer Credit Collection & Debt Settlement Modal */}
+      {showCreditSettleModal && (
+        <div className="pos-modal-overlay" onClick={() => setShowCreditSettleModal(false)}>
+          <div className="pos-modal-card" onClick={e => e.stopPropagation()} style={{ maxWidth: '640px', width: '92%', padding: '24px', background: '#ffffff', borderRadius: '24px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', border: '1px solid #e2e8f0' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', paddingBottom: '14px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px' }}>
+                  📋
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>Customer Credit / ණය පියවීම 🏷️</h3>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#64748b', fontWeight: '500' }}>Search customer phone or invoice to collect debt & print receipt</p>
+                </div>
+              </div>
+              <button onClick={() => setShowCreditSettleModal(false)} style={{ border: 'none', background: '#f1f5f9', padding: '6px', borderRadius: '50%', cursor: 'pointer', color: '#64748b' }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Step 1: Search input */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ fontSize: '12px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '6px' }}>
+                SEARCH CUSTOMER PHONE, NAME, OR INVOICE NUMBER *
+              </label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ position: 'relative', flex: 1 }}>
+                  <Search style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} size={18} />
+                  <input
+                    type="text"
+                    value={creditSearchInput}
+                    onChange={(e) => setCreditSearchInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleSearchCreditOrders(); }}
+                    placeholder="e.g. 0771234567, Kamal, INV-..."
+                    style={{
+                      width: '100%',
+                      paddingLeft: '44px',
+                      paddingRight: '16px',
+                      paddingTop: '12px',
+                      paddingBottom: '12px',
+                      fontSize: '14px',
+                      background: '#ffffff',
+                      color: '#0f172a',
+                      fontWeight: '600',
+                      borderRadius: '12px',
+                      border: '2px solid #cbd5e1',
+                      outline: 'none',
+                      boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+                    }}
+                  />
+                </div>
+                <button
+                  onClick={() => handleSearchCreditOrders()}
+                  disabled={loadingCreditSearch}
+                  style={{
+                    padding: '0 24px',
+                    fontSize: '14px',
+                    fontWeight: '700',
+                    color: '#ffffff',
+                    background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+                    border: 'none',
+                    borderRadius: '12px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    boxShadow: '0 4px 12px rgba(217, 119, 6, 0.25)'
+                  }}
+                >
+                  {loadingCreditSearch ? <RefreshCw size={18} className="animate-spin" /> : <Search size={18} />}
+                  Search
+                </button>
+              </div>
+            </div>
+
+            {/* List of matching credit orders */}
+            {creditOrdersList.length > 0 && !selectedCreditOrder && (
+              <div style={{ maxHeight: '220px', overflowY: 'auto', marginBottom: '20px', border: '1px solid #e2e8f0', borderRadius: '14px', background: '#ffffff', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                {creditOrdersList.map((ord) => (
+                  <div
+                    key={ord._id}
+                    onClick={() => handleSelectCreditOrder(ord)}
+                    style={{
+                      padding: '12px 16px',
+                      borderBottom: '1px solid #f1f5f9',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      background: '#ffffff',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = '#fffbeb'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = '#ffffff'}
+                  >
+                    <div>
+                      <div style={{ fontWeight: '800', fontSize: '14px', color: '#0f172a' }}>
+                        {ord.invoiceNumber} — <span style={{ color: '#2563eb' }}>{ord.customerName || 'Customer'}</span>
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
+                        📞 {ord.customerPhone || 'N/A'} | Total: Rs. {Number(ord.totalAmount || 0).toLocaleString()} | Paid: Rs. {Number(ord.amountPaid || 0).toLocaleString()}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '10px', color: '#b45309', fontWeight: 'bold', textTransform: 'uppercase' }}>Remaining Due</div>
+                      <div style={{ fontSize: '14px', fontWeight: '800', color: '#d97706' }}>
+                        Rs. {Number(ord.creditBalance || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Selected Credit Order Settlement Form */}
+            {selectedCreditOrder ? (
+              <div>
+                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '16px', marginBottom: '20px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    <div>
+                      <span style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a' }}>{selectedCreditOrder.invoiceNumber}</span>
+                      <span style={{ fontSize: '13px', color: '#475569', marginLeft: '8px', fontWeight: '600' }}>({selectedCreditOrder.customerName || 'Customer'})</span>
+                    </div>
+                    <button
+                      onClick={() => setSelectedCreditOrder(null)}
+                      style={{ border: '1px solid #cbd5e1', background: '#ffffff', color: '#2563eb', fontSize: '12px', fontWeight: '700', padding: '4px 12px', borderRadius: '8px', cursor: 'pointer' }}
+                    >
+                      Change Order
+                    </button>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', background: '#ffffff', padding: '12px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: '700' }}>Total Order</div>
+                      <div style={{ fontSize: '15px', fontWeight: '800', color: '#334155', marginTop: '2px' }}>Rs. {Number(selectedCreditOrder.totalAmount || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#166534', textTransform: 'uppercase', fontWeight: '700' }}>Already Paid</div>
+                      <div style={{ fontSize: '15px', fontWeight: '800', color: '#166534', marginTop: '2px' }}>Rs. {Number(selectedCreditOrder.amountPaid || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#b45309', textTransform: 'uppercase', fontWeight: '700' }}>Remaining Due</div>
+                      <div style={{ fontSize: '16px', fontWeight: '800', color: '#d97706', marginTop: '2px' }}>
+                        Rs. {Number(selectedCreditOrder.creditBalance || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: '10px', fontSize: '12px', color: '#475569', fontWeight: '500' }}>
+                    📞 Customer Phone: <strong style={{ color: '#0f172a' }}>{selectedCreditOrder.customerPhone || 'N/A'}</strong>
+                  </div>
+                </div>
+
+                {/* Form fields */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '6px' }}>
+                      Settlement Amount (Rs.) *
+                    </label>
+                    <input
+                      type="number"
+                      onWheel={(e) => e.target.blur()}
+                      value={creditSettleForm.amount}
+                      onChange={(e) => setCreditSettleForm({ ...creditSettleForm, amount: e.target.value })}
+                      placeholder="Enter amount"
+                      style={{
+                        width: '100%',
+                        padding: '12px 14px',
+                        fontSize: '16px',
+                        fontWeight: '800',
+                        color: '#0f172a',
+                        background: '#ffffff',
+                        border: '2px solid #cbd5e1',
+                        borderRadius: '12px',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '6px' }}>
+                      Payment Method *
+                    </label>
+                    <select
+                      value={creditSettleForm.paymentMethod}
+                      onChange={(e) => setCreditSettleForm({ ...creditSettleForm, paymentMethod: e.target.value })}
+                      style={{
+                        width: '100%',
+                        padding: '12px 14px',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: '#0f172a',
+                        background: '#ffffff',
+                        border: '2px solid #cbd5e1',
+                        borderRadius: '12px',
+                        outline: 'none'
+                      }}
+                    >
+                      <option value="Cash">💵 Cash</option>
+                      <option value="Card">💳 Card</option>
+                      <option value="Bank Transfer">🏛️ Bank Transfer</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '20px' }}>
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '6px' }}>
+                      Receiving Account / Drawer
+                    </label>
+                    <select
+                      value={creditSettleForm.accountId}
+                      onChange={(e) => setCreditSettleForm({ ...creditSettleForm, accountId: e.target.value })}
+                      style={{
+                        width: '100%',
+                        padding: '12px 14px',
+                        fontSize: '13px',
+                        fontWeight: '600',
+                        color: '#0f172a',
+                        background: '#ffffff',
+                        border: '2px solid #cbd5e1',
+                        borderRadius: '12px',
+                        outline: 'none'
+                      }}
+                    >
+                      <option value="">Default Counter Drawer</option>
+                      {accounts.map(acc => (
+                        <option key={acc._id} value={acc._id}>
+                          {acc.name} {acc.accountType ? `(${acc.accountType})` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '6px' }}>
+                      Notes / Reference (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={creditSettleForm.notes}
+                      onChange={(e) => setCreditSettleForm({ ...creditSettleForm, notes: e.target.value })}
+                      placeholder="e.g. Paid in full / Part payment"
+                      style={{
+                        width: '100%',
+                        padding: '12px 14px',
+                        fontSize: '13px',
+                        fontWeight: '500',
+                        color: '#0f172a',
+                        background: '#ffffff',
+                        border: '2px solid #cbd5e1',
+                        borderRadius: '12px',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Submit button */}
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    style={{
+                      flex: 1,
+                      padding: '14px',
+                      borderRadius: '12px',
+                      border: 'none',
+                      background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                      color: '#ffffff',
+                      fontWeight: '800',
+                      fontSize: '15px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      boxShadow: '0 4px 14px rgba(5, 150, 105, 0.3)'
+                    }}
+                    onClick={handleSubmitCreditSettle}
+                    disabled={submittingCreditSettle}
+                  >
+                    {submittingCreditSettle ? (
+                      <>
+                        <RefreshCw size={18} className="animate-spin" />
+                        Saving & Generating Receipt...
+                      </>
+                    ) : (
+                      <>
+                        <Receipt size={18} />
+                        Settle Debt & Print Receipt
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            ) : null}
           </div>
         </div>
       )}

@@ -400,3 +400,4 @@ export const deleteRepair = (id) => API.delete(`/repairs/${id}`);
 export const sendInvoiceReceipt = (id, data) => API.post(`/pos/orders/${id}/send-receipt`, data);
 
 export default API;
+

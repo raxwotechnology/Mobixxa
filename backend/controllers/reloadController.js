@@ -18,7 +18,8 @@ const createReload = async (req, res, next) => {
       paymentMethod, 
       notes, 
       storeId,
-      accountId 
+      accountId,
+      customerName 
     } = req.body;
 
     let assignedStore = storeId;
@@ -39,29 +40,39 @@ const createReload = async (req, res, next) => {
       return next(new Error('No store found for this transaction. Please ensure your account is linked to a store.'));
     }
 
-    // 1. Create Transaction for the income
-    const transaction = await Transaction.create({
-      storeId: assignedStore || null,
-      accountId: accountId || null,
-      type: 'income',
-      category: 'Reload & Bill Payment',
-      amount: Number(amount),
-      paymentMethod: paymentMethod || 'Cash',
-      description: `${type || 'Prepaid'} Reload: ${operator} - ${mobileNumber}`,
-      date: new Date(),
-      createdBy: req.user._id,
-    });
+    const isCredit = String(paymentMethod).toLowerCase() === 'credit';
+
+    // 1. Create Transaction for the record
+    let transaction = null;
+    try {
+      transaction = await Transaction.create({
+        storeId: assignedStore || null,
+        accountId: isCredit ? null : (accountId || null),
+        type: 'income',
+        category: isCredit ? 'Credit Reload' : 'Reload & Bill Payment',
+        amount: Number(amount),
+        paymentMethod: isCredit ? 'Credit' : (paymentMethod || 'Cash'),
+        description: `${isCredit ? '[CREDIT / ණයට] ' : ''}${type || 'Prepaid'} Reload: ${operator} - ${mobileNumber}${customerName ? ` (${customerName})` : ''}`,
+        date: new Date(),
+        createdBy: req.user._id,
+      });
+    } catch (tErr) {
+      console.error('[Reload Transaction Warning]:', tErr.message);
+    }
 
     // 2. Create Reload record
     const reload = await Reload.create({
       storeId: assignedStore || null,
       mobileNumber,
+      customerName: customerName || undefined,
       operator,
       amount: Number(amount),
       type: type || 'Prepaid',
-      paymentMethod: paymentMethod || 'Cash',
+      paymentMethod: isCredit ? 'Credit' : (paymentMethod || 'Cash'),
+      isCredit,
+      creditSettled: false,
       notes,
-      transactionId: transaction._id,
+      transactionId: transaction?._id || null,
       createdBy: req.user._id,
       status: 'Completed'
     });

@@ -1239,12 +1239,25 @@ const getCashierSalesReport = async (req, res, next) => {
 const getCreditOrders = async (req, res, next) => {
   try {
     const storeId = await resolveStoreId(req.user);
-    const filter = { isPosOrder: true, isCredit: true, storeId };
+    const filter = { isPosOrder: true, isCredit: true };
+    if (storeId) filter.storeId = storeId;
+
     if (req.query.status === 'pending') {
       filter.creditBalance = { $gt: 0 };
     } else if (req.query.status === 'settled') {
       filter.creditBalance = 0;
     }
+
+    if (req.query.search) {
+      const search = req.query.search.trim();
+      filter.$or = [
+        { invoiceNumber: { $regex: search, $options: 'i' } },
+        { customerName: { $regex: search, $options: 'i' } },
+        { customerPhone: { $regex: search, $options: 'i' } },
+        { customerNic: { $regex: search, $options: 'i' } }
+      ];
+    }
+
     const orders = await Order.find(filter)
       .sort({ createdAt: -1 })
       .populate('cashierId', 'name')
@@ -1265,6 +1278,9 @@ const settleCreditOrder = async (req, res, next) => {
     const payAmount = Number(req.body.amount || order.creditBalance);
     if (payAmount <= 0) { res.status(400); return next(new Error('Invalid payment amount')); }
 
+    const paymentMethod = req.body.paymentMethod || 'Cash';
+    const accountId = req.body.accountId;
+
     order.amountPaid = Number(order.amountPaid || 0) + payAmount;
     order.creditBalance = Math.max(0, Number(order.totalAmount) - Number(order.amountPaid));
     if (order.creditBalance <= 0) {
@@ -1276,17 +1292,22 @@ const settleCreditOrder = async (req, res, next) => {
     await order.save();
 
     // Record in Transaction Ledger
-    await Transaction.create({
-      storeId: order.storeId,
-      type: 'income',
-      category: 'Credit Settle',
-      amount: payAmount,
-      paymentMethod: 'Cash', // Default to cash for credit settle in POS
-      referenceNo: order.invoiceNumber,
-      description: `Credit Settle for ${order.invoiceNumber}`,
-      createdBy: req.user._id,
-      date: new Date()
-    });
+    try {
+      await Transaction.create({
+        storeId: order.storeId,
+        accountId: accountId || null,
+        type: 'income',
+        category: 'Credit Settle',
+        amount: payAmount,
+        paymentMethod: paymentMethod,
+        referenceNo: order.invoiceNumber,
+        description: `Customer Credit Settle for ${order.customerName || order.customerPhone || 'Customer'} (${order.invoiceNumber})`,
+        createdBy: req.user._id,
+        date: new Date()
+      });
+    } catch (txErr) {
+      console.error('[Credit Settle] Transaction log notice:', txErr.message);
+    }
 
     res.json(order);
   } catch (error) { next(error); }
