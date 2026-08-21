@@ -38,6 +38,7 @@ import {
   Printer,
   CheckCircle2,
   Zap,
+  ExternalLink,
 } from 'lucide-react';
 
 import { getPosProducts, getProductByBarcode, posCheckout, getPosOrders, applyVoucher, getSettings, getActivePosSession, startPosSession, endPosSession, getPosPayHereHash, redeemPoints, getMyLoyaltyPoints, getCreditOrders, getCustomerCreditSummary, settleCreditOrder, getCategories, createQuotation, createProduct, getAccounts, loginUser, getCashiers, posLogin, getPosOrderByInvoice, createCustomerReturn, getHPRecords, recordHPPayment, createExpense } from '../../services/api';
@@ -2543,51 +2544,74 @@ const POSScreen = () => {
           <span className="pos-topbar-store">{user?.assignedStoreName || 'Store'}</span>
         </div>
         <div className="pos-topbar-right">
+          {/* Client Web / Back / Navigation */}
+          <button className="pos-topbar-btn" onClick={() => navigate('/shop')} title="Switch to Customer Web Store" style={{ background: '#ecfdf5', color: '#047857', borderColor: '#a7f3d0', fontWeight: 'bold' }}>
+            <ExternalLink size={15} />
+            <span className="pos-topbar-btn-text">Client Web</span>
+          </button>
           {user?.role === 'admin' && (
             <button className="pos-topbar-btn" onClick={() => navigate('/admin')} title="Switch to Admin Dashboard" style={{ background: '#fdf2f8', color: '#be185d', borderColor: '#fbcfe8', fontWeight: 'bold' }}>
-              <ShieldCheck size={18} />
-              <span className="pos-topbar-btn-text">Admin Panel</span>
+              <ShieldCheck size={15} />
+              <span className="pos-topbar-btn-text">Admin</span>
             </button>
           )}
           {user?.role === 'manager' && (
             <button className="pos-topbar-btn" onClick={() => navigate('/manager')} title="Switch to Manager Dashboard" style={{ background: '#f0fdf4', color: '#15803d', borderColor: '#bbf7d0', fontWeight: 'bold' }}>
-              <Store size={18} />
-              <span className="pos-topbar-btn-text">Manager Panel</span>
+              <Store size={15} />
+              <span className="pos-topbar-btn-text">Manager</span>
             </button>
           )}
-          <button className="pos-topbar-btn" onClick={handleBack} title="Back to Dashboard">
-            <ArrowLeft size={18} />
-            <span className="pos-topbar-btn-text">Back</span>
+          <button className="pos-topbar-btn" onClick={handleBack} title="Leave POS & Return to Dashboard" style={{ background: '#f8fafc', color: '#475569', borderColor: '#cbd5e1', fontWeight: 'bold' }}>
+            <ArrowLeft size={15} />
+            <span className="pos-topbar-btn-text">Leave</span>
           </button>
+
+          {/* Shift & Operations */}
           <button className="pos-topbar-btn" onClick={openEndSessionModal} title="Close POS Session">
-            <Clock size={18} />
+            <Clock size={15} />
             <span className="pos-topbar-btn-text">Close</span>
           </button>
-          <button className="pos-topbar-btn" onClick={openBalanceModal} title="View Daily Balance">
-            <DollarSign size={18} />
+          <button className="pos-topbar-btn" onClick={openBalanceModal} title="View Daily Balance Sheet">
+            <DollarSign size={15} />
             <span className="pos-topbar-btn-text">Balance</span>
           </button>
           <button className="pos-topbar-btn" onClick={handleShiftSummary} title="Shift Summary">
-            <TrendingUp size={18} />
+            <TrendingUp size={15} />
             <span className="pos-topbar-btn-text">Shift</span>
           </button>
+
+          {/* Quick Counter Tools */}
           <button className="pos-topbar-btn" onClick={() => { setShowCreditSettleModal(true); handleSearchCreditOrders(''); }} title="Settle Customer Credit" style={{ background: '#fef3c7', color: '#92400e', borderColor: '#fde68a', fontWeight: 'bold' }}>
-            <Clock size={18} />
-            <span className="pos-topbar-btn-text">Credit Settle</span>
+            <Clock size={15} />
+            <span className="pos-topbar-btn-text">Credit</span>
           </button>
-          <button className="pos-topbar-btn" onClick={() => setShowReturnModal(true)} title="Return / Exchange" style={{ background: '#fef2f2', color: '#991b1b', borderColor: '#fee2e2' }}>
-            <RefreshCw size={18} />
+          <button className="pos-topbar-btn" onClick={() => setShowReturnModal(true)} title="Return / Exchange Item" style={{ background: '#fef2f2', color: '#991b1b', borderColor: '#fee2e2' }}>
+            <RefreshCw size={15} />
             <span className="pos-topbar-btn-text">Return</span>
           </button>
           <button className="pos-topbar-btn" onClick={() => { setShowHpQuickPayModal(true); handleSearchHpRecords(''); }} title="Record HP Installment Payment" style={{ background: '#fff7ed', color: '#c2410c', borderColor: '#ffedd5', fontWeight: 'bold' }}>
-            <CreditCard size={18} />
-            <span className="pos-topbar-btn-text">HP Payment</span>
+            <CreditCard size={15} />
+            <span className="pos-topbar-btn-text">HP Pay</span>
           </button>
           <button className="pos-topbar-btn" onClick={() => setShowTradeInModal(true)} title="Used Phone Trade-In Estimator" style={{ background: '#e0f2fe', color: '#0369a1', borderColor: '#bae6fd', fontWeight: 'bold' }}>
-            <Smartphone size={18} />
+            <Smartphone size={15} />
             <span className="pos-topbar-btn-text">Trade-In</span>
           </button>
-          <div className="pos-topbar-cashier">
+          <button className="pos-topbar-btn" onClick={() => setShowReloadModal(true)} title="Reload & Bill Payments" style={{ background: '#f0fdf4', color: '#166534', borderColor: '#bbf7d0' }}>
+            <Smartphone size={15} />
+            <span className="pos-topbar-btn-text">Reload</span>
+          </button>
+          <button className="pos-topbar-btn" onClick={() => setShowPettyCashModal(true)} title="Record Petty Cash / Counter Expense" style={{ background: '#fffbeb', color: '#92400e', borderColor: '#fde68a' }}>
+            <DollarSign size={15} />
+            <span className="pos-topbar-btn-text">Petty</span>
+          </button>
+          <button className="pos-topbar-btn" onClick={() => setShowShortcutsHelp(true)} title="Keyboard Shortcuts (F1)" style={{ background: '#f8fafc', color: '#334155', borderColor: '#cbd5e1' }}>
+            <span style={{ fontSize: '13px' }}>⌨️</span>
+            <span className="pos-topbar-btn-text">F1</span>
+          </button>
+
+          {/* Cashier profile & Switch Cashier */}
+          <div className="pos-topbar-cashier" title={`Logged in as ${user?.name || 'Cashier'}`}>
             <div className="pos-topbar-avatar" style={{ overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {user?.avatar ? (
                 <img src={getImageUrl(user.avatar)} alt={user?.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -2597,24 +2621,12 @@ const POSScreen = () => {
             </div>
             <span className="pos-topbar-cashier-name">{user?.name}</span>
           </div>
-          <button className="pos-topbar-btn" onClick={() => setShowReloadModal(true)} title="Reload & Bill Payments" style={{ background: '#f0fdf4', color: '#166534', borderColor: '#bbf7d0' }}>
-            <Smartphone size={18} />
-            <span className="pos-topbar-btn-text">Reload</span>
-          </button>
-          <button className="pos-topbar-btn" onClick={() => setShowPettyCashModal(true)} title="Record Petty Cash / Counter Expense" style={{ background: '#fffbeb', color: '#92400e', borderColor: '#fde68a' }}>
-            <DollarSign size={18} />
-            <span className="pos-topbar-btn-text">Petty Cash</span>
-          </button>
-          <button className="pos-topbar-btn" onClick={() => setShowShortcutsHelp(true)} title="Keyboard Shortcuts (F1)" style={{ background: '#f8fafc', color: '#334155', borderColor: '#cbd5e1' }}>
-            <span style={{ fontSize: '15px' }}>⌨️</span>
-            <span className="pos-topbar-btn-text">Shortcuts (F1)</span>
-          </button>
           <button className="pos-topbar-btn" onClick={handleSwitchCashier} title="Switch Cashier Profile" style={{ background: '#f5f3ff', color: '#5b21b6', borderColor: '#ddd6fe', fontWeight: 'bold' }}>
-            <Users size={18} />
-            <span className="pos-topbar-btn-text">Switch Cashier</span>
+            <Users size={15} />
+            <span className="pos-topbar-btn-text">Switch</span>
           </button>
           <button className="pos-topbar-logout" onClick={handleLogout} title="Logout">
-            <LogOut size={18} />
+            <LogOut size={16} />
           </button>
         </div>
       </header>
