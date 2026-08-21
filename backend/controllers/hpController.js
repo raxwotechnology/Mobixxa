@@ -92,6 +92,7 @@ const getHPById = async (req, res, next) => {
 // @access  Private/Admin/Manager
 const recordHPPayment = async (req, res, next) => {
   try {
+    const { amount, paymentMethod, accountId, referenceNo, notes } = req.body;
     let targetAccountId = accountId;
     if (!targetAccountId) {
       const Account = require('../models/Account');
