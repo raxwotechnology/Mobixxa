@@ -106,7 +106,8 @@ const adminNavGroups = [
   {
     label: 'System Settings',
     items: [
-      { path: '/admin/settings', label: 'Settings', icon: Settings },
+      { path: '/admin/users',    label: 'User Permissions & Accounts', icon: UserCog },
+      { path: '/admin/settings', label: 'Settings',                   icon: Settings },
     ],
   },
   {
