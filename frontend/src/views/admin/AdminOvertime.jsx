@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { Clock, Plus, DollarSign, User, CheckCircle, Trash2, X, Download, Search, ChevronRight, ArrowLeft } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
 import DeleteConfirmationModal from '../../components/DeleteConfirmationModal';
-import { adminNavGroups as navItems } from './adminNavItems';
 import { getOvertimeSummary, getOvertimeRecords, createOvertimeRecord, markOvertimePaid, rejectOvertimeRecord, deleteOvertimeRecord, getEmployeeOTReport } from '../../services/api';
 import API from '../../services/api';
 import { toast } from 'react-toastify';
@@ -162,7 +161,7 @@ const AdminOvertime = () => {
   }
 
   return (
-    <DashboardLayout navItems={navItems} title="Overtime">
+    <DashboardLayout title="Overtime">
       <div>
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">

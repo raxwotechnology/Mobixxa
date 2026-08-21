@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { Calculator, Send, FileText, Download, Landmark, Search, User, RefreshCw, CheckCircle } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
 import { getAdminUsers, calculateSalary, processSalaryPayment, getPayrollReport, downloadPaysheet } from '../../services/api';
-import { adminNavGroups as navItems } from './adminNavItems';
 import { toast } from 'react-toastify';
 
 const now = new Date();
@@ -104,7 +103,7 @@ const AdminPayroll = () => {
   const selectedEmployee = employees.find(e => e._id === selectedEmpId);
 
   return (
-    <DashboardLayout navItems={navItems} title="Mobixa Admin Panel">
+    <DashboardLayout title="Payroll Management">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">

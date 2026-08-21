@@ -152,27 +152,40 @@ const DashboardLayout = ({ children, navItems, title }) => {
   const mainMinHeight = showDashboardHeader ? 'calc(100dvh - 3.5rem)' : 'calc(100vh - 100px)';
   const settings = useSettingsStore((s) => s.settings);
   const fetchSettings = useSettingsStore((s) => s.fetchSettings);
-  const { selectedStoreId, setSelectedStoreId } = useAdminStoreStore();
-  const [stores, setStores] = useState([]);
+  const authUser = user || (typeof window !== 'undefined' ? (() => {
+    try {
+      const stored = localStorage.getItem('auth-storage');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return parsed?.state?.user || null;
+      }
+    } catch { }
+    return null;
+  })() : null);
 
-  let finalNavItems = navItems;
-  if (user?.role === 'manager') {
-    finalNavItems = getFilteredManagerNavGroups(user);
-  } else if (user?.role === 'cashier' || user?.role === 'deliveryGuy' || user?.role === 'stockEmployee') {
-    finalNavItems = getEmployeeNavGroups(user.role, user);
-  } else if (user?.role === 'admin') {
-    finalNavItems = getAdminNavGroups(user);
-  } else if (!finalNavItems) {
+  const effectiveRole = authUser?.role;
+
+  let finalNavItems;
+  if (effectiveRole === 'manager') {
+    finalNavItems = getFilteredManagerNavGroups(authUser);
+  } else if (['cashier', 'deliveryGuy', 'stockEmployee'].includes(effectiveRole)) {
+    finalNavItems = getEmployeeNavGroups(effectiveRole, authUser);
+  } else if (effectiveRole === 'admin') {
+    finalNavItems = getAdminNavGroups(authUser);
+  } else if (navItems) {
+    finalNavItems = navItems;
+  } else {
     finalNavItems = adminNavGroups;
   }
-  const isAdminNav = user?.role === 'admin';
+
+  const isAdminNav = effectiveRole === 'admin';
 
   useEffect(() => {
     fetchSettings();
-    if (isAdminNav && user?.role === 'admin') {
+    if (isAdminNav && effectiveRole === 'admin') {
       getAdminStores().then((res) => setStores(res.data)).catch(() => { });
     }
-  }, [fetchSettings, isAdminNav, user?.role]);
+  }, [fetchSettings, isAdminNav, effectiveRole]);
 
   useEffect(() => {
     fetchSettings(true);
