@@ -6,7 +6,7 @@ import JsBarcode from 'jsbarcode';
 import DashboardLayout from '../../components/DashboardLayout';
 import DeleteConfirmationModal from '../../components/DeleteConfirmationModal';
 
-import { getAdminProducts, getAdminStores, logBarcodeGeneration, getSettings, updateSettings } from '../../services/api';
+import { getAdminProducts, getAdminStores, logBarcodeGeneration, getSettings, updateSettings, getProducts, getPosProducts } from '../../services/api';
 import useAuthStore from '../../store/authStore';
 import { toast } from 'react-toastify';
 
@@ -59,11 +59,11 @@ const BarcodeGenerator = () => {
       setProducts(Array.isArray(data) ? data : data.products || []);
     } catch (adminErr) {
       try {
-        const { data } = await API.get('/products');
+        const { data } = await getProducts();
         setProducts(Array.isArray(data) ? data : data.products || []);
       } catch (pubErr) {
         try {
-          const { data } = await API.get('/pos/products');
+          const { data } = await getPosProducts();
           setProducts(Array.isArray(data) ? data : data.products || []);
         } catch (posErr) {
           toast.error('Failed to load products');

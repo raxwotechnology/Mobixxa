@@ -12,11 +12,26 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// CORS setup
-const envOrigins = (process.env.CORS_ORIGINS || '').split(',').map(o => o.trim()).filter(Boolean);
+const defaultAllowedOrigins = [
+  'https://www.max-durakathana.netlify.app',
+  'https://mobilehubtech.netlify.app',
+  'https://www.mobilehubtech.netlify.app',
+  'https://max-durakathana.netlify.app',
+  'http://localhost:3000',
+  ...envOrigins,
+];
 app.use(cors({
   origin: function (origin, callback) {
-    return callback(null, true);
+    if (process.env.NODE_ENV !== 'production' || !origin) {
+      return callback(null, true);
+    }
+    const isLocalhost = /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin);
+    const isNetlify = /\.netlify\.app$/.test(origin);
+    const isVercel = /\.vercel\.app$/.test(origin);
+    if (defaultAllowedOrigins.includes(origin) || isLocalhost || isNetlify || isVercel) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

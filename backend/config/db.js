@@ -73,17 +73,11 @@ const autoBootstrapStaff = async () => {
 
     for (const acc of staffAccounts) {
       let user = await User.findOne({ email: acc.email });
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(acc.password, salt);
-
       if (!user) {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(acc.password, salt);
         await User.create({ ...acc, password: hashedPassword });
         console.log(`✅ Auto-created: ${acc.email} (${acc.role})`);
-      } else {
-        user.password = hashedPassword;
-        user.isActive = true;
-        await user.save();
-        console.log(`✅ Auto-updated: ${acc.email}`);
       }
     }
   } catch (err) {

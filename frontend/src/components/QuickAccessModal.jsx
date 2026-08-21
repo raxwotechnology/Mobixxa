@@ -19,7 +19,7 @@ const QuickAccessModal = ({ isOpen, onClose }) => {
     if (isOpen) {
       setTimeout(() => inputRef.current?.focus(), 50);
     } else {
-      setSearchQuery('');
+      setSearchQuery(prev => (prev ? '' : prev));
     }
   }, [isOpen]);
 

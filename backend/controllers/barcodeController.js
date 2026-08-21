@@ -81,11 +81,13 @@ const getBarcodeLogs = async (req, res, next) => {
     const filter = {};
 
     if (search) {
+      const { escapeRegex } = require('../utils/searchUtils');
+      const safeSearch = escapeRegex(search);
       filter.$or = [
-        { productName: { $regex: search, $options: 'i' } },
-        { generatedByName: { $regex: search, $options: 'i' } },
-        { sku: { $regex: search, $options: 'i' } },
-        { barcode: { $regex: search, $options: 'i' } },
+        { productName: { $regex: safeSearch, $options: 'i' } },
+        { generatedByName: { $regex: safeSearch, $options: 'i' } },
+        { sku: { $regex: safeSearch, $options: 'i' } },
+        { barcode: { $regex: safeSearch, $options: 'i' } },
       ];
     }
 

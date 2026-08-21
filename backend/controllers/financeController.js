@@ -33,6 +33,7 @@ const getFinancialDashboard = async (req, res, next) => {
 
     // Orders for Revenue
     const orderFilter = { ...storeFilter, orderStatus: { $nin: ['cancelled'] } };
+    delete orderFilter.date;
     if (Object.keys(dateFilter).length > 0) orderFilter.createdAt = dateFilter;
     const orders = await Order.find(orderFilter);
 

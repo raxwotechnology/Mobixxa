@@ -2,6 +2,7 @@ const Attendance = require('../models/Attendance');
 const Leave = require('../models/Leave');
 const User = require('../models/User');
 const Store = require('../models/Store');
+const EmployeeTarget = require('../models/EmployeeTarget');
 const { sendNotification } = require('../utils/notificationService');
 
 const notifyAdmins = async ({ type, title, message, link, metadata }) => {
@@ -53,17 +54,18 @@ const deleteTarget = async (req, res, next) => {
 
 // =================== ATTENDANCE ===================
 
+const { getSriLankaDateBoundaries } = require('../utils/timezone');
+
 // @desc    Check in
 // @route   POST /api/hr/attendance/check-in
 // @access  Private (cashier, deliveryGuy, manager)
 const checkIn = async (req, res, next) => {
   try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const { startOfDay } = getSriLankaDateBoundaries();
 
     const existing = await Attendance.findOne({
       employeeId: req.user._id,
-      date: { $gte: today },
+      date: { $gte: startOfDay },
     });
 
     if (existing) {

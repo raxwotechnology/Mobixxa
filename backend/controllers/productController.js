@@ -85,6 +85,8 @@ const getProducts = async (req, res, next) => {
   }
 };
 
+const { escapeRegex } = require('../utils/searchUtils');
+
 // @desc    Search products
 // @route   GET /api/products/search
 // @access  Public
@@ -95,10 +97,12 @@ const searchProducts = async (req, res, next) => {
       return res.json({ products: [] });
     }
 
+    const safeKeyword = escapeRegex(keyword);
+
     const products = await Product.find({
       $or: [
-        { name: { $regex: keyword, $options: 'i' } },
-        { description: { $regex: keyword, $options: 'i' } },
+        { name: { $regex: safeKeyword, $options: 'i' } },
+        { description: { $regex: safeKeyword, $options: 'i' } },
       ],
       status: 'active',
     })

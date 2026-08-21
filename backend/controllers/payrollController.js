@@ -6,6 +6,7 @@ const AttendancePolicy = require('../models/AttendancePolicy');
 const SalaryAdvance = require('../models/SalaryAdvance');
 const { sendNotification } = require('../utils/notificationService');
 const { salaryPaidEmail, sendEmail } = require('../utils/emailService');
+const { getSriLankaDateBoundaries } = require('../utils/timezone');
 
 // Lazy-loaded: only required when export functions are actually called
 let PDFDocument, XLSX;
@@ -98,13 +99,15 @@ const calculateSalary = async (req, res, next) => {
             attendanceDeductions += (dailyRate / 2);
           } else {
             if (att.checkIn) {
-              const checkInMinutes = att.checkIn.getHours() * 60 + att.checkIn.getMinutes();
+              const { hour: cHour, minute: cMin } = getSriLankaDateBoundaries(att.checkIn);
+              const checkInMinutes = cHour * 60 + cMin;
               if (checkInMinutes - shiftStartMinutes > graceTime) {
                 attendanceDeductions += latePenalty;
               }
             }
             if (att.checkOut) {
-              const checkOutMinutes = att.checkOut.getHours() * 60 + att.checkOut.getMinutes();
+              const { hour: coHour, minute: coMin } = getSriLankaDateBoundaries(att.checkOut);
+              const checkOutMinutes = coHour * 60 + coMin;
               if (shiftEndMinutes - checkOutMinutes > 0) {
                 attendanceDeductions += earlyPenalty;
               }

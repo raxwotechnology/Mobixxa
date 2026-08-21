@@ -268,11 +268,22 @@ const createOrder = async (req, res, next) => {
       });
     }
 
-    // Update product stock
-    for (const item of items) {
-      await Product.findByIdAndUpdate(item.productId, {
-        $inc: { stock: -item.quantity },
-      });
+    // Update product stock (For PayHere orders, stock is deducted upon verified payment confirmation in webhook to prevent stock leaks)
+    if (paymentMethod !== 'payhere') {
+      for (const item of items) {
+        const updatedProduct = await Product.findOneAndUpdate(
+          { _id: item.productId, stock: { $gte: item.quantity } },
+          { $inc: { stock: -item.quantity } },
+          { new: true }
+        );
+
+        if (!updatedProduct) {
+          res.status(400);
+          return next(new Error(`Insufficient stock for item "${item.name || 'selected product'}"`));
+        }
+      }
+      order.inventoryDeducted = true;
+      await order.save();
     }
 
     // Clear user cart
@@ -426,6 +437,11 @@ const generatePayHereHash = async (req, res, next) => {
 
     const merchantId = process.env.PAYHERE_MERCHANT_ID;
     const merchantSecret = process.env.PAYHERE_MERCHANT_SECRET;
+
+    if (!merchantId || !merchantSecret) {
+      res.status(500);
+      return next(new Error('Payment service configuration unavailable'));
+    }
 
     const orderId = order._id.toString();
     const amount = order.totalAmount.toFixed(2);
@@ -615,6 +631,20 @@ const payHereNotify = async (req, res, next) => {
     if (status_code === '2') {
       order.paymentStatus = 'completed';
       order.orderStatus = 'confirmed';
+
+      // Atomically deduct inventory upon verified payment if not already deducted
+      if (!order.inventoryDeducted) {
+        for (const item of (order.items || [])) {
+          if (item.productId) {
+            await Product.findOneAndUpdate(
+              { _id: item.productId, stock: { $gte: item.quantity } },
+              { $inc: { stock: -item.quantity } },
+              { new: true }
+            );
+          }
+        }
+        order.inventoryDeducted = true;
+      }
       
       if (order.voucherCode) {
         await markVoucherAsUsed(order.userId, order.voucherCode);

@@ -54,7 +54,7 @@ const requirePermission = (permission) => {
     }
 
     // Super Admin, Admin & Manager bypass
-    if (req.user.email === 'admin@mobilehub.com' || req.user.role === 'admin' || req.user.role === 'manager' || req.user.isSuperAdmin) {
+    if (req.user.role === 'admin' || req.user.role === 'manager' || req.user.isSuperAdmin) {
       return next();
     }
 

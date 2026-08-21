@@ -73,7 +73,7 @@ app.use(cors({
     if (allowedOrigins.includes(origin) || isLocalhost || isNetlify || isVercel) {
       return callback(null, true);
     }
-    return callback(null, true); // Allow request to proceed cleanly
+    return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

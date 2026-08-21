@@ -227,8 +227,8 @@ const DashboardLayout = ({ children, navItems, title }) => {
   const dashLink = getDashboardLink();
 
   useEffect(() => {
-    setSidebarOpen(false);
-    setUserMenuOpen(false);
+    setSidebarOpen(prev => (prev ? false : prev));
+    setUserMenuOpen(prev => (prev ? false : prev));
   }, [location.pathname]);
 
   const handleLogout = () => {
