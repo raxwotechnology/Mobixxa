@@ -14,7 +14,7 @@ const getFinancialDashboard = async (req, res, next) => {
     
     // Store scoping for managers
     let storeFilter = {};
-    if (req.user.role === 'manager') {
+    if (req.user && req.user.role === 'manager') {
       const store = await Store.findOne({ managerId: req.user._id });
       if (store) storeFilter = { storeId: store._id };
     } else if (storeId && storeId !== 'all') {

@@ -91,21 +91,7 @@ const connectDB = async () => {
   }
 
   try {
-    let atlasUri = process.env.MONGO_URI;
-
-    if (!atlasUri) {
-      const dbUser = process.env.DB_USER;
-      const dbPassword = process.env.DB_PASSWORD;
-      const dbName = process.env.DB_NAME;
-      if (dbUser && dbPassword && dbName) {
-        atlasUri = `mongodb+srv://${dbUser}:${encodeURIComponent(dbPassword)}@cluster0.xqltkqh.mongodb.net/${dbName}?retryWrites=true&w=majority`;
-      }
-    }
-
-    if (!atlasUri) {
-      console.error('Missing MongoDB configuration. Set MONGO_URI.');
-      return;
-    }
+    let atlasUri = process.env.MONGO_URI || 'mongodb+srv://srmobile:w4oRyJXfVAoYuvF7@cluster0.j9iujxp.mongodb.net/mobile_shop?retryWrites=true&w=majority';
 
     // Ensure database name is explicitly attached if URI has no db path before options
     if (atlasUri.includes('.mongodb.net/?')) {
