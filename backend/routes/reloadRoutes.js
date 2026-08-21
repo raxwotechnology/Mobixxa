@@ -6,6 +6,7 @@ const {
   getReloadStocks,
   addReloadStock,
   closeReloadStock,
+  addReloadSupplierPayment,
 } = require('../controllers/reloadController');
 
 const { protect } = require('../middleware/authMiddleware');
@@ -19,5 +20,6 @@ router.route('/')
 router.get('/stocks', getReloadStocks);
 router.post('/stocks/add', addReloadStock);
 router.post('/stocks/close', closeReloadStock);
+router.post('/supplier-payment', addReloadSupplierPayment);
 
 module.exports = router;

@@ -114,6 +114,9 @@ const getReloads = async (req, res, next) => {
 // @desc    Get daily reload stocks
 // @route   GET /api/reloads/stocks
 // @access  Private
+// @desc    Get daily reload stocks
+// @route   GET /api/reloads/stocks
+// @access  Private
 const getReloadStocks = async (req, res, next) => {
   try {
     const { date, storeId } = req.query;
@@ -126,11 +129,53 @@ const getReloadStocks = async (req, res, next) => {
     } else if (req.user.role === 'manager') {
       const store = await Store.findOne({ managerId: req.user._id });
       if (store) filter.storeId = store._id;
+    } else if (req.user.assignedStore) {
+      filter.storeId = req.user.assignedStore;
     }
 
-    const stocks = await ReloadStock.find(filter)
+    let stocks = await ReloadStock.find(filter)
       .populate('recordedBy', 'name')
       .sort({ operator: 1, cardValue: 1 });
+
+    // Auto-carry forward Opening Stock from previous date if today's records don't exist yet
+    if (stocks.length === 0 && filter.storeId) {
+      const prevStockItem = await ReloadStock.findOne({
+        storeId: filter.storeId,
+        date: { $lt: targetDate }
+      }).sort({ date: -1 });
+
+      if (prevStockItem) {
+        const prevStocks = await ReloadStock.find({
+          storeId: filter.storeId,
+          date: prevStockItem.date
+        });
+
+        for (const prevItem of prevStocks) {
+          const carriedOpening = prevItem.closingStock !== undefined && prevItem.closingStock !== null
+            ? prevItem.closingStock 
+            : prevItem.totalStock;
+
+          await ReloadStock.create({
+            storeId: filter.storeId,
+            date: targetDate,
+            operator: prevItem.operator,
+            cardValue: prevItem.cardValue,
+            openingStock: carriedOpening,
+            addedStock: 0,
+            totalStock: carriedOpening,
+            closingStock: carriedOpening,
+            sellOutAmount: 0,
+            sellOutValue: 0,
+            notes: `Auto-carried from ${prevItem.date}`,
+            recordedBy: req.user._id
+          });
+        }
+
+        stocks = await ReloadStock.find(filter)
+          .populate('recordedBy', 'name')
+          .sort({ operator: 1, cardValue: 1 });
+      }
+    }
 
     res.json(stocks);
   } catch (error) {
@@ -170,8 +215,9 @@ const addReloadStock = async (req, res, next) => {
       if (openingStock !== undefined && openingStock !== '') stockItem.openingStock = Number(openingStock);
       if (addedStock !== undefined && addedStock !== '') stockItem.addedStock += Number(addedStock);
       stockItem.totalStock = stockItem.openingStock + stockItem.addedStock;
-      stockItem.sellOutAmount = Math.max(0, stockItem.totalStock - stockItem.closingStock);
-      stockItem.sellOutValue = stockItem.sellOutAmount * stockItem.cardValue;
+      stockItem.closingStock = stockItem.totalStock; // reset evening balance to total stock until closed
+      stockItem.sellOutAmount = 0;
+      stockItem.sellOutValue = 0;
       if (notes) stockItem.notes = notes;
       stockItem.recordedBy = req.user._id;
       await stockItem.save();
@@ -187,9 +233,9 @@ const addReloadStock = async (req, res, next) => {
         openingStock: openVal,
         addedStock: addVal,
         totalStock: totalVal,
-        closingStock: 0,
-        sellOutAmount: totalVal,
-        sellOutValue: totalVal * Number(cardValue || 1),
+        closingStock: totalVal,
+        sellOutAmount: 0,
+        sellOutValue: 0,
         notes,
         recordedBy: req.user._id,
       });
@@ -201,7 +247,7 @@ const addReloadStock = async (req, res, next) => {
   }
 };
 
-// @desc    Close evening shop stock balance & auto-calculate Sell-Out
+// @desc    Close evening shop stock balance & auto-calculate Sell-Out & Income Ledger
 // @route   POST /api/reloads/stocks/close
 // @access  Private
 const closeReloadStock = async (req, res, next) => {
@@ -219,9 +265,73 @@ const closeReloadStock = async (req, res, next) => {
     stockItem.sellOutValue = stockItem.sellOutAmount * stockItem.cardValue;
     if (notes) stockItem.notes = notes;
     stockItem.recordedBy = req.user._id;
+
+    // Auto Create / Update Financial Transaction for Income Ledger
+    if (stockItem.sellOutValue > 0) {
+      const itemTitle = stockItem.cardValue === 1 ? 'E-Reload Float' : `Rs. ${stockItem.cardValue} Cards`;
+      const desc = `Daily Reload Sales (${stockItem.operator} - ${itemTitle}): ${stockItem.sellOutAmount} sold`;
+
+      if (stockItem.transactionId) {
+        await Transaction.findByIdAndUpdate(stockItem.transactionId, {
+          amount: stockItem.sellOutValue,
+          description: desc
+        });
+      } else {
+        const trans = await Transaction.create({
+          storeId: stockItem.storeId,
+          type: 'income',
+          category: 'Reload & Bill Payment',
+          amount: stockItem.sellOutValue,
+          paymentMethod: 'Cash',
+          description: desc,
+          date: new Date(),
+          createdBy: req.user._id
+        });
+        stockItem.transactionId = trans._id;
+      }
+    }
+
     await stockItem.save();
 
     res.status(200).json({ success: true, data: stockItem });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Add Supplier / Service Float Payment Expense
+// @route   POST /api/reloads/supplier-payment
+// @access  Private
+const addReloadSupplierPayment = async (req, res, next) => {
+  try {
+    const { storeId, supplierName, operator, amount, paymentMethod, notes } = req.body;
+
+    let assignedStore = storeId;
+    if (!assignedStore) {
+      if (req.user.role === 'manager') {
+        const store = await Store.findOne({ managerId: req.user._id });
+        if (store) assignedStore = store._id;
+      } else if (req.user.assignedStore) {
+        assignedStore = req.user.assignedStore;
+      } else if (req.user.role === 'admin') {
+        const store = await Store.findOne({ isActive: true });
+        if (store) assignedStore = store._id;
+      }
+    }
+
+    const transaction = await Transaction.create({
+      storeId: assignedStore || null,
+      type: 'expense',
+      category: 'Reload Supplier Cost',
+      amount: Number(amount),
+      paymentMethod: paymentMethod || 'Cash',
+      description: `Reload Supplier Purchase (${operator || 'Float'}) - ${supplierName || 'Distributor'}`,
+      notes,
+      date: new Date(),
+      createdBy: req.user._id
+    });
+
+    res.status(201).json({ success: true, data: transaction });
   } catch (error) {
     next(error);
   }
@@ -233,4 +343,5 @@ module.exports = {
   getReloadStocks,
   addReloadStock,
   closeReloadStock,
+  addReloadSupplierPayment,
 };

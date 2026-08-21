@@ -386,6 +386,7 @@ export const getReloads = (params) => API.get('/reloads', { params });
 export const getReloadStocks = (params) => API.get('/reloads/stocks', { params });
 export const addReloadStock = (data) => API.post('/reloads/stocks/add', data);
 export const closeReloadStock = (data) => API.post('/reloads/stocks/close', data);
+export const addReloadSupplierPayment = (data) => API.post('/reloads/supplier-payment', data);
 
 // Repairs
 export const getRepairs = (params) => API.get('/repairs', { params });
