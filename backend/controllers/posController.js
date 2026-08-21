@@ -683,6 +683,35 @@ const posCheckout = async (req, res, next) => {
       await Product.findByIdAndUpdate(item.productId, updateData);
     }
 
+    // Auto-record Income Transaction for Financial Ledger (Expenses & Income)
+    try {
+      const { recordTransaction } = require('../services/ledgerService');
+      const Account = require('../models/Account');
+      const defaultAccount = await Account.findOne({ isDefault: true }).lean() || await Account.findOne().lean();
+
+      const receivedAmt = isOrderCredit 
+        ? (isHP ? (hirePurchaseData?.downPayment || 0) : (totalAmount - creditBalance)) 
+        : totalAmount;
+
+      if (receivedAmt > 0) {
+        const itemNames = validatedItems.map(i => `${i.name} (x${i.quantity})`).join(', ');
+        await recordTransaction({
+          storeId,
+          accountId: defaultAccount?._id || undefined,
+          type: 'income',
+          category: 'Sales',
+          amount: receivedAmt,
+          paymentMethod: paymentMethod || (actualPayments[0]?.method) || 'Cash',
+          referenceNo: invoiceNumber || order._id.toString().slice(-8).toUpperCase(),
+          description: `POS Sale ${invoiceNumber} - ${itemNames.slice(0, 120)}`,
+          createdBy: req.user._id,
+          date: new Date(),
+        });
+      }
+    } catch (txErr) {
+      console.error('[POS] Ledger Income auto-record failed:', txErr.message);
+    }
+
     // Resolve CustomerReturn if exchangeReturnId was applied
     if (exchangeReturnId) {
       const CustomerReturn = require('../models/CustomerReturn');

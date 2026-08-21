@@ -310,6 +310,31 @@ const createOrder = async (req, res, next) => {
     } catch (eErr) {
       console.error('[Email] Dispatch error:', eErr.message);
     }
+    try {
+      const { recordTransaction } = require('../services/ledgerService');
+      const Account = require('../models/Account');
+      const Store = require('../models/Store');
+      const defaultAccount = await Account.findOne({ isDefault: true }).lean() || await Account.findOne().lean();
+      const resolvedStoreId = storeId || (await Store.findOne({ isActive: true }))?._id;
+
+      if (order.totalAmount > 0 && resolvedStoreId) {
+        const itemNames = items.map(i => `${i.name || 'Product'} (x${i.quantity || 1})`).join(', ');
+        await recordTransaction({
+          storeId: resolvedStoreId,
+          accountId: defaultAccount?._id || undefined,
+          type: 'income',
+          category: 'Sales',
+          amount: order.totalAmount,
+          paymentMethod: paymentMethod === 'payhere' ? 'Card' : (paymentMethod === 'koko' ? 'Koko' : (paymentMethod === 'hire_purchase' ? 'Hire Purchase' : 'Cash')),
+          referenceNo: order.invoiceNumber || order._id.toString().slice(-8).toUpperCase(),
+          description: `Online Order #${order._id.toString().slice(-8).toUpperCase()} - ${itemNames.slice(0, 120)}`,
+          createdBy: req.user._id,
+          date: new Date(),
+        });
+      }
+    } catch (txErr) {
+      console.error('[Order] Ledger Income auto-record failed:', txErr.message);
+    }
 
     res.status(201).json({
       ...order.toObject(),
