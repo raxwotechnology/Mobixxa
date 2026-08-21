@@ -160,6 +160,7 @@ export const getActivePosSession = () => API.get('/pos/session/active');
 export const startPosSession = (data) => API.post('/pos/session/start', data);
 export const endPosSession = (data) => API.post('/pos/session/end', data);
 export const getCreditOrders = (params) => API.get('/pos/credit-orders', { params });
+export const getCustomerCreditSummary = (phone) => API.get(`/pos/customer-credit/${phone}`);
 export const settleCreditOrder = (id, data) => API.put(`/pos/credit-orders/${id}/settle`, data);
 export const createQuotation = (data) => API.post('/pos/quotation', data);
 export const getPosOrderByInvoice = (invoiceNumber) => API.get(`/pos/orders/invoice/${invoiceNumber}`);

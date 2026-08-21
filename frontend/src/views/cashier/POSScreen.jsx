@@ -40,7 +40,7 @@ import {
   Zap,
 } from 'lucide-react';
 
-import { getPosProducts, getProductByBarcode, posCheckout, getPosOrders, applyVoucher, getSettings, getActivePosSession, startPosSession, endPosSession, getPosPayHereHash, redeemPoints, getMyLoyaltyPoints, getCreditOrders, settleCreditOrder, getCategories, createQuotation, createProduct, getAccounts, loginUser, getCashiers, posLogin, getPosOrderByInvoice, createCustomerReturn, getHPRecords, recordHPPayment, createExpense } from '../../services/api';
+import { getPosProducts, getProductByBarcode, posCheckout, getPosOrders, applyVoucher, getSettings, getActivePosSession, startPosSession, endPosSession, getPosPayHereHash, redeemPoints, getMyLoyaltyPoints, getCreditOrders, getCustomerCreditSummary, settleCreditOrder, getCategories, createQuotation, createProduct, getAccounts, loginUser, getCashiers, posLogin, getPosOrderByInvoice, createCustomerReturn, getHPRecords, recordHPPayment, createExpense } from '../../services/api';
 
 
 
@@ -167,6 +167,25 @@ const POSScreen = () => {
     notes: ''
   });
   const [submittingCreditSettle, setSubmittingCreditSettle] = useState(false);
+  const [customerCreditSummary, setCustomerCreditSummary] = useState(null);
+
+  // Check customer credit balance when phone number is entered in POS
+  useEffect(() => {
+    const rawPhone = (pos.customerPhone || '').trim();
+    if (rawPhone.length >= 7) {
+      const timer = setTimeout(async () => {
+        try {
+          const { data } = await getCustomerCreditSummary(rawPhone);
+          setCustomerCreditSummary(data || null);
+        } catch {
+          setCustomerCreditSummary(null);
+        }
+      }, 350);
+      return () => clearTimeout(timer);
+    } else {
+      setCustomerCreditSummary(null);
+    }
+  }, [pos.customerPhone]);
 
   // Cashier Verification Lockscreen States
   const [isUnlocked, setIsUnlocked] = useState(!!user);
@@ -3317,6 +3336,38 @@ const POSScreen = () => {
                           <History size={16} />
                         </button>
                       </div>
+
+                      {customerCreditSummary?.totalDue > 0 && (
+                        <div
+                          onClick={() => {
+                            setCreditSearchInput(pos.customerPhone);
+                            setShowCreditSettleModal(true);
+                            handleSearchCreditOrders(pos.customerPhone);
+                          }}
+                          style={{
+                            marginTop: '6px',
+                            padding: '8px 12px',
+                            background: '#fffbeb',
+                            border: '1.5px solid #f59e0b',
+                            borderRadius: '10px',
+                            color: '#b45309',
+                            fontSize: '11px',
+                            fontWeight: '800',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            boxShadow: '0 2px 6px rgba(245, 158, 11, 0.15)'
+                          }}
+                        >
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span>⚠️</span> Outstanding Debt: <strong>Rs. {Number(customerCreditSummary.totalDue).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</strong> ({customerCreditSummary.unpaidOrdersCount} bills)
+                          </span>
+                          <span style={{ textDecoration: 'underline', color: '#d97706', fontSize: '10px' }}>
+                            Settle Now &rarr;
+                          </span>
+                        </div>
+                      )}
                     </div>
                     <div style={{ display: 'flex', gap: '6px' }}>
                       <input
@@ -5718,42 +5769,54 @@ const POSScreen = () => {
               </div>
             </div>
 
-            {/* List of matching credit orders */}
+            {/* List of matching credit orders with customer aggregate summary */}
             {creditOrdersList.length > 0 && !selectedCreditOrder && (
-              <div style={{ maxHeight: '220px', overflowY: 'auto', marginBottom: '20px', border: '1px solid #e2e8f0', borderRadius: '14px', background: '#ffffff', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-                {creditOrdersList.map((ord) => (
-                  <div
-                    key={ord._id}
-                    onClick={() => handleSelectCreditOrder(ord)}
-                    style={{
-                      padding: '12px 16px',
-                      borderBottom: '1px solid #f1f5f9',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      background: '#ffffff',
-                      transition: 'all 0.2s'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#fffbeb'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = '#ffffff'}
-                  >
-                    <div>
-                      <div style={{ fontWeight: '800', fontSize: '14px', color: '#0f172a' }}>
-                        {ord.invoiceNumber} — <span style={{ color: '#2563eb' }}>{ord.customerName || 'Customer'}</span>
-                      </div>
-                      <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
-                        📞 {ord.customerPhone || 'N/A'} | Total: Rs. {Number(ord.totalAmount || 0).toLocaleString()} | Paid: Rs. {Number(ord.amountPaid || 0).toLocaleString()}
-                      </div>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '10px', color: '#b45309', fontWeight: 'bold', textTransform: 'uppercase' }}>Remaining Due</div>
-                      <div style={{ fontSize: '14px', fontWeight: '800', color: '#d97706' }}>
-                        Rs. {Number(ord.creditBalance || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
-                      </div>
-                    </div>
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fffbeb', border: '1.5px solid #fde68a', borderRadius: '12px', padding: '10px 14px', marginBottom: '10px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: '800', color: '#92400e' }}>
+                    📋 Found {creditOrdersList.length} Unpaid Bill(s)
                   </div>
-                ))}
+                  <div style={{ fontSize: '13px', fontWeight: '900', color: '#b45309' }}>
+                    Total Customer Debt: Rs. {creditOrdersList.reduce((sum, o) => sum + (o.creditBalance || 0), 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                  </div>
+                </div>
+
+                <div style={{ maxHeight: '240px', overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: '14px', background: '#ffffff', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                  {creditOrdersList.map((ord) => (
+                    <div
+                      key={ord._id}
+                      onClick={() => handleSelectCreditOrder(ord)}
+                      style={{
+                        padding: '12px 16px',
+                        borderBottom: '1px solid #f1f5f9',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        background: '#ffffff',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = '#fffbeb'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = '#ffffff'}
+                    >
+                      <div>
+                        <div style={{ fontWeight: '800', fontSize: '14px', color: '#0f172a' }}>
+                          {ord.invoiceNumber} — <span style={{ color: '#2563eb' }}>{ord.customerName || 'Customer'}</span>
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
+                          📞 {ord.customerPhone || 'N/A'} | Date: {new Date(ord.createdAt).toLocaleDateString('en-GB')} | Total: Rs. {Number(ord.totalAmount || 0).toLocaleString()} | Paid: Rs. {Number(ord.amountPaid || 0).toLocaleString()}
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: '10px', color: '#b45309', fontWeight: 'bold', textTransform: 'uppercase' }}>Remaining Due</div>
+                        <div style={{ fontSize: '15px', fontWeight: '900', color: '#d97706' }}>
+                          Rs. {Number(ord.creditBalance || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                        </div>
+                        <span style={{ fontSize: '10px', color: '#2563eb', fontWeight: '700', textDecoration: 'underline' }}>Settle This &rarr;</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -5791,8 +5854,24 @@ const POSScreen = () => {
                     </div>
                   </div>
 
-                  <div style={{ marginTop: '10px', fontSize: '12px', color: '#475569', fontWeight: '500' }}>
-                    📞 Customer Phone: <strong style={{ color: '#0f172a' }}>{selectedCreditOrder.customerPhone || 'N/A'}</strong>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px', fontSize: '12px', color: '#475569', fontWeight: '500' }}>
+                    <div>📞 Customer Phone: <strong style={{ color: '#0f172a' }}>{selectedCreditOrder.customerPhone || 'N/A'}</strong></div>
+                    <button
+                      type="button"
+                      onClick={() => setCreditSettleForm({ ...creditSettleForm, amount: selectedCreditOrder.creditBalance || 0 })}
+                      style={{
+                        padding: '4px 10px',
+                        background: '#fef3c7',
+                        border: '1px solid #fde68a',
+                        color: '#92400e',
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        fontWeight: '800',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      ⚡ 1-Click Full Due (Rs. {Number(selectedCreditOrder.creditBalance || 0).toLocaleString()})
+                    </button>
                   </div>
                 </div>
 

@@ -12,6 +12,7 @@ const {
   endSession,
   getCashierSalesReport,
   getCreditOrders,
+  getCustomerCreditSummary,
   settleCreditOrder,
   createQuotation,
   sendReceipt,
@@ -35,6 +36,7 @@ router.post('/quotation', createQuotation);
 router.get('/cashier-report', getCashierSalesReport);
 
 router.get('/credit-orders', getCreditOrders);
+router.get('/customer-credit/:phone', getCustomerCreditSummary);
 router.put('/credit-orders/:id/settle', settleCreditOrder);
 
 module.exports = router;

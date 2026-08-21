@@ -1287,7 +1287,14 @@ const getCashierSalesReport = async (req, res, next) => {
 const getCreditOrders = async (req, res, next) => {
   try {
     const storeId = await resolveStoreId(req.user);
-    const filter = { isPosOrder: true, isCredit: true };
+    const filter = {
+      isPosOrder: true,
+      $or: [
+        { isCredit: true },
+        { paymentMethod: 'credit' },
+        { creditBalance: { $gt: 0 } }
+      ]
+    };
     if (storeId) filter.storeId = storeId;
 
     if (req.query.status === 'pending') {
@@ -1298,12 +1305,28 @@ const getCreditOrders = async (req, res, next) => {
 
     if (req.query.search) {
       const search = req.query.search.trim();
-      filter.$or = [
+      const cleanPhone = search.replace(/\D/g, '');
+      const searchConditions = [
         { invoiceNumber: { $regex: search, $options: 'i' } },
         { customerName: { $regex: search, $options: 'i' } },
         { customerPhone: { $regex: search, $options: 'i' } },
         { customerNic: { $regex: search, $options: 'i' } }
       ];
+      if (cleanPhone.length >= 6) {
+        searchConditions.push({ customerPhone: { $regex: cleanPhone.slice(-9), $options: 'i' } });
+      }
+
+      filter.$and = [
+        {
+          $or: [
+            { isCredit: true },
+            { paymentMethod: 'credit' },
+            { creditBalance: { $gt: 0 } }
+          ]
+        },
+        { $or: searchConditions }
+      ];
+      delete filter.$or;
     }
 
     const orders = await Order.find(filter)
@@ -1312,6 +1335,54 @@ const getCreditOrders = async (req, res, next) => {
       .lean();
     res.json(orders);
   } catch (error) { next(error); }
+};
+
+// @desc    Get customer credit summary by phone number
+// @route   GET /api/pos/customer-credit/:phone
+// @access  Private/Cashier/Manager/Admin
+const getCustomerCreditSummary = async (req, res, next) => {
+  try {
+    const rawPhone = (req.params.phone || '').trim();
+    if (!rawPhone || rawPhone.length < 5) {
+      return res.json({ totalDue: 0, unpaidOrdersCount: 0, orders: [] });
+    }
+
+    const cleanPhone = rawPhone.replace(/\D/g, '');
+    const phonePattern = cleanPhone.length >= 7 ? cleanPhone.slice(-9) : cleanPhone;
+
+    const orders = await Order.find({
+      isPosOrder: true,
+      $or: [
+        { isCredit: true },
+        { paymentMethod: 'credit' },
+        { creditBalance: { $gt: 0 } }
+      ],
+      customerPhone: { $regex: phonePattern, $options: 'i' },
+      creditBalance: { $gt: 0 }
+    })
+      .sort({ createdAt: -1 })
+      .populate('cashierId', 'name')
+      .lean();
+
+    const totalDue = orders.reduce((sum, o) => {
+      const bal = o.creditBalance !== undefined && o.creditBalance !== null
+        ? Number(o.creditBalance)
+        : Math.max(0, Number(o.totalAmount || 0) - Number(o.amountPaid || 0));
+      return sum + bal;
+    }, 0);
+
+    const customerName = orders.length > 0 ? (orders[0].customerName || '') : '';
+
+    res.json({
+      phone: rawPhone,
+      customerName,
+      totalDue: Math.max(0, totalDue),
+      unpaidOrdersCount: orders.length,
+      orders
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 // @desc    Settle credit order (mark remaining as paid)
@@ -1541,6 +1612,7 @@ module.exports = {
   endSession,
   getCashierSalesReport,
   getCreditOrders,
+  getCustomerCreditSummary,
   settleCreditOrder,
   createQuotation,
   sendReceipt,
