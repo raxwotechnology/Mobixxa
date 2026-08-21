@@ -304,7 +304,7 @@ const DashboardLayout = ({ children, navItems, title }) => {
 
           <div className="flex-1 min-w-0" />
 
-          {user?.role === 'admin' && stores.length > 0 && (
+          {user?.role === 'admin' && Array.isArray(stores) && stores.length > 0 && (
             <div className="hidden lg:flex items-center gap-2 bg-slate-50 border border-slate-200/60 rounded-xl px-3 py-1.5">
               <select
                 value={selectedStoreId}
