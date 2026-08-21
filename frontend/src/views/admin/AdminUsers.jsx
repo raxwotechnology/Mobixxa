@@ -37,11 +37,17 @@ const AdminUsers = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   
+  const DEFAULT_PERMISSIONS = {
+    inventory: false, finance: false, expenses: false, products: false,
+    sales: false, reports: false, employees: false, suppliers: false,
+    customers: false, reloads: false, repairs: false
+  };
+
   // Form State
   const [formData, setFormData] = useState({
     name: '', email: '', password: '', phone: '', role: 'cashier', assignedStore: '', avatar: '',
     employeeInfo: { nic: '', salary: '', status: 'active' },
-    permissions: { inventory: false, finance: false, products: false, sales: false, reports: false, employees: false, suppliers: false, customers: false },
+    permissions: { ...DEFAULT_PERMISSIONS },
     agreements: []
   });
   const [uploading, setUploading] = useState(false);
@@ -78,7 +84,7 @@ const AdminUsers = () => {
           salary: user.employeeInfo?.salary || '', 
           status: user.employeeInfo?.status || 'active' 
         },
-        permissions: user.permissions || { inventory: false, finance: false, products: false, sales: false, reports: false, employees: false, suppliers: false, customers: false },
+        permissions: { ...DEFAULT_PERMISSIONS, ...(user.permissions || {}) },
         agreements: user.agreements || []
       });
     } else {
@@ -86,7 +92,7 @@ const AdminUsers = () => {
       setFormData({
         name: '', email: '', password: '', phone: '', role: 'cashier', assignedStore: selectedStoreId !== 'all' ? selectedStoreId : '', avatar: '',
         employeeInfo: { nic: '', salary: '', status: 'active' },
-        permissions: { inventory: false, finance: false, products: false, sales: false, reports: false, employees: false, suppliers: false, customers: false },
+        permissions: { ...DEFAULT_PERMISSIONS },
         agreements: []
       });
     }
@@ -415,16 +421,64 @@ const AdminUsers = () => {
                 </div>
 
                 {/* Granular Permissions */}
-                <div>
-                  <h3 className="text-sm font-black text-slate-800 border-b border-slate-100 pb-2 mb-4 uppercase tracking-wider">Module Access Permissions</h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                    {['inventory', 'finance', 'products', 'sales', 'reports', 'employees', 'suppliers', 'customers'].map((perm) => (
-                      <label key={perm} className="flex items-center gap-3 cursor-pointer group">
-                        <div className={`w-5 h-5 rounded-md flex items-center justify-center border transition-colors ${formData.permissions[perm] ? 'bg-brand-indigo border-brand-indigo' : 'bg-white border-slate-300 group-hover:border-brand-indigo/50'}`}>
-                          {formData.permissions[perm] && <CheckCircle size={14} className="text-white" />}
+                <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-200/80">
+                  <div className="flex items-center justify-between border-b border-slate-200/80 pb-3 mb-4">
+                    <div>
+                      <h3 className="text-sm font-black text-slate-800 uppercase tracking-wider m-0">Module Access Permissions</h3>
+                      <p className="text-xs text-slate-500 font-medium m-0">Select exact features and modules this staff member can access</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const allTrue = {};
+                          [
+                            'inventory', 'finance', 'expenses', 'products', 'sales',
+                            'reports', 'employees', 'suppliers', 'customers', 'reloads', 'repairs'
+                          ].forEach(k => allTrue[k] = true);
+                          setFormData(prev => ({ ...prev, permissions: allTrue }));
+                        }}
+                        className="text-[11px] font-bold text-brand-indigo hover:text-indigo-800 bg-brand-indigo/10 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+                      >
+                        Select All
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const allFalse = {};
+                          [
+                            'inventory', 'finance', 'expenses', 'products', 'sales',
+                            'reports', 'employees', 'suppliers', 'customers', 'reloads', 'repairs'
+                          ].forEach(k => allFalse[k] = false);
+                          setFormData(prev => ({ ...prev, permissions: allFalse }));
+                        }}
+                        className="text-[11px] font-bold text-slate-500 hover:text-slate-700 bg-slate-200/60 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+                      >
+                        Clear All
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    {[
+                      { key: 'inventory', label: 'Inventory & Stock' },
+                      { key: 'finance', label: 'Financial Ledger & Profits' },
+                      { key: 'expenses', label: 'Expenses & Cash Out' },
+                      { key: 'products', label: 'Products & Barcodes' },
+                      { key: 'sales', label: 'Sales & POS Orders' },
+                      { key: 'reports', label: 'Profit & Sales Analytics' },
+                      { key: 'employees', label: 'Staff HR & Payroll' },
+                      { key: 'suppliers', label: 'Suppliers & GRN Entry' },
+                      { key: 'customers', label: 'Customers & Credit/HP' },
+                      { key: 'reloads', label: 'Mobile Reloads & Bills' },
+                      { key: 'repairs', label: 'Repair Management' },
+                    ].map((mod) => (
+                      <label key={mod.key} className="flex items-center gap-3 p-2.5 bg-white rounded-xl border border-slate-200/90 hover:border-brand-indigo/40 transition-all cursor-pointer group shadow-2xs">
+                        <div className={`w-5 h-5 rounded-md flex items-center justify-center border transition-colors ${formData.permissions[mod.key] ? 'bg-brand-indigo border-brand-indigo' : 'bg-white border-slate-300 group-hover:border-brand-indigo/50'}`}>
+                          {formData.permissions[mod.key] && <CheckCircle size={14} className="text-white" />}
                         </div>
-                        <span className="text-sm font-bold text-slate-700 capitalize">{perm}</span>
-                        <input type="checkbox" className="hidden" checked={formData.permissions[perm] || false} onChange={() => handlePermissionChange(perm)} />
+                        <span className="text-xs font-bold text-slate-700">{mod.label}</span>
+                        <input type="checkbox" className="hidden" checked={formData.permissions[mod.key] || false} onChange={() => handlePermissionChange(mod.key)} />
                       </label>
                     ))}
                   </div>

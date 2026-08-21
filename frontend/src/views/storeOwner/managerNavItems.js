@@ -78,7 +78,55 @@ const managerNavGroups = [
   },
 ];
 
+import useAuthStore from '../../store/authStore';
+
+const getFilteredManagerNavGroups = (user) => {
+  const currentUser = user || (typeof window !== 'undefined' ? useAuthStore.getState()?.user : null);
+  if (!currentUser) return managerNavGroups;
+  if (currentUser.role === 'admin' || currentUser.isSuperAdmin) return managerNavGroups;
+
+  const p = currentUser.permissions || {};
+
+  const permissionMap = {
+    '/manager': true,
+    '/manager/employees': p.employees,
+    '/manager/attendance': p.employees,
+    '/manager/leaves': p.employees,
+    '/manager/targets': p.employees,
+    '/manager/performance': p.employees,
+    '/manager/products': p.products || p.inventory,
+    '/manager/orders': p.sales,
+    '/manager/warranty': p.products || p.inventory,
+    '/manager/returns': p.sales || p.inventory,
+    '/manager/repairs': p.repairs || p.products,
+    '/admin/hp': p.customers || p.sales,
+    '/admin/accounts': p.finance,
+    '/admin/cheques': p.finance,
+    '/admin/expenses': p.expenses || p.finance,
+    '/admin/financials': p.finance,
+    '/admin/profit-reports': p.reports || p.finance,
+    '/admin/reloads': p.reloads || p.sales,
+    '/admin/payroll': p.employees,
+    '/admin/overtime': p.employees,
+    '/admin/trade-in': p.products || p.sales,
+    '/manager/supplier-payments': p.suppliers,
+    '/pos': p.sales,
+    '/barcode-generator': p.products,
+    '/': true,
+  };
+
+  return managerNavGroups
+    .map((group) => {
+      const filteredItems = group.items.filter((item) => {
+        const allowed = permissionMap[item.path];
+        return allowed === undefined ? true : allowed === true;
+      });
+      return { ...group, items: filteredItems };
+    })
+    .filter((group) => group.items.length > 0);
+};
+
 const managerNavItems = managerNavGroups.flatMap(g => g.items);
 
-export { managerNavGroups };
+export { managerNavGroups, getFilteredManagerNavGroups };
 export default managerNavItems;
