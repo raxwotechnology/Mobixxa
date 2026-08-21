@@ -106,7 +106,7 @@ const POSScreen = () => {
   const [balanceTab, setBalanceTab] = useState('shift'); // 'shift' or 'financials'
   const [drawerCountInput, setDrawerCountInput] = useState('');
   const [closingNotes, setClosingNotes] = useState('');
-  const [useDirectCount, setUseDirectCount] = useState(false);
+  const [useDirectCount, setUseDirectCount] = useState(true);
   const [directCountAmount, setDirectCountAmount] = useState('');
   const [settlingSession, setSettlingSession] = useState(false);
   const [sessionForm, setSessionForm] = useState({
@@ -3979,19 +3979,26 @@ const POSScreen = () => {
 
                       {!useDirectCount ? (
                         <div>
+                          <div style={{ fontSize: '11px', color: '#facc15', marginBottom: '8px', fontWeight: 'bold' }}>
+                            ⚠️ Enter NUMBER OF NOTES (Not total Rupees):
+                          </div>
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
                             {[5000, 1000, 500, 100, 50, 20].map((d) => (
                               <div key={d} style={{ background: '#0f172a', padding: '8px 10px', borderRadius: '10px', border: '1px solid #334155' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#94a3b8', marginBottom: '4px' }}>
-                                  <span style={{ fontWeight: 'bold', color: '#f8fafc' }}>Rs. {d}</span>
-                                  <span>= Rs. {((sessionForm.closing[d] || 0) * d).toLocaleString()}</span>
+                                  <span style={{ fontWeight: 'bold', color: '#f8fafc' }}>Rs. {d} Note Count</span>
+                                  <span style={{ color: '#38bdf8', fontWeight: 'bold' }}>= Rs. {((sessionForm.closing[d] || 0) * d).toLocaleString()}</span>
                                 </div>
                                 <input
                                   type="number"
                                   min="0"
-                                  placeholder="0 notes"
+                                  max="500"
+                                  placeholder="e.g. 10 notes"
                                   value={sessionForm.closing[d] || ''}
-                                  onChange={(e) => setSessionForm((s) => ({ ...s, closing: { ...s.closing, [d]: Number(e.target.value || 0) } }))}
+                                  onChange={(e) => {
+                                    const val = Math.min(500, Math.max(0, Number(e.target.value || 0)));
+                                    setSessionForm((s) => ({ ...s, closing: { ...s.closing, [d]: val } }));
+                                  }}
                                   style={{
                                     width: '100%',
                                     padding: '6px 8px',
