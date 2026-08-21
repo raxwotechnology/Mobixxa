@@ -100,6 +100,7 @@ const POSScreen = () => {
   const [dailyFinancials, setDailyFinancials] = useState(null);
   const [posDailySummary, setPosDailySummary] = useState(null);
   const [balanceOrders, setBalanceOrders] = useState([]);
+  const [balanceSessionData, setBalanceSessionData] = useState(null);
   const [showBalanceModal, setShowBalanceModal] = useState(false);
   const [balanceLoading, setBalanceLoading] = useState(false);
   const [balanceDate, setBalanceDate] = useState(new Date().toISOString().split('T')[0]);
@@ -443,6 +444,7 @@ const POSScreen = () => {
       setDailyFinancials(data?.financials || null);
       setPosDailySummary(data?.summary || null);
       setBalanceOrders(data?.orders || []);
+      setBalanceSessionData(data?.session || null);
     } catch { /* ignore */ }
     setShowEndSession(true);
   };
@@ -454,11 +456,13 @@ const POSScreen = () => {
       setDailyFinancials(data?.financials || null);
       setPosDailySummary(data?.summary || null);
       setBalanceOrders(data?.orders || []);
+      setBalanceSessionData(data?.session || null);
       setShowBalanceModal(true);
     } catch {
       setDailyFinancials(null);
       setPosDailySummary(null);
       setBalanceOrders([]);
+      setBalanceSessionData(null);
       setShowBalanceModal(true);
     } finally {
       setBalanceLoading(false);
@@ -4353,9 +4357,15 @@ const POSScreen = () => {
                   {(() => {
                     const cashIn = Number(posDailySummary?.cashSales || 0) + Number(posDailySummary?.hpCashIncome || dailyFinancials?.hpCashIncome || 0) + Number(posDailySummary?.reloadIncome || dailyFinancials?.reloadIncome || 0);
                     const expenseOut = Number(posDailySummary?.expenseCost || dailyFinancials?.expenseCost || 0);
-                    const expectedDrawer = cashIn - expenseOut;
-                    const counted = drawerCountInput !== '' ? Number(drawerCountInput) : expectedDrawer;
+                    const expectedDrawer = (Number(balanceSessionData?.openingCashAmount || posSession?.openingCashAmount || 0) + cashIn) - expenseOut;
+                    
+                    const savedCounted = balanceSessionData?.closingCashCountedAmount;
+                    const counted = savedCounted !== undefined && savedCounted !== null
+                      ? Number(savedCounted)
+                      : (drawerCountInput !== '' ? Number(drawerCountInput) : expectedDrawer);
                     const diff = counted - expectedDrawer;
+
+                    const denomsList = (balanceSessionData?.closingDenoms || []).filter(d => Number(d.qty || 0) > 0);
 
                     return (
                       <div style={{ padding: '20px', borderRadius: '16px', background: '#0f172a', border: '2px solid #10b981', marginBottom: '28px', boxShadow: '0 10px 25px -5px rgba(16, 185, 129, 0.2)' }}>
@@ -4365,7 +4375,7 @@ const POSScreen = () => {
                               SHIFT HANDOVER RECONCILIATION
                             </span>
                             <h3 style={{ margin: '2px 0 0 0', fontSize: '18px', fontWeight: '900', color: '#ffffff' }}>
-                              Net Cash in Drawer to Handover
+                              {balanceSessionData?.status === 'closed' ? 'Closed Shift Physical Cash Drawer Record' : 'Net Cash in Drawer to Handover'}
                             </h3>
                           </div>
                           <div style={{ textAlign: 'right' }}>
@@ -4379,37 +4389,62 @@ const POSScreen = () => {
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px', alignItems: 'center' }}>
                           <div>
                             <label style={{ fontSize: '12px', fontWeight: '700', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>
-                              Count Actual Cash in Drawer (Rs.):
+                              {balanceSessionData?.status === 'closed' ? 'Recorded Counted Cash in Drawer (Rs.):' : 'Count Actual Cash in Drawer (Rs.):'}
                             </label>
                             <input
                               type="number"
                               placeholder={`Expected: ${expectedDrawer.toFixed(2)}`}
-                              value={drawerCountInput}
+                              value={drawerCountInput !== '' ? drawerCountInput : (savedCounted !== undefined ? savedCounted : '')}
                               onChange={(e) => setDrawerCountInput(e.target.value)}
                               style={{
                                 width: '100%',
                                 padding: '12px 14px',
                                 borderRadius: '10px',
-                                border: '2px solid #334155',
+                                border: '2px solid #ca8a04',
                                 background: '#1e293b',
                                 color: '#ffffff',
-                                fontSize: '16px',
-                                fontWeight: '800',
+                                fontSize: '18px',
+                                fontWeight: '900',
                                 outline: 'none',
                                 fontFamily: 'monospace'
                               }}
                             />
                           </div>
 
-                          <div style={{ padding: '14px', borderRadius: '12px', background: diff === 0 ? '#064e3b' : (diff > 0 ? '#1e3a8a' : '#7f1d1d'), border: '1px solid rgba(255,255,255,0.15)' }}>
+                          <div style={{ padding: '14px', borderRadius: '12px', background: Math.abs(diff) <= 0.01 ? '#064e3b' : (diff > 0 ? '#1e3a8a' : '#7f1d1d'), border: '1px solid rgba(255,255,255,0.15)' }}>
                             <div style={{ fontSize: '11px', fontWeight: '800', color: '#e2e8f0', textTransform: 'uppercase' }}>
-                              Cash Drawer Status
+                              Cash Drawer Status / Discrepancy
                             </div>
                             <div style={{ fontSize: '16px', fontWeight: '900', color: '#ffffff', marginTop: '2px' }}>
-                              {diff === 0 ? '✅ Exact Match (No Discrepancy)' : (diff > 0 ? `+ Rs. ${diff.toLocaleString('en-LK', { minimumFractionDigits: 2 })} (Overage)` : `- Rs. ${Math.abs(diff).toLocaleString('en-LK', { minimumFractionDigits: 2 })} (Shortage)`)}
+                              {Math.abs(diff) <= 0.01 ? '✅ Exact Match (No Discrepancy)' : (diff > 0 ? `+ Rs. ${diff.toLocaleString('en-LK', { minimumFractionDigits: 2 })} (Overage)` : `- Rs. ${Math.abs(diff).toLocaleString('en-LK', { minimumFractionDigits: 2 })} (Shortage)`)}
                             </div>
                           </div>
                         </div>
+
+                        {/* Saved Denomination Badges */}
+                        {denomsList.length > 0 && (
+                          <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px dashed #334155' }}>
+                            <div style={{ fontSize: '11px', fontWeight: '800', color: '#facc15', textTransform: 'uppercase', marginBottom: '8px' }}>
+                              🪙 SAVED PHYSICAL DENOMINATION BREAKDOWN:
+                            </div>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                              {denomsList.map((l, i) => (
+                                <div key={i} style={{ background: '#1e293b', border: '1px solid #475569', borderRadius: '8px', padding: '6px 12px', fontSize: '12px' }}>
+                                  <span style={{ color: '#94a3b8' }}>Rs. {l.denom} × </span>
+                                  <strong style={{ color: '#fff' }}>{l.qty} notes</strong>
+                                  <span style={{ color: '#38bdf8', marginLeft: '6px', fontWeight: 'bold' }}>= Rs. {(l.denom * l.qty).toLocaleString()}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Handover Note */}
+                        {balanceSessionData?.varianceNote && (
+                          <div style={{ marginTop: '12px', fontSize: '12px', color: '#cbd5e1', fontStyle: 'italic' }}>
+                            📝 Handover Note: <strong>{balanceSessionData.varianceNote}</strong>
+                          </div>
+                        )}
                       </div>
                     );
                   })()}

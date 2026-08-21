@@ -1088,7 +1088,16 @@ const getPosOrders = async (req, res, next) => {
 
     const profitOfDay = enrichedOrders.reduce((sum, o) => sum + Number(o.estimatedProfit || 0), 0);
 
+    let closedSession = null;
+    try {
+      closedSession = await PosSession.findOne({
+        storeId,
+        startedAt: { $gte: startOfDay, $lte: endOfDay }
+      }).sort({ endedAt: -1, startedAt: -1 }).lean();
+    } catch { /* ignore */ }
+
     res.json({
+      session: closedSession || null,
       orders: enrichedOrders,
       financials: {
         date: req.query.date || new Date().toISOString().split('T')[0],
