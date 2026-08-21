@@ -2,7 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { Link } from '../../utils/navigation';
-import { Clock, Calendar, CheckCircle, AlertCircle, TrendingUp, Coffee, Target, Award, User, Zap, Package, ShoppingBag, Barcode, ArrowRight, RotateCcw, Monitor, Smartphone, DollarSign, CreditCard, FileText, Landmark, Wrench } from 'lucide-react';
+import { 
+  Clock, Calendar, CheckCircle, AlertCircle, TrendingUp, Coffee, Target, Award, 
+  User, Zap, Package, ShoppingBag, Barcode, ArrowRight, RotateCcw, Monitor, 
+  Smartphone, DollarSign, CreditCard, FileText, Landmark, Wrench, Truck, Timer 
+} from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
 import useAuthStore from '../../store/authStore';
 import { getEmployeeNavGroups } from './employeeNav';
@@ -205,13 +209,24 @@ const EmployeeDashboard = () => {
                   { title: 'Barcode Label Generator', desc: 'Generate & print product labels', path: '/barcode-generator', icon: Barcode, gradient: 'from-rose-500 to-red-600', badge: 'Labels' },
                   { title: 'Clock In & Attendance', desc: 'Mark attendance & break logs', path: '/employee/attendance', icon: Clock, gradient: 'from-slate-700 to-slate-900', badge: 'Attendance' },
                 ]
-              : [
+              : user?.role === 'deliveryGuy'
+              ? [
+                  { title: 'Deliveries Hub', desc: 'Track & fulfill customer deliveries', path: '/delivery', icon: Truck, gradient: 'from-blue-600 to-indigo-700', badge: 'Deliveries' },
                   { title: 'Clock In & Attendance', desc: 'Mark attendance & break logs', path: '/employee/attendance', icon: Clock, gradient: 'from-sky-500 to-blue-600', badge: 'Attendance' },
-                  { title: 'Stock & Price Lookup', desc: 'Check available products & IMEI', path: '/employee/stock', icon: Package, gradient: 'from-emerald-600 to-teal-600', badge: 'Inventory' },
-                  { title: 'Order History List', desc: 'View past customer orders & sales', path: '/employee/orders', icon: ShoppingBag, gradient: 'from-violet-600 to-purple-600', badge: 'Orders' },
-                  { title: 'Barcode Label Generator', desc: 'Generate & print product labels', path: '/barcode-generator', icon: Barcode, gradient: 'from-amber-500 to-orange-600', badge: 'Labels' },
-                  { title: 'Item Returns & Refunds', desc: 'Process customer returns', path: '/employee/returns', icon: RotateCcw, gradient: 'from-rose-600 to-pink-600', badge: 'Returns' },
-                  { title: 'My Profile & Paysheets', desc: 'View profile & salary slips', path: '/employee/profile', icon: User, gradient: 'from-slate-700 to-slate-900', badge: 'Profile' },
+                  { title: 'Leave Requests', desc: 'Apply and track leave requests', path: '/employee/leaves', icon: Calendar, gradient: 'from-amber-500 to-orange-600', badge: 'Leaves' },
+                  { title: 'Overtime Pay Records', desc: 'View overtime hours & status', path: '/employee/overtime', icon: Timer, gradient: 'from-purple-600 to-pink-600', badge: 'Overtime' },
+                  { title: 'Salary & EPF/ETF', desc: 'View pay and EPF/ETF contributions', path: '/employee/salary', icon: CreditCard, gradient: 'from-emerald-600 to-teal-600', badge: 'Payroll' },
+                  { title: 'My Profile & Documents', desc: 'View personal details and agreements', path: '/employee/profile', icon: User, gradient: 'from-slate-700 to-slate-900', badge: 'Profile' },
+                ]
+              : [
+                  { title: 'Stock & Price Lookup', desc: 'Check available products & IMEI', path: '/employee/stock', icon: Package, gradient: 'from-indigo-500 to-blue-600', badge: 'Inventory' },
+                  { title: 'Barcode Label Generator', desc: 'Generate & print product labels', path: '/barcode-generator', icon: Barcode, gradient: 'from-rose-500 to-red-600', badge: 'Labels' },
+                  { title: 'Device Repairs', desc: 'View repair orders & progress', path: '/employee/repairs', icon: Wrench, gradient: 'from-teal-600 to-emerald-700', badge: 'Repairs' },
+                  { title: 'Clock In & Attendance', desc: 'Mark attendance & break logs', path: '/employee/attendance', icon: Clock, gradient: 'from-sky-500 to-blue-600', badge: 'Attendance' },
+                  { title: 'Leave Requests', desc: 'Apply and track leave requests', path: '/employee/leaves', icon: Calendar, gradient: 'from-amber-500 to-orange-600', badge: 'Leaves' },
+                  { title: 'Overtime Pay Records', desc: 'View overtime hours & status', path: '/employee/overtime', icon: Timer, gradient: 'from-purple-600 to-pink-600', badge: 'Overtime' },
+                  { title: 'Salary & EPF/ETF', desc: 'View pay and EPF/ETF contributions', path: '/employee/salary', icon: CreditCard, gradient: 'from-emerald-600 to-teal-600', badge: 'Payroll' },
+                  { title: 'My Profile & Documents', desc: 'View personal details and agreements', path: '/employee/profile', icon: User, gradient: 'from-slate-700 to-slate-900', badge: 'Profile' },
                 ]
             ).map((q) => (
               <Link
