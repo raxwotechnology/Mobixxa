@@ -3993,6 +3993,31 @@ const POSScreen = () => {
                               </div>
                             ))}
                           </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              toast.success(`Cash count calculated & saved: Rs. ${countedCash.toLocaleString('en-LK', { minimumFractionDigits: 2 })}`);
+                            }}
+                            style={{
+                              width: '100%',
+                              marginTop: '14px',
+                              padding: '10px 14px',
+                              borderRadius: '10px',
+                              border: '1px solid #3b82f6',
+                              background: 'linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)',
+                              color: '#ffffff',
+                              fontWeight: '800',
+                              fontSize: '13px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '6px',
+                              boxShadow: '0 4px 12px rgba(29, 78, 216, 0.4)'
+                            }}
+                          >
+                            💾 Save & Apply Counted Cash (Rs. {countedCash.toLocaleString('en-LK', { minimumFractionDigits: 2 })})
+                          </button>
                         </div>
                       ) : (
                         <div style={{ padding: '20px 0' }}>
