@@ -21,6 +21,83 @@ const roleColors = {
   stockEmployee: 'bg-orange-50 text-orange-700 border border-orange-200',
 };
 
+export const ALL_PERMISSION_CATEGORIES = [
+  {
+    category: 'HR & Staff Management',
+    items: [
+      { key: 'employees', label: 'Employees Directory', icon: '👥' },
+      { key: 'users', label: 'User Access & Permissions', icon: '🛡️' },
+      { key: 'attendance', label: 'Attendance Management', icon: '⏰' },
+      { key: 'leaves', label: 'Leaves & Holidays', icon: '📅' },
+      { key: 'payroll', label: 'Salary & Payroll Processing', icon: '💵' },
+      { key: 'salaryAdvances', label: 'Salary Advances', icon: '💸' },
+      { key: 'letters', label: 'Letters & Documents', icon: '📄' },
+      { key: 'targets', label: 'Staff Targets', icon: '🎯' },
+    ]
+  },
+  {
+    category: 'Business & Inventory Management',
+    items: [
+      { key: 'stores', label: 'Store Branches', icon: '🏬' },
+      { key: 'categories', label: 'Product Categories', icon: '🏷️' },
+      { key: 'products', label: 'Products & Accessories', icon: '📦' },
+      { key: 'phones', label: 'Mobile Phones Catalog', icon: '📱' },
+      { key: 'inventory', label: 'Stock Reports & Transfers', icon: '📊' },
+    ]
+  },
+  {
+    category: 'Sales, POS & Operations',
+    items: [
+      { key: 'orders', label: 'Orders & Invoices', icon: '🛍️' },
+      { key: 'warranty', label: 'IMEI & Device Warranty', icon: '🛡️' },
+      { key: 'returns', label: 'Returns & RMA Management', icon: '🔄' },
+      { key: 'pos', label: 'POS Terminal Cashiering', icon: '🖥️' },
+      { key: 'repairs', label: 'Device Repair Jobs', icon: '🔧' },
+      { key: 'reloads', label: 'Mobile Reloads & Card Stock', icon: '💳' },
+      { key: 'salesTracking', label: 'Live Sales Tracking', icon: '📈' },
+    ]
+  },
+  {
+    category: 'Trade-In, Barcodes & Marketing',
+    items: [
+      { key: 'tradeIn', label: 'Phone Trade-In & Pre-Owned', icon: '🔄' },
+      { key: 'vouchers', label: 'Discount Vouchers & Coupons', icon: '🎟️' },
+      { key: 'promotions', label: 'Promotions, Banners & Deals', icon: '🎁' },
+      { key: 'barcodes', label: 'Barcode Management & Generator', icon: '🏷️' },
+    ]
+  },
+  {
+    category: 'Suppliers & Purchasing',
+    items: [
+      { key: 'suppliers', label: 'Suppliers Directory', icon: '🚚' },
+      { key: 'supplierPayments', label: 'Supplier Payments & Invoices', icon: '💰' },
+    ]
+  },
+  {
+    category: 'Financial Management & Accounts',
+    items: [
+      { key: 'accounts', label: 'Manage Bank Accounts', icon: '🏦' },
+      { key: 'cheques', label: 'Cheque Management & Clearance', icon: '📑' },
+      { key: 'hp', label: 'Hire Purchase & Installments', icon: '💳' },
+      { key: 'expenses', label: 'Expenses & Income Ledger', icon: '💸' },
+      { key: 'financials', label: 'Financials & P&L Statement', icon: '📊' },
+      { key: 'profitReports', label: 'Profit & Margins Reports', icon: '📈' },
+      { key: 'overtime', label: 'Overtime Pay Records', icon: '⏱️' },
+    ]
+  },
+  {
+    category: 'Analytics & System Settings',
+    items: [
+      { key: 'reports', label: 'Executive Reports & Analytics', icon: '📊' },
+      { key: 'customerHistory', label: 'Customer Purchase History', icon: '👤' },
+      { key: 'predictions', label: 'AI Demand Predictions', icon: '🤖' },
+      { key: 'settings', label: 'Store Settings & Customizer', icon: '⚙️' },
+    ]
+  },
+];
+
+export const ALL_PERMISSION_KEYS = ALL_PERMISSION_CATEGORIES.flatMap(c => c.items.map(i => i.key));
+
 const AdminUsers = () => {
   const { user, setUser } = useAuthStore();
   const [users, setUsers] = useState([]);
@@ -37,11 +114,10 @@ const AdminUsers = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   
-  const DEFAULT_PERMISSIONS = {
-    inventory: false, finance: false, expenses: false, products: false,
-    sales: false, reports: false, employees: false, suppliers: false,
-    customers: false, reloads: false, repairs: false
-  };
+  const DEFAULT_PERMISSIONS = ALL_PERMISSION_KEYS.reduce((acc, k) => {
+    acc[k] = false;
+    return acc;
+  }, {});
 
   // Form State
   const [formData, setFormData] = useState({
@@ -306,7 +382,7 @@ const AdminUsers = () => {
                             title="Click to edit module permissions"
                           >
                             <ShieldCheck size={12} className="text-indigo-600" />
-                            {Object.values(user.permissions || {}).filter(Boolean).length} / 11 Modules Enabled
+                            {Object.values(user.permissions || {}).filter(Boolean).length} / {ALL_PERMISSION_KEYS.length} Modules Enabled
                           </button>
                         )}
                       </td>
@@ -443,67 +519,110 @@ const AdminUsers = () => {
                   )}
                 </div>
 
-                {/* Granular Permissions */}
-                <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-200/80">
-                  <div className="flex items-center justify-between border-b border-slate-200/80 pb-3 mb-4">
+                {/* Granular Permissions Categorized */}
+                <div className="bg-slate-50/80 p-5 rounded-2xl border border-slate-200/80 space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200/80 pb-3 gap-3">
                     <div>
-                      <h3 className="text-sm font-black text-slate-800 uppercase tracking-wider m-0">Module Access Permissions</h3>
-                      <p className="text-xs text-slate-500 font-medium m-0">Select exact features and modules this staff member can access</p>
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck size={18} className="text-brand-indigo" />
+                        <h3 className="text-sm font-black text-slate-800 uppercase tracking-wider m-0">Module Access Permissions</h3>
+                        <span className="text-[10px] font-black bg-brand-indigo/10 text-brand-indigo px-2.5 py-0.5 rounded-full">
+                          {Object.values(formData.permissions || {}).filter(Boolean).length} / {ALL_PERMISSION_KEYS.length} Active
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 font-medium mt-1 m-0">Select exact features and modules this staff member can access across the system</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
                         onClick={() => {
                           const allTrue = {};
-                          [
-                            'inventory', 'finance', 'expenses', 'products', 'sales',
-                            'reports', 'employees', 'suppliers', 'customers', 'reloads', 'repairs'
-                          ].forEach(k => allTrue[k] = true);
+                          ALL_PERMISSION_KEYS.forEach(k => allTrue[k] = true);
                           setFormData(prev => ({ ...prev, permissions: allTrue }));
                         }}
-                        className="text-[11px] font-bold text-brand-indigo hover:text-indigo-800 bg-brand-indigo/10 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+                        className="text-[11px] font-bold text-brand-indigo hover:text-indigo-800 bg-brand-indigo/10 px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-2xs"
                       >
-                        Select All
+                        ✓ Select All ({ALL_PERMISSION_KEYS.length})
                       </button>
                       <button
                         type="button"
                         onClick={() => {
                           const allFalse = {};
-                          [
-                            'inventory', 'finance', 'expenses', 'products', 'sales',
-                            'reports', 'employees', 'suppliers', 'customers', 'reloads', 'repairs'
-                          ].forEach(k => allFalse[k] = false);
+                          ALL_PERMISSION_KEYS.forEach(k => allFalse[k] = false);
                           setFormData(prev => ({ ...prev, permissions: allFalse }));
                         }}
-                        className="text-[11px] font-bold text-slate-500 hover:text-slate-700 bg-slate-200/60 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+                        className="text-[11px] font-bold text-slate-600 hover:text-slate-800 bg-slate-200/80 px-3 py-1.5 rounded-xl transition-colors cursor-pointer"
                       >
-                        Clear All
+                        ✕ Clear All
                       </button>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                    {[
-                      { key: 'inventory', label: 'Inventory & Stock' },
-                      { key: 'finance', label: 'Financial Ledger & Profits' },
-                      { key: 'expenses', label: 'Expenses & Cash Out' },
-                      { key: 'products', label: 'Products & Barcodes' },
-                      { key: 'sales', label: 'Sales & POS Orders' },
-                      { key: 'reports', label: 'Profit & Sales Analytics' },
-                      { key: 'employees', label: 'Staff HR & Payroll' },
-                      { key: 'suppliers', label: 'Suppliers & GRN Entry' },
-                      { key: 'customers', label: 'Customers & Credit/HP' },
-                      { key: 'reloads', label: 'Mobile Reloads & Bills' },
-                      { key: 'repairs', label: 'Repair Management' },
-                    ].map((mod) => (
-                      <label key={mod.key} className="flex items-center gap-3 p-2.5 bg-white rounded-xl border border-slate-200/90 hover:border-brand-indigo/40 transition-all cursor-pointer group shadow-2xs">
-                        <div className={`w-5 h-5 rounded-md flex items-center justify-center border transition-colors ${formData.permissions[mod.key] ? 'bg-brand-indigo border-brand-indigo' : 'bg-white border-slate-300 group-hover:border-brand-indigo/50'}`}>
-                          {formData.permissions[mod.key] && <CheckCircle size={14} className="text-white" />}
+                  {/* Categorized Permission Groups */}
+                  <div className="space-y-5">
+                    {ALL_PERMISSION_CATEGORIES.map((cat, ci) => {
+                      const groupKeys = cat.items.map(i => i.key);
+                      const isAllGroupSelected = groupKeys.every(k => formData.permissions[k]);
+                      
+                      return (
+                        <div key={ci} className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-black text-slate-800 uppercase tracking-wide flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-brand-indigo" />
+                              {cat.category}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newPerms = { ...formData.permissions };
+                                groupKeys.forEach(k => {
+                                  newPerms[k] = !isAllGroupSelected;
+                                });
+                                setFormData(prev => ({ ...prev, permissions: newPerms }));
+                              }}
+                              className="text-[10px] font-bold text-slate-500 hover:text-brand-indigo transition-colors cursor-pointer"
+                            >
+                              {isAllGroupSelected ? 'Deselect Group' : 'Select Group'}
+                            </button>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
+                            {cat.items.map((mod) => {
+                              const isChecked = formData.permissions[mod.key] || false;
+                              return (
+                                <label
+                                  key={mod.key}
+                                  className={`flex items-center gap-2.5 p-2.5 rounded-xl border transition-all cursor-pointer select-none ${
+                                    isChecked
+                                      ? 'bg-brand-indigo/5 border-brand-indigo/50 text-brand-indigo shadow-2xs'
+                                      : 'bg-slate-50/50 border-slate-200/70 text-slate-700 hover:border-slate-300'
+                                  }`}
+                                >
+                                  <div
+                                    className={`w-4 h-4 rounded-md flex items-center justify-center border transition-colors flex-shrink-0 ${
+                                      isChecked
+                                        ? 'bg-brand-indigo border-brand-indigo text-white'
+                                        : 'bg-white border-slate-300'
+                                    }`}
+                                  >
+                                    {isChecked && <CheckCircle size={12} className="text-white" />}
+                                  </div>
+                                  <span className="text-[11px] font-bold truncate">
+                                    {mod.icon} {mod.label}
+                                  </span>
+                                  <input
+                                    type="checkbox"
+                                    className="hidden"
+                                    checked={isChecked}
+                                    onChange={() => handlePermissionChange(mod.key)}
+                                  />
+                                </label>
+                              );
+                            })}
+                          </div>
                         </div>
-                        <span className="text-xs font-bold text-slate-700">{mod.label}</span>
-                        <input type="checkbox" className="hidden" checked={formData.permissions[mod.key] || false} onChange={() => handlePermissionChange(mod.key)} />
-                      </label>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 

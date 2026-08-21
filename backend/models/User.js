@@ -43,17 +43,8 @@ const userSchema = mongoose.Schema(
       }
     ],
     permissions: {
-      inventory: { type: Boolean, default: false },
-      finance: { type: Boolean, default: false },
-      products: { type: Boolean, default: false },
-      sales: { type: Boolean, default: false },
-      reports: { type: Boolean, default: false },
-      employees: { type: Boolean, default: false },
-      suppliers: { type: Boolean, default: false },
-      customers: { type: Boolean, default: false },
-      rewards: { type: Boolean, default: false },
-      vouchers: { type: Boolean, default: false },
-      settings: { type: Boolean, default: false },
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
     },
     addresses: [
       {

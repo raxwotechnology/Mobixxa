@@ -91,7 +91,6 @@ const adminNavGroups = [
       { path: '/admin/expenses',   label: 'Expenses & Income', icon: Wallet },
       { path: '/admin/financials', label: 'Financials',        icon: DollarSign },
       { path: '/admin/profit-reports', label: 'Profit Reports', icon: TrendingUp },
-      { path: '/admin/payroll',    label: 'Payroll',           icon: CreditCard },
       { path: '/admin/overtime',   label: 'Overtime Pay',      icon: Clock },
     ],
   },
@@ -101,14 +100,12 @@ const adminNavGroups = [
       { path: '/admin/reports',          label: 'Reports',          icon: BarChart3 },
       { path: '/admin/customer-history', label: 'Customer History', icon: History },
       { path: '/admin/predictions',      label: 'AI Predictions',   icon: Brain },
-
     ],
   },
   {
     label: 'System Settings',
     items: [
-      { path: '/admin/users',    label: 'User Permissions & Accounts', icon: UserCog },
-      { path: '/admin/settings', label: 'Settings',                   icon: Settings },
+      { path: '/admin/settings', label: 'Settings', icon: Settings },
     ],
   },
   {
@@ -119,30 +116,98 @@ const adminNavGroups = [
   },
 ];
 
+const pathToPermissionKey = {
+  '/admin/employees': 'employees',
+  '/admin/users': 'users',
+  '/admin/attendance': 'attendance',
+  '/admin/leaves': 'leaves',
+  '/admin/payroll': 'payroll',
+  '/admin/salary-advances': 'salaryAdvances',
+  '/admin/letters': 'letters',
+  '/admin/targets': 'targets',
+  '/admin/stores': 'stores',
+  '/admin/categories': 'categories',
+  '/admin/products': 'products',
+  '/admin/phones': 'phones',
+  '/admin/inventory': 'inventory',
+  '/admin/orders': 'orders',
+  '/admin/warranty': 'warranty',
+  '/admin/returns': 'returns',
+  '/pos': 'pos',
+  '/admin/repairs': 'repairs',
+  '/admin/reloads': 'reloads',
+  '/admin/sales-tracking': 'salesTracking',
+  '/admin/trade-in': 'tradeIn',
+  '/admin/vouchers': 'vouchers',
+  '/admin/promotions': 'promotions',
+  '/admin/barcodes': 'barcodes',
+  '/barcode-generator': 'barcodes',
+  '/admin/suppliers': 'suppliers',
+  '/admin/supplier-payments': 'supplierPayments',
+  '/admin/accounts': 'accounts',
+  '/admin/cheques': 'cheques',
+  '/admin/hp': 'hp',
+  '/admin/expenses': 'expenses',
+  '/admin/financials': 'financials',
+  '/admin/profit-reports': 'profitReports',
+  '/admin/overtime': 'overtime',
+  '/admin/reports': 'reports',
+  '/admin/customer-history': 'customerHistory',
+  '/admin/predictions': 'predictions',
+  '/admin/settings': 'settings',
+  '/': true,
+};
+
 // Helper function to filter navigation based on user permissions
 export const getAdminNavGroups = (user) => {
   if (!user) return adminNavGroups;
 
   const isSuperAdmin = user.email === 'admin@mobilehub.com' || user.role === 'admin' || user.isSuperAdmin;
-  const p = user.permissions || {};
-
-  // If super admin, return everything
   if (isSuperAdmin) return adminNavGroups;
 
-  // Otherwise, filter based on permissions object
-  return adminNavGroups.map(group => {
-    let filteredItems = group.items;
+  const p = user.permissions || {};
 
-    if (group.label === 'User & Employee Management' && !p.employees) filteredItems = [];
-    if (group.label === 'Business Management' && !p.products) filteredItems = [];
-    if (group.label === 'Sales & Operations' && !p.sales) filteredItems = [];
-    if (group.label === 'Financial Management' && !p.finance) filteredItems = [];
-    if (group.label === 'Analytics & Reports' && !p.reports) filteredItems = [];
-    if (group.label === 'Suppliers & Payments' && !p.suppliers) filteredItems = [];
-    
-    // Some general groups might still show a few items, or none.
-    return { ...group, items: filteredItems };
-  }).filter(group => group.items.length > 0);
+  const checkItemAccess = (path) => {
+    if (path === '/admin' || path === '/') return true;
+    const key = pathToPermissionKey[path];
+    if (!key) return true;
+
+    // Check direct granular key
+    if (p[key] === true) return true;
+    if (p[key] === false) return false;
+
+    // Broad category fallbacks
+    if (['employees', 'attendance', 'leaves', 'payroll', 'salaryAdvances', 'letters', 'targets'].includes(key)) {
+      return p.employees === true;
+    }
+    if (['stores', 'categories', 'products', 'phones', 'inventory', 'barcodes'].includes(key)) {
+      return p.products === true || p.inventory === true;
+    }
+    if (['orders', 'warranty', 'returns', 'pos', 'repairs', 'reloads', 'salesTracking', 'tradeIn', 'vouchers', 'promotions'].includes(key)) {
+      return p.sales === true || (key === 'reloads' && p.reloads === true) || (key === 'repairs' && p.repairs === true);
+    }
+    if (['accounts', 'cheques', 'hp', 'expenses', 'financials', 'profitReports', 'overtime'].includes(key)) {
+      return p.finance === true || (key === 'expenses' && p.expenses === true);
+    }
+    if (['suppliers', 'supplierPayments'].includes(key)) {
+      return p.suppliers === true;
+    }
+    if (['reports', 'customerHistory', 'predictions'].includes(key)) {
+      return p.reports === true;
+    }
+    if (key === 'settings' || key === 'users') {
+      return p.settings === true || p.users === true;
+    }
+
+    return false;
+  };
+
+  return adminNavGroups
+    .map(group => {
+      const filteredItems = group.items.filter(item => checkItemAccess(item.path));
+      return { ...group, items: filteredItems };
+    })
+    .filter(group => group.items.length > 0);
 };
 
 export { adminNavGroups };
