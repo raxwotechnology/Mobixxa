@@ -703,7 +703,7 @@ const POSScreen = () => {
       
       const currentBal = selectedHpRecord.balanceAmount ?? (selectedHpRecord.remainingBalance ?? Math.max(0, (selectedHpRecord.netTotal || 0) - (selectedHpRecord.totalPaid || 0)));
       const newBal = Math.max(0, currentBal - amt);
-      setHpReceiptData({
+      const receiptObj = {
         payment: {
           amount: amt,
           paymentMethod: hpPayForm.paymentMethod || 'cash',
@@ -715,7 +715,13 @@ const POSScreen = () => {
         },
         hpRecord: data || selectedHpRecord,
         newBalance: newBal
-      });
+      };
+      setHpReceiptData(receiptObj);
+      
+      // Auto-trigger thermal receipt print window
+      setTimeout(() => {
+        handlePrintHpReceipt(receiptObj);
+      }, 300);
 
       // Refresh accounts & records
       handleSearchHpRecords(hpSearchInput);
@@ -864,15 +870,16 @@ const POSScreen = () => {
     }, 500);
   };
 
-  const handlePrintHpReceipt = () => {
-    if (!hpReceiptData) return;
+  const handlePrintHpReceipt = (customData = null) => {
+    const dataToPrint = customData || hpReceiptData;
+    if (!dataToPrint) return;
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
       toast.error('Popup blocked! Please allow popups to print receipt.');
       return;
     }
 
-    const { payment, hpRecord, newBalance } = hpReceiptData;
+    const { payment, hpRecord, newBalance } = dataToPrint;
     const logoUrl = getImageUrl(settings?.logoUrl || settings?.logo);
     const showLogo = settings?.receiptSettings?.showLogo !== false && logoUrl;
     const logoWidth = settings?.receiptSettings?.logoWidth || 120;
@@ -881,12 +888,17 @@ const POSScreen = () => {
     const subtitle = settings?.receiptSettings?.subtitle || settings?.address || '';
     const footerMsg = settings?.receiptSettings?.footerMessage || 'Thank you for your payment!';
     const terms = settings?.receiptSettings?.termsAndConditions || '';
+    const prevBalanceVal = hpRecord?.balanceAmount !== undefined && hpRecord?.balanceAmount !== null
+      ? (Number(hpRecord.balanceAmount) + Number(payment.amount))
+      : (hpRecord?.remainingBalance !== undefined
+        ? Number(hpRecord.remainingBalance)
+        : Math.max(0, (hpRecord?.netTotal || 0) - (hpRecord?.totalPaid || 0) + Number(payment.amount)));
 
     printWindow.document.write(`
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Installment Payment Receipt - ${hpRecord.invoiceNo}</title>
+          <title>Installment Payment Receipt - ${hpRecord?.invoiceNo || 'HP'}</title>
           <style>
             body { font-family: 'Courier New', monospace; width: 80mm; margin: 0 auto; padding: 10px; color: #000; }
             .text-center { text-align: center; }
@@ -911,9 +923,9 @@ const POSScreen = () => {
             <div class="subtitle text-${logoAlign}">Date: ${payment.date} ${payment.time}</div>
           </div>
 
-          <div class="row"><span>Invoice No:</span><span class="bold">${hpRecord.invoiceNo}</span></div>
-          <div class="row"><span>Customer:</span><span>${hpRecord.customer?.name || 'N/A'}</span></div>
-          <div class="row"><span>Phone:</span><span>${hpRecord.customer?.phone || 'N/A'}</span></div>
+          <div class="row"><span>Invoice No:</span><span class="bold">${hpRecord?.invoiceNo || 'N/A'}</span></div>
+          <div class="row"><span>Customer:</span><span>${hpRecord?.customer?.name || 'N/A'}</span></div>
+          <div class="row"><span>Phone:</span><span>${hpRecord?.customer?.phone || 'N/A'}</span></div>
           <div class="row"><span>Cashier:</span><span>${payment.receivedBy}</span></div>
 
           <div class="divider"></div>
@@ -924,7 +936,7 @@ const POSScreen = () => {
             <div style="font-size: 10px; text-transform: uppercase; margin-top: 2px;">Method: ${payment.paymentMethod}</div>
           </div>
 
-          <div class="row"><span>Prev Balance:</span><span>Rs. ${Number(hpRecord.remainingBalance).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
+          <div class="row"><span>Prev Balance:</span><span>Rs. ${Number(prevBalanceVal).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
           <div class="row"><span class="bold">Remaining Due:</span><span class="bold">Rs. ${Number(Math.max(0, newBalance)).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
 
           <div class="footer">

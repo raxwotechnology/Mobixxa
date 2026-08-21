@@ -93,25 +93,40 @@ const getHPById = async (req, res, next) => {
 const recordHPPayment = async (req, res, next) => {
   try {
     const { amount, paymentMethod, accountId, referenceNo, notes } = req.body;
-    let targetAccountId = accountId;
-    if (!targetAccountId) {
-      const Account = require('../models/Account');
-      const defaultAcc = await Account.findOne({ isDefault: true }) || await Account.findOne({});
-      if (defaultAcc) targetAccountId = defaultAcc._id;
-    }
-    if (!targetAccountId) {
-      res.status(400);
-      return next(new Error('Target account is required for payment'));
-    }
     const record = await HirePurchase.findById(req.params.id);
     
     if (!record) { res.status(404); return next(new Error('Record not found')); }
     if (record.status === 'Completed') { res.status(400); return next(new Error('Agreement already completed')); }
 
+    let targetAccountId = accountId;
+    if (!targetAccountId) {
+      const Account = require('../models/Account');
+      let defaultAcc = await Account.findOne({ storeId: record.storeId, isDefault: true }) || 
+                       await Account.findOne({ isDefault: true }) || 
+                       await Account.findOne({ storeId: record.storeId }) || 
+                       await Account.findOne({});
+      if (!defaultAcc) {
+        try {
+          defaultAcc = await Account.create({
+            storeId: record.storeId,
+            name: 'Counter Cash Drawer',
+            accountType: 'cash',
+            type: 'Cash',
+            balance: 0,
+            isDefault: true,
+            createdBy: req.user._id
+          });
+        } catch (accErr) {
+          console.error('[HP] Auto create account notice:', accErr.message);
+        }
+      }
+      if (defaultAcc) targetAccountId = defaultAcc._id;
+    }
+
     const payment = {
-      amount,
+      amount: Number(amount),
       paymentMethod: paymentMethod || 'Cash',
-      accountId: targetAccountId,
+      accountId: targetAccountId || undefined,
       referenceNo,
       receivedBy: req.user._id,
       date: new Date(),
@@ -136,7 +151,6 @@ const recordHPPayment = async (req, res, next) => {
       try {
         const order = await Order.findById(record.orderId);
         if (order) {
-          // Down payment was already paid, so subsequent payments reduce the remaining credit balance
           order.amountPaid = Math.min(order.totalAmount, order.amountPaid + Number(amount));
           order.creditBalance = Math.max(0, order.totalAmount - order.amountPaid);
           if (order.creditBalance <= 0) {
@@ -161,17 +175,21 @@ const recordHPPayment = async (req, res, next) => {
     await record.save();
 
     // Record in ledger
-    await recordTransaction({
-      storeId: record.storeId,
-      accountId,
-      type: 'income',
-      category: 'Hire Purchase Payment',
-      amount,
-      paymentMethod,
-      referenceNo: payment.receiptNo,
-      description: `HP Payment from ${record.customer.name} (ID: ${record._id})`,
-      createdBy: req.user._id
-    });
+    try {
+      await recordTransaction({
+        storeId: record.storeId,
+        accountId: targetAccountId,
+        type: 'income',
+        category: 'Hire Purchase Payment',
+        amount: Number(amount),
+        paymentMethod: paymentMethod || 'Cash',
+        referenceNo: payment.receiptNo,
+        description: `HP Payment from ${record.customer?.name || 'Customer'} (Inv: ${record.invoiceNo || record._id})`,
+        createdBy: req.user._id
+      });
+    } catch (txErr) {
+      console.error('[HP] Ledger income recording notice:', txErr.message);
+    }
 
     res.json(record);
   } catch (error) { next(error); }
