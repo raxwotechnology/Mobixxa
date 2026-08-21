@@ -120,14 +120,14 @@ const DeliveryDashboard = () => {
 
   if (loading) {
     return (
-      <DashboardLayout navItems={navItems} title="Employee Portal">
+      <DashboardLayout title="Delivery Dashboard">
         <EmployeeLoading />
       </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout navItems={navItems} title="Employee Portal">
+    <DashboardLayout title="Delivery Dashboard">
       <div className="animate-fade-in space-y-6">
         <EmployeePageHeader
           badge="DELIVERY OPERATIONS"
