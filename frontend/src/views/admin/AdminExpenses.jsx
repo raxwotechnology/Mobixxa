@@ -8,7 +8,7 @@ import { getTransactions, createTransaction, updateTransaction, deleteTransactio
 import { toast } from 'react-toastify';
 import { exportToCSV, exportToExcel, exportToPDF } from '../../utils/exportUtils';
 import { adminNavGroups } from './adminNavItems';
-import { managerNavGroups } from '../storeOwner/managerNavItems';
+import { managerNavGroups, getFilteredManagerNavGroups } from '../storeOwner/managerNavItems';
 import { getEmployeeNavGroups } from '../employee/employeeNav';
 import useAuthStore from '../../store/authStore';
 import useAdminStoreStore from '../../store/adminStoreStore';
@@ -37,7 +37,7 @@ const AdminExpenses = ({ navItems: propNavItems }) => {
     user?.role === 'cashier'
       ? getEmployeeNavGroups('cashier')
       : user?.role === 'manager'
-      ? managerNavGroups
+      ? getFilteredManagerNavGroups(user)
       : adminNavGroups
   );
   const [transactions, setTransactions] = useState([]);

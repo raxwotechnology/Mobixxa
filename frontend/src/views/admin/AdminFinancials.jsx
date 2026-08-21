@@ -19,13 +19,21 @@ import {
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { toast } from 'react-toastify';
 import { exportToExcel, exportToPDF } from '../../utils/exportUtils';
-import { adminNavGroups as navItems } from './adminNavItems';
+import { adminNavGroups } from './adminNavItems';
+import { getFilteredManagerNavGroups } from '../storeOwner/managerNavItems';
+import useAuthStore from '../../store/authStore';
 import useAdminStoreStore from '../../store/adminStoreStore';
 
 const PIE_COLORS = ['#d946a0', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#84cc16', '#a855f7', '#64748b', '#e11d48', '#0ea5e9', '#d946ef'];
 const BRANDS_LIST = ['all', 'Apple', 'Samsung', 'Xiaomi', 'Oppo', 'Vivo', 'Realme', 'Huawei', 'OnePlus', 'Anker', 'JBL', 'Baseus'];
 
-const AdminFinancials = () => {
+const AdminFinancials = ({ navItems: propNavItems }) => {
+  const { user } = useAuthStore();
+  const navItems = propNavItems || (
+    user?.role === 'manager'
+      ? getFilteredManagerNavGroups(user)
+      : adminNavGroups
+  );
   const [activeTab, setActiveTab] = useState('overview'); // overview | petty-cash | tax | profit
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);

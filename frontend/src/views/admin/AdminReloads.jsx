@@ -5,7 +5,7 @@ import { Smartphone, Search, Filter, Calendar, ArrowUpRight, Phone, User as User
 import DashboardLayout from '../../components/DashboardLayout';
 import { getReloads, getReloadStocks, addReloadStock, closeReloadStock, addReloadSupplierPayment } from '../../services/api';
 import { adminNavGroups } from './adminNavItems';
-import { managerNavGroups } from '../storeOwner/managerNavItems';
+import { managerNavGroups, getFilteredManagerNavGroups } from '../storeOwner/managerNavItems';
 import { getEmployeeNavGroups } from '../employee/employeeNav';
 import { toast } from 'react-toastify';
 import useAdminStoreStore from '../../store/adminStoreStore';
@@ -17,7 +17,7 @@ const AdminReloads = ({ navItems: propNavItems }) => {
     user?.role === 'cashier'
       ? getEmployeeNavGroups('cashier')
       : user?.role === 'manager'
-      ? managerNavGroups
+      ? getFilteredManagerNavGroups(user)
       : adminNavGroups
   );
 

@@ -11,7 +11,7 @@ import autoTable from 'jspdf-autotable';
 
 import { toast } from 'react-toastify';
 import { adminNavGroups } from './adminNavItems';
-import { managerNavGroups } from '../storeOwner/managerNavItems';
+import { managerNavGroups, getFilteredManagerNavGroups } from '../storeOwner/managerNavItems';
 import { getEmployeeNavGroups } from '../employee/employeeNav';
 import useAuthStore from '../../store/authStore';
 import useAdminStoreStore from '../../store/adminStoreStore';
@@ -26,7 +26,7 @@ const AdminAccounts = ({ navItems: propNavItems }) => {
     user?.role === 'cashier'
       ? getEmployeeNavGroups('cashier')
       : user?.role === 'manager'
-      ? managerNavGroups
+      ? getFilteredManagerNavGroups(user)
       : adminNavGroups
   );
   const { selectedStoreId } = useAdminStoreStore();

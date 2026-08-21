@@ -7,12 +7,20 @@ import { getProfitReport, getCategories } from '../../services/api';
 import { BarChart, Bar, LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { toast } from 'react-toastify';
 import { exportToExcel, exportToPDF } from '../../utils/exportUtils';
-import { adminNavGroups as navItems } from './adminNavItems';
+import { adminNavGroups } from './adminNavItems';
+import { getFilteredManagerNavGroups } from '../storeOwner/managerNavItems';
+import useAuthStore from '../../store/authStore';
 import useAdminStoreStore from '../../store/adminStoreStore';
 
 const BRANDS_LIST = ['all', 'Apple', 'Samsung', 'Xiaomi', 'Oppo', 'Vivo', 'Realme', 'Huawei', 'OnePlus', 'Anker', 'JBL', 'Baseus'];
 
-const AdminProfitReports = () => {
+const AdminProfitReports = ({ navItems: propNavItems }) => {
+  const { user } = useAuthStore();
+  const navItems = propNavItems || (
+    user?.role === 'manager'
+      ? getFilteredManagerNavGroups(user)
+      : adminNavGroups
+  );
   const { selectedStoreId } = useAdminStoreStore();
 
   // Filters
