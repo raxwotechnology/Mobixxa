@@ -37,6 +37,7 @@ import {
   Store,
   Printer,
   CheckCircle2,
+  Zap,
 } from 'lucide-react';
 
 import { getPosProducts, getProductByBarcode, posCheckout, getPosOrders, applyVoucher, getSettings, getActivePosSession, startPosSession, endPosSession, getPosPayHereHash, redeemPoints, getMyLoyaltyPoints, getCreditOrders, settleCreditOrder, getCategories, createQuotation, createProduct, getAccounts, loginUser, getCashiers, posLogin, getPosOrderByInvoice, createCustomerReturn, getHPRecords, recordHPPayment, createExpense } from '../../services/api';
@@ -243,8 +244,15 @@ const POSScreen = () => {
         return;
       }
 
-      // F4 or Alt+T: Focus Amount Tendered
-      if (e.key === 'F4' || (e.altKey && e.key.toLowerCase() === 't')) {
+      // F4: Instant Fast Cash Invoice & Print
+      if (e.key === 'F4') {
+        e.preventDefault();
+        handleQuickCashCheckout();
+        return;
+      }
+
+      // Alt+T: Focus Amount Tendered
+      if (e.altKey && e.key.toLowerCase() === 't') {
         e.preventDefault();
         tenderedAmountRef.current?.focus();
         tenderedAmountRef.current?.select();
@@ -317,6 +325,56 @@ const POSScreen = () => {
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
   }, [pos.cart, checkingOut, pos.paymentMethod, showShortcutsHelp, showDiscount, showReturnModal, showHpQuickPayModal, showBalanceModal, showEndSession, showCreditPanel, showReloadModal, showTradeInModal, showCustomerHistory]);
+
+  // Global Hardware Barcode Scanner Listener (Auto-detects rapid scanner gun typing from anywhere on screen)
+  useEffect(() => {
+    let barcodeBuffer = '';
+    let lastKeyTime = Date.now();
+
+    const handleHardwareScannerInput = async (e) => {
+      const activeEl = document.activeElement;
+      const isInputActive = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable);
+      const isScanInput = activeEl === cartScanRef.current || activeEl === searchRef.current;
+
+      const currentTime = Date.now();
+      const timeDiff = currentTime - lastKeyTime;
+      lastKeyTime = currentTime;
+
+      // Reset buffer if keystroke delay is large (> 65ms) and not in dedicated scan inputs
+      if (timeDiff > 65 && !isScanInput && e.key !== 'Enter') {
+        barcodeBuffer = '';
+      }
+
+      if (e.key === 'Enter') {
+        const codeToProcess = (isScanInput && activeEl?.value?.trim()) ? activeEl.value.trim() : barcodeBuffer.trim();
+        if (codeToProcess && codeToProcess.length >= 2) {
+          // If human was typing slowly in a text input (e.g., customer address/name, notes), don't treat as scanner gun
+          if (isInputActive && !isScanInput && timeDiff > 55) {
+            barcodeBuffer = '';
+            return;
+          }
+
+          e.preventDefault();
+          e.stopPropagation();
+          await handleScanProductDirect(codeToProcess);
+          barcodeBuffer = '';
+          if (activeEl && isScanInput) {
+            activeEl.value = '';
+          }
+        }
+        barcodeBuffer = '';
+        return;
+      }
+
+      // Single characters appended to buffer
+      if (e.key && e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
+        barcodeBuffer += e.key;
+      }
+    };
+
+    window.addEventListener('keydown', handleHardwareScannerInput, true);
+    return () => window.removeEventListener('keydown', handleHardwareScannerInput, true);
+  }, [products, productCache]);
 
   // Fetch Cashiers for Lockscreen
   const fetchCashiersList = useCallback(async () => {
@@ -599,68 +657,123 @@ const POSScreen = () => {
     }
   };
 
-  // Handle direct cart scanning (Barcode / IMEI)
-  const handleCartScanKeyDown = async (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      const q = cartScanInput.trim();
-      if (!q) return;
+  // Short pleasant scan beep
+  const playScanBeep = () => {
+    try {
+      if (typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext)) {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, ctx.currentTime); // A5 note
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.08);
+      }
+    } catch (e) {
+      // AudioContext failure safely ignored
+    }
+  };
 
-      // 1. Check exact barcode/SKU/id/IMEI match in loaded products
-      const exactMatch = products.find(
-        (p) =>
-          (p.barcode && p.barcode.toLowerCase() === q.toLowerCase()) ||
-          (p.sku && p.sku.toLowerCase() === q.toLowerCase()) ||
-          p._id === q ||
-          (Array.isArray(p.imei) && p.imei.some(im => im.toLowerCase() === q.toLowerCase()))
+  // Unified Product Scan & Direct Cart Injection
+  const handleScanProductDirect = async (rawCode) => {
+    const q = String(rawCode || '').trim();
+    if (!q) return false;
+
+    // 1. Check exact barcode/SKU/id/IMEI match in loaded products
+    const exactMatch = products.find(
+      (p) =>
+        (p.barcode && p.barcode.toLowerCase() === q.toLowerCase()) ||
+        (p.sku && p.sku.toLowerCase() === q.toLowerCase()) ||
+        p._id === q ||
+        (Array.isArray(p.imei) && p.imei.some(im => im.toLowerCase() === q.toLowerCase()))
+    );
+
+    if (exactMatch) {
+      if (exactMatch.stock <= 0) {
+        toast.warning(`⚠️ "${exactMatch.name}" is OUT OF STOCK!`, { autoClose: 2000 });
+      }
+      const matchedImei = Array.isArray(exactMatch.imei)
+        ? exactMatch.imei.find(im => im.toLowerCase() === q.toLowerCase())
+        : null;
+
+      addToCache(exactMatch);
+      pos.addItem(exactMatch, matchedImei);
+      if (!matchedImei) {
+        pos.setCartItemBarcode(exactMatch._id, q);
+      }
+      playScanBeep();
+      toast.success(
+        matchedImei
+          ? `📱 Added: ${exactMatch.name} (IMEI: ${matchedImei})`
+          : `🏷️ Added: ${exactMatch.name} — Rs. ${Number(exactMatch.price || 0).toLocaleString()}`,
+        { autoClose: 1500 }
       );
+      setCartScanInput('');
+      return true;
+    }
 
-      if (exactMatch) {
-        const matchedImei = Array.isArray(exactMatch.imei)
-          ? exactMatch.imei.find(im => im.toLowerCase() === q.toLowerCase())
-          : null;
-
-        addToCache(exactMatch);
-        pos.addItem(exactMatch, matchedImei);
-        if (!matchedImei) {
-          pos.setCartItemBarcode(exactMatch._id, q);
+    // 2. Query barcode & IMEI API if not in currently loaded list
+    try {
+      const { data } = await getProductByBarcode(q);
+      if (data && data._id) {
+        if (data.stock <= 0) {
+          toast.warning(`⚠️ "${data.name}" is OUT OF STOCK!`, { autoClose: 2000 });
         }
+        const matchedImei = data.scannedImei || (
+          Array.isArray(data.imei) ? data.imei.find(im => im.toLowerCase() === q.toLowerCase()) : null
+        );
+
+        addToCache(data);
+        pos.addItem(data, matchedImei);
+        if (!matchedImei) {
+          pos.setCartItemBarcode(data._id, q);
+        }
+        playScanBeep();
         toast.success(
           matchedImei
-            ? `📱 Added Phone: ${exactMatch.name} (IMEI: ${matchedImei})`
-            : `🏷️ Added Accessory: ${exactMatch.name} (Barcode: ${q})`,
+            ? `📱 Added: ${data.name} (IMEI: ${matchedImei})`
+            : `🏷️ Added: ${data.name} — Rs. ${Number(data.price || 0).toLocaleString()}`,
           { autoClose: 1500 }
         );
         setCartScanInput('');
-        return;
+        return true;
       }
-
-      // 2. Query barcode & IMEI API if not in currently loaded list
-      try {
-        const { data } = await getProductByBarcode(q);
-        if (data && data._id) {
-          const matchedImei = data.scannedImei || (
-            Array.isArray(data.imei) ? data.imei.find(im => im.toLowerCase() === q.toLowerCase()) : null
-          );
-
-          addToCache(data);
-          pos.addItem(data, matchedImei);
-          if (!matchedImei) {
-            pos.setCartItemBarcode(data._id, q);
-          }
-          toast.success(
-            matchedImei
-              ? `📱 Added Phone: ${data.name} (IMEI: ${matchedImei})`
-              : `🏷️ Added Accessory: ${data.name} (Barcode: ${q})`,
-            { autoClose: 1500 }
-          );
-          setCartScanInput('');
-          return;
-        }
-      } catch (barcodeErr) {
-        toast.error(`No product, accessory, or IMEI found matching "${q}"`);
-      }
+    } catch (barcodeErr) {
+      toast.error(`No product or IMEI found matching "${q}"`);
     }
+    return false;
+  };
+
+  // Handle direct cart scanning input (Barcode / IMEI)
+  const handleCartScanKeyDown = async (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      await handleScanProductDirect(cartScanInput);
+    }
+  };
+
+  // Instant Fast Cash Checkout function (F4 / Quick Invoice)
+  const handleQuickCashCheckout = async () => {
+    if (pos.cart.length === 0) {
+      toast.warning('Cart is empty. Scan products first!');
+      return;
+    }
+    if (checkingOut) return;
+
+    // Set payment method to Cash and exact tendered amount
+    pos.setPaymentMethod('cash');
+    pos.setTenderedAmount(grandTotal);
+    setPayments([{ method: 'cash', amount: grandTotal, accountId: '' }]);
+    setIsCredit(false);
+
+    // Trigger instant sale completion & receipt
+    setTimeout(() => {
+      handleCheckout();
+    }, 50);
   };
 
   // Fetch/Search HP Records for POS Quick Pay
@@ -3883,8 +3996,37 @@ const POSScreen = () => {
                 <span>Rs. {grandTotal.toFixed(2)}</span>
               </div>
 
+              {/* Instant 1-Click Fast Cash Invoice Button */}
+              <button
+                className="pos-quick-cash-btn"
+                onClick={handleQuickCashCheckout}
+                disabled={checkingOut || pos.cart.length === 0}
+                style={{
+                  width: '100%',
+                  marginTop: '10px',
+                  padding: '12px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+                  color: '#ffffff',
+                  fontSize: '14px',
+                  fontWeight: '800',
+                  cursor: checkingOut || pos.cart.length === 0 ? 'not-allowed' : 'pointer',
+                  opacity: checkingOut || pos.cart.length === 0 ? 0.6 : 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  boxShadow: '0 4px 14px rgba(22, 163, 74, 0.35)'
+                }}
+              >
+                <Zap size={18} />
+                <span>⚡ FAST CASH INVOICE & PRINT</span>
+                <span style={{ fontSize: '11px', background: 'rgba(255,255,255,0.25)', padding: '2px 6px', borderRadius: '4px', marginLeft: '4px' }}>[F4]</span>
+              </button>
+
               {/* Action Buttons */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '10px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '8px' }}>
                 <button
                   className="pos-checkout-btn"
                   onClick={handleCreateQuotation}
