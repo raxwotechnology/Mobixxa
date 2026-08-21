@@ -965,15 +965,27 @@ const getPosOrders = async (req, res, next) => {
       });
     });
 
-    // Query Reloads in date range
+    // Query Reloads in date range (from ReloadStock or Reloads)
     let reloadIncome = 0;
     try {
-      const Reload = require('../models/Reload');
-      const reloads = await Reload.find({
-        createdAt: { $gte: startOfDay, $lte: endOfDay },
-        status: { $ne: 'failed' },
+      const targetDateStr = req.query.date || new Date().toISOString().split('T')[0];
+      const ReloadStock = require('../models/ReloadStock');
+      const stocks = await ReloadStock.find({
+        date: targetDateStr,
+        ...(orderFilter.storeId ? { storeId: orderFilter.storeId } : {})
       }).lean();
-      reloadIncome = reloads.reduce((sum, r) => sum + (r.amount || 0), 0);
+
+      if (stocks && stocks.length > 0) {
+        reloadIncome = stocks.reduce((sum, s) => sum + (s.sellOutValue || 0), 0);
+      } else {
+        const Reload = require('../models/Reload');
+        const reloads = await Reload.find({
+          createdAt: { $gte: startOfDay, $lte: endOfDay },
+          status: { $ne: 'failed' },
+          paymentMethod: { $ne: 'Credit' }
+        }).lean();
+        reloadIncome = reloads.reduce((sum, r) => sum + (r.amount || 0), 0);
+      }
     } catch { /* ignore if model not present */ }
 
     // Query Repair Jobs in date range
@@ -1016,6 +1028,7 @@ const getPosOrders = async (req, res, next) => {
     // Query HP Installment payments in date range
     let hpTotalIncome = 0;
     let hpCashIncome = 0;
+    let hpBankIncome = 0;
     try {
       const HPRecord = require('../models/HPRecord');
       const hpRecords = await HPRecord.find({
@@ -1027,8 +1040,11 @@ const getPosOrders = async (req, res, next) => {
           if (pDate >= startOfDay && pDate <= endOfDay) {
             const amt = Number(p.amount || 0);
             hpTotalIncome += amt;
-            if (!p.paymentMethod || p.paymentMethod.toLowerCase() === 'cash') {
+            const pMeth = (p.paymentMethod || '').toLowerCase();
+            if (pMeth === 'cash' || !pMeth) {
               hpCashIncome += amt;
+            } else if (pMeth === 'bank' || pMeth === 'bank_transfer' || pMeth === 'card') {
+              hpBankIncome += amt;
             }
           }
         });
@@ -1040,25 +1056,49 @@ const getPosOrders = async (req, res, next) => {
     const totalCost = serviceCost + supplierCost + expenseCost;
     const balanceAmount = totalIncome - totalCost;
 
-    // Calculate shift summary
+    // Calculate detailed multi-channel payment method breakdown
     const totalSales = orderRevenue;
     const totalOrders = orders.length;
     let cashSales = 0;
     let cardSales = 0;
+    let bankSales = 0;
     let kokoSales = 0;
+    let payhereSales = 0;
+    let chequeSales = 0;
+    let creditSales = 0;
+    let hpDownPaymentSales = 0;
+
     orders.forEach((o) => {
       if (o.payments && o.payments.length > 0) {
         o.payments.forEach((p) => {
-          if (p.method === 'cash') cashSales += (p.amount || 0);
-          else if (p.method === 'card') cardSales += (p.amount || 0);
-          else if (p.method === 'koko') kokoSales += (p.amount || 0);
+          const m = (p.method || '').toLowerCase();
+          const amt = Number(p.amount || 0);
+          if (m === 'cash') cashSales += amt;
+          else if (m === 'card') cardSales += amt;
+          else if (m === 'bank_transfer' || m === 'bank') bankSales += amt;
+          else if (m === 'koko') kokoSales += amt;
+          else if (m === 'payhere') payhereSales += amt;
+          else if (m === 'cheque') chequeSales += amt;
+          else if (m === 'credit' || m === 'due') creditSales += amt;
+          else if (m === 'hire_purchase') hpDownPaymentSales += amt;
+          else cashSales += amt;
         });
       } else {
-        if (o.paymentMethod === 'cash') cashSales += (o.totalAmount || 0);
-        else if (o.paymentMethod === 'card') cardSales += (o.totalAmount || 0);
-        else if (o.paymentMethod === 'koko') kokoSales += (o.totalAmount || 0);
+        const m = (o.paymentMethod || '').toLowerCase();
+        const amt = Number(o.totalAmount || 0);
+        if (m === 'cash') cashSales += amt;
+        else if (m === 'card') cardSales += amt;
+        else if (m === 'bank_transfer' || m === 'bank') bankSales += amt;
+        else if (m === 'koko') kokoSales += amt;
+        else if (m === 'payhere') payhereSales += amt;
+        else if (m === 'cheque') chequeSales += amt;
+        else if (m === 'credit' || o.isCredit) creditSales += amt;
+        else if (m === 'hire_purchase') hpDownPaymentSales += amt;
+        else cashSales += amt;
       }
     });
+
+    const totalBankOnline = bankSales + payhereSales + kokoSales + hpBankIncome;
 
     const enrichedOrders = orders.map((order) => {
       const itemDetails = (order.items || []).map((it) => {
@@ -1112,6 +1152,7 @@ const getPosOrders = async (req, res, next) => {
         reloadIncome: Number(reloadIncome.toFixed(2)),
         hpIncome: Number(hpTotalIncome.toFixed(2)),
         hpCashIncome: Number(hpCashIncome.toFixed(2)),
+        hpBankIncome: Number(hpBankIncome.toFixed(2)),
         serviceCost: Number(serviceCost.toFixed(2)),
         supplierCost: Number((supplierCost + expenseCost).toFixed(2)),
         expenseCost: Number(expenseCost.toFixed(2)),
@@ -1124,9 +1165,16 @@ const getPosOrders = async (req, res, next) => {
         totalOrders,
         cashSales: parseFloat(cashSales.toFixed(2)),
         cardSales: parseFloat(cardSales.toFixed(2)),
+        bankSales: parseFloat(bankSales.toFixed(2)),
+        payhereSales: parseFloat(payhereSales.toFixed(2)),
         kokoSales: parseFloat(kokoSales.toFixed(2)),
+        chequeSales: parseFloat(chequeSales.toFixed(2)),
+        creditSales: parseFloat(creditSales.toFixed(2)),
+        hpDownPaymentSales: parseFloat(hpDownPaymentSales.toFixed(2)),
+        totalBankOnline: parseFloat(totalBankOnline.toFixed(2)),
         hpIncome: parseFloat(hpTotalIncome.toFixed(2)),
         hpCashIncome: parseFloat(hpCashIncome.toFixed(2)),
+        hpBankIncome: parseFloat(hpBankIncome.toFixed(2)),
         reloadIncome: parseFloat(reloadIncome.toFixed(2)),
         expenseCost: parseFloat(expenseCost.toFixed(2)),
         totalItemsSold: orders.reduce((sum, o) => sum + (o.items || []).reduce((line, item) => line + Number(item.quantity || 0), 0), 0),

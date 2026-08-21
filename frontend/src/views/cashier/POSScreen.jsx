@@ -1065,7 +1065,14 @@ const POSScreen = () => {
     const openingFloat = Number(posSession?.openingCashAmount || 0);
     const cashSales = Number(posDailySummary?.cashSales || 0);
     const cardSales = Number(posDailySummary?.cardSales || 0);
+    const bankSales = Number(posDailySummary?.bankSales || 0);
     const kokoSales = Number(posDailySummary?.kokoSales || 0);
+    const payhereSales = Number(posDailySummary?.payhereSales || 0);
+    const chequeSales = Number(posDailySummary?.chequeSales || 0);
+    const creditSales = Number(posDailySummary?.creditSales || 0);
+    const totalBankOnline = Number(posDailySummary?.totalBankOnline || (bankSales + payhereSales + kokoSales));
+    const mobileIncome = Number(dailyFinancials?.mobileIncome || 0);
+    const accessoriesIncome = Number(dailyFinancials?.accessoriesIncome || 0);
     const hpCashIncome = Number(posDailySummary?.hpCashIncome || dailyFinancials?.hpCashIncome || 0);
     const reloadIncome = Number(posDailySummary?.reloadIncome || dailyFinancials?.reloadIncome || 0);
     const expenseCost = Number(posDailySummary?.expenseCost || dailyFinancials?.expenseCost || 0);
@@ -1109,13 +1116,21 @@ const POSScreen = () => {
           <div class="row"><span>Printed At:</span><span>${new Date().toLocaleTimeString()}</span></div>
           
           <div class="divider"></div>
-          <div class="row bold"><span>REVENUE BREAKDOWN</span><span>AMOUNT</span></div>
-          <div class="row"><span>Counter Cash Sales:</span><span>Rs. ${cashSales.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
-          <div class="row"><span>Card / Digital Sales:</span><span>Rs. ${cardSales.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
-          ${kokoSales > 0 ? `<div class="row"><span>Koko / Installment:</span><span>Rs. ${kokoSales.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>` : ''}
+          <div class="row bold"><span>PAYMENT METHOD BREAKDOWN</span><span>AMOUNT</span></div>
+          <div class="row"><span>Counter Cash Sales:</span><span class="bold">Rs. ${cashSales.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
+          <div class="row"><span>Card (POS Machine):</span><span class="bold">Rs. ${cardSales.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
+          <div class="row"><span>Bank / Online Transfer:</span><span class="bold">Rs. ${totalBankOnline.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
+          ${creditSales > 0 ? `<div class="row"><span>Credit Given (Due):</span><span class="bold">Rs. ${creditSales.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>` : ''}
+          ${chequeSales > 0 ? `<div class="row"><span>Cheque Received:</span><span class="bold">Rs. ${chequeSales.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>` : ''}
           <div class="row"><span>HP Collections (Cash):</span><span>Rs. ${hpCashIncome.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
           <div class="row"><span>Reload & Card Sales:</span><span>Rs. ${reloadIncome.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
-          <div class="row bold" style="border-top:1px dashed #ddd; padding-top:4px;"><span>Total Day Revenue:</span><span>Rs. ${totalRevenue.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
+          
+          <div class="divider"></div>
+          <div class="row bold"><span>PRODUCT CATEGORY SALES</span></div>
+          <div class="row"><span>Mobile Phones:</span><span>Rs. ${mobileIncome.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
+          <div class="row"><span>Accessories & Others:</span><span>Rs. ${accessoriesIncome.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
+
+          <div class="row bold" style="border-top:1px dashed #ddd; padding-top:4px; margin-top:6px;"><span>Total Day Revenue:</span><span>Rs. ${totalRevenue.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
 
           <div class="divider"></div>
           <div class="row bold"><span>CASH DRAWER RECONCILIATION</span></div>
@@ -4284,8 +4299,37 @@ const POSScreen = () => {
                         </div>
                       </div>
 
-                      <div style={{ marginTop: '12px', fontSize: '11px', color: '#94a3b8', textAlign: 'center' }}>
-                        💳 Card & Digital Sales (Non-Drawer): <strong>Rs. {cardSales.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</strong>
+                      {/* Non-Drawer Multi-Channel Revenue */}
+                      <div style={{ marginTop: '14px', padding: '12px', background: '#0f172a', borderRadius: '12px', border: '1px solid #334155' }}>
+                        <div style={{ fontSize: '11px', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '8px' }}>
+                          🌐 NON-DRAWER DIGITAL & CREDIT PAYMENTS
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '11px' }}>
+                          <div style={{ padding: '6px 8px', background: '#1e293b', borderRadius: '6px' }}>
+                            <span style={{ color: '#38bdf8' }}>🏛️ Bank / Online:</span>
+                            <div style={{ fontWeight: 'bold', color: '#38bdf8', fontFamily: 'monospace' }}>
+                              Rs. {Number(posDailySummary?.totalBankOnline || (posDailySummary?.bankSales || 0)).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                            </div>
+                          </div>
+                          <div style={{ padding: '6px 8px', background: '#1e293b', borderRadius: '6px' }}>
+                            <span style={{ color: '#60a5fa' }}>💳 Card (POS):</span>
+                            <div style={{ fontWeight: 'bold', color: '#60a5fa', fontFamily: 'monospace' }}>
+                              Rs. {Number(posDailySummary?.cardSales || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                            </div>
+                          </div>
+                          <div style={{ padding: '6px 8px', background: '#1e293b', borderRadius: '6px' }}>
+                            <span style={{ color: '#fbbf24' }}>📋 Credit (Due):</span>
+                            <div style={{ fontWeight: 'bold', color: '#fbbf24', fontFamily: 'monospace' }}>
+                              Rs. {Number(posDailySummary?.creditSales || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                            </div>
+                          </div>
+                          <div style={{ padding: '6px 8px', background: '#1e293b', borderRadius: '6px' }}>
+                            <span style={{ color: '#c084fc' }}>🧾 Cheques:</span>
+                            <div style={{ fontWeight: 'bold', color: '#c084fc', fontFamily: 'monospace' }}>
+                              Rs. {Number(posDailySummary?.chequeSales || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
@@ -4686,21 +4730,59 @@ const POSScreen = () => {
                       <div style={{ fontSize: '18px', fontWeight: '900', color: '#34d399', marginTop: '6px', fontFamily: 'monospace' }}>
                         Rs. {Number(posDailySummary?.cashSales || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
                       </div>
-                      <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '4px' }}>Cash receipts at counter</div>
+                      <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '4px' }}>Physical cash received at drawer</div>
                     </div>
 
-                    {/* Card / Digital */}
+                    {/* Bank / Online Direct */}
+                    <div style={{ padding: '16px', borderRadius: '14px', background: '#1f2937', border: '1px solid #0284c7' }}>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#38bdf8', textTransform: 'uppercase' }}>🏛️ Bank & Online Transfer</div>
+                      <div style={{ fontSize: '18px', fontWeight: '900', color: '#38bdf8', marginTop: '6px', fontFamily: 'monospace' }}>
+                        Rs. {Number(posDailySummary?.totalBankOnline || ((posDailySummary?.bankSales || 0) + (posDailySummary?.payhereSales || 0) + (posDailySummary?.kokoSales || 0))).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>
+                        Bank: Rs. {Number(posDailySummary?.bankSales || 0).toLocaleString()} | Koko/PayHere: Rs. {Number((posDailySummary?.kokoSales || 0) + (posDailySummary?.payhereSales || 0)).toLocaleString()}
+                      </div>
+                    </div>
+
+                    {/* Card POS */}
                     <div style={{ padding: '16px', borderRadius: '14px', background: '#1f2937', border: '1px solid #374151' }}>
-                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#9ca3af', textTransform: 'uppercase' }}>💳 Card / Digital Sales</div>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#9ca3af', textTransform: 'uppercase' }}>💳 Card (POS Terminal)</div>
                       <div style={{ fontSize: '18px', fontWeight: '900', color: '#60a5fa', marginTop: '6px', fontFamily: 'monospace' }}>
                         Rs. {Number(posDailySummary?.cardSales || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
                       </div>
-                      <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '4px' }}>Visa / Master / QR / Koko</div>
+                      <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '4px' }}>Visa / Master / Debit Cards</div>
+                    </div>
+
+                    {/* Credit Sales */}
+                    <div style={{ padding: '16px', borderRadius: '14px', background: '#1f2937', border: '1px solid #f59e0b55' }}>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#fbbf24', textTransform: 'uppercase' }}>📋 Credit Sales (Due)</div>
+                      <div style={{ fontSize: '18px', fontWeight: '900', color: '#fbbf24', marginTop: '6px', fontFamily: 'monospace' }}>
+                        Rs. {Number(posDailySummary?.creditSales || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>Uncollected / Pay Later debt</div>
+                    </div>
+
+                    {/* Mobile Phones */}
+                    <div style={{ padding: '16px', borderRadius: '14px', background: '#1f2937', border: '1px solid #374151' }}>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#9ca3af', textTransform: 'uppercase' }}>📱 Mobile Phones Sales</div>
+                      <div style={{ fontSize: '18px', fontWeight: '900', color: '#a78bfa', marginTop: '6px', fontFamily: 'monospace' }}>
+                        Rs. {Number(dailyFinancials?.mobileIncome || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '4px' }}>Smartphones & Handsets</div>
+                    </div>
+
+                    {/* Accessories */}
+                    <div style={{ padding: '16px', borderRadius: '14px', background: '#1f2937', border: '1px solid #374151' }}>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#9ca3af', textTransform: 'uppercase' }}>🎧 Accessories & Other</div>
+                      <div style={{ fontSize: '18px', fontWeight: '900', color: '#f472b6', marginTop: '6px', fontFamily: 'monospace' }}>
+                        Rs. {Number(dailyFinancials?.accessoriesIncome || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '4px' }}>Tempered, covers, cables, audio</div>
                     </div>
 
                     {/* Reloads */}
                     <div style={{ padding: '16px', borderRadius: '14px', background: '#1f2937', border: '1px solid #374151' }}>
-                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#9ca3af', textTransform: 'uppercase' }}>📱 Reload & Scratch Cards</div>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#9ca3af', textTransform: 'uppercase' }}>⚡ Reload & Scratch Cards</div>
                       <div style={{ fontSize: '18px', fontWeight: '900', color: '#2dd4bf', marginTop: '6px', fontFamily: 'monospace' }}>
                         Rs. {Number(posDailySummary?.reloadIncome || dailyFinancials?.reloadIncome || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
                       </div>
