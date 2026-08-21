@@ -610,9 +610,9 @@ body {
 
 .pos-topbar-cashier-name {
   font-size: 0.75rem;
-  color: #334155;
-  font-weight: 700;
-  max-width: 80px;
+  color: #1e293b;
+  font-weight: 800;
+  max-width: 140px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

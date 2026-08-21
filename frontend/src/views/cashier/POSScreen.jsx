@@ -2557,24 +2557,25 @@ const POSScreen = () => {
           <span className="pos-topbar-store">{user?.assignedStoreName || 'Store'}</span>
         </div>
         <div className="pos-topbar-right">
-          {/* Navigation / Switch to Client Web */}
+          {/* Navigation / Switch to Client Web & Admin */}
           <button className="pos-topbar-btn" onClick={() => navigate('/shop')} title="Switch to Customer Web Store" style={{ background: '#ecfdf5', color: '#047857', borderColor: '#a7f3d0', fontWeight: 'bold' }}>
             <ExternalLink size={15} />
             <span className="pos-topbar-btn-text">Client Web</span>
           </button>
-          {user?.role === 'admin' && (
-            <button className="pos-topbar-btn" onClick={() => navigate('/admin')} title="Switch to Admin Dashboard" style={{ background: '#fdf2f8', color: '#be185d', borderColor: '#fbcfe8', fontWeight: 'bold' }}>
-              <ShieldCheck size={15} />
-              <span className="pos-topbar-btn-text">Admin</span>
-            </button>
-          )}
+          
+          <button className="pos-topbar-btn" onClick={() => navigate('/admin')} title="Open Mobixa Admin Dashboard" style={{ background: '#fdf2f8', color: '#be185d', borderColor: '#fbcfe8', fontWeight: 'bold' }}>
+            <ShieldCheck size={15} />
+            <span className="pos-topbar-btn-text">Mobixa Admin</span>
+          </button>
+
           {user?.role === 'manager' && (
             <button className="pos-topbar-btn" onClick={() => navigate('/manager')} title="Switch to Manager Dashboard" style={{ background: '#f0fdf4', color: '#15803d', borderColor: '#bbf7d0', fontWeight: 'bold' }}>
               <Store size={15} />
               <span className="pos-topbar-btn-text">Manager</span>
             </button>
           )}
-          <button className="pos-topbar-btn" onClick={handleBack} title="Leave POS & Return to Dashboard" style={{ background: '#f8fafc', color: '#475569', borderColor: '#cbd5e1', fontWeight: 'bold' }}>
+
+          <button className="pos-topbar-btn" onClick={handleBack} title="Leave POS & Return to Dashboard" style={{ background: '#f8fafc', color: '#334155', borderColor: '#cbd5e1', fontWeight: 'bold' }}>
             <ArrowLeft size={15} />
             <span className="pos-topbar-btn-text">Leave</span>
           </button>
