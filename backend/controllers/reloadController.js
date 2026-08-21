@@ -2,6 +2,8 @@ const Reload = require('../models/Reload');
 const ReloadStock = require('../models/ReloadStock');
 const Transaction = require('../models/Transaction');
 const Store = require('../models/Store');
+const Supplier = require('../models/Supplier');
+const SupplierPayment = require('../models/SupplierPayment');
 
 // @desc    Record a new reload
 // @route   POST /api/reloads
@@ -319,19 +321,71 @@ const addReloadSupplierPayment = async (req, res, next) => {
       }
     }
 
+    if (!assignedStore) {
+      const anyStore = await Store.findOne({ isActive: true });
+      if (anyStore) assignedStore = anyStore._id;
+    }
+
+    // 1. Find or create the Supplier record for the Distributor
+    const cleanSupplierName = (supplierName || `${operator || 'Telecom'} Distributor`).trim();
+    let supplier = await Supplier.findOne({
+      name: { $regex: new RegExp(`^${cleanSupplierName}$`, 'i') }
+    });
+
+    if (!supplier) {
+      supplier = await Supplier.create({
+        name: cleanSupplierName,
+        companyName: `${operator || 'Telecom'} Reload Distribution`,
+        contactPerson: `${operator || 'Telecom'} Distribution Agent`,
+        phone: '+94770000000',
+        email: `reload_${Date.now()}@supplier.local`,
+        category: 'Mobile Reloads & SIM Cards',
+        storeId: assignedStore || null,
+        status: 'active'
+      });
+    }
+
+    // 2. Map paymentMethod for SupplierPayment enum
+    let mappedMethod = 'cash';
+    const pmLower = (paymentMethod || '').toLowerCase();
+    if (pmLower.includes('bank') || pmLower.includes('transfer')) mappedMethod = 'bank_transfer';
+    else if (pmLower.includes('cheque')) mappedMethod = 'cheque';
+    else if (pmLower.includes('cash')) mappedMethod = 'cash';
+    else mappedMethod = 'other';
+
+    // 3. Create SupplierPayment record
+    let supplierPaymentRecord = null;
+    if (supplier && assignedStore) {
+      supplierPaymentRecord = await SupplierPayment.create({
+        supplierId: supplier._id,
+        storeId: assignedStore,
+        type: 'payment',
+        amount: Number(amount),
+        paymentMethod: mappedMethod,
+        description: `Reload Float / Card Payment (${operator || 'Network'}) - ${notes || cleanSupplierName}`,
+        date: new Date(),
+        createdBy: req.user._id
+      });
+    }
+
+    // 4. Create Ledger Expense Transaction
     const transaction = await Transaction.create({
       storeId: assignedStore || null,
       type: 'expense',
       category: 'Reload Supplier Cost',
       amount: Number(amount),
       paymentMethod: paymentMethod || 'Cash',
-      description: `Reload Supplier Purchase (${operator || 'Float'}) - ${supplierName || 'Distributor'}`,
+      description: `Reload Supplier Purchase (${operator || 'Float'}) - ${cleanSupplierName}`,
       notes,
       date: new Date(),
       createdBy: req.user._id
     });
 
-    res.status(201).json({ success: true, data: transaction });
+    res.status(201).json({ 
+      success: true, 
+      data: transaction, 
+      supplierPayment: supplierPaymentRecord 
+    });
   } catch (error) {
     next(error);
   }

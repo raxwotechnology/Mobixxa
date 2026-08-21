@@ -6,42 +6,53 @@ const mongoose = require('mongoose');
 const resolveStoreId = async (req) => {
   if (req.user.role === 'manager') {
     const store = await Store.findOne({ managerId: req.user._id }).select('_id').lean();
-    return store?._id || null;
+    if (store) return store._id;
   }
-  // Admin: use query/body storeId, or null (all stores)
-  if (req.user.role === 'admin') {
-    return req.body?.storeId || req.query?.storeId || null;
+  if (req.user.role === 'cashier' || req.user.assignedStore) {
+    if (req.user.assignedStore) return req.user.assignedStore;
   }
-  return req.body?.storeId || req.query?.storeId || null;
+  if (req.body?.storeId || req.query?.storeId) {
+    return req.body.storeId || req.query.storeId;
+  }
+  const defaultStore = await Store.findOne({ isActive: true }).select('_id').lean();
+  return defaultStore?._id || null;
 };
 
 // @desc    Get all suppliers with balances
 // @route   GET /api/supplier-payments/summary
-// @access  Private/Admin/Manager
+// @access  Private/Admin/Manager/Cashier
 const getSupplierSummary = async (req, res, next) => {
   try {
     let storeId = await resolveStoreId(req);
 
-    // For admin, if no store found, still show all suppliers
-    let supplierFilter = {};
-    let paymentMatchFilter = {};
+    // Show all active suppliers
+    let supplierFilter = { status: 'active' };
     if (storeId) {
-      supplierFilter = { storeId, status: 'active' };
-      paymentMatchFilter = { storeId: new mongoose.Types.ObjectId(String(storeId)) };
-    } else if (req.user.role === 'admin') {
-      // Show all suppliers regardless of store
-      supplierFilter = { status: 'active' };
-    } else {
-      res.status(400);
-      return next(new Error('storeId is required'));
+      supplierFilter = {
+        $or: [
+          { storeId },
+          { storeId: null },
+          { storeId: { $exists: false } }
+        ],
+        status: 'active'
+      };
     }
 
     const suppliers = await Supplier.find(supplierFilter).lean();
 
     // Aggregate balances
-    const pipeline = paymentMatchFilter.storeId
-      ? [{ $match: paymentMatchFilter }]
-      : [];
+    const pipeline = [];
+    if (storeId) {
+      pipeline.push({
+        $match: {
+          $or: [
+            { storeId: new mongoose.Types.ObjectId(String(storeId)) },
+            { storeId: null },
+            { storeId: { $exists: false } }
+          ]
+        }
+      });
+    }
     pipeline.push({
       $group: {
         _id: '$supplierId',

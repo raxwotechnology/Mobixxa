@@ -195,7 +195,7 @@ const ManagerSupplierPayments = () => {
   // Ledger View
   if (selectedSupplier) {
     return (
-      <DashboardLayout navItems={navItems} title="Manager Dashboard">
+      <DashboardLayout title="Supplier Payments">
         <div className="animate-fade-in space-y-6">
           {/* Back Button */}
           <button onClick={() => { setSelectedSupplier(null); setLedger(null); }}
@@ -409,7 +409,7 @@ const ManagerSupplierPayments = () => {
 
   // Summary View
   return (
-    <DashboardLayout navItems={navItems} title="Manager Dashboard">
+    <DashboardLayout title="Supplier Payments">
       <div className="animate-fade-in space-y-6">
         {/* Operations Control Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm relative overflow-hidden">

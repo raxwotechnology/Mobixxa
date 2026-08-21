@@ -4,7 +4,7 @@ import ManagerSupplierPayments from '../../../views/storeOwner/ManagerSupplierPa
 
 export default function ManagerSupplierPaymentsRoute() {
   return (
-    <ProtectedRoute roles={['manager']}>
+    <ProtectedRoute roles={['admin', 'manager', 'cashier']}>
       <ManagerSupplierPayments />
     </ProtectedRoute>
   );
