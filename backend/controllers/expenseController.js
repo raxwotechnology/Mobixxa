@@ -67,6 +67,7 @@ const createExpense = async (req, res, next) => {
         paymentMethod: paymentMethod || 'Cash',
         description: `Expense: ${expenseTitle}`,
         createdBy: req.user._id,
+        date: date ? new Date(date) : new Date(),
       });
     }
 
@@ -74,24 +75,6 @@ const createExpense = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-};
-      const { recordTransaction } = require('../services/ledgerService');
-      await recordTransaction({
-        storeId: assignedStore,
-        accountId,
-        type: 'expense',
-        category: `Expense: ${category}`,
-        amount,
-        paymentMethod: paymentMethod || 'Cash',
-        description: `Expense: ${title}`,
-        createdBy: req.user._id,
-        date: date || new Date()
-      });
-    }
-
-
-    res.status(201).json(expense);
-  } catch (error) { next(error); }
 };
 
 // @desc    Get all expenses (with filters)
