@@ -3013,25 +3013,11 @@ const POSScreen = () => {
           <span className="pos-topbar-store">{user?.assignedStoreName || 'Store'}</span>
         </div>
         <div className="pos-topbar-right">
-          {/* Navigation / Switch to Client Web & Admin */}
+          {/* Navigation / Switch to Client Web */}
           <button className="pos-topbar-btn" onClick={() => navigate('/shop')} title="Switch to Customer Web Store" style={{ background: '#ecfdf5', color: '#047857', borderColor: '#a7f3d0', fontWeight: 'bold' }}>
             <ExternalLink size={15} />
             <span className="pos-topbar-btn-text">Client Web</span>
           </button>
-          
-          {(user?.role === 'admin' || user?.role === 'manager') && (
-            <button className="pos-topbar-btn" onClick={() => navigate('/admin')} title="Open Mobixa Admin Dashboard" style={{ background: '#fdf2f8', color: '#be185d', borderColor: '#fbcfe8', fontWeight: 'bold' }}>
-              <ShieldCheck size={15} />
-              <span className="pos-topbar-btn-text">Mobixa Admin</span>
-            </button>
-          )}
-
-          {user?.role === 'manager' && (
-            <button className="pos-topbar-btn" onClick={() => navigate('/manager')} title="Switch to Manager Dashboard" style={{ background: '#f0fdf4', color: '#15803d', borderColor: '#bbf7d0', fontWeight: 'bold' }}>
-              <Store size={15} />
-              <span className="pos-topbar-btn-text">Manager</span>
-            </button>
-          )}
 
           <button className="pos-topbar-btn" onClick={handleBack} title="Leave POS & Return to Dashboard" style={{ background: '#f8fafc', color: '#334155', borderColor: '#cbd5e1', fontWeight: 'bold' }}>
             <ArrowLeft size={15} />
@@ -3152,15 +3138,20 @@ const POSScreen = () => {
           </div>
 
           {/* Cashier profile & Switch Cashier */}
-          <div className="pos-topbar-cashier" title={`Logged in as ${user?.name || 'Cashier'}`}>
-            <div className="pos-topbar-avatar" style={{ overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="pos-topbar-cashier" title={`Logged in as ${user?.name || 'User'} (${user?.role || 'Staff'})`} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 10px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #cbd5e1' }}>
+            <div className="pos-topbar-avatar" style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'linear-gradient(135deg, #2563eb, #1d4ed8)', color: '#ffffff', fontSize: '13px', fontWeight: 'bold', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {user?.avatar ? (
                 <img src={getImageUrl(user.avatar)} alt={user?.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               ) : (
-                user?.name?.charAt(0)?.toUpperCase() || 'C'
+                user?.name?.charAt(0)?.toUpperCase() || 'U'
               )}
             </div>
-            <span className="pos-topbar-cashier-name">{user?.name}</span>
+            <div style={{ display: 'flex', flexDirection: 'column', lineHeight: '1.2' }}>
+              <span className="pos-topbar-cashier-name" style={{ fontWeight: '800', fontSize: '12px', color: '#1e293b' }}>{user?.name}</span>
+              <span style={{ fontSize: '10px', color: '#3b82f6', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
+                {user?.role === 'admin' ? '🛡️ ADMIN' : user?.role === 'manager' ? '🏪 MANAGER' : user?.role === 'cashier' ? '👤 CASHIER' : (user?.role || 'STAFF')}
+              </span>
+            </div>
           </div>
           <button className="pos-topbar-btn" onClick={handleSwitchCashier} title="Switch Cashier Profile" style={{ background: '#f5f3ff', color: '#5b21b6', borderColor: '#ddd6fe', fontWeight: 'bold' }}>
             <Users size={15} />
