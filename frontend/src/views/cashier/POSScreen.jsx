@@ -6863,9 +6863,9 @@ const POSScreen = () => {
                               <button
                                 type="button"
                                 onClick={() => setSelectedVoucherForPreview(bill)}
-                                style={{ padding: '3px 8px', fontSize: '11px', fontWeight: '700', color: '#2563eb', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '6px', cursor: 'pointer' }}
+                                style={{ padding: '4px 10px', fontSize: '11px', fontWeight: '800', color: '#2563eb', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '8px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                               >
-                                🖨️ Voucher
+                                👁️ View Voucher
                               </button>
                             </td>
                           </tr>
