@@ -9,7 +9,7 @@ import { sendInvoiceReceipt } from '../../services/api';
 import { sendWhatsAppInvoice } from '../../utils/whatsappHelper';
 import { toast } from 'react-toastify';
 
-const InvoiceModal = ({ isOpen, onClose, order, onNewSale }) => {
+const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = 'invoice' }) => {
   const settings = useSettingsStore((s) => s.settings);
   const brandName = settings?.shopName || 'Mobixa';
   const brandAddress = settings?.address || '';
@@ -18,11 +18,17 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale }) => {
   const receiptTemplate = settings?.documentTemplates?.posReceipt || {};
   const invoiceTemplate = settings?.documentTemplates?.invoice || {};
 
-  const [layoutMode, setLayoutMode] = useState('receipt'); // 'receipt' or 'invoice'
+  const [layoutMode, setLayoutMode] = useState(initialLayoutMode);
   const [smsRecipient, setSmsRecipient] = useState('');
   const [emailRecipient, setEmailRecipient] = useState('');
   const [sendingSms, setSendingSms] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && initialLayoutMode) {
+      setLayoutMode(initialLayoutMode);
+    }
+  }, [initialLayoutMode, isOpen]);
 
   const documentTemplate = layoutMode === 'receipt' ? receiptTemplate : invoiceTemplate;
   const barcodeRef = useRef(null);

@@ -180,6 +180,7 @@ const POSScreen = () => {
   const [recentInvoicesList, setRecentInvoicesList] = useState([]);
   const [loadingRecentInvoices, setLoadingRecentInvoices] = useState(false);
   const [invoiceFilterTab, setInvoiceFilterTab] = useState('all'); // 'all', 'today', 'credit', 'returned'
+  const [invoiceModalLayoutMode, setInvoiceModalLayoutMode] = useState('invoice');
 
   const handleFetchRecentInvoices = async (searchTerm = '', filterAll = true) => {
     try {
@@ -4256,6 +4257,7 @@ const POSScreen = () => {
         onClose={() => setShowInvoice(false)}
         order={lastOrder}
         onNewSale={handleNewSale}
+        initialLayoutMode={invoiceModalLayoutMode}
       />
 
       {/* Discount Modal */}
@@ -6416,37 +6418,20 @@ const POSScreen = () => {
                         transition: 'all 0.15s',
                       }}
                     >
-                      {/* Top Row: Invoice #, View button, Date, Payment Badge */}
+                      {/* Top Row: Invoice #, Date, Payment Badge */}
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ background: '#3730a3', color: '#ffffff', fontSize: '12px', fontWeight: '800', padding: '4px 10px', borderRadius: '8px' }}>
-                            {invNo}
-                          </span>
-
-                          <button
+                          <span
                             onClick={() => {
+                              setInvoiceModalLayoutMode('invoice');
                               setLastOrder(inv);
                               setShowInvoice(true);
                             }}
-                            style={{
-                              background: '#e0e7ff',
-                              color: '#3730a3',
-                              border: '1px solid #c7d2fe',
-                              padding: '3px 10px',
-                              borderRadius: '8px',
-                              fontSize: '11px',
-                              fontWeight: '800',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                              transition: 'all 0.15s'
-                            }}
-                            title="Click to view full invoice breakdown & print"
+                            title="Click to view full A4 Invoice & PDF"
+                            style={{ background: '#3730a3', color: '#ffffff', fontSize: '12px', fontWeight: '800', padding: '4px 10px', borderRadius: '8px', cursor: 'pointer' }}
                           >
-                            <Eye size={13} />
-                            <span>View Details</span>
-                          </button>
+                            {invNo}
+                          </span>
 
                           <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '600' }}>
                             🕒 {invDate}
@@ -6494,12 +6479,25 @@ const POSScreen = () => {
                         </button>
                         <button
                           onClick={() => {
+                            setInvoiceModalLayoutMode('receipt');
+                            setLastOrder(inv);
+                            setShowInvoice(true);
+                          }}
+                          style={{ background: '#f8fafc', color: '#334155', border: '1px solid #cbd5e1', padding: '6px 12px', borderRadius: '10px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}
+                          title="Print 80mm POS Thermal Receipt"
+                        >
+                          <Printer size={14} /> 80mm Receipt
+                        </button>
+                        <button
+                          onClick={() => {
+                            setInvoiceModalLayoutMode('invoice');
                             setLastOrder(inv);
                             setShowInvoice(true);
                           }}
                           style={{ background: '#3730a3', color: '#ffffff', border: 'none', padding: '6px 14px', borderRadius: '10px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}
+                          title="View Full A4 Invoice & PDF Print"
                         >
-                          <FileText size={14} /> View Details & Print
+                          <FileText size={14} /> View Invoice (A4 / PDF)
                         </button>
                       </div>
                     </div>
