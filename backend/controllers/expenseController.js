@@ -6,7 +6,7 @@ const Store = require('../models/Store');
 // @access  Private/Admin/Manager
 const createExpense = async (req, res, next) => {
   try {
-    const { title, description, category, amount, date, status, notes, storeId, receipt, paymentMethod, accountId } = req.body;
+    const { title, description, category, amount, date, status, notes, payee, storeId, receipt, paymentMethod, accountId } = req.body;
 
     // Robust storeId resolution
     let assignedStore = storeId;
@@ -50,6 +50,7 @@ const createExpense = async (req, res, next) => {
       accountId: resolvedAccountId || null,
       status: expenseStatus,
       notes: notes || description || '',
+      payee: payee || '',
       storeId: assignedStore || null,
       createdBy: req.user._id,
       receipt: receipt || '',

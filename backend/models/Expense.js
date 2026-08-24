@@ -43,6 +43,11 @@ const expenseSchema = new mongoose.Schema(
       trim: true,
       default: '',
     },
+    payee: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     storeId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Store',

@@ -44,7 +44,7 @@ import {
   Download,
 } from 'lucide-react';
 
-import { getPosProducts, getProductByBarcode, posCheckout, getPosOrders, applyVoucher, getSettings, getActivePosSession, startPosSession, endPosSession, getPosPayHereHash, redeemPoints, getMyLoyaltyPoints, getCreditOrders, getCustomerCreditSummary, settleCreditOrder, getCategories, createQuotation, createProduct, getAccounts, loginUser, getCashiers, posLogin, getPosOrderByInvoice, createCustomerReturn, getHPRecords, recordHPPayment, createExpense } from '../../services/api';
+import { getPosProducts, getProductByBarcode, posCheckout, getPosOrders, applyVoucher, getSettings, getActivePosSession, startPosSession, endPosSession, getPosPayHereHash, redeemPoints, getMyLoyaltyPoints, getCreditOrders, getCustomerCreditSummary, settleCreditOrder, getCategories, createQuotation, createProduct, getAccounts, loginUser, getCashiers, posLogin, getPosOrderByInvoice, createCustomerReturn, getHPRecords, recordHPPayment, createExpense, getExpenses } from '../../services/api';
 
 
 
@@ -173,6 +173,22 @@ const POSScreen = () => {
   });
   const [submittingCreditSettle, setSubmittingCreditSettle] = useState(false);
   const [customerCreditSummary, setCustomerCreditSummary] = useState(null);
+
+  // Bills & Payments Ledger Modal States
+  const [showBillsModal, setShowBillsModal] = useState(false);
+  const [billsForm, setBillsForm] = useState({
+    title: '',
+    category: 'Utility Bill',
+    payee: '',
+    amount: '',
+    paymentMethod: 'Cash',
+    accountId: '',
+    notes: ''
+  });
+  const [submittingBill, setSubmittingBill] = useState(false);
+  const [billsList, setBillsList] = useState([]);
+  const [loadingBillsList, setLoadingBillsList] = useState(false);
+
   const [showToolsDropdown, setShowToolsDropdown] = useState(false);
   const toolsDropdownRef = useRef(null);
 
@@ -1118,6 +1134,201 @@ const POSScreen = () => {
     } finally {
       setSubmittingPettyCash(false);
     }
+  };
+
+  // Bills & Payments Handlers
+  const handleFetchRecentBills = async () => {
+    try {
+      setLoadingBillsList(true);
+      const stId = user?.assignedStore || user?.assignedStoreId || user?.storeId || posSession?.storeId;
+      const { data } = await getExpenses({ storeId: stId });
+      const expensesArr = Array.isArray(data) ? data : (data?.expenses || []);
+      setBillsList(expensesArr);
+    } catch (err) {
+      console.error('Failed to load bills list:', err);
+    } finally {
+      setLoadingBillsList(false);
+    }
+  };
+
+  const handleSaveBillPayment = async (e) => {
+    e.preventDefault();
+    const amt = Number(billsForm.amount);
+    if (!amt || amt <= 0) {
+      toast.error('Please enter a valid bill payment amount');
+      return;
+    }
+    try {
+      setSubmittingBill(true);
+      const stId = user?.assignedStore || user?.assignedStoreId || user?.storeId || posSession?.storeId;
+      await createExpense({
+        title: billsForm.title || billsForm.category || 'Bill Payment',
+        amount: amt,
+        category: billsForm.category || 'Utility Bill',
+        payee: billsForm.payee || '',
+        notes: billsForm.notes || '',
+        paymentMethod: billsForm.paymentMethod || 'Cash',
+        accountId: billsForm.accountId || (accounts.length > 0 ? accounts[0]._id : undefined),
+        status: 'Paid',
+        storeId: stId,
+        date: new Date().toISOString()
+      });
+      toast.success('Bill / Service payment recorded successfully! 🧾💰');
+      setBillsForm({ title: '', category: 'Utility Bill', payee: '', amount: '', paymentMethod: 'Cash', accountId: '', notes: '' });
+      handleFetchRecentBills();
+      if (fetchDailyFinancials) fetchDailyFinancials();
+      if (fetchSessionData) fetchSessionData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to record bill payment');
+    } finally {
+      setSubmittingBill(false);
+    }
+  };
+
+  const handlePrintBillVoucher = (billItem) => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast.error('Pop-up blocked. Please allow pop-ups for receipt printing.');
+      return;
+    }
+    const storeName = currentStore?.name || user?.assignedStoreName || 'SR MOBILE';
+    const storeAddress = currentStore?.address || 'Main Street, Store Branch';
+    const storePhone = currentStore?.phone || '+94 77 123 4567';
+    const dateStr = new Date(billItem.date || billItem.createdAt || Date.now()).toLocaleString();
+    const cashierName = billItem.createdBy?.name || user?.name || 'Cashier';
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Payment Voucher - ${billItem.title || 'Bill'}</title>
+          <style>
+            body { font-family: 'Courier New', monospace; width: 80mm; margin: 0 auto; padding: 10px; color: #000; }
+            .text-center { text-align: center; }
+            .bold { font-weight: bold; }
+            .header { margin-bottom: 8px; border-bottom: 1px dashed #000; padding-bottom: 6px; }
+            .title { font-size: 14px; font-weight: bold; text-transform: uppercase; }
+            .row { display: flex; justify-content: space-between; font-size: 11px; margin: 4px 0; }
+            .divider { border-top: 1px dashed #000; margin: 6px 0; }
+            .total-box { border: 1.5px solid #000; padding: 8px; margin: 8px 0; text-align: center; border-radius: 4px; }
+            .footer { margin-top: 12px; text-align: center; font-size: 9px; border-top: 1px dashed #000; padding-top: 6px; }
+          </style>
+        </head>
+        <body>
+          <div class="header text-center">
+            <div class="title">${storeName}</div>
+            <div style="font-size:10px;">${storeAddress} | Tel: ${storePhone}</div>
+            <div style="font-size:11px; font-weight:bold; margin-top:4px; text-transform:uppercase;">OFFICIAL PAYMENT VOUCHER</div>
+            <div style="font-size:9px;">Date: ${dateStr}</div>
+          </div>
+          <div class="row"><span>Voucher Type:</span><span class="bold">${billItem.category || 'Expense'}</span></div>
+          <div class="row"><span>Description:</span><span class="bold">${billItem.title || 'N/A'}</span></div>
+          <div class="row"><span>Paid To / Payee:</span><span class="bold">${billItem.payee || 'N/A'}</span></div>
+          <div class="row"><span>Payment Method:</span><span>${billItem.paymentMethod || 'Cash'}</span></div>
+          <div class="row"><span>Recorded By:</span><span>${cashierName}</span></div>
+          <div class="divider"></div>
+          <div class="total-box">
+            <div style="font-size: 10px; font-weight: bold;">TOTAL AMOUNT PAID</div>
+            <div style="font-size: 18px; font-weight: bold; margin: 2px 0;">Rs. ${Number(billItem.amount || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</div>
+            <div style="font-size: 9px;">STATUS: PAID / CASH OUT</div>
+          </div>
+          ${billItem.notes ? `<div style="font-size:10px; font-style:italic; margin-top:4px;">Notes: ${billItem.notes}</div>` : ''}
+          <div class="footer">
+            <p style="margin: 2px 0; font-weight: bold;">Thank you!</p>
+            <p style="margin: 2px 0;">System Verified Payment Record</p>
+          </div>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    setTimeout(() => {
+      printWindow.focus();
+      printWindow.print();
+    }, 250);
+  };
+
+  const handleExportBillsPDF = () => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast.error('Pop-up blocked. Please allow pop-ups for PDF export.');
+      return;
+    }
+    const storeName = currentStore?.name || user?.assignedStoreName || 'SR MOBILE';
+    const totalSpent = billsList.reduce((sum, b) => sum + Number(b.amount || 0), 0);
+    const dateStr = new Date().toLocaleDateString('en-GB');
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Shop Bills & Payments Report - ${dateStr}</title>
+          <style>
+            @page { size: A4 portrait; margin: 12mm; }
+            body { font-family: 'Segoe UI', Arial, sans-serif; color: #0f172a; margin: 0; padding: 0; }
+            .header { border-bottom: 2px solid #2563eb; padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-end; }
+            .title { font-size: 20px; font-weight: 800; color: #1e3a8a; }
+            .meta { font-size: 12px; color: #475569; text-align: right; }
+            table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 12px; }
+            th { background: #f1f5f9; text-align: left; padding: 8px 10px; font-weight: 700; color: #334155; border-bottom: 2px solid #cbd5e1; }
+            td { padding: 8px 10px; border-bottom: 1px solid #e2e8f0; color: #0f172a; }
+            .summary-card { background: #eff6ff; border: 1.5px solid #bfdbfe; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; display: flex; justify-content: space-between; font-weight: 700; }
+            .footer { margin-top: 24px; text-align: center; font-size: 11px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 10px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div>
+              <div class="title">${storeName}</div>
+              <div style="font-size: 13px; font-weight: 700; color: #2563eb;">SHOP BILLS & SERVICE PAYMENTS REPORT</div>
+            </div>
+            <div class="meta">
+              <div>Date: <strong>${dateStr}</strong></div>
+              <div>Generated by: <strong>${user?.name || 'Cashier'}</strong></div>
+            </div>
+          </div>
+          <div class="summary-card">
+            <span>Total Bill & Service Expenses (${billsList.length} Items):</span>
+            <span style="color: #1d4ed8; font-size: 16px;">Rs. ${totalSpent.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Date & Time</th>
+                <th>Category</th>
+                <th>Description</th>
+                <th>Paid To / Payee</th>
+                <th>Method</th>
+                <th style="text-align: right;">Amount (Rs.)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${billsList.length === 0 ? `<tr><td colSpan="7" style="text-align:center; padding: 20px; color: #94a3b8;">No bills recorded yet</td></tr>` : 
+                billsList.map((b, i) => `
+                  <tr>
+                    <td>${i + 1}</td>
+                    <td>${new Date(b.date || b.createdAt).toLocaleDateString('en-GB')} ${new Date(b.date || b.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+                    <td><span style="font-weight: 700; color: #2563eb;">${b.category || 'Bill'}</span></td>
+                    <td><strong>${b.title || 'N/A'}</strong></td>
+                    <td>${b.payee || '-'}</td>
+                    <td>${b.paymentMethod || 'Cash'}</td>
+                    <td style="text-align: right; font-weight: 800; color: #b45309;">Rs. ${Number(b.amount || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</td>
+                  </tr>
+                `).join('')
+              }
+            </tbody>
+          </table>
+          <div class="footer">
+            Report generated from SR Mobile POS System • Official Financial Document
+          </div>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    setTimeout(() => {
+      printWindow.focus();
+      printWindow.print();
+    }, 300);
   };
 
   const handlePrintShiftSlip = () => {
@@ -2712,6 +2923,13 @@ const POSScreen = () => {
                 >
                   <DollarSign size={16} />
                   <span>☕ Petty Cash Expense</span>
+                </button>
+                <button
+                  onClick={() => { setShowToolsDropdown(false); setShowBillsModal(true); handleFetchRecentBills(); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 12px', borderRadius: '8px', border: 'none', background: '#eff6ff', color: '#1d4ed8', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}
+                >
+                  <FileText size={16} />
+                  <span>🧾 Bills & Payments</span>
                 </button>
                 <button
                   onClick={() => { setShowToolsDropdown(false); setShowShortcutsHelp(true); }}
@@ -6307,6 +6525,211 @@ const POSScreen = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Bills & Payments Ledger Modal */}
+      {showBillsModal && (
+        <div className="pos-modal-overlay" onClick={() => setShowBillsModal(false)}>
+          <div className="pos-modal-card" onClick={e => e.stopPropagation()} style={{ maxWidth: '780px', width: '92%', padding: '24px', background: '#ffffff', borderRadius: '24px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', border: '1px solid #e2e8f0', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', paddingBottom: '14px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px' }}>
+                  🧾
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>Shop Bills & Service Payments Ledger</h3>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#64748b', fontWeight: '500' }}>Record & track utility bills, repair service fees, and outgoing expenses</p>
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <button
+                  type="button"
+                  onClick={handleExportBillsPDF}
+                  style={{
+                    padding: '8px 14px',
+                    fontSize: '12px',
+                    fontWeight: '800',
+                    color: '#ffffff',
+                    background: '#2563eb',
+                    border: 'none',
+                    borderRadius: '10px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 2px 8px rgba(37, 99, 235, 0.3)'
+                  }}
+                >
+                  <Download size={15} /> Save PDF / Report
+                </button>
+                <button onClick={() => setShowBillsModal(false)} style={{ border: 'none', background: '#f1f5f9', padding: '6px', borderRadius: '50%', cursor: 'pointer', color: '#64748b' }}>
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+
+            {/* Record New Bill / Service Payment Form */}
+            <form onSubmit={handleSaveBillPayment} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '16px', marginBottom: '20px' }}>
+              <div style={{ fontSize: '13px', fontWeight: '800', color: '#1e3a8a', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                ➕ Record New Outgoing Bill / Service Payment
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '4px' }}>
+                    Payment Category / Type *
+                  </label>
+                  <select
+                    value={billsForm.category}
+                    onChange={(e) => setBillsForm({ ...billsForm, category: e.target.value })}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1.5px solid #cbd5e1', fontSize: '13px', fontWeight: '600', color: '#0f172a' }}
+                  >
+                    <option value="Utility Bill">💡 Utility Bill (Electricity / Water / Internet)</option>
+                    <option value="Service / Repair Expense">🛠️ Service / Repair Fee (Technician Cost)</option>
+                    <option value="Shop Rent & Expenses">🏬 Shop Rent & Maintenance</option>
+                    <option value="Supplier Payment">📦 Supplier / Inventory Payment</option>
+                    <option value="Other Outgoing Expense">💵 Other Outgoing Expense</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '4px' }}>
+                    For What / Description (මොනවටද) *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Electricity Bill - August / Display Service"
+                    value={billsForm.title}
+                    onChange={(e) => setBillsForm({ ...billsForm, title: e.target.value })}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1.5px solid #cbd5e1', fontSize: '13px', color: '#0f172a', fontWeight: '600' }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '4px' }}>
+                    Paid To / Payee (කාටද)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. CEB / Dialog / Tech Nimal"
+                    value={billsForm.payee}
+                    onChange={(e) => setBillsForm({ ...billsForm, payee: e.target.value })}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1.5px solid #cbd5e1', fontSize: '13px', color: '#0f172a' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '4px' }}>
+                    Amount (Rs.) *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    onWheel={(e) => e.target.blur()}
+                    placeholder="Enter amount"
+                    value={billsForm.amount}
+                    onChange={(e) => setBillsForm({ ...billsForm, amount: e.target.value })}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '2px solid #2563eb', fontSize: '15px', fontWeight: '800', color: '#2563eb' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '4px' }}>
+                    Payment Method *
+                  </label>
+                  <select
+                    value={billsForm.paymentMethod}
+                    onChange={(e) => setBillsForm({ ...billsForm, paymentMethod: e.target.value })}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1.5px solid #cbd5e1', fontSize: '13px', fontWeight: '600' }}
+                  >
+                    <option value="Cash">💵 Cash (Deducts from Drawer)</option>
+                    <option value="Card">💳 Card</option>
+                    <option value="Bank Transfer">🏛️ Bank Transfer</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
+                <button
+                  type="submit"
+                  disabled={submittingBill || !billsForm.amount || Number(billsForm.amount) <= 0}
+                  style={{
+                    padding: '10px 24px',
+                    fontSize: '13px',
+                    fontWeight: '800',
+                    color: '#ffffff',
+                    background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                    border: 'none',
+                    borderRadius: '10px',
+                    cursor: (submittingBill || !billsForm.amount) ? 'not-allowed' : 'pointer',
+                    opacity: (submittingBill || !billsForm.amount) ? 0.6 : 1,
+                    boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)'
+                  }}
+                >
+                  {submittingBill ? 'Saving Record...' : '💾 Save Bill & Update Balance Report'}
+                </button>
+              </div>
+            </form>
+
+            {/* History Table of Recent Bills */}
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <span style={{ fontSize: '13px', fontWeight: '800', color: '#334155', textTransform: 'uppercase' }}>
+                  📜 Recent Bills & Service Expenses ({billsList.length})
+                </span>
+                <span style={{ fontSize: '12px', fontWeight: '700', color: '#2563eb' }}>
+                  Total Outgoing: Rs. {billsList.reduce((s, b) => s + Number(b.amount || 0), 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+
+              <div style={{ maxHeight: '220px', overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: '12px', background: '#ffffff' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+                  <thead>
+                    <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#64748b', textTransform: 'uppercase', fontSize: '10px' }}>
+                      <th style={{ padding: '8px 10px', textAlign: 'left' }}>Date</th>
+                      <th style={{ padding: '8px 10px', textAlign: 'left' }}>Category</th>
+                      <th style={{ padding: '8px 10px', textAlign: 'left' }}>Description (මොනවටද)</th>
+                      <th style={{ padding: '8px 10px', textAlign: 'left' }}>Payee (කාටද)</th>
+                      <th style={{ padding: '8px 10px', textAlign: 'left' }}>Method</th>
+                      <th style={{ padding: '8px 10px', textAlign: 'right' }}>Amount (Rs.)</th>
+                      <th style={{ padding: '8px 10px', textAlign: 'center' }}>Voucher</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loadingBillsList ? (
+                      <tr><td colSpan="7" style={{ textAlign: 'center', padding: '16px', color: '#94a3b8' }}>Loading recent bills...</td></tr>
+                    ) : billsList.length === 0 ? (
+                      <tr><td colSpan="7" style={{ textAlign: 'center', padding: '16px', color: '#94a3b8' }}>No bill payments recorded yet</td></tr>
+                    ) : (
+                      billsList.map((bill) => (
+                        <tr key={bill._id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                          <td style={{ padding: '8px 10px', color: '#64748b' }}>{new Date(bill.date || bill.createdAt).toLocaleDateString('en-GB')}</td>
+                          <td style={{ padding: '8px 10px', fontWeight: '700', color: '#2563eb' }}>{bill.category || 'Bill'}</td>
+                          <td style={{ padding: '8px 10px', fontWeight: '700', color: '#0f172a' }}>{bill.title || 'N/A'}</td>
+                          <td style={{ padding: '8px 10px', color: '#475569' }}>{bill.payee || '-'}</td>
+                          <td style={{ padding: '8px 10px', color: '#475569' }}>{bill.paymentMethod || 'Cash'}</td>
+                          <td style={{ padding: '8px 10px', textAlign: 'right', fontWeight: '800', color: '#b45309' }}>Rs. {Number(bill.amount || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</td>
+                          <td style={{ padding: '8px 10px', textAlign: 'center' }}>
+                            <button
+                              type="button"
+                              onClick={() => handlePrintBillVoucher(bill)}
+                              style={{ padding: '3px 8px', fontSize: '11px', fontWeight: '700', color: '#2563eb', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '6px', cursor: 'pointer' }}
+                            >
+                              🖨️ Voucher
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
       )}
