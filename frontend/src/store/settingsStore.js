@@ -8,6 +8,7 @@ import { getSettings } from '../services/api';
  */
 export const toAbsoluteUrl = (path) => {
   if (!path) return '';
+  if (typeof path === 'string' && path.startsWith('data:')) return path;
   if (path === '/logo.png' || path === 'logo.png' || path.startsWith('/favicon') || path.startsWith('/assets/')) {
     return path.startsWith('/') ? path : `/${path}`;
   }

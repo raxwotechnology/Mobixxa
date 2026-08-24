@@ -130,11 +130,15 @@ const AdminSettings = () => {
     // Reset file input so same file can be re-uploaded
     e.target.value = '';
 
-    // Instant local Data URL preview so user sees uploaded image immediately
+    // Instant local Data URL preview so user sees uploaded image immediately across full layout
     const reader = new FileReader();
     reader.onload = (event) => {
       const previewUrl = event.target.result;
-      setSettings(prev => ({ ...prev, logoUrl: previewUrl, logo: previewUrl }));
+      setSettings(prev => {
+        const updated = { ...prev, logoUrl: previewUrl, logo: previewUrl };
+        setSettingsLocal(updated);
+        return updated;
+      });
     };
     reader.readAsDataURL(file);
 
@@ -143,8 +147,11 @@ const AdminSettings = () => {
     try {
       const { data } = await uploadLogo(formData);
       const logoPath = data.logoUrl || data.logo;
-      setSettings(prev => ({ ...prev, logoUrl: logoPath, logo: logoPath }));
-      setSettingsLocal({ ...settings, logoUrl: logoPath, logo: logoPath });
+      setSettings(prev => {
+        const updated = { ...prev, logoUrl: logoPath, logo: logoPath };
+        setSettingsLocal(updated);
+        return updated;
+      });
       toast.success('Logo uploaded successfully! ✅');
     } catch (err) {
       toast.error('Failed to upload logo: ' + (err.response?.data?.message || err.message));
@@ -159,7 +166,11 @@ const AdminSettings = () => {
     const reader = new FileReader();
     reader.onload = (event) => {
       const previewUrl = event.target.result;
-      setSettings(prev => ({ ...prev, sealUrl: previewUrl, seal: previewUrl }));
+      setSettings(prev => {
+        const updated = { ...prev, sealUrl: previewUrl, seal: previewUrl };
+        setSettingsLocal(updated);
+        return updated;
+      });
     };
     reader.readAsDataURL(file);
 
@@ -168,8 +179,11 @@ const AdminSettings = () => {
     try {
       const { data } = await uploadImage(formData);
       const sealPath = data.url;
-      setSettings(prev => ({ ...prev, sealUrl: sealPath, seal: sealPath }));
-      setSettingsLocal({ ...settings, sealUrl: sealPath, seal: sealPath });
+      setSettings(prev => {
+        const updated = { ...prev, sealUrl: sealPath, seal: sealPath };
+        setSettingsLocal(updated);
+        return updated;
+      });
       toast.success('Seal uploaded successfully! ✅');
     } catch (err) {
       toast.error('Failed to upload seal: ' + (err.response?.data?.message || err.message));
