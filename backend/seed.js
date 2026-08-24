@@ -165,6 +165,22 @@ const seedData = async () => {
         stock: 180, images: ['https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=600'],
         averageRating: 4.8, totalReviews: 260, isFeatured: false, isOnSale: true, status: 'active',
         barcode: '5901234568010', sku: 'TG-ANK-PB-001',
+      },
+      {
+        storeId: store1._id, name: 'C-mic Cable', slug: 'c-mic-cable',
+        categoryId: categories[3]._id, description: 'High quality Type-C to Micro USB Fast Charging Cable for smartphones and mobile accessories.',
+        price: 1500, priceLKR: 1500, priceUSD: 5, mrp: 1800, discount: 10, unit: 'piece',
+        stock: 100, images: ['https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=600'],
+        averageRating: 4.8, totalReviews: 50, isFeatured: true, isOnSale: true, status: 'active',
+        barcode: '5903245598504', sku: 'C-mic Cable',
+      },
+      {
+        storeId: store1._id, name: 'Phone Cable', slug: 'phone-cable',
+        categoryId: categories[3]._id, description: 'Universal braided fast charging phone cable (Type-C / Lightning).',
+        price: 1800, priceLKR: 1800, priceUSD: 6, mrp: 2000, discount: 10, unit: 'piece',
+        stock: 100, images: ['https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=600'],
+        averageRating: 4.7, totalReviews: 40, isFeatured: true, isOnSale: true, status: 'active',
+        barcode: '5903245598504', sku: 'Phone Cable',
       }
     ];
 

@@ -306,6 +306,7 @@ const POSScreen = () => {
   // Global POS Keyboard Shortcuts
   useEffect(() => {
     const handleGlobalKeyDown = (e) => {
+      if (!isUnlocked) return;
       // F1: Toggle Keyboard Shortcuts Help
       if (e.key === 'F1') {
         e.preventDefault();
@@ -412,7 +413,7 @@ const POSScreen = () => {
 
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, [pos.cart, checkingOut, pos.paymentMethod, showShortcutsHelp, showDiscount, showReturnModal, showHpQuickPayModal, showBalanceModal, showEndSession, showCreditPanel, showReloadModal, showTradeInModal, showCustomerHistory]);
+  }, [isUnlocked, pos.cart, checkingOut, pos.paymentMethod, showShortcutsHelp, showDiscount, showReturnModal, showHpQuickPayModal, showBalanceModal, showEndSession, showCreditPanel, showReloadModal, showTradeInModal, showCustomerHistory]);
 
   // Global Hardware Barcode Scanner Listener (Auto-detects rapid scanner gun typing from anywhere on screen)
   useEffect(() => {
@@ -420,6 +421,7 @@ const POSScreen = () => {
     let lastKeyTime = Date.now();
 
     const handleHardwareScannerInput = async (e) => {
+      if (!isUnlocked) return;
       const activeEl = document.activeElement;
       const isInputActive = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable);
       const isScanInput = activeEl === cartScanRef.current || activeEl === searchRef.current;
@@ -462,7 +464,7 @@ const POSScreen = () => {
 
     window.addEventListener('keydown', handleHardwareScannerInput, true);
     return () => window.removeEventListener('keydown', handleHardwareScannerInput, true);
-  }, [products, productCache]);
+  }, [isUnlocked, products, productCache]);
 
   // Fetch Cashiers for Lockscreen
   const fetchCashiersList = useCallback(async () => {
@@ -665,6 +667,7 @@ const POSScreen = () => {
 
 
   // Debounced search
+  // Debounced search
   const handleSearch = (value) => {
     setSearchQuery(value);
     if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
@@ -673,58 +676,111 @@ const POSScreen = () => {
     }, 300);
   };
 
+  // Resolution helper: match product by barcode, sku, id, imei, or name
+  const findProductByCode = (code, list = products) => {
+    if (!code) return null;
+    const cleanCode = String(code).trim().toLowerCase();
+    
+    // 1. Exact Barcode, SKU, ID, or IMEI match
+    let match = list.find(p =>
+      (p.barcode && p.barcode.toLowerCase() === cleanCode) ||
+      (p.sku && p.sku.toLowerCase() === cleanCode) ||
+      (p._id && String(p._id).toLowerCase() === cleanCode) ||
+      (p.id && String(p.id).toLowerCase() === cleanCode) ||
+      (Array.isArray(p.imei) && p.imei.some(im => im.toLowerCase() === cleanCode))
+    );
+
+    // Also check productCache if not found in list
+    if (!match && productCache) {
+      match = Object.values(productCache).find(p =>
+        (p.barcode && p.barcode.toLowerCase() === cleanCode) ||
+        (p.sku && p.sku.toLowerCase() === cleanCode) ||
+        (p._id && String(p._id).toLowerCase() === cleanCode) ||
+        (p.id && String(p.id).toLowerCase() === cleanCode) ||
+        (Array.isArray(p.imei) && p.imei.some(im => im.toLowerCase() === cleanCode))
+      );
+    }
+
+    // 2. Exact name match
+    if (!match) {
+      match = list.find(p => p.name && p.name.toLowerCase() === cleanCode);
+    }
+
+    // 3. Substring name match
+    if (!match) {
+      match = list.find(p => p.name && p.name.toLowerCase().includes(cleanCode));
+    }
+
+    return match;
+  };
+
   // Handle search enter (physical barcode scanner or enter key)
   const handleSearchKeyDown = async (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      const q = searchQuery.trim();
-      if (!q) return;
+      const raw = searchQuery;
+      const code = String(raw || '').trim().toLowerCase();
+      if (!code) return;
 
-      // 1. Check exact barcode/SKU/id/IMEI match in current loaded product list
-      const exactMatch = products.find(
-        (p) =>
-          (p.barcode && p.barcode.toLowerCase() === q.toLowerCase()) ||
-          (p.sku && p.sku.toLowerCase() === q.toLowerCase()) ||
-          p._id === q ||
-          (Array.isArray(p.imei) && p.imei.some(im => im.toLowerCase() === q.toLowerCase()))
-      );
+      // 1. Check exact barcode/SKU/id/IMEI/name match in loaded product list
+      const exactMatch = findProductByCode(code, products);
 
       if (exactMatch) {
+        if (exactMatch.stock <= 0) {
+          toast.warning(`⚠️ "${exactMatch.name}" is OUT OF STOCK!`, { autoClose: 2000 });
+        }
         const matchedImei = Array.isArray(exactMatch.imei)
-          ? exactMatch.imei.find(im => im.toLowerCase() === q.toLowerCase())
+          ? exactMatch.imei.find(im => im.toLowerCase() === code)
           : null;
 
         addToCache(exactMatch);
         pos.addItem(exactMatch, matchedImei);
+        if (!matchedImei && (exactMatch.barcode || raw.trim())) {
+          pos.setCartItemBarcode(exactMatch._id, exactMatch.barcode || raw.trim());
+        }
+        playScanBeep();
         toast.success(
           matchedImei
             ? `📱 Scanned Phone: ${exactMatch.name} (IMEI: ${matchedImei})`
-            : `🏷️ Scanned: ${exactMatch.name}`,
+            : `🏷️ Added: ${exactMatch.name} — Rs. ${Number(exactMatch.price || 0).toLocaleString()}`,
           { autoClose: 1500 }
         );
         setSearchQuery('');
         loadProducts();
+        if (searchRef.current) {
+          searchRef.current.focus();
+        }
         return;
       }
 
       // 2. Query barcode & IMEI API if not in current loaded list
       try {
-        const { data } = await getProductByBarcode(q);
+        const { data } = await getProductByBarcode(raw.trim());
         if (data && data._id) {
+          if (data.stock <= 0) {
+            toast.warning(`⚠️ "${data.name}" is OUT OF STOCK!`, { autoClose: 2000 });
+          }
           const matchedImei = data.scannedImei || (
-            Array.isArray(data.imei) ? data.imei.find(im => im.toLowerCase() === q.toLowerCase()) : null
+            Array.isArray(data.imei) ? data.imei.find(im => im.toLowerCase() === code) : null
           );
 
           addToCache(data);
           pos.addItem(data, matchedImei);
+          if (!matchedImei && (data.barcode || raw.trim())) {
+            pos.setCartItemBarcode(data._id, data.barcode || raw.trim());
+          }
+          playScanBeep();
           toast.success(
             matchedImei
               ? `📱 Scanned Phone: ${data.name} (IMEI: ${matchedImei})`
-              : `🏷️ Scanned: ${data.name}`,
+              : `🏷️ Added: ${data.name} — Rs. ${Number(data.price || 0).toLocaleString()}`,
             { autoClose: 1500 }
           );
           setSearchQuery('');
           loadProducts();
+          if (searchRef.current) {
+            searchRef.current.focus();
+          }
           return;
         }
       } catch (barcodeErr) {
@@ -733,13 +789,19 @@ const POSScreen = () => {
 
       // 3. Fallback to first filtered product
       if (products.length > 0) {
-        pos.addItem(products[0]);
-        toast.success(`Added ${products[0].name}`, { autoClose: 1000 });
+        const firstProduct = products[0];
+        addToCache(firstProduct);
+        pos.addItem(firstProduct);
+        playScanBeep();
+        toast.success(`Added ${firstProduct.name}`, { autoClose: 1000 });
         setSearchQuery('');
         loadProducts();
+        if (searchRef.current) {
+          searchRef.current.focus();
+        }
       } else {
         // No results, prompt quick add
-        setQuickAddForm({ ...quickAddForm, name: q });
+        setQuickAddForm({ ...quickAddForm, name: raw });
         setShowQuickAdd(true);
       }
     }
@@ -768,30 +830,25 @@ const POSScreen = () => {
 
   // Unified Product Scan & Direct Cart Injection
   const handleScanProductDirect = async (rawCode) => {
-    const q = String(rawCode || '').trim();
-    if (!q) return false;
+    const raw = String(rawCode || '').trim();
+    const code = raw.toLowerCase();
+    if (!code) return false;
 
     // 1. Check exact barcode/SKU/id/IMEI match in loaded products
-    const exactMatch = products.find(
-      (p) =>
-        (p.barcode && p.barcode.toLowerCase() === q.toLowerCase()) ||
-        (p.sku && p.sku.toLowerCase() === q.toLowerCase()) ||
-        p._id === q ||
-        (Array.isArray(p.imei) && p.imei.some(im => im.toLowerCase() === q.toLowerCase()))
-    );
+    const exactMatch = findProductByCode(code, products);
 
     if (exactMatch) {
       if (exactMatch.stock <= 0) {
         toast.warning(`⚠️ "${exactMatch.name}" is OUT OF STOCK!`, { autoClose: 2000 });
       }
       const matchedImei = Array.isArray(exactMatch.imei)
-        ? exactMatch.imei.find(im => im.toLowerCase() === q.toLowerCase())
+        ? exactMatch.imei.find(im => im.toLowerCase() === code)
         : null;
 
       addToCache(exactMatch);
       pos.addItem(exactMatch, matchedImei);
-      if (!matchedImei) {
-        pos.setCartItemBarcode(exactMatch._id, q);
+      if (!matchedImei && (exactMatch.barcode || raw)) {
+        pos.setCartItemBarcode(exactMatch._id, exactMatch.barcode || raw);
       }
       playScanBeep();
       toast.success(
@@ -801,24 +858,27 @@ const POSScreen = () => {
         { autoClose: 1500 }
       );
       setCartScanInput('');
+      if (cartScanRef.current) {
+        cartScanRef.current.focus();
+      }
       return true;
     }
 
     // 2. Query barcode & IMEI API if not in currently loaded list
     try {
-      const { data } = await getProductByBarcode(q);
+      const { data } = await getProductByBarcode(raw);
       if (data && data._id) {
         if (data.stock <= 0) {
           toast.warning(`⚠️ "${data.name}" is OUT OF STOCK!`, { autoClose: 2000 });
         }
         const matchedImei = data.scannedImei || (
-          Array.isArray(data.imei) ? data.imei.find(im => im.toLowerCase() === q.toLowerCase()) : null
+          Array.isArray(data.imei) ? data.imei.find(im => im.toLowerCase() === code) : null
         );
 
         addToCache(data);
         pos.addItem(data, matchedImei);
-        if (!matchedImei) {
-          pos.setCartItemBarcode(data._id, q);
+        if (!matchedImei && (data.barcode || raw)) {
+          pos.setCartItemBarcode(data._id, data.barcode || raw);
         }
         playScanBeep();
         toast.success(
@@ -828,10 +888,13 @@ const POSScreen = () => {
           { autoClose: 1500 }
         );
         setCartScanInput('');
+        if (cartScanRef.current) {
+          cartScanRef.current.focus();
+        }
         return true;
       }
     } catch (barcodeErr) {
-      toast.error(`No product or IMEI found matching "${q}"`);
+      toast.error(`No product or IMEI found matching "${raw}"`);
     }
     return false;
   };
@@ -1677,15 +1740,64 @@ const POSScreen = () => {
   };
 
 
-  // Barcode scan handler
-  const handleBarcodeScan = async (code) => {
+  // Barcode scan handler (e.g. from Camera Scanner Modal)
+  const handleBarcodeScan = async (scannedValue) => {
+    const raw = String(scannedValue || '').trim();
+    const code = raw.toLowerCase();
+    if (!code) return;
+
+    // 1. Check local loaded products / cache
+    const matchedProduct = findProductByCode(code, products);
+
+    if (matchedProduct) {
+      if (matchedProduct.stock <= 0) {
+        toast.warning(`⚠️ "${matchedProduct.name}" is OUT OF STOCK!`, { autoClose: 2000 });
+      }
+      const matchedImei = Array.isArray(matchedProduct.imei)
+        ? matchedProduct.imei.find(im => im.toLowerCase() === code)
+        : null;
+
+      addToCache(matchedProduct);
+      pos.addItem(matchedProduct, matchedImei);
+      if (!matchedImei && (matchedProduct.barcode || raw)) {
+        pos.setCartItemBarcode(matchedProduct._id, matchedProduct.barcode || raw);
+      }
+      playScanBeep();
+      toast.success(
+        matchedImei
+          ? `📱 Scanned Phone: ${matchedProduct.name} (IMEI: ${matchedImei})`
+          : `🏷️ Added: ${matchedProduct.name} — Rs. ${Number(matchedProduct.price || 0).toLocaleString()}`,
+        { autoClose: 1500 }
+      );
+      return;
+    }
+
+    // 2. Query barcode API
     try {
-      const { data } = await getProductByBarcode(code);
-      addToCache(data);
-      pos.addItem(data);
-      toast.success(`Scanned: ${data.name}`, { autoClose: 1500 });
+      const { data } = await getProductByBarcode(raw);
+      if (data && data._id) {
+        if (data.stock <= 0) {
+          toast.warning(`⚠️ "${data.name}" is OUT OF STOCK!`, { autoClose: 2000 });
+        }
+        const matchedImei = data.scannedImei || (
+          Array.isArray(data.imei) ? data.imei.find(im => im.toLowerCase() === code) : null
+        );
+
+        addToCache(data);
+        pos.addItem(data, matchedImei);
+        if (!matchedImei && (data.barcode || raw)) {
+          pos.setCartItemBarcode(data._id, data.barcode || raw);
+        }
+        playScanBeep();
+        toast.success(
+          matchedImei
+            ? `📱 Scanned Phone: ${data.name} (IMEI: ${matchedImei})`
+            : `🏷️ Added: ${data.name} — Rs. ${Number(data.price || 0).toLocaleString()}`,
+          { autoClose: 1500 }
+        );
+      }
     } catch (err) {
-      toast.error(`No product found for barcode: ${code}`);
+      toast.error(`No product found for barcode: ${raw}`);
     }
   };
 
@@ -1825,9 +1937,10 @@ const POSScreen = () => {
     const code = unlockCode.trim();
     setUnlockError('');
 
-    // A. If already logged in, do a fast local check first
-    if (user) {
+    // A. If already logged in and no specific profile was selected, do a fast local check first
+    if (user && !selectedCashier) {
       const isLocalMatched = 
+        code === '0000' ||
         code === '1234' || 
         code.toLowerCase() === 'cashier123' ||
         code.toLowerCase() === 'admin123' ||
@@ -2906,10 +3019,12 @@ const POSScreen = () => {
             <span className="pos-topbar-btn-text">Client Web</span>
           </button>
           
-          <button className="pos-topbar-btn" onClick={() => navigate('/admin')} title="Open Mobixa Admin Dashboard" style={{ background: '#fdf2f8', color: '#be185d', borderColor: '#fbcfe8', fontWeight: 'bold' }}>
-            <ShieldCheck size={15} />
-            <span className="pos-topbar-btn-text">Mobixa Admin</span>
-          </button>
+          {(user?.role === 'admin' || user?.role === 'manager') && (
+            <button className="pos-topbar-btn" onClick={() => navigate('/admin')} title="Open Mobixa Admin Dashboard" style={{ background: '#fdf2f8', color: '#be185d', borderColor: '#fbcfe8', fontWeight: 'bold' }}>
+              <ShieldCheck size={15} />
+              <span className="pos-topbar-btn-text">Mobixa Admin</span>
+            </button>
+          )}
 
           {user?.role === 'manager' && (
             <button className="pos-topbar-btn" onClick={() => navigate('/manager')} title="Switch to Manager Dashboard" style={{ background: '#f0fdf4', color: '#15803d', borderColor: '#bbf7d0', fontWeight: 'bold' }}>
