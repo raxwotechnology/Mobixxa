@@ -249,10 +249,13 @@ const getPosProducts = async (req, res, next) => {
     let products;
     if (search) {
       const trimmedSearch = search.trim();
+      const escaped = trimmedSearch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       filter.$or = [
-        { name: { $regex: trimmedSearch, $options: 'i' } },
-        { barcode: trimmedSearch },
-        { sku: { $regex: trimmedSearch, $options: 'i' } },
+        { name: { $regex: escaped, $options: 'i' } },
+        { barcode: { $regex: `^${escaped}$`, $options: 'i' } },
+        { sku: { $regex: `^${escaped}$`, $options: 'i' } },
+        { barcode: { $regex: escaped, $options: 'i' } },
+        { sku: { $regex: escaped, $options: 'i' } },
         { imei: trimmedSearch },
       ];
       products = await Product.find(filter)
@@ -274,7 +277,7 @@ const getPosProducts = async (req, res, next) => {
   }
 };
 
-// @desc    Look up a product by barcode or IMEI
+// @desc    Look up a product by barcode or IMEI or SKU
 // @route   GET /api/pos/products/barcode/:code
 // @access  Private/Cashier/Manager/Admin
 const getProductByBarcode = async (req, res, next) => {
@@ -286,10 +289,13 @@ const getProductByBarcode = async (req, res, next) => {
     }
 
     const code = req.params.code.trim();
-    const product = await Product.findOne({
+    const escaped = code.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    // 1. Try exact barcode, SKU, or IMEI match (case-insensitive)
+    let product = await Product.findOne({
       $or: [
-        { barcode: code },
-        { sku: code },
+        { barcode: { $regex: `^${escaped}$`, $options: 'i' } },
+        { sku: { $regex: `^${escaped}$`, $options: 'i' } },
         { imei: code },
       ],
       storeId,
@@ -299,12 +305,28 @@ const getProductByBarcode = async (req, res, next) => {
       .populate('categoryId', 'name')
       .lean();
 
+    // 2. Fallback to substring or name match
+    if (!product) {
+      product = await Product.findOne({
+        $or: [
+          { name: { $regex: escaped, $options: 'i' } },
+          { barcode: { $regex: escaped, $options: 'i' } },
+          { sku: { $regex: escaped, $options: 'i' } },
+        ],
+        storeId,
+        status: 'active',
+      })
+        .select('name price mrp minPrice stock images unit barcode sku variants discount allowKokoPos imei categoryId')
+        .populate('categoryId', 'name')
+        .lean();
+    }
+
     if (!product) {
       res.status(404);
       return next(new Error('Product not found with this barcode or IMEI'));
     }
 
-    const isImeiMatch = Array.isArray(product.imei) && product.imei.includes(code);
+    const isImeiMatch = Array.isArray(product.imei) && product.imei.some(im => im.toLowerCase() === code.toLowerCase());
     res.json({
       ...product,
       scannedImei: isImeiMatch ? code : undefined,
