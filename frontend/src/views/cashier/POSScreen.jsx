@@ -5591,12 +5591,6 @@ const POSScreen = () => {
                       <span style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a' }}>{selectedHpRecord.invoiceNo}</span>
                       <span style={{ fontSize: '13px', color: '#475569', marginLeft: '8px', fontWeight: '600' }}>({selectedHpRecord.customer?.name})</span>
                     </div>
-                    <button
-                      onClick={() => setSelectedHpRecord(null)}
-                      style={{ border: '1px solid #cbd5e1', background: '#ffffff', color: '#2563eb', fontSize: '12px', fontWeight: '700', padding: '4px 12px', borderRadius: '8px', cursor: 'pointer' }}
-                    >
-                      Change Agreement
-                    </button>
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', background: '#ffffff', padding: '12px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
