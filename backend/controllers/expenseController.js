@@ -6,7 +6,7 @@ const Store = require('../models/Store');
 // @access  Private/Admin/Manager
 const createExpense = async (req, res, next) => {
   try {
-    const { title, description, category, amount, date, status, notes, payee, storeId, receipt, paymentMethod, accountId } = req.body;
+    const { title, description, category, type, amount, date, status, notes, payee, storeId, receipt, paymentMethod, accountId } = req.body;
 
     // Robust storeId resolution
     let assignedStore = storeId;
@@ -38,12 +38,13 @@ const createExpense = async (req, res, next) => {
       if (defaultAcc) resolvedAccountId = defaultAcc._id;
     }
 
-    const expenseTitle = title || description || category || 'Counter Petty Cash';
+    const expenseTitle = title || description || category || 'Counter Entry';
     const expenseStatus = status || 'Paid'; // POS petty cash defaults to Paid
 
     const expense = await Expense.create({
       title: expenseTitle,
-      category: category || 'Tea & Refreshments',
+      category: category || 'General',
+      type: type || 'Expense',
       amount: Number(amount),
       date: date ? new Date(date) : new Date(),
       paymentMethod: paymentMethod || 'Cash',

@@ -1136,7 +1136,7 @@ const POSScreen = () => {
     }
   };
 
-  // Bills & Payments Handlers
+  // Counter Cash Ledger Handlers (Money IN & Money OUT)
   const handleFetchRecentBills = async () => {
     try {
       setLoadingBillsList(true);
@@ -1155,16 +1155,18 @@ const POSScreen = () => {
     e.preventDefault();
     const amt = Number(billsForm.amount);
     if (!amt || amt <= 0) {
-      toast.error('Please enter a valid bill payment amount');
+      toast.error('Please enter a valid amount');
       return;
     }
     try {
       setSubmittingBill(true);
       const stId = user?.assignedStore || user?.assignedStoreId || user?.storeId || posSession?.storeId;
+      const isIncome = billsForm.type === 'Income';
       await createExpense({
-        title: billsForm.title || billsForm.category || 'Bill Payment',
+        title: billsForm.title || billsForm.category || (isIncome ? 'Counter Income' : 'Counter Expense'),
         amount: amt,
-        category: billsForm.category || 'Utility Bill',
+        type: billsForm.type || 'Expense',
+        category: billsForm.category || (isIncome ? 'Service Charge' : 'Utility Bill'),
         payee: billsForm.payee || '',
         notes: billsForm.notes || '',
         paymentMethod: billsForm.paymentMethod || 'Cash',
@@ -1173,35 +1175,55 @@ const POSScreen = () => {
         storeId: stId,
         date: new Date().toISOString()
       });
-      toast.success('Bill / Service payment recorded successfully! 🧾💰');
-      setBillsForm({ title: '', category: 'Utility Bill', payee: '', amount: '', paymentMethod: 'Cash', accountId: '', notes: '' });
+      toast.success(`${isIncome ? 'Money IN (Income)' : 'Money OUT (Expense)'} recorded successfully! 💰`);
+      setBillsForm({ type: 'Expense', title: '', category: 'Utility Bill', payee: '', amount: '', paymentMethod: 'Cash', accountId: '', notes: '' });
       handleFetchRecentBills();
       if (fetchDailyFinancials) fetchDailyFinancials();
       if (fetchSessionData) fetchSessionData();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to record bill payment');
+      toast.error(err.response?.data?.message || 'Failed to record entry');
     } finally {
       setSubmittingBill(false);
     }
   };
 
-  const handlePrintBillVoucher = (billItem) => {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      toast.error('Pop-up blocked. Please allow pop-ups for receipt printing.');
-      return;
+  const printContentViaHiddenIframe = (htmlContent) => {
+    let iframe = document.getElementById('pos-print-iframe');
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.id = 'pos-print-iframe';
+      iframe.style.position = 'fixed';
+      iframe.style.right = '0';
+      iframe.style.bottom = '0';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = '0';
+      iframe.style.visibility = 'hidden';
+      document.body.appendChild(iframe);
     }
+    const doc = iframe.contentWindow.document;
+    doc.open();
+    doc.write(htmlContent);
+    doc.close();
+    setTimeout(() => {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+    }, 250);
+  };
+
+  const handlePrintBillVoucher = (billItem) => {
     const storeName = currentStore?.name || user?.assignedStoreName || 'SR MOBILE';
     const storeAddress = currentStore?.address || 'Main Street, Store Branch';
     const storePhone = currentStore?.phone || '+94 77 123 4567';
     const dateStr = new Date(billItem.date || billItem.createdAt || Date.now()).toLocaleString();
     const cashierName = billItem.createdBy?.name || user?.name || 'Cashier';
+    const isIncome = billItem.type === 'Income';
 
-    printWindow.document.write(`
+    const html = `
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Payment Voucher - ${billItem.title || 'Bill'}</title>
+          <title>Voucher - ${billItem.title || 'Entry'}</title>
           <style>
             body { font-family: 'Courier New', monospace; width: 80mm; margin: 0 auto; padding: 10px; color: #000; }
             .text-center { text-align: center; }
@@ -1218,50 +1240,43 @@ const POSScreen = () => {
           <div class="header text-center">
             <div class="title">${storeName}</div>
             <div style="font-size:10px;">${storeAddress} | Tel: ${storePhone}</div>
-            <div style="font-size:11px; font-weight:bold; margin-top:4px; text-transform:uppercase;">OFFICIAL PAYMENT VOUCHER</div>
+            <div style="font-size:11px; font-weight:bold; margin-top:4px; text-transform:uppercase;">OFFICIAL ${isIncome ? 'INCOME VOUCHER' : 'EXPENSE VOUCHER'}</div>
             <div style="font-size:9px;">Date: ${dateStr}</div>
           </div>
-          <div class="row"><span>Voucher Type:</span><span class="bold">${billItem.category || 'Expense'}</span></div>
+          <div class="row"><span>Type:</span><span class="bold">${isIncome ? '🟢 Money IN' : '🔴 Money OUT'}</span></div>
+          <div class="row"><span>Category:</span><span class="bold">${billItem.category || 'General'}</span></div>
           <div class="row"><span>Description:</span><span class="bold">${billItem.title || 'N/A'}</span></div>
-          <div class="row"><span>Paid To / Payee:</span><span class="bold">${billItem.payee || 'N/A'}</span></div>
+          <div class="row"><span>${isIncome ? 'From Client:' : 'Paid To:'}</span><span class="bold">${billItem.payee || 'N/A'}</span></div>
           <div class="row"><span>Payment Method:</span><span>${billItem.paymentMethod || 'Cash'}</span></div>
           <div class="row"><span>Recorded By:</span><span>${cashierName}</span></div>
           <div class="divider"></div>
           <div class="total-box">
-            <div style="font-size: 10px; font-weight: bold;">TOTAL AMOUNT PAID</div>
+            <div style="font-size: 10px; font-weight: bold;">AMOUNT ${isIncome ? 'RECEIVED' : 'PAID'}</div>
             <div style="font-size: 18px; font-weight: bold; margin: 2px 0;">Rs. ${Number(billItem.amount || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</div>
-            <div style="font-size: 9px;">STATUS: PAID / CASH OUT</div>
+            <div style="font-size: 9px;">STATUS: PAID / VERIFIED</div>
           </div>
-          ${billItem.notes ? `<div style="font-size:10px; font-style:italic; margin-top:4px;">Notes: ${billItem.notes}</div>` : ''}
           <div class="footer">
             <p style="margin: 2px 0; font-weight: bold;">Thank you!</p>
-            <p style="margin: 2px 0;">System Verified Payment Record</p>
+            <p style="margin: 2px 0;">System Verified Cash Entry</p>
           </div>
         </body>
       </html>
-    `);
-    printWindow.document.close();
-    setTimeout(() => {
-      printWindow.focus();
-      printWindow.print();
-    }, 250);
+    `;
+    printContentViaHiddenIframe(html);
   };
 
   const handleExportBillsPDF = () => {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      toast.error('Pop-up blocked. Please allow pop-ups for PDF export.');
-      return;
-    }
     const storeName = currentStore?.name || user?.assignedStoreName || 'SR MOBILE';
-    const totalSpent = billsList.reduce((sum, b) => sum + Number(b.amount || 0), 0);
+    const totalIncome = billsList.filter(b => b.type === 'Income').reduce((s, b) => s + Number(b.amount || 0), 0);
+    const totalExpense = billsList.filter(b => b.type !== 'Income').reduce((s, b) => s + Number(b.amount || 0), 0);
+    const netBalance = totalIncome - totalExpense;
     const dateStr = new Date().toLocaleDateString('en-GB');
 
-    printWindow.document.write(`
+    const html = `
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Shop Bills & Payments Report - ${dateStr}</title>
+          <title>Counter Cash Ledger Report - ${dateStr}</title>
           <style>
             @page { size: A4 portrait; margin: 12mm; }
             body { font-family: 'Segoe UI', Arial, sans-serif; color: #0f172a; margin: 0; padding: 0; }
@@ -1271,7 +1286,8 @@ const POSScreen = () => {
             table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 12px; }
             th { background: #f1f5f9; text-align: left; padding: 8px 10px; font-weight: 700; color: #334155; border-bottom: 2px solid #cbd5e1; }
             td { padding: 8px 10px; border-bottom: 1px solid #e2e8f0; color: #0f172a; }
-            .summary-card { background: #eff6ff; border: 1.5px solid #bfdbfe; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; display: flex; justify-content: space-between; font-weight: 700; }
+            .summary-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+            .card { padding: 10px 14px; border-radius: 8px; border: 1px solid #cbd5e1; font-weight: 700; }
             .footer { margin-top: 24px; text-align: center; font-size: 11px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 10px; }
           </style>
         </head>
@@ -1279,56 +1295,69 @@ const POSScreen = () => {
           <div class="header">
             <div>
               <div class="title">${storeName}</div>
-              <div style="font-size: 13px; font-weight: 700; color: #2563eb;">SHOP BILLS & SERVICE PAYMENTS REPORT</div>
+              <div style="font-size: 13px; font-weight: 700; color: #2563eb;">COUNTER CASH LEDGER REPORT (INCOME & EXPENSE)</div>
             </div>
             <div class="meta">
               <div>Date: <strong>${dateStr}</strong></div>
               <div>Generated by: <strong>${user?.name || 'Cashier'}</strong></div>
             </div>
           </div>
-          <div class="summary-card">
-            <span>Total Bill & Service Expenses (${billsList.length} Items):</span>
-            <span style="color: #1d4ed8; font-size: 16px;">Rs. ${totalSpent.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+
+          <div class="summary-cards">
+            <div class="card" style="background: #f0fdf4; border-color: #bbf7d0; color: #166534;">
+              <div style="font-size: 11px; text-transform: uppercase;">Total Money IN (+)</div>
+              <div style="font-size: 16px; font-weight: 800;">Rs. ${totalIncome.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</div>
+            </div>
+            <div class="card" style="background: #fef2f2; border-color: #fecaca; color: #991b1b;">
+              <div style="font-size: 11px; text-transform: uppercase;">Total Money OUT (-)</div>
+              <div style="font-size: 16px; font-weight: 800;">Rs. ${totalExpense.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</div>
+            </div>
+            <div class="card" style="background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8;">
+              <div style="font-size: 11px; text-transform: uppercase;">Net Cash Balance</div>
+              <div style="font-size: 16px; font-weight: 800;">Rs. ${netBalance.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</div>
+            </div>
           </div>
+
           <table>
             <thead>
               <tr>
                 <th>#</th>
                 <th>Date & Time</th>
+                <th>Type</th>
                 <th>Category</th>
                 <th>Description</th>
-                <th>Paid To / Payee</th>
+                <th>Party / Person</th>
                 <th>Method</th>
                 <th style="text-align: right;">Amount (Rs.)</th>
               </tr>
             </thead>
             <tbody>
-              ${billsList.length === 0 ? `<tr><td colSpan="7" style="text-align:center; padding: 20px; color: #94a3b8;">No bills recorded yet</td></tr>` : 
-                billsList.map((b, i) => `
-                  <tr>
-                    <td>${i + 1}</td>
-                    <td>${new Date(b.date || b.createdAt).toLocaleDateString('en-GB')} ${new Date(b.date || b.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
-                    <td><span style="font-weight: 700; color: #2563eb;">${b.category || 'Bill'}</span></td>
-                    <td><strong>${b.title || 'N/A'}</strong></td>
-                    <td>${b.payee || '-'}</td>
-                    <td>${b.paymentMethod || 'Cash'}</td>
-                    <td style="text-align: right; font-weight: 800; color: #b45309;">Rs. ${Number(b.amount || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</td>
-                  </tr>
-                `).join('')
+              ${billsList.length === 0 ? `<tr><td colSpan="8" style="text-align:center; padding: 20px; color: #94a3b8;">No cash entries recorded yet</td></tr>` : 
+                billsList.map((b, i) => {
+                  const isIn = b.type === 'Income';
+                  return `
+                    <tr>
+                      <td>${i + 1}</td>
+                      <td>${new Date(b.date || b.createdAt).toLocaleDateString('en-GB')} ${new Date(b.date || b.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+                      <td><span style="font-weight: 800; color: ${isIn ? '#166534' : '#991b1b'};">${isIn ? '🟢 Money IN' : '🔴 Money OUT'}</span></td>
+                      <td><strong>${b.category || 'General'}</strong></td>
+                      <td>${b.title || 'N/A'}</td>
+                      <td>${b.payee || '-'}</td>
+                      <td>${b.paymentMethod || 'Cash'}</td>
+                      <td style="text-align: right; font-weight: 800; color: ${isIn ? '#166534' : '#991b1b'};">${isIn ? '+' : '-'} Rs. ${Number(b.amount || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</td>
+                    </tr>
+                  `;
+                }).join('')
               }
             </tbody>
           </table>
           <div class="footer">
-            Report generated from SR Mobile POS System • Official Financial Document
+            Report generated from SR Mobile POS System • Official Financial Record
           </div>
         </body>
       </html>
-    `);
-    printWindow.document.close();
-    setTimeout(() => {
-      printWindow.focus();
-      printWindow.print();
-    }, 300);
+    `;
+    printContentViaHiddenIframe(html);
   };
 
   const handlePrintShiftSlip = () => {
@@ -2928,8 +2957,8 @@ const POSScreen = () => {
                   onClick={() => { setShowToolsDropdown(false); setShowBillsModal(true); handleFetchRecentBills(); }}
                   style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 12px', borderRadius: '8px', border: 'none', background: '#eff6ff', color: '#1d4ed8', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}
                 >
-                  <FileText size={16} />
-                  <span>🧾 Bills & Payments</span>
+                  <DollarSign size={16} />
+                  <span>💰 Counter Cash Ledger (In/Out)</span>
                 </button>
                 <button
                   onClick={() => { setShowToolsDropdown(false); setShowShortcutsHelp(true); }}
@@ -6529,18 +6558,18 @@ const POSScreen = () => {
         </div>
       )}
 
-      {/* Bills & Payments Ledger Modal */}
+      {/* Counter Cash Ledger (Money IN & Money OUT) Modal */}
       {showBillsModal && (
         <div className="pos-modal-overlay" onClick={() => setShowBillsModal(false)}>
-          <div className="pos-modal-card" onClick={e => e.stopPropagation()} style={{ maxWidth: '780px', width: '92%', padding: '24px', background: '#ffffff', borderRadius: '24px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', border: '1px solid #e2e8f0', maxHeight: '90vh', overflowY: 'auto' }}>
+          <div className="pos-modal-card" onClick={e => e.stopPropagation()} style={{ maxWidth: '820px', width: '92%', padding: '24px', background: '#ffffff', borderRadius: '24px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', border: '1px solid #e2e8f0', maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', paddingBottom: '14px', marginBottom: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px' }}>
-                  🧾
+                  💰
                 </div>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>Shop Bills & Service Payments Ledger</h3>
-                  <p style={{ margin: 0, fontSize: '12px', color: '#64748b', fontWeight: '500' }}>Record & track utility bills, repair service fees, and outgoing expenses</p>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>Counter Cash Ledger (Income & Expense)</h3>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#64748b', fontWeight: '500' }}>Record petty cash income (+), service fees, and outgoing expenses (-)</p>
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -6570,38 +6599,108 @@ const POSScreen = () => {
               </div>
             </div>
 
-            {/* Record New Bill / Service Payment Form */}
-            <form onSubmit={handleSaveBillPayment} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '16px', marginBottom: '20px' }}>
-              <div style={{ fontSize: '13px', fontWeight: '800', color: '#1e3a8a', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                ➕ Record New Outgoing Bill / Service Payment
+            {/* Type Selector: Money IN (+) vs Money OUT (-) */}
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
+              <button
+                type="button"
+                onClick={() => setBillsForm(prev => ({ ...prev, type: 'Income', category: 'Service Charge / Fee' }))}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  borderRadius: '12px',
+                  border: billsForm.type === 'Income' ? '2px solid #10b981' : '1px solid #cbd5e1',
+                  background: billsForm.type === 'Income' ? '#ecfdf5' : '#ffffff',
+                  color: billsForm.type === 'Income' ? '#047857' : '#64748b',
+                  fontSize: '14px',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  boxShadow: billsForm.type === 'Income' ? '0 4px 12px rgba(16, 185, 129, 0.2)' : 'none'
+                }}
+              >
+                <span>🟢 Money IN (Income / Cash Received +)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setBillsForm(prev => ({ ...prev, type: 'Expense', category: 'Utility Bill' }))}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  borderRadius: '12px',
+                  border: billsForm.type !== 'Income' ? '2px solid #ef4444' : '1px solid #cbd5e1',
+                  background: billsForm.type !== 'Income' ? '#fef2f2' : '#ffffff',
+                  color: billsForm.type !== 'Income' ? '#b91c1c' : '#64748b',
+                  fontSize: '14px',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  boxShadow: billsForm.type !== 'Income' ? '0 4px 12px rgba(239, 68, 68, 0.2)' : 'none'
+                }}
+              >
+                <span>🔴 Money OUT (Expense / Cash Paid -)</span>
+              </button>
+            </div>
+
+            {/* Record Form */}
+            <form
+              onSubmit={handleSaveBillPayment}
+              style={{
+                background: billsForm.type === 'Income' ? '#f0fdf4' : '#fef2f2',
+                border: billsForm.type === 'Income' ? '1.5px solid #a7f3d0' : '1.5px solid #fecaca',
+                borderRadius: '16px',
+                padding: '16px',
+                marginBottom: '20px'
+              }}
+            >
+              <div style={{ fontSize: '13px', fontWeight: '800', color: billsForm.type === 'Income' ? '#065f46' : '#991b1b', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                {billsForm.type === 'Income' ? '➕ Record New Money IN (Income Entry)' : '➖ Record New Money OUT (Expense Entry)'}
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                 <div>
                   <label style={{ fontSize: '11px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '4px' }}>
-                    Payment Category / Type *
+                    Category / Type *
                   </label>
                   <select
                     value={billsForm.category}
                     onChange={(e) => setBillsForm({ ...billsForm, category: e.target.value })}
                     style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1.5px solid #cbd5e1', fontSize: '13px', fontWeight: '600', color: '#0f172a' }}
                   >
-                    <option value="Utility Bill">💡 Utility Bill (Electricity / Water / Internet)</option>
-                    <option value="Service / Repair Expense">🛠️ Service / Repair Fee (Technician Cost)</option>
-                    <option value="Shop Rent & Expenses">🏬 Shop Rent & Maintenance</option>
-                    <option value="Supplier Payment">📦 Supplier / Inventory Payment</option>
-                    <option value="Other Outgoing Expense">💵 Other Outgoing Expense</option>
+                    {billsForm.type === 'Income' ? (
+                      <>
+                        <option value="Service Charge / Fee">🛠️ Service / Repair Charge Income</option>
+                        <option value="Reload Commission / Cash In">⚡ Reload Commission / Cash In</option>
+                        <option value="Trade-In / Scrap Sale">📱 Trade-In / Scrap Device Sale</option>
+                        <option value="Customer Payment / Income">💵 Customer Fee / Misc Income</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="Utility Bill">💡 Utility Bill (Electricity / Water / Internet)</option>
+                        <option value="Service / Repair Expense">🛠️ External Technician / Repair Cost</option>
+                        <option value="Shop Rent & Expenses">🏬 Shop Rent & Maintenance</option>
+                        <option value="Supplier Payment">📦 Supplier / Stock Purchase</option>
+                        <option value="Tea & Refreshments">☕ Tea & Counter Refreshments</option>
+                        <option value="Other Expense">💵 Other Outgoing Expense</option>
+                      </>
+                    )}
                   </select>
                 </div>
 
                 <div>
                   <label style={{ fontSize: '11px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '4px' }}>
-                    For What / Description (මොනවටද) *
+                    Description (මොනවටද) *
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Electricity Bill - August / Display Service"
+                    placeholder={billsForm.type === 'Income' ? 'e.g. Display Fitting Service Charge' : 'e.g. Electricity Bill - August'}
                     value={billsForm.title}
                     onChange={(e) => setBillsForm({ ...billsForm, title: e.target.value })}
                     style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1.5px solid #cbd5e1', fontSize: '13px', color: '#0f172a', fontWeight: '600' }}
@@ -6612,11 +6711,11 @@ const POSScreen = () => {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                 <div>
                   <label style={{ fontSize: '11px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '4px' }}>
-                    Paid To / Payee (කාටද)
+                    {billsForm.type === 'Income' ? 'Received From (කාගෙන්ද)' : 'Paid To (කාටද)'}
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. CEB / Dialog / Tech Nimal"
+                    placeholder={billsForm.type === 'Income' ? 'e.g. Customer Perera' : 'e.g. CEB / Dialog / Tech Nimal'}
                     value={billsForm.payee}
                     onChange={(e) => setBillsForm({ ...billsForm, payee: e.target.value })}
                     style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1.5px solid #cbd5e1', fontSize: '13px', color: '#0f172a' }}
@@ -6634,7 +6733,15 @@ const POSScreen = () => {
                     placeholder="Enter amount"
                     value={billsForm.amount}
                     onChange={(e) => setBillsForm({ ...billsForm, amount: e.target.value })}
-                    style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '2px solid #2563eb', fontSize: '15px', fontWeight: '800', color: '#2563eb' }}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      borderRadius: '10px',
+                      border: billsForm.type === 'Income' ? '2px solid #10b981' : '2px solid #ef4444',
+                      fontSize: '15px',
+                      fontWeight: '800',
+                      color: billsForm.type === 'Income' ? '#047857' : '#b91c1c'
+                    }}
                   />
                 </div>
 
@@ -6647,7 +6754,7 @@ const POSScreen = () => {
                     onChange={(e) => setBillsForm({ ...billsForm, paymentMethod: e.target.value })}
                     style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1.5px solid #cbd5e1', fontSize: '13px', fontWeight: '600' }}
                   >
-                    <option value="Cash">💵 Cash (Deducts from Drawer)</option>
+                    <option value="Cash">💵 Cash (Affects Drawer)</option>
                     <option value="Card">💳 Card</option>
                     <option value="Bank Transfer">🏛️ Bank Transfer</option>
                   </select>
@@ -6663,38 +6770,53 @@ const POSScreen = () => {
                     fontSize: '13px',
                     fontWeight: '800',
                     color: '#ffffff',
-                    background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                    background: billsForm.type === 'Income' ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
                     border: 'none',
                     borderRadius: '10px',
                     cursor: (submittingBill || !billsForm.amount) ? 'not-allowed' : 'pointer',
                     opacity: (submittingBill || !billsForm.amount) ? 0.6 : 1,
-                    boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)'
+                    boxShadow: billsForm.type === 'Income' ? '0 4px 12px rgba(16, 185, 129, 0.3)' : '0 4px 12px rgba(239, 68, 68, 0.3)'
                   }}
                 >
-                  {submittingBill ? 'Saving Record...' : '💾 Save Bill & Update Balance Report'}
+                  {submittingBill ? 'Saving Record...' : `💾 Save ${billsForm.type === 'Income' ? 'Income (+)' : 'Expense (-)'} & Update Balance Report`}
                 </button>
               </div>
             </form>
 
-            {/* History Table of Recent Bills */}
+            {/* Summary Cards & History Table */}
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ fontSize: '13px', fontWeight: '800', color: '#334155', textTransform: 'uppercase' }}>
-                  📜 Recent Bills & Service Expenses ({billsList.length})
-                </span>
-                <span style={{ fontSize: '12px', fontWeight: '700', color: '#2563eb' }}>
-                  Total Outgoing: Rs. {billsList.reduce((s, b) => s + Number(b.amount || 0), 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
-                </span>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '12px' }}>
+                <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', padding: '8px 12px', borderRadius: '10px' }}>
+                  <div style={{ fontSize: '10px', color: '#047857', fontWeight: '700', textTransform: 'uppercase' }}>Total Money IN (+)</div>
+                  <div style={{ fontSize: '15px', fontWeight: '900', color: '#065f46', marginTop: '2px' }}>
+                    + Rs. {billsList.filter(b => b.type === 'Income').reduce((s, b) => s + Number(b.amount || 0), 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                  </div>
+                </div>
+
+                <div style={{ background: '#fef2f2', border: '1px solid #fecaca', padding: '8px 12px', borderRadius: '10px' }}>
+                  <div style={{ fontSize: '10px', color: '#b91c1c', fontWeight: '700', textTransform: 'uppercase' }}>Total Money OUT (-)</div>
+                  <div style={{ fontSize: '15px', fontWeight: '900', color: '#991b1b', marginTop: '2px' }}>
+                    - Rs. {billsList.filter(b => b.type !== 'Income').reduce((s, b) => s + Number(b.amount || 0), 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                  </div>
+                </div>
+
+                <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', padding: '8px 12px', borderRadius: '10px' }}>
+                  <div style={{ fontSize: '10px', color: '#1d4ed8', fontWeight: '700', textTransform: 'uppercase' }}>Net Cash Balance</div>
+                  <div style={{ fontSize: '15px', fontWeight: '900', color: '#1e40af', marginTop: '2px' }}>
+                    Rs. {(billsList.filter(b => b.type === 'Income').reduce((s, b) => s + Number(b.amount || 0), 0) - billsList.filter(b => b.type !== 'Income').reduce((s, b) => s + Number(b.amount || 0), 0)).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                  </div>
+                </div>
               </div>
 
-              <div style={{ maxHeight: '220px', overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: '12px', background: '#ffffff' }}>
+              <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: '12px', background: '#ffffff' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
                   <thead>
                     <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#64748b', textTransform: 'uppercase', fontSize: '10px' }}>
                       <th style={{ padding: '8px 10px', textAlign: 'left' }}>Date</th>
+                      <th style={{ padding: '8px 10px', textAlign: 'left' }}>Type</th>
                       <th style={{ padding: '8px 10px', textAlign: 'left' }}>Category</th>
                       <th style={{ padding: '8px 10px', textAlign: 'left' }}>Description (මොනවටද)</th>
-                      <th style={{ padding: '8px 10px', textAlign: 'left' }}>Payee (කාටද)</th>
+                      <th style={{ padding: '8px 10px', textAlign: 'left' }}>Party (කාගෙන්ද/කාටද)</th>
                       <th style={{ padding: '8px 10px', textAlign: 'left' }}>Method</th>
                       <th style={{ padding: '8px 10px', textAlign: 'right' }}>Amount (Rs.)</th>
                       <th style={{ padding: '8px 10px', textAlign: 'center' }}>Voucher</th>
@@ -6702,29 +6824,39 @@ const POSScreen = () => {
                   </thead>
                   <tbody>
                     {loadingBillsList ? (
-                      <tr><td colSpan="7" style={{ textAlign: 'center', padding: '16px', color: '#94a3b8' }}>Loading recent bills...</td></tr>
+                      <tr><td colSpan="8" style={{ textAlign: 'center', padding: '16px', color: '#94a3b8' }}>Loading cash entries...</td></tr>
                     ) : billsList.length === 0 ? (
-                      <tr><td colSpan="7" style={{ textAlign: 'center', padding: '16px', color: '#94a3b8' }}>No bill payments recorded yet</td></tr>
+                      <tr><td colSpan="8" style={{ textAlign: 'center', padding: '16px', color: '#94a3b8' }}>No cash entries recorded yet</td></tr>
                     ) : (
-                      billsList.map((bill) => (
-                        <tr key={bill._id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                          <td style={{ padding: '8px 10px', color: '#64748b' }}>{new Date(bill.date || bill.createdAt).toLocaleDateString('en-GB')}</td>
-                          <td style={{ padding: '8px 10px', fontWeight: '700', color: '#2563eb' }}>{bill.category || 'Bill'}</td>
-                          <td style={{ padding: '8px 10px', fontWeight: '700', color: '#0f172a' }}>{bill.title || 'N/A'}</td>
-                          <td style={{ padding: '8px 10px', color: '#475569' }}>{bill.payee || '-'}</td>
-                          <td style={{ padding: '8px 10px', color: '#475569' }}>{bill.paymentMethod || 'Cash'}</td>
-                          <td style={{ padding: '8px 10px', textAlign: 'right', fontWeight: '800', color: '#b45309' }}>Rs. {Number(bill.amount || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</td>
-                          <td style={{ padding: '8px 10px', textAlign: 'center' }}>
-                            <button
-                              type="button"
-                              onClick={() => handlePrintBillVoucher(bill)}
-                              style={{ padding: '3px 8px', fontSize: '11px', fontWeight: '700', color: '#2563eb', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '6px', cursor: 'pointer' }}
-                            >
-                              🖨️ Voucher
-                            </button>
-                          </td>
-                        </tr>
-                      ))
+                      billsList.map((bill) => {
+                        const isIn = bill.type === 'Income';
+                        return (
+                          <tr key={bill._id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                            <td style={{ padding: '8px 10px', color: '#64748b' }}>{new Date(bill.date || bill.createdAt).toLocaleDateString('en-GB')}</td>
+                            <td style={{ padding: '8px 10px' }}>
+                              <span style={{ fontSize: '10px', fontWeight: '800', padding: '2px 8px', borderRadius: '6px', background: isIn ? '#dcfce7' : '#fee2e2', color: isIn ? '#166534' : '#991b1b' }}>
+                                {isIn ? '🟢 Money IN' : '🔴 Money OUT'}
+                              </span>
+                            </td>
+                            <td style={{ padding: '8px 10px', fontWeight: '700', color: '#2563eb' }}>{bill.category || 'General'}</td>
+                            <td style={{ padding: '8px 10px', fontWeight: '700', color: '#0f172a' }}>{bill.title || 'N/A'}</td>
+                            <td style={{ padding: '8px 10px', color: '#475569' }}>{bill.payee || '-'}</td>
+                            <td style={{ padding: '8px 10px', color: '#475569' }}>{bill.paymentMethod || 'Cash'}</td>
+                            <td style={{ padding: '8px 10px', textAlign: 'right', fontWeight: '800', color: isIn ? '#166534' : '#991b1b' }}>
+                              {isIn ? '+' : '-'} Rs. {Number(bill.amount || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                            </td>
+                            <td style={{ padding: '8px 10px', textAlign: 'center' }}>
+                              <button
+                                type="button"
+                                onClick={() => handlePrintBillVoucher(bill)}
+                                style={{ padding: '3px 8px', fontSize: '11px', fontWeight: '700', color: '#2563eb', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '6px', cursor: 'pointer' }}
+                              >
+                                🖨️ Voucher
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })
                     )}
                   </tbody>
                 </table>

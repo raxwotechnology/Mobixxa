@@ -12,6 +12,11 @@ const expenseSchema = new mongoose.Schema(
       required: [true, 'Category is required'],
       default: 'Tea & Refreshments',
     },
+    type: {
+      type: String,
+      enum: ['Expense', 'Income'],
+      default: 'Expense',
+    },
     customCategory: {
       type: String,
       trim: true,
