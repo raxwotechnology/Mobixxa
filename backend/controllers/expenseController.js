@@ -6,12 +6,7 @@ const Store = require('../models/Store');
 // @access  Private/Admin/Manager
 const createExpense = async (req, res, next) => {
   try {
-    const { title, category, amount, date, status, notes, storeId, receipt, paymentMethod, accountId } = req.body;
-    if (status === 'Paid' && !accountId) {
-      res.status(400);
-      return next(new Error('Target account is required for Paid expenses'));
-    }
-
+    const { title, description, category, amount, date, status, notes, storeId, receipt, paymentMethod, accountId } = req.body;
 
     // Robust storeId resolution
     let assignedStore = storeId;
@@ -32,22 +27,54 @@ const createExpense = async (req, res, next) => {
       return next(new Error('Target store is required for financial records.'));
     }
 
+    // Resolve Account ID if not provided (e.g. from POS counter petty cash)
+    const Account = require('../models/Account');
+    let resolvedAccountId = accountId;
+    if (!resolvedAccountId) {
+      const defaultAcc = await Account.findOne({ storeId: assignedStore, type: 'Cash' }) ||
+                         await Account.findOne({ storeId: assignedStore }) ||
+                         await Account.findOne({ isDefault: true }) ||
+                         await Account.findOne({});
+      if (defaultAcc) resolvedAccountId = defaultAcc._id;
+    }
+
+    const expenseTitle = title || description || category || 'Counter Petty Cash';
+    const expenseStatus = status || 'Paid'; // POS petty cash defaults to Paid
+
     const expense = await Expense.create({
-      title,
-      category,
-      amount,
-      date: date || new Date(),
+      title: expenseTitle,
+      category: category || 'Tea & Refreshments',
+      amount: Number(amount),
+      date: date ? new Date(date) : new Date(),
       paymentMethod: paymentMethod || 'Cash',
-      accountId: accountId || null,
-      status: status || 'Pending',
-      notes: notes || '',
+      accountId: resolvedAccountId || null,
+      status: expenseStatus,
+      notes: notes || description || '',
       storeId: assignedStore || null,
       createdBy: req.user._id,
       receipt: receipt || '',
     });
 
     // Record in Transaction Ledger if status is Paid
-    if (status === 'Paid') {
+    if (expenseStatus === 'Paid' && resolvedAccountId) {
+      const { recordTransaction } = require('../services/ledgerService');
+      await recordTransaction({
+        storeId: assignedStore,
+        accountId: resolvedAccountId,
+        type: 'expense',
+        category: `Expense: ${category || 'Petty Cash'}`,
+        amount: Number(amount),
+        paymentMethod: paymentMethod || 'Cash',
+        description: `Expense: ${expenseTitle}`,
+        createdBy: req.user._id,
+      });
+    }
+
+    res.status(201).json(expense);
+  } catch (error) {
+    next(error);
+  }
+};
       const { recordTransaction } = require('../services/ledgerService');
       await recordTransaction({
         storeId: assignedStore,

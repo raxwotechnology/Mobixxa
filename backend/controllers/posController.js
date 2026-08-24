@@ -178,7 +178,11 @@ const endSession = async (req, res, next) => {
     try {
       const Expense = require('../models/Expense');
       const expenses = await Expense.find({
-        date: { $gte: sessionStart, $lte: sessionEnd }
+        storeId: session.storeId,
+        $or: [
+          { createdAt: { $gte: sessionStart, $lte: sessionEnd } },
+          { date: { $gte: sessionStart, $lte: sessionEnd } }
+        ]
       }).lean();
       expenseCost = expenses.reduce((sum, ex) => sum + (ex.amount || 0), 0);
     } catch { /* ignore */ }
@@ -1045,8 +1049,13 @@ const getPosOrders = async (req, res, next) => {
     let expenseCost = 0;
     try {
       const Expense = require('../models/Expense');
+      const storeQuery = targetStoreId ? { storeId: targetStoreId } : {};
       const expenses = await Expense.find({
-        date: { $gte: startOfDay, $lte: endOfDay },
+        ...storeQuery,
+        $or: [
+          { date: { $gte: startOfDay, $lte: endOfDay } },
+          { createdAt: { $gte: startOfDay, $lte: endOfDay } }
+        ]
       }).lean();
       expenseCost = expenses.reduce((sum, ex) => sum + (ex.amount || 0), 0);
     } catch { /* ignore */ }

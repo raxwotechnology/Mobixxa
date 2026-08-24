@@ -1093,16 +1093,20 @@ const POSScreen = () => {
     try {
       setSubmittingPettyCash(true);
       await createExpense({
+        title: pettyCashForm.description || pettyCashForm.category || 'Counter Petty Cash',
         amount: amt,
         category: pettyCashForm.category,
-        description: pettyCashForm.description || 'Counter Petty Cash',
+        notes: pettyCashForm.description || '',
         paymentMethod: pettyCashForm.paymentMethod || 'Cash',
+        status: 'Paid',
         storeId: user?.assignedStore || user?.assignedStoreId || user?.storeId || posSession?.storeId,
-        date: new Date().toISOString().split('T')[0]
+        date: new Date().toISOString()
       });
       toast.success('Petty cash expense recorded! ☕💰');
       setShowPettyCashModal(false);
       setPettyCashForm({ amount: '', category: 'Tea & Refreshments', description: '', paymentMethod: 'Cash' });
+      if (fetchDailyFinancials) fetchDailyFinancials();
+      if (fetchSessionData) fetchSessionData();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to record expense');
     } finally {
