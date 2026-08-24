@@ -188,6 +188,8 @@ const POSScreen = () => {
   const [submittingBill, setSubmittingBill] = useState(false);
   const [billsList, setBillsList] = useState([]);
   const [loadingBillsList, setLoadingBillsList] = useState(false);
+  const [selectedVoucherForPreview, setSelectedVoucherForPreview] = useState(null);
+  const [showLedgerReportPreview, setShowLedgerReportPreview] = useState(false);
 
   const [showToolsDropdown, setShowToolsDropdown] = useState(false);
   const toolsDropdownRef = useRef(null);
@@ -1187,7 +1189,19 @@ const POSScreen = () => {
     }
   };
 
-  const printContentViaHiddenIframe = (htmlContent) => {
+  const triggerNativePrint = (htmlContent) => {
+    try {
+      const pWin = window.open('', '_blank', 'width=800,height=600');
+      if (pWin) {
+        pWin.document.open();
+        pWin.document.write(htmlContent);
+        pWin.document.close();
+        pWin.focus();
+        setTimeout(() => { pWin.print(); }, 250);
+        return;
+      }
+    } catch { /* fallback */ }
+
     let iframe = document.getElementById('pos-print-iframe');
     if (!iframe) {
       iframe = document.createElement('iframe');
@@ -1262,7 +1276,7 @@ const POSScreen = () => {
         </body>
       </html>
     `;
-    printContentViaHiddenIframe(html);
+    triggerNativePrint(html);
   };
 
   const handleExportBillsPDF = () => {
@@ -6575,7 +6589,7 @@ const POSScreen = () => {
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <button
                   type="button"
-                  onClick={handleExportBillsPDF}
+                  onClick={() => setShowLedgerReportPreview(true)}
                   style={{
                     padding: '8px 14px',
                     fontSize: '12px',
@@ -6848,7 +6862,7 @@ const POSScreen = () => {
                             <td style={{ padding: '8px 10px', textAlign: 'center' }}>
                               <button
                                 type="button"
-                                onClick={() => handlePrintBillVoucher(bill)}
+                                onClick={() => setSelectedVoucherForPreview(bill)}
                                 style={{ padding: '3px 8px', fontSize: '11px', fontWeight: '700', color: '#2563eb', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '6px', cursor: 'pointer' }}
                               >
                                 🖨️ Voucher
@@ -6861,6 +6875,207 @@ const POSScreen = () => {
                   </tbody>
                 </table>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Voucher Preview & Receipt Print Modal */}
+      {selectedVoucherForPreview && (
+        <div className="pos-modal-overlay" style={{ zIndex: 999999 }} onClick={() => setSelectedVoucherForPreview(null)}>
+          <div className="pos-modal-card" onClick={e => e.stopPropagation()} style={{ maxWidth: '440px', width: '90%', padding: '20px', background: '#ffffff', borderRadius: '20px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.3)', border: '1px solid #cbd5e1' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px dashed #cbd5e1', paddingBottom: '10px', marginBottom: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '20px' }}>📜</span>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#0f172a' }}>Official Cash Voucher Preview</h4>
+                  <p style={{ margin: 0, fontSize: '11px', color: '#64748b' }}>SR Mobile Transaction Slip</p>
+                </div>
+              </div>
+              <button onClick={() => setSelectedVoucherForPreview(null)} style={{ border: 'none', background: '#f1f5f9', padding: '6px', borderRadius: '50%', cursor: 'pointer', color: '#64748b' }}>
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Voucher Card Content */}
+            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '16px', marginBottom: '16px' }}>
+              <div style={{ textAlign: 'center', marginBottom: '12px', paddingBottom: '10px', borderBottom: '1px dashed #cbd5e1' }}>
+                <div style={{ fontSize: '16px', fontWeight: '900', color: '#0f172a', textTransform: 'uppercase' }}>
+                  {currentStore?.name || user?.assignedStoreName || 'SR MOBILE'}
+                </div>
+                <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                  {currentStore?.address || 'Main Street, Branch Store'}
+                </div>
+                <div style={{ marginTop: '8px', display: 'inline-block', padding: '3px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: '800', background: selectedVoucherForPreview.type === 'Income' ? '#dcfce7' : '#fee2e2', color: selectedVoucherForPreview.type === 'Income' ? '#166534' : '#991b1b' }}>
+                  {selectedVoucherForPreview.type === 'Income' ? '🟢 OFFICIAL MONEY IN VOUCHER' : '🔴 OFFICIAL MONEY OUT VOUCHER'}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#64748b', fontWeight: '600' }}>Date & Time:</span>
+                  <span style={{ fontWeight: '700', color: '#0f172a' }}>{new Date(selectedVoucherForPreview.date || selectedVoucherForPreview.createdAt).toLocaleString()}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#64748b', fontWeight: '600' }}>Category:</span>
+                  <span style={{ fontWeight: '800', color: '#2563eb' }}>{selectedVoucherForPreview.category || 'General'}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#64748b', fontWeight: '600' }}>Description (මොනවටද):</span>
+                  <span style={{ fontWeight: '800', color: '#0f172a' }}>{selectedVoucherForPreview.title || 'N/A'}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#64748b', fontWeight: '600' }}>{selectedVoucherForPreview.type === 'Income' ? 'Party (කාගෙන්ද):' : 'Party (කාටද):'}</span>
+                  <span style={{ fontWeight: '700', color: '#0f172a' }}>{selectedVoucherForPreview.payee || '-'}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#64748b', fontWeight: '600' }}>Payment Method:</span>
+                  <span style={{ fontWeight: '700', color: '#334155' }}>{selectedVoucherForPreview.paymentMethod || 'Cash'}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#64748b', fontWeight: '600' }}>Recorded By:</span>
+                  <span style={{ fontWeight: '600', color: '#475569' }}>{selectedVoucherForPreview.createdBy?.name || user?.name || 'Cashier'}</span>
+                </div>
+              </div>
+
+              {/* Amount Box */}
+              <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1.5px solid #e2e8f0', textAlign: 'center', background: '#ffffff', borderRadius: '10px', padding: '10px', border: '1px solid #cbd5e1' }}>
+                <div style={{ fontSize: '10px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase' }}>AMOUNT {selectedVoucherForPreview.type === 'Income' ? 'RECEIVED (+)' : 'PAID (-)'}</div>
+                <div style={{ fontSize: '22px', fontWeight: '900', color: selectedVoucherForPreview.type === 'Income' ? '#059669' : '#dc2626', marginTop: '2px' }}>
+                  {selectedVoucherForPreview.type === 'Income' ? '+' : '-'} Rs. {Number(selectedVoucherForPreview.amount || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                </div>
+              </div>
+            </div>
+
+            {/* Print Action Button */}
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => setSelectedVoucherForPreview(null)}
+                style={{ flex: 1, padding: '10px', borderRadius: '10px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#475569', fontWeight: '700', fontSize: '13px', cursor: 'pointer' }}
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={() => handlePrintBillVoucher(selectedVoucherForPreview)}
+                style={{ flex: 1.5, padding: '10px', borderRadius: '10px', border: 'none', background: '#2563eb', color: '#ffffff', fontWeight: '800', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)' }}
+              >
+                <Printer size={16} /> 🖨️ Print Thermal Slip
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Ledger Report Preview & PDF Download Modal */}
+      {showLedgerReportPreview && (
+        <div className="pos-modal-overlay" style={{ zIndex: 999999 }} onClick={() => setShowLedgerReportPreview(false)}>
+          <div className="pos-modal-card" onClick={e => e.stopPropagation()} style={{ maxWidth: '780px', width: '92%', padding: '24px', background: '#ffffff', borderRadius: '24px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.3)', border: '1px solid #cbd5e1', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '22px' }}>📄</span>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>Counter Cash Ledger Report Preview</h3>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>Print or Save PDF report for active shift cash entries</p>
+                </div>
+              </div>
+              <button onClick={() => setShowLedgerReportPreview(false)} style={{ border: 'none', background: '#f1f5f9', padding: '6px', borderRadius: '50%', cursor: 'pointer', color: '#64748b' }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Printable Report View Card */}
+            <div style={{ background: '#f8fafc', border: '1.5px solid #cbd5e1', borderRadius: '16px', padding: '20px', marginBottom: '18px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #2563eb', paddingBottom: '10px', marginBottom: '14px' }}>
+                <div>
+                  <div style={{ fontSize: '18px', fontWeight: '900', color: '#1e3a8a' }}>{currentStore?.name || user?.assignedStoreName || 'SR MOBILE'}</div>
+                  <div style={{ fontSize: '12px', fontWeight: '800', color: '#2563eb' }}>COUNTER CASH LEDGER REPORT (INCOME & EXPENSE)</div>
+                </div>
+                <div style={{ textAlign: 'right', fontSize: '11px', color: '#475569' }}>
+                  <div>Date: <strong>{new Date().toLocaleDateString('en-GB')}</strong></div>
+                  <div>Cashier: <strong>{user?.name || 'Cashier'}</strong></div>
+                </div>
+              </div>
+
+              {/* Summary Cards */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '14px' }}>
+                <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', padding: '8px 12px', borderRadius: '8px' }}>
+                  <div style={{ fontSize: '10px', color: '#047857', fontWeight: '700', textTransform: 'uppercase' }}>Total Money IN (+)</div>
+                  <div style={{ fontSize: '15px', fontWeight: '900', color: '#065f46', marginTop: '2px' }}>
+                    + Rs. {billsList.filter(b => b.type === 'Income').reduce((s, b) => s + Number(b.amount || 0), 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                  </div>
+                </div>
+                <div style={{ background: '#fef2f2', border: '1px solid #fecaca', padding: '8px 12px', borderRadius: '8px' }}>
+                  <div style={{ fontSize: '10px', color: '#b91c1c', fontWeight: '700', textTransform: 'uppercase' }}>Total Money OUT (-)</div>
+                  <div style={{ fontSize: '15px', fontWeight: '900', color: '#991b1b', marginTop: '2px' }}>
+                    - Rs. {billsList.filter(b => b.type !== 'Income').reduce((s, b) => s + Number(b.amount || 0), 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                  </div>
+                </div>
+                <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', padding: '8px 12px', borderRadius: '8px' }}>
+                  <div style={{ fontSize: '10px', color: '#1d4ed8', fontWeight: '700', textTransform: 'uppercase' }}>Net Cash Balance</div>
+                  <div style={{ fontSize: '15px', fontWeight: '900', color: '#1e40af', marginTop: '2px' }}>
+                    Rs. {(billsList.filter(b => b.type === 'Income').reduce((s, b) => s + Number(b.amount || 0), 0) - billsList.filter(b => b.type !== 'Income').reduce((s, b) => s + Number(b.amount || 0), 0)).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Entries Table */}
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px', background: '#ffffff' }}>
+                <thead>
+                  <tr style={{ background: '#e2e8f0', color: '#334155', textTransform: 'uppercase', fontSize: '10px' }}>
+                    <th style={{ padding: '6px 8px', textAlign: 'left' }}>#</th>
+                    <th style={{ padding: '6px 8px', textAlign: 'left' }}>Date</th>
+                    <th style={{ padding: '6px 8px', textAlign: 'left' }}>Type</th>
+                    <th style={{ padding: '6px 8px', textAlign: 'left' }}>Category</th>
+                    <th style={{ padding: '6px 8px', textAlign: 'left' }}>Description</th>
+                    <th style={{ padding: '6px 8px', textAlign: 'left' }}>Party</th>
+                    <th style={{ padding: '6px 8px', textAlign: 'left' }}>Method</th>
+                    <th style={{ padding: '6px 8px', textAlign: 'right' }}>Amount (Rs.)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {billsList.length === 0 ? (
+                    <tr><td colSpan="8" style={{ textAlign: 'center', padding: '14px', color: '#94a3b8' }}>No entries recorded</td></tr>
+                  ) : (
+                    billsList.map((b, idx) => {
+                      const isIn = b.type === 'Income';
+                      return (
+                        <tr key={b._id} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                          <td style={{ padding: '6px 8px' }}>{idx + 1}</td>
+                          <td style={{ padding: '6px 8px', color: '#64748b' }}>{new Date(b.date || b.createdAt).toLocaleDateString('en-GB')}</td>
+                          <td style={{ padding: '6px 8px', fontWeight: '800', color: isIn ? '#166534' : '#991b1b' }}>{isIn ? '🟢 Money IN' : '🔴 Money OUT'}</td>
+                          <td style={{ padding: '6px 8px', fontWeight: '700', color: '#2563eb' }}>{b.category || 'General'}</td>
+                          <td style={{ padding: '6px 8px', fontWeight: '700', color: '#0f172a' }}>{b.title || 'N/A'}</td>
+                          <td style={{ padding: '6px 8px', color: '#475569' }}>{b.payee || '-'}</td>
+                          <td style={{ padding: '6px 8px', color: '#475569' }}>{b.paymentMethod || 'Cash'}</td>
+                          <td style={{ padding: '6px 8px', textAlign: 'right', fontWeight: '800', color: isIn ? '#166534' : '#991b1b' }}>
+                            {isIn ? '+' : '-'} Rs. {Number(b.amount || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => setShowLedgerReportPreview(false)}
+                style={{ padding: '10px 18px', borderRadius: '10px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#475569', fontWeight: '700', fontSize: '13px', cursor: 'pointer' }}
+              >
+                Close Preview
+              </button>
+              <button
+                type="button"
+                onClick={handleExportBillsPDF}
+                style={{ padding: '10px 24px', borderRadius: '10px', border: 'none', background: '#2563eb', color: '#ffffff', fontWeight: '800', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)' }}
+              >
+                <Printer size={16} /> 🖨️ Print / Save as PDF
+              </button>
             </div>
           </div>
         </div>
