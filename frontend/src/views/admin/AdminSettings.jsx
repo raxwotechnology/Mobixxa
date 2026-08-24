@@ -115,9 +115,13 @@ const AdminSettings = () => {
       const { data } = await updateSettings(settings);
       setSettings(data);
       setSettingsLocal(data);
-      toast.success('Settings saved successfully!');
-    } catch (err) { toast.error('Failed to save settings'); }
-    finally { setSaving(false); }
+      toast.success('Settings saved successfully! ✅');
+    } catch (err) {
+      console.error('Error saving settings:', err);
+      toast.error('Failed to save settings: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleLogoUpload = async (e) => {
