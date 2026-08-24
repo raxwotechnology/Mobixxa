@@ -40,6 +40,7 @@ import {
   Zap,
   ExternalLink,
   ChevronDown,
+  Eye,
 } from 'lucide-react';
 
 import { getPosProducts, getProductByBarcode, posCheckout, getPosOrders, applyVoucher, getSettings, getActivePosSession, startPosSession, endPosSession, getPosPayHereHash, redeemPoints, getMyLoyaltyPoints, getCreditOrders, getCustomerCreditSummary, settleCreditOrder, getCategories, createQuotation, createProduct, getAccounts, loginUser, getCashiers, posLogin, getPosOrderByInvoice, createCustomerReturn, getHPRecords, recordHPPayment, createExpense } from '../../services/api';
@@ -6415,12 +6416,38 @@ const POSScreen = () => {
                         transition: 'all 0.15s',
                       }}
                     >
-                      {/* Top Row: Invoice #, Date, Payment Badge */}
+                      {/* Top Row: Invoice #, View button, Date, Payment Badge */}
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <span style={{ background: '#3730a3', color: '#ffffff', fontSize: '12px', fontWeight: '800', padding: '4px 10px', borderRadius: '8px' }}>
                             {invNo}
                           </span>
+
+                          <button
+                            onClick={() => {
+                              setLastOrder(inv);
+                              setShowInvoice(true);
+                            }}
+                            style={{
+                              background: '#e0e7ff',
+                              color: '#3730a3',
+                              border: '1px solid #c7d2fe',
+                              padding: '3px 10px',
+                              borderRadius: '8px',
+                              fontSize: '11px',
+                              fontWeight: '800',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              transition: 'all 0.15s'
+                            }}
+                            title="Click to view full invoice breakdown & print"
+                          >
+                            <Eye size={13} />
+                            <span>View Details</span>
+                          </button>
+
                           <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '600' }}>
                             🕒 {invDate}
                           </span>
