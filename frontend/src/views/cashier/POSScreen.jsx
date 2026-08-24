@@ -124,6 +124,7 @@ const POSScreen = () => {
   const [pointsInput, setPointsInput] = useState('');
   const [showLoyalty, setShowLoyalty] = useState(false);
   const [loadingPoints, setLoadingPoints] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [isCredit, setIsCredit] = useState(false);
   const [creditAmountPaid, setCreditAmountPaid] = useState('');
   const [creditNote, setCreditNote] = useState('');
@@ -4529,33 +4530,29 @@ const POSScreen = () => {
               </button>
 
               {/* Action Buttons */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '8px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '8px', marginTop: '8px' }}>
                 <button
+                  type="button"
                   className="pos-checkout-btn"
                   onClick={handleCreateQuotation}
                   disabled={checkingOut || pos.cart.length === 0}
-                  style={{ background: '#f3f4f6', color: '#374151', border: '1px solid #d1d5db', height: '54px', fontSize: '13px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px' }}
+                  style={{ background: '#f8fafc', color: '#475569', border: '1px solid #cbd5e1', height: '54px', fontSize: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px', borderRadius: '12px' }}
                 >
-                  <span style={{ fontWeight: 'bold' }}>📄 GIVE QUOTATION</span>
-                  <span style={{ fontSize: '10px', color: '#6b7280', fontWeight: 'bold' }}>[F10]</span>
+                  <span style={{ fontWeight: 'bold' }}>📄 QUOTATION</span>
+                  <span style={{ fontSize: '10px', color: '#64748b', fontWeight: 'bold' }}>[F10]</span>
                 </button>
                 <button
+                  type="button"
                   className="pos-checkout-btn"
-                  onClick={() => handleCheckout()}
+                  onClick={() => setShowPaymentModal(true)}
                   disabled={checkingOut || pos.cart.length === 0}
-                  style={isCredit ? { background: 'linear-gradient(135deg,#f59e0b,#d97706)', height: '54px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px' } : { height: '54px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px' }}
+                  style={{ background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)', color: '#ffffff', border: 'none', height: '54px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px', borderRadius: '12px', boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)', cursor: pos.cart.length === 0 ? 'not-allowed' : 'pointer', opacity: pos.cart.length === 0 ? 0.6 : 1 }}
                 >
-                  {checkingOut ? (
-                    <span className="pos-spinner-sm" />
-                  ) : (
-                    <>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <Receipt size={18} />
-                        <span style={{ fontWeight: '800' }}>{isCredit ? `CREDIT SALE` : `CHECKOUT`}</span>
-                      </div>
-                      <span style={{ fontSize: '10px', opacity: 0.9, fontWeight: 'bold' }}>[F9 / Ctrl+↵]</span>
-                    </>
-                  )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <CreditCard size={18} />
+                    <span style={{ fontWeight: '800' }}>PAY & OPTIONS</span>
+                  </div>
+                  <span style={{ fontSize: '10px', opacity: 0.9, fontWeight: 'bold' }}>[F4 / F9]</span>
                 </button>
               </div>
 
@@ -7471,8 +7468,600 @@ const POSScreen = () => {
           </div>
         </div>
       )}
-    </div>
 
+      {/* Sleek Dark Apply Discount Modal (Matching Client UI Screenshot) */}
+      {showDiscount && (
+        <div className="pos-modal-overlay" style={{ zIndex: 999999, backgroundColor: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(8px)' }} onClick={() => setShowDiscount(false)}>
+          <div 
+            className="pos-modal-card" 
+            onClick={e => e.stopPropagation()} 
+            style={{ 
+              maxWidth: '440px', 
+              width: '92%', 
+              padding: '28px', 
+              background: '#181e2b', 
+              borderRadius: '28px', 
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.65)', 
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              color: '#ffffff'
+            }}
+          >
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '22px' }}>
+              <h3 style={{ margin: 0, fontSize: '22px', fontWeight: '800', color: '#ffffff', letterSpacing: '-0.5px' }}>Apply Discount</h3>
+              <button 
+                onClick={() => setShowDiscount(false)} 
+                style={{ border: 'none', background: 'rgba(255, 255, 255, 0.08)', color: '#94a3b8', width: '34px', height: '34px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Segmented Toggle Tabs */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
+              <button
+                type="button"
+                onClick={() => setDiscountTypeInput('percentage')}
+                style={{
+                  padding: '14px',
+                  borderRadius: '16px',
+                  border: discountTypeInput === 'percentage' ? '1.5px solid #d97706' : '1px solid rgba(255, 255, 255, 0.08)',
+                  background: discountTypeInput === 'percentage' ? '#27221a' : 'rgba(255, 255, 255, 0.04)',
+                  color: discountTypeInput === 'percentage' ? '#f59e0b' : '#94a3b8',
+                  fontSize: '15px',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  transition: 'all 0.2s'
+                }}
+              >
+                <span style={{ fontSize: '16px' }}>%</span> Percentage
+              </button>
+              <button
+                type="button"
+                onClick={() => setDiscountTypeInput('fixed')}
+                style={{
+                  padding: '14px',
+                  borderRadius: '16px',
+                  border: discountTypeInput === 'fixed' ? '1.5px solid #d97706' : '1px solid rgba(255, 255, 255, 0.08)',
+                  background: discountTypeInput === 'fixed' ? '#27221a' : 'rgba(255, 255, 255, 0.04)',
+                  color: discountTypeInput === 'fixed' ? '#f59e0b' : '#94a3b8',
+                  fontSize: '15px',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  transition: 'all 0.2s'
+                }}
+              >
+                <span style={{ fontSize: '16px' }}>Rs.</span> Fixed Amount
+              </button>
+            </div>
+
+            {/* Presets Chips */}
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
+              {(discountTypeInput === 'percentage' ? [5, 10, 15, 20, 25] : [100, 250, 500, 1000, 2000]).map((val) => (
+                <button
+                  key={val}
+                  type="button"
+                  onClick={() => setDiscountInput(val.toString())}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '12px',
+                    border: discountInput === val.toString() ? '1.5px solid #3b82f6' : '1px solid rgba(255, 255, 255, 0.1)',
+                    background: discountInput === val.toString() ? '#2563eb' : 'rgba(255, 255, 255, 0.06)',
+                    color: '#ffffff',
+                    fontSize: '13px',
+                    fontWeight: '700',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {discountTypeInput === 'percentage' ? `${val}%` : `Rs.${val}`}
+                </button>
+              ))}
+            </div>
+
+            {/* Large White Input */}
+            <div style={{ marginBottom: '24px' }}>
+              <input
+                type="number"
+                autoFocus
+                placeholder={discountTypeInput === 'percentage' ? 'e.g. 10' : 'e.g. 500'}
+                value={discountInput}
+                onChange={(e) => setDiscountInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const val = parseFloat(discountInput) || 0;
+                    pos.setDiscount(val, discountTypeInput);
+                    setShowDiscount(false);
+                    toast.success(`Discount of ${val}${discountTypeInput === 'percentage' ? '%' : ' Rs.'} applied!`);
+                  }
+                }}
+                style={{
+                  width: '100%',
+                  padding: '16px',
+                  borderRadius: '16px',
+                  border: '2.5px solid #2563eb',
+                  fontSize: '24px',
+                  fontWeight: '900',
+                  color: '#0f172a',
+                  background: '#ffffff',
+                  textAlign: 'center',
+                  outline: 'none',
+                  boxShadow: '0 0 0 4px rgba(37, 99, 235, 0.25)'
+                }}
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', gap: '10px' }}>
+              {pos.discount > 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    pos.setDiscount(0, 'percentage');
+                    setDiscountInput('');
+                    setShowDiscount(false);
+                    toast.info('Discount removed');
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '14px',
+                    borderRadius: '16px',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    color: '#f87171',
+                    fontSize: '14px',
+                    fontWeight: '700',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Remove
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  const val = parseFloat(discountInput) || 0;
+                  pos.setDiscount(val, discountTypeInput);
+                  setShowDiscount(false);
+                  toast.success(`Discount of ${val}${discountTypeInput === 'percentage' ? '%' : ' Rs.'} applied!`);
+                }}
+                style={{
+                  flex: 2,
+                  padding: '16px',
+                  borderRadius: '16px',
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                  color: '#ffffff',
+                  fontSize: '16px',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 16px rgba(37, 99, 235, 0.4)'
+                }}
+              >
+                Apply Discount
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Comprehensive Modern Payment & Checkout Options Modal */}
+      {showPaymentModal && (
+        <div className="pos-modal-overlay" style={{ zIndex: 99999, backgroundColor: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(6px)' }} onClick={() => setShowPaymentModal(false)}>
+          <div
+            className="pos-modal-card"
+            onClick={e => e.stopPropagation()}
+            style={{
+              maxWidth: '820px',
+              width: '94%',
+              maxHeight: '92vh',
+              display: 'flex',
+              flexDirection: 'column',
+              padding: '24px',
+              background: '#ffffff',
+              borderRadius: '28px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)',
+              border: '1px solid #cbd5e1',
+              overflow: 'hidden'
+            }}
+          >
+            {/* Modal Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1.5px solid #f1f5f9', paddingBottom: '16px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: '#dbeafe', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px' }}>
+                  💳
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '900', color: '#0f172a' }}>Payment & Checkout Options</h3>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#64748b', fontWeight: '500' }}>Select payment method, allocate split payments & customer details</p>
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                <div style={{ textAlign: 'right', background: '#f0fdf4', border: '1.5px solid #86efac', padding: '6px 14px', borderRadius: '14px' }}>
+                  <div style={{ fontSize: '10px', color: '#166534', fontWeight: '800', textTransform: 'uppercase' }}>GRAND TOTAL</div>
+                  <div style={{ fontSize: '20px', fontWeight: '900', color: '#15803d' }}>Rs. {grandTotal.toFixed(2)}</div>
+                </div>
+                <button onClick={() => setShowPaymentModal(false)} style={{ border: 'none', background: '#f1f5f9', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748b' }}>
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+
+            {/* Scrollable Content Body */}
+            <div style={{ flex: 1, overflowY: 'auto', paddingRight: '6px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
+              
+              {/* 1. Payment Method Selector Grid */}
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', color: '#334155', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Select Primary Payment Method
+                </label>
+                <div className="pos-payment-methods" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+                  <button
+                    className={`pos-payment-btn ${pos.paymentMethod === 'cash' ? 'active' : ''}`}
+                    onClick={() => { pos.setPaymentMethod('cash'); setIsCredit(false); }}
+                    style={{ padding: '12px 10px' }}
+                  >
+                    <Banknote size={20} />
+                    Cash
+                  </button>
+                  <button
+                    className={`pos-payment-btn ${pos.paymentMethod === 'card' ? 'active' : ''}`}
+                    onClick={() => { pos.setPaymentMethod('card'); setIsCredit(false); }}
+                    style={{ padding: '12px 10px' }}
+                  >
+                    <CreditCard size={20} />
+                    Card
+                  </button>
+                  <button
+                    className={`pos-payment-btn ${pos.paymentMethod === 'bank_transfer' ? 'active' : ''}`}
+                    onClick={() => { pos.setPaymentMethod('bank_transfer'); setIsCredit(false); }}
+                    style={{ padding: '12px 10px' }}
+                  >
+                    <Landmark size={20} />
+                    Bank
+                  </button>
+                  <button
+                    className={`pos-payment-btn ${pos.paymentMethod === 'hire_purchase' ? 'active' : ''}`}
+                    onClick={() => {
+                      pos.setPaymentMethod('hire_purchase');
+                      setIsCredit(false);
+                      if (!pos.hirePurchaseData) {
+                        pos.setHirePurchaseData({
+                          customer: { name: pos.customerName, phone: pos.customerPhone, nic: '', address: '', guarantors: [] },
+                          downPayment: 0,
+                          downPaymentMethod: 'cash',
+                          downPaymentAccountId: '',
+                          numberOfInstallments: 6,
+                          installmentType: 'Monthly',
+                          interestRate: 0,
+                          interestAmount: 0,
+                          netTotal: grandTotal,
+                          installmentAmount: grandTotal / 6,
+                          startDate: new Date().toISOString().split('T')[0]
+                        });
+                      }
+                    }}
+                    style={{ padding: '12px 10px' }}
+                  >
+                    <Clock size={20} />
+                    Installment
+                  </button>
+                  <button
+                    className={`pos-payment-btn ${pos.paymentMethod === 'koko' ? 'active' : ''}`}
+                    onClick={() => { pos.setPaymentMethod('koko'); setIsCredit(false); }}
+                    style={{ padding: '12px 10px' }}
+                  >
+                    <Smartphone size={20} />
+                    Koko
+                  </button>
+                  <button
+                    className={`pos-payment-btn ${pos.paymentMethod === 'cheque' ? 'active' : ''}`}
+                    onClick={() => { pos.setPaymentMethod('cheque'); setIsCredit(false); }}
+                    style={{ padding: '12px 10px' }}
+                  >
+                    <Receipt size={20} />
+                    Cheque
+                  </button>
+                  <button
+                    className={`pos-payment-btn ${pos.paymentMethod === 'payhere' ? 'active' : ''}`}
+                    onClick={() => { pos.setPaymentMethod('payhere'); setIsCredit(false); }}
+                    style={{ padding: '12px 10px', background: pos.paymentMethod === 'payhere' ? '#6d28d9' : undefined, color: pos.paymentMethod === 'payhere' ? '#fff' : undefined }}
+                  >
+                    <CreditCard size={20} />
+                    PayHere
+                  </button>
+                  <button
+                    className={`pos-payment-btn ${pos.paymentMethod === 'credit' || isCredit ? 'active' : ''}`}
+                    onClick={() => {
+                      pos.setPaymentMethod('credit');
+                      setIsCredit(true);
+                      setCreditAmountPaid(0);
+                      if (!pos.customerPhone) {
+                        setShowCustomerInfo(true);
+                      }
+                    }}
+                    style={{
+                      padding: '12px 10px',
+                      background: pos.paymentMethod === 'credit' || isCredit ? '#fef3c7' : undefined,
+                      color: pos.paymentMethod === 'credit' || isCredit ? '#92400e' : undefined,
+                      borderColor: pos.paymentMethod === 'credit' || isCredit ? '#fde68a' : undefined
+                    }}
+                  >
+                    <Clock size={20} />
+                    Credit (Pay Later)
+                  </button>
+                </div>
+              </div>
+
+              {/* 2. Customer Info Card */}
+              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '18px', padding: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <User size={18} className="text-blue-600" />
+                    <span style={{ fontSize: '13px', fontWeight: '800', color: '#0f172a' }}>Customer Information (Optional)</span>
+                  </div>
+                  <span style={{ fontSize: '10px', background: '#e2e8f0', color: '#475569', padding: '2px 8px', borderRadius: '6px', fontWeight: 'bold' }}>F3</span>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  <input
+                    type="text"
+                    value={pos.customerName}
+                    onChange={(e) => pos.setCustomerInfo(e.target.value, pos.customerPhone, pos.customerNic, pos.customerAddress)}
+                    placeholder="Customer Name"
+                    className="pos-input"
+                    style={{ fontSize: '13px', background: '#ffffff' }}
+                  />
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <input
+                      type="tel"
+                      value={pos.customerPhone}
+                      onChange={(e) => pos.setCustomerInfo(pos.customerName, e.target.value, pos.customerNic, pos.customerAddress)}
+                      placeholder="Phone Number"
+                      className="pos-input"
+                      style={{ flex: 1, fontSize: '13px', background: '#ffffff' }}
+                    />
+                    {pos.customerPhone && (
+                      <button
+                        onClick={() => setShowCustomerHistory(true)}
+                        className="pos-btn-blue"
+                        style={{ padding: '0 12px', fontSize: '12px' }}
+                        title="History"
+                      >
+                        <History size={16} />
+                      </button>
+                    )}
+                  </div>
+                  <input
+                    type="text"
+                    value={pos.customerNic}
+                    onChange={(e) => pos.setCustomerInfo(pos.customerName, pos.customerPhone, e.target.value, pos.customerAddress)}
+                    placeholder="NIC Number"
+                    className="pos-input"
+                    style={{ fontSize: '13px', background: '#ffffff' }}
+                  />
+                  <input
+                    type="text"
+                    value={pos.customerAddress}
+                    onChange={(e) => pos.setCustomerInfo(pos.customerName, pos.customerPhone, pos.customerNic, e.target.value)}
+                    placeholder="Address"
+                    className="pos-input"
+                    style={{ fontSize: '13px', background: '#ffffff' }}
+                  />
+                </div>
+              </div>
+
+              {/* 3. Payment Allocation (Split Payments) */}
+              {pos.paymentMethod !== 'hire_purchase' && (
+                <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '18px', padding: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    <label style={{ fontSize: '12px', fontWeight: '800', color: '#334155', textTransform: 'uppercase' }}>
+                      🔀 Payment Allocation (Split Payments)
+                    </label>
+                    <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '600' }}>
+                      Allocated: <strong>Rs. {totalPaid.toFixed(2)}</strong> / {grandTotal.toFixed(2)}
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '10px' }}>
+                    {payments.map((p, index) => (
+                      <div key={index} style={{ display: 'flex', gap: '8px', alignItems: 'center', background: '#ffffff', padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                        <select
+                          value={p.method}
+                          onChange={(e) => {
+                            const newPayments = [...payments];
+                            newPayments[index].method = e.target.value;
+                            setPayments(newPayments);
+                          }}
+                          className="pos-input"
+                          style={{ flex: 1.5, fontSize: '13px', height: '38px', background: '#fff', color: '#1e293b' }}
+                        >
+                          <option value="cash">💵 Cash</option>
+                          <option value="card">💳 Card</option>
+                          <option value="bank_transfer">🏛️ Bank Transfer</option>
+                          <option value="cheque">🧾 Cheque</option>
+                          <option value="koko">📱 Koko</option>
+                        </select>
+
+                        {p.method !== 'cash' && (
+                          <select
+                            value={p.accountId}
+                            onChange={(e) => {
+                              const newPayments = [...payments];
+                              newPayments[index].accountId = e.target.value;
+                              setPayments(newPayments);
+                            }}
+                            className="pos-input"
+                            style={{ flex: 2, fontSize: '13px', height: '38px', background: '#fff', color: '#1e293b' }}
+                          >
+                            <option value="">Select Account</option>
+                            {accounts.map(a => (
+                              <option key={a._id} value={a._id}>{a.name}</option>
+                            ))}
+                          </select>
+                        )}
+
+                        <input
+                          type="number"
+                          value={p.amount || ''}
+                          onChange={(e) => {
+                            const newPayments = [...payments];
+                            newPayments[index].amount = parseFloat(e.target.value) || 0;
+                            setPayments(newPayments);
+                          }}
+                          placeholder="Amount"
+                          className="pos-input"
+                          style={{ flex: 1.5, fontSize: '14px', height: '38px', fontWeight: '800', background: '#fff', color: '#0f172a' }}
+                          min="0"
+                          step="0.01"
+                        />
+
+                        {payments.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => setPayments(payments.filter((_, i) => i !== index))}
+                            style={{ border: 'none', background: '#fee2e2', color: '#ef4444', padding: '8px', borderRadius: '8px', cursor: 'pointer' }}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setPayments([...payments, { method: 'cash', amount: 0, accountId: '', chequeDetails: { number: '', bank: '', dueDate: '' } }])}
+                    style={{ padding: '8px 16px', borderRadius: '10px', border: '1px border #cbd5e1', background: '#ffffff', color: '#2563eb', fontWeight: '800', fontSize: '12px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <Plus size={14} /> Add Payment Row
+                  </button>
+                </div>
+              )}
+
+              {/* 4. Cash Tendered & Change Due Section */}
+              {pos.paymentMethod === 'cash' && !isCredit && (
+                <div style={{ background: '#ecfdf5', border: '1.5px solid #a7f3d0', borderRadius: '18px', padding: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <label style={{ fontSize: '13px', fontWeight: '800', color: '#065f46' }}>💵 Cash Amount Tendered (Given by Customer)</label>
+                    <span style={{ fontSize: '10px', background: '#dcfce7', color: '#166534', padding: '2px 8px', borderRadius: '6px', fontWeight: 'bold' }}>F4</span>
+                  </div>
+                  <div style={{ position: 'relative', marginBottom: '8px' }}>
+                    <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '16px', fontWeight: 'bold', color: '#059669' }}>Rs.</span>
+                    <input
+                      type="number"
+                      value={pos.tenderedAmount}
+                      onChange={(e) => pos.setTenderedAmount(e.target.value)}
+                      placeholder="0.00 (Enter ↵ for Checkout)"
+                      style={{ width: '100%', padding: '12px 14px 12px 48px', borderRadius: '14px', border: '2px solid #10b981', fontSize: '20px', fontWeight: '900', color: '#065f46', background: '#ffffff', outline: 'none' }}
+                    />
+                  </div>
+                  {parseFloat(pos.tenderedAmount) >= grandTotal && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#10b981', color: '#ffffff', padding: '10px 16px', borderRadius: '12px', fontWeight: '800' }}>
+                      <span style={{ fontSize: '14px' }}>CHANGE DUE TO CUSTOMER:</span>
+                      <span style={{ fontSize: '20px', fontWeight: '900' }}>Rs. {change.toFixed(2)}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* 5. Credit Sale Details (Pay Later) */}
+              {isCredit && (
+                <div style={{ background: '#fffbeb', border: '1.5px solid #fde68a', borderRadius: '18px', padding: '16px' }}>
+                  <h4 style={{ margin: '0 0 10px 0', fontSize: '14px', fontWeight: '800', color: '#92400e' }}>📋 Credit Sale Details (Pay Later)</h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                    <div>
+                      <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#92400e' }}>Amount Paid Now (Down Payment)</label>
+                      <input
+                        type="number"
+                        value={creditAmountPaid}
+                        onChange={(e) => setCreditAmountPaid(e.target.value)}
+                        placeholder="0.00"
+                        className="pos-input"
+                        style={{ fontSize: '13px', background: '#ffffff' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#92400e' }}>Remaining Debt Balance</label>
+                      <input
+                        type="text"
+                        disabled
+                        readOnly
+                        value={`Rs. ${(grandTotal - parseFloat(creditAmountPaid || 0)).toFixed(2)}`}
+                        className="pos-input cursor-not-allowed"
+                        style={{ fontSize: '13px', background: '#fef3c7', fontWeight: '800', color: '#b45309' }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 6. Receipt Delivery Channels */}
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'center', background: '#f8fafc', padding: '12px 16px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: '700', color: '#334155', cursor: 'pointer' }}>
+                  <input type="checkbox" checked={pos.printReceipt} onChange={(e) => pos.setReceiptOptions({ sendSmsReceipt: pos.sendSmsReceipt, sendReceiptEmail: pos.sendReceiptEmail, receiptEmail: pos.receiptEmail, printReceipt: e.target.checked })} />
+                  🖨️ Print Thermal Receipt
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: '700', color: '#334155', cursor: 'pointer' }}>
+                  <input type="checkbox" checked={pos.sendSmsReceipt} onChange={(e) => pos.setReceiptOptions({ sendSmsReceipt: e.target.checked, sendReceiptEmail: pos.sendReceiptEmail, receiptEmail: pos.receiptEmail, printReceipt: pos.printReceipt })} />
+                  📱 Send SMS Receipt
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: '700', color: '#334155', cursor: 'pointer' }}>
+                  <input type="checkbox" checked={pos.sendReceiptEmail} onChange={(e) => pos.setReceiptOptions({ sendSmsReceipt: pos.sendSmsReceipt, sendReceiptEmail: e.target.checked, receiptEmail: pos.receiptEmail, printReceipt: pos.printReceipt })} />
+                  📧 Send Email Receipt
+                </label>
+              </div>
+
+            </div>
+
+            {/* Modal Footer / Submit Bar */}
+            <div style={{ borderTop: '1.5px solid #f1f5f9', paddingTop: '16px', marginTop: '14px', display: 'flex', gap: '12px' }}>
+              <button
+                type="button"
+                onClick={() => setShowPaymentModal(false)}
+                style={{ flex: 1, padding: '14px', borderRadius: '16px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#475569', fontWeight: '700', fontSize: '14px', cursor: 'pointer' }}
+              >
+                Back to Cart
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowPaymentModal(false);
+                  handleCheckout();
+                }}
+                disabled={checkingOut}
+                style={{
+                  flex: 2.5,
+                  padding: '16px',
+                  borderRadius: '16px',
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+                  color: '#ffffff',
+                  fontSize: '16px',
+                  fontWeight: '900',
+                  cursor: checkingOut ? 'not-allowed' : 'pointer',
+                  boxShadow: '0 4px 16px rgba(22, 163, 74, 0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
+                }}
+              >
+                <Zap size={20} />
+                <span>🚀 COMPLETE SALE & PRINT RECEIPT</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 
