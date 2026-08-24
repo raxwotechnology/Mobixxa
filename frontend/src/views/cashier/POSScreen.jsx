@@ -5630,7 +5630,7 @@ const POSScreen = () => {
                   {/* Monthly Installment Fixed Read-Only Banner */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', background: '#eff6ff', border: '1.5px solid #bfdbfe', padding: '10px 14px', borderRadius: '12px' }}>
                     <div>
-                      <div style={{ fontSize: '11px', color: '#1e40af', fontWeight: '800', textTransform: 'uppercase' }}>📌 Fixed Monthly Installment / වාරික මුදල</div>
+                      <div style={{ fontSize: '11px', color: '#1e40af', fontWeight: '800', textTransform: 'uppercase' }}>📌 Fixed Monthly Installment</div>
                       <div style={{ fontSize: '16px', fontWeight: '900', color: '#1d4ed8', marginTop: '2px' }}>
                         Rs. {Number(selectedHpRecord.installmentAmount || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })} / month
                       </div>
@@ -5638,7 +5638,7 @@ const POSScreen = () => {
                     <div style={{ display: 'flex', gap: '6px' }}>
                       <button
                         type="button"
-                        onClick={() => setHpPayForm(prev => ({ ...prev, amount: selectedHpRecord.installmentAmount || 0 }))}
+                        onClick={() => setHpPayForm(prev => ({ ...prev, amount: selectedHpRecord.installmentAmount || 0, givenCash: prev.givenCash || selectedHpRecord.installmentAmount || 0 }))}
                         style={{ padding: '6px 12px', background: '#2563eb', color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: '800', cursor: 'pointer' }}
                       >
                         ⚡ Fill 1-Month (Rs. {Number(selectedHpRecord.installmentAmount || 0).toLocaleString()})
@@ -5647,7 +5647,7 @@ const POSScreen = () => {
                         type="button"
                         onClick={() => {
                           const remBal = selectedHpRecord.balanceAmount ?? selectedHpRecord.remainingBalance ?? Math.max(0, (selectedHpRecord.netTotal || 0) - (selectedHpRecord.totalPaid || 0));
-                          setHpPayForm(prev => ({ ...prev, amount: remBal }));
+                          setHpPayForm(prev => ({ ...prev, amount: remBal, givenCash: prev.givenCash || remBal }));
                         }}
                         style={{ padding: '6px 12px', background: '#d97706', color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: '800', cursor: 'pointer' }}
                       >
@@ -5738,13 +5738,21 @@ const POSScreen = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '16px' }}>
                   <div>
                     <label style={{ fontSize: '12px', fontWeight: '700', color: '#166534', display: 'block', marginBottom: '6px' }}>
-                      💵 Customer Given Cash / ලබාදුන් මුදල (Rs.)
+                      💵 Customer Given Cash (Rs.)
                     </label>
                     <input
                       type="number"
                       onWheel={(e) => e.target.blur()}
                       value={hpPayForm.givenCash}
-                      onChange={(e) => setHpPayForm({ ...hpPayForm, givenCash: e.target.value })}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const numVal = Number(val || 0);
+                        const instVal = Number(selectedHpRecord.installmentAmount || 0);
+                        setHpPayForm(prev => {
+                          const newAmount = (!prev.amount || Number(prev.amount) <= 0 || (numVal > 0 && numVal <= instVal)) ? val : prev.amount;
+                          return { ...prev, givenCash: val, amount: newAmount };
+                        });
+                      }}
                       placeholder="e.g. 50000"
                       style={{
                         width: '100%',
@@ -5762,16 +5770,16 @@ const POSScreen = () => {
 
                   <div>
                     <label style={{ fontSize: '12px', fontWeight: '700', color: '#1e40af', display: 'block', marginBottom: '6px' }}>
-                      🔄 Change to Return / ඉතිරි මුදල
+                      🔄 Change to Return
                     </label>
                     <div style={{
                       width: '100%',
                       padding: '10px 14px',
                       fontSize: '18px',
                       fontWeight: '900',
-                      color: (Number(hpPayForm.givenCash || 0) >= Number(hpPayForm.amount || 0)) ? '#1d4ed8' : '#64748b',
-                      background: (Number(hpPayForm.givenCash || 0) >= Number(hpPayForm.amount || 0)) ? '#eff6ff' : '#f8fafc',
-                      border: '2px solid #bfdbfe',
+                      color: (Number(hpPayForm.givenCash || 0) >= Number(hpPayForm.amount || 0)) ? '#1d4ed8' : '#b45309',
+                      background: (Number(hpPayForm.givenCash || 0) >= Number(hpPayForm.amount || 0)) ? '#eff6ff' : '#fffbeb',
+                      border: (Number(hpPayForm.givenCash || 0) >= Number(hpPayForm.amount || 0)) ? '2px solid #bfdbfe' : '2px solid #fde68a',
                       borderRadius: '12px',
                       display: 'flex',
                       alignItems: 'center',
@@ -5785,7 +5793,7 @@ const POSScreen = () => {
                 {/* Row 3 (Bottom Position): Amount to Pay */}
                 <div style={{ marginBottom: '20px' }}>
                   <label style={{ fontSize: '13px', fontWeight: '800', color: '#0f172a', display: 'block', marginBottom: '6px' }}>
-                    💰 Amount to Pay / ගෙවන වාරික මුදල (Rs.) *
+                    💰 Amount to Pay (Rs.) *
                   </label>
                   <input
                     type="number"
