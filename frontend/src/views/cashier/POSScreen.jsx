@@ -6496,9 +6496,9 @@ const POSScreen = () => {
                             setShowInvoice(true);
                           }}
                           style={{ background: '#3730a3', color: '#ffffff', border: 'none', padding: '6px 14px', borderRadius: '10px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}
-                          title="View & Save A4 PDF Invoice"
+                          title="View Invoice Details & Print"
                         >
-                          <Download size={14} /> Save PDF
+                          <FileText size={14} /> View Details
                         </button>
                       </div>
                     </div>

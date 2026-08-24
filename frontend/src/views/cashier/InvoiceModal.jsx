@@ -720,19 +720,32 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
         </div>
 
         {/* Action buttons — hidden when printing */}
-        <div className="pos-invoice-actions no-print" style={{ borderTop: '1px solid #e2e8f0', padding: '16px 20px', display: 'flex', gap: '10px', justifyContent: 'flex-end', background: '#ffffff' }}>
+        <div className="pos-invoice-actions no-print" style={{ borderTop: '1px solid #e2e8f0', padding: '16px 20px', display: 'flex', gap: '12px', justifyContent: 'flex-end', background: '#ffffff', alignItems: 'center' }}>
           <button
             type="button"
-            className="pos-btn-outline"
             onClick={handlePrint}
-            style={{ padding: '10px 18px', fontSize: '13px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}
+            style={{
+              padding: '10px 22px',
+              fontSize: '13px',
+              fontWeight: '800',
+              background: '#2563eb',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '12px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              boxShadow: '0 4px 12px rgba(37, 99, 235, 0.35)',
+              transition: 'all 0.2s'
+            }}
           >
-            <Printer size={18} />
-            Print Layout
+            <Download size={18} />
+            Save PDF
           </button>
 
           {onNewSale && (
-            <button className="pos-btn-green pos-btn-lg" onClick={handleNewSale} style={{ padding: '10px 18px', fontSize: '13px', fontWeight: 'bold' }}>
+            <button className="pos-btn-green pos-btn-lg" onClick={handleNewSale} style={{ padding: '10px 22px', fontSize: '13px', fontWeight: 'bold' }}>
               <RotateCcw size={18} />
               New Sale
             </button>
