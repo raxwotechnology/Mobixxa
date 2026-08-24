@@ -173,6 +173,30 @@ const POSScreen = () => {
   const [showToolsDropdown, setShowToolsDropdown] = useState(false);
   const toolsDropdownRef = useRef(null);
 
+  // Invoice Details & Sales History Modal States
+  const [showInvoiceSearchModal, setShowInvoiceSearchModal] = useState(false);
+  const [invoiceSearchInput, setInvoiceSearchInput] = useState('');
+  const [recentInvoicesList, setRecentInvoicesList] = useState([]);
+  const [loadingRecentInvoices, setLoadingRecentInvoices] = useState(false);
+  const [invoiceFilterTab, setInvoiceFilterTab] = useState('all'); // 'all', 'today', 'credit', 'returned'
+
+  const handleFetchRecentInvoices = async (searchTerm = '', filterAll = true) => {
+    try {
+      setLoadingRecentInvoices(true);
+      const params = {};
+      if (searchTerm && searchTerm.trim()) params.search = searchTerm.trim();
+      if (filterAll) params.all = 'true';
+      const { data } = await getPosOrders(params);
+      const ordersArr = data?.orders || (Array.isArray(data) ? data : []);
+      setRecentInvoicesList(ordersArr);
+    } catch (err) {
+      console.error('Failed to load recent invoices:', err);
+      toast.error('Failed to load invoice history');
+    } finally {
+      setLoadingRecentInvoices(false);
+    }
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (toolsDropdownRef.current && !toolsDropdownRef.current.contains(event.target)) {
@@ -2589,9 +2613,17 @@ const POSScreen = () => {
             <DollarSign size={15} />
             <span className="pos-topbar-btn-text">Balance</span>
           </button>
-          <button className="pos-topbar-btn" onClick={handleShiftSummary} title="Shift Summary">
-            <TrendingUp size={15} />
-            <span className="pos-topbar-btn-text">Shift</span>
+          <button
+            className="pos-topbar-btn"
+            onClick={() => {
+              setShowInvoiceSearchModal(true);
+              handleFetchRecentInvoices('', true);
+            }}
+            title="Search & View Invoice Details"
+            style={{ background: '#e0e7ff', color: '#3730a3', borderColor: '#c7d2fe', fontWeight: 'bold' }}
+          >
+            <FileText size={15} />
+            <span className="pos-topbar-btn-text">Invoices</span>
           </button>
 
           {/* Direct Sales Features */}
@@ -2613,7 +2645,7 @@ const POSScreen = () => {
             <button
               className="pos-topbar-btn"
               onClick={() => setShowToolsDropdown(!showToolsDropdown)}
-              title="More Counter Tools (HP, Trade-In, Petty Cash, Shortcuts)"
+              title="More Counter Tools (HP, Trade-In, Petty Cash, Shift, Shortcuts)"
               style={{ background: showToolsDropdown ? '#e0e7ff' : '#f8fafc', color: '#3730a3', borderColor: '#c7d2fe', fontWeight: 'bold' }}
             >
               <Zap size={15} className="text-amber-500" />
@@ -2639,6 +2671,13 @@ const POSScreen = () => {
                   gap: '4px'
                 }}
               >
+                <button
+                  onClick={() => { setShowToolsDropdown(false); handleShiftSummary(); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 12px', borderRadius: '8px', border: 'none', background: '#f0fdf4', color: '#166534', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}
+                >
+                  <TrendingUp size={16} />
+                  <span>📈 Shift Summary</span>
+                </button>
                 <button
                   onClick={() => { setShowToolsDropdown(false); setShowHpQuickPayModal(true); handleSearchHpRecords(''); }}
                   style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 12px', borderRadius: '8px', border: 'none', background: '#fff7ed', color: '#c2410c', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}
@@ -6263,6 +6302,183 @@ const POSScreen = () => {
               <button onClick={() => setShowShortcutsHelp(false)} className="pos-btn-blue" style={{ width: '100%', height: '40px', fontSize: '13px', fontWeight: 'bold' }}>
                 Got it (Press Esc to Close)
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* POS Invoice Details & History Modal */}
+      {showInvoiceSearchModal && (
+        <div className="pos-modal-overlay" onClick={() => setShowInvoiceSearchModal(false)} style={{ zIndex: 99999 }}>
+          <div
+            className="pos-modal-card"
+            onClick={e => e.stopPropagation()}
+            style={{
+              maxWidth: '850px',
+              width: '94%',
+              maxHeight: '88vh',
+              display: 'flex',
+              flexDirection: 'column',
+              padding: '24px',
+              background: '#ffffff',
+              borderRadius: '24px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              border: '1px solid #e2e8f0',
+              overflow: 'hidden'
+            }}
+          >
+            {/* Modal Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', paddingBottom: '14px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '42px', height: '42px', borderRadius: '14px', background: '#e0e7ff', color: '#3730a3', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <FileText size={22} />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>Invoice Details & Sales History</h3>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#64748b', fontWeight: '500' }}>Search invoices, view items, reprint receipts & handle returns</p>
+                </div>
+              </div>
+              <button onClick={() => setShowInvoiceSearchModal(false)} style={{ border: 'none', background: '#f1f5f9', width: '32px', height: '32px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748b' }}>
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Search Input & Controls */}
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '14px' }}>
+              <div style={{ position: 'relative', flex: 1 }}>
+                <Search size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
+                <input
+                  type="text"
+                  value={invoiceSearchInput}
+                  onChange={(e) => {
+                    setInvoiceSearchInput(e.target.value);
+                    handleFetchRecentInvoices(e.target.value, true);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleFetchRecentInvoices(invoiceSearchInput, true);
+                  }}
+                  placeholder="Search by Invoice # (e.g. INV-1002), Phone, Name, or IMEI..."
+                  style={{ width: '100%', height: '44px', paddingLeft: '42px', paddingRight: '36px', borderRadius: '14px', border: '1.5px solid #cbd5e1', fontSize: '13px', fontWeight: '600', outline: 'none' }}
+                  autoFocus
+                />
+                {invoiceSearchInput && (
+                  <button
+                    onClick={() => { setInvoiceSearchInput(''); handleFetchRecentInvoices('', true); }}
+                    style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', border: 'none', background: 'transparent', cursor: 'pointer', color: '#94a3b8' }}
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+              <button
+                onClick={() => handleFetchRecentInvoices(invoiceSearchInput, true)}
+                style={{ padding: '0 20px', borderRadius: '14px', background: '#3730a3', color: '#ffffff', fontWeight: 'bold', fontSize: '13px', border: 'none', cursor: 'pointer' }}
+              >
+                Search
+              </button>
+            </div>
+
+            {/* Invoices List */}
+            <div style={{ flex: 1, overflowY: 'auto', paddingRight: '4px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {loadingRecentInvoices ? (
+                <div style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
+                  <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" style={{ margin: '0 auto 12px' }} />
+                  <p style={{ fontWeight: 'bold', fontSize: '14px' }}>Loading Invoices...</p>
+                </div>
+              ) : recentInvoicesList.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px', color: '#64748b', background: '#f8fafc', borderRadius: '16px' }}>
+                  <FileText size={40} style={{ margin: '0 auto 10px', opacity: 0.5 }} />
+                  <p style={{ fontWeight: 'bold', fontSize: '14px', margin: 0 }}>No invoices found</p>
+                  <span style={{ fontSize: '12px', color: '#94a3b8' }}>Try searching by invoice number, customer phone or name</span>
+                </div>
+              ) : (
+                recentInvoicesList.map((inv) => {
+                  const invNo = inv.invoiceNumber || inv.orderId || `INV-${inv._id?.slice(-6)}`;
+                  const invDate = new Date(inv.createdAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+                  const custName = inv.customer?.name || inv.customerName || 'Walk-in Customer';
+                  const custPhone = inv.customer?.phone || inv.customerPhone || '';
+                  const total = inv.totalAmount || inv.total || 0;
+                  const payMethod = (inv.paymentMethod || 'cash').toUpperCase().replace('_', ' ');
+                  const itemsCount = inv.items?.length || 0;
+
+                  return (
+                    <div
+                      key={inv._id}
+                      style={{
+                        background: '#ffffff',
+                        border: '1.5px solid #e2e8f0',
+                        borderRadius: '16px',
+                        padding: '14px 16px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '10px',
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      {/* Top Row: Invoice #, Date, Payment Badge */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ background: '#3730a3', color: '#ffffff', fontSize: '12px', fontWeight: '800', padding: '4px 10px', borderRadius: '8px' }}>
+                            {invNo}
+                          </span>
+                          <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '600' }}>
+                            🕒 {invDate}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ background: '#f1f5f9', color: '#334155', fontSize: '11px', fontWeight: '700', padding: '3px 8px', borderRadius: '6px', border: '1px solid #cbd5e1' }}>
+                            💳 {payMethod}
+                          </span>
+                          {inv.isCredit && (
+                            <span style={{ background: '#fef3c7', color: '#92400e', fontSize: '11px', fontWeight: '800', padding: '3px 8px', borderRadius: '6px' }}>
+                              CREDIT
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Middle Row: Customer Info & Items preview */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', background: '#f8fafc', padding: '10px 12px', borderRadius: '12px', flexWrap: 'wrap', gap: '10px' }}>
+                        <div>
+                          <div style={{ fontSize: '13px', fontWeight: '800', color: '#0f172a' }}>
+                            👤 {custName} {custPhone && <span style={{ color: '#475569', fontWeight: '600' }}>({custPhone})</span>}
+                          </div>
+                          <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
+                            📦 {itemsCount} Item(s): {inv.items?.map(it => `${it.name || it.productName || 'Item'}${it.imei ? ` (${it.imei})` : ''} x${it.qty || it.quantity || 1}`).join(', ')}
+                          </div>
+                        </div>
+
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontSize: '10px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase' }}>Total Amount</div>
+                          <div style={{ fontSize: '16px', fontWeight: '900', color: '#059669' }}>Rs. {Number(total).toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
+                        </div>
+                      </div>
+
+                      {/* Bottom Row: Actions */}
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                        <button
+                          onClick={() => {
+                            setShowInvoiceSearchModal(false);
+                            setShowReturnModal(true);
+                          }}
+                          style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', padding: '6px 12px', borderRadius: '10px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}
+                        >
+                          <RefreshCw size={14} /> Return
+                        </button>
+                        <button
+                          onClick={() => {
+                            setLastOrder(inv);
+                            setShowInvoice(true);
+                          }}
+                          style={{ background: '#3730a3', color: '#ffffff', border: 'none', padding: '6px 14px', borderRadius: '10px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}
+                        >
+                          <FileText size={14} /> View Details & Print
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
         </div>

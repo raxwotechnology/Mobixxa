@@ -893,16 +893,42 @@ const getPosOrders = async (req, res, next) => {
       endOfDay.setHours(23, 59, 59, 999);
     }
 
-    const orderFilter = {
-      isPosOrder: true,
-      createdAt: { $gte: startOfDay, $lte: endOfDay },
-    };
+    const orderFilter = { isPosOrder: true };
+
+    if (req.query.date) {
+      orderFilter.createdAt = { $gte: startOfDay, $lte: endOfDay };
+    } else if (req.query.all !== 'true' && !req.query.search) {
+      orderFilter.createdAt = { $gte: startOfDay, $lte: endOfDay };
+    }
+
+    if (req.query.search && req.query.search.trim()) {
+      const q = req.query.search.trim();
+      const searchRegex = new RegExp(q, 'i');
+      orderFilter.$or = [
+        { invoiceNumber: searchRegex },
+        { orderId: searchRegex },
+        { 'customer.name': searchRegex },
+        { 'customer.phone': searchRegex },
+        { 'items.imei': searchRegex },
+        { 'items.serialNumber': searchRegex },
+      ];
+    }
 
     if (req.user.role === 'cashier') {
-      orderFilter.$or = [
+      const cashierStore = req.user.assignedStore || req.user.assignedStoreId || req.user.storeId;
+      const roleFilter = [
         { cashierId: req.user._id },
-        { storeId: req.user.assignedStore || req.user.assignedStoreId || req.user.storeId }
+        cashierStore ? { storeId: cashierStore } : null
       ].filter(Boolean);
+      if (orderFilter.$or) {
+        orderFilter.$and = [
+          { $or: orderFilter.$or },
+          { $or: roleFilter }
+        ];
+        delete orderFilter.$or;
+      } else {
+        orderFilter.$or = roleFilter;
+      }
     } else if (req.user.role === 'manager') {
       const storeId = await resolveStoreId(req.user);
       if (storeId) orderFilter.storeId = storeId;
