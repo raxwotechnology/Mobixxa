@@ -41,10 +41,11 @@ import {
   ExternalLink,
   ChevronDown,
   Eye,
+  EyeOff,
   Download,
 } from 'lucide-react';
 
-import { getPosProducts, getProductByBarcode, posCheckout, getPosOrders, applyVoucher, getSettings, getActivePosSession, startPosSession, endPosSession, getPosPayHereHash, redeemPoints, getMyLoyaltyPoints, getCreditOrders, getCustomerCreditSummary, settleCreditOrder, getCategories, createQuotation, createProduct, getAccounts, loginUser, getCashiers, posLogin, getPosOrderByInvoice, createCustomerReturn, getHPRecords, recordHPPayment, createExpense, getExpenses } from '../../services/api';
+import { getPosProducts, getProductByBarcode, posCheckout, getPosOrders, applyVoucher, getSettings, getActivePosSession, startPosSession, endPosSession, getPosPayHereHash, redeemPoints, getMyLoyaltyPoints, getCreditOrders, getCustomerCreditSummary, settleCreditOrder, getCategories, createQuotation, createProduct, getAccounts, loginUser, getCashiers, posLogin, getPosOrderByInvoice, createCustomerReturn, getHPRecords, recordHPPayment, createExpense, getExpenses, verifyPassword } from '../../services/api';
 
 
 
@@ -190,6 +191,13 @@ const POSScreen = () => {
   const [loadingBillsList, setLoadingBillsList] = useState(false);
   const [selectedVoucherForPreview, setSelectedVoucherForPreview] = useState(null);
   const [showLedgerReportPreview, setShowLedgerReportPreview] = useState(false);
+
+  // Return Security Authorization Lock States
+  const [showReturnAuthModal, setShowReturnAuthModal] = useState(false);
+  const [returnAuthPassword, setReturnAuthPassword] = useState('');
+  const [showReturnAuthPassword, setShowReturnAuthPassword] = useState(false);
+  const [verifyingReturnPassword, setVerifyingReturnPassword] = useState(false);
+  const [pendingReturnInvoice, setPendingReturnInvoice] = useState(null);
 
   const [showToolsDropdown, setShowToolsDropdown] = useState(false);
   const toolsDropdownRef = useRef(null);
@@ -1380,6 +1388,40 @@ const POSScreen = () => {
       </html>
     `;
     triggerNativePrint(html);
+  };
+
+  // Handle Return Authorization Prompt
+  const handleInitiateReturnWithAuth = (inv = null) => {
+    setPendingReturnInvoice(inv || null);
+    setReturnAuthPassword('');
+    setShowReturnAuthPassword(false);
+    setShowReturnAuthModal(true);
+  };
+
+  const handleVerifyReturnPassword = async (e) => {
+    if (e) e.preventDefault();
+    if (!returnAuthPassword || !returnAuthPassword.trim()) {
+      toast.error('Please enter your cashier password');
+      return;
+    }
+    try {
+      setVerifyingReturnPassword(true);
+      await verifyPassword(returnAuthPassword.trim());
+      
+      // Authorization successful!
+      setShowReturnAuthModal(false);
+      setReturnAuthPassword('');
+      toast.success('Return authorized successfully! 🔓');
+
+      // Close invoice history modal if open and open Return modal
+      setShowInvoiceSearchModal(false);
+      setShowReturnModal(true);
+    } catch (err) {
+      console.error('Return password verification failed:', err);
+      toast.error(err.response?.data?.message || 'Incorrect login password! Access denied.');
+    } finally {
+      setVerifyingReturnPassword(false);
+    }
   };
 
   const handlePrintShiftSlip = () => {
@@ -2907,7 +2949,7 @@ const POSScreen = () => {
             <Clock size={15} />
             <span className="pos-topbar-btn-text">Credit</span>
           </button>
-          <button className="pos-topbar-btn" onClick={() => setShowReturnModal(true)} title="Return / Exchange Item" style={{ background: '#fef2f2', color: '#991b1b', borderColor: '#fee2e2' }}>
+          <button className="pos-topbar-btn" onClick={() => handleInitiateReturnWithAuth()} title="Return / Exchange Item" style={{ background: '#fef2f2', color: '#991b1b', borderColor: '#fee2e2' }}>
             <RefreshCw size={15} />
             <span className="pos-topbar-btn-text">Return</span>
           </button>
@@ -7089,6 +7131,82 @@ const POSScreen = () => {
         </div>
       )}
 
+      {/* Return Authorization Password Prompt Modal */}
+      {showReturnAuthModal && (
+        <div className="pos-modal-overlay" style={{ zIndex: 999999 }} onClick={() => setShowReturnAuthModal(false)}>
+          <div className="pos-modal-card" onClick={e => e.stopPropagation()} style={{ maxWidth: '420px', width: '90%', padding: '24px', background: '#ffffff', borderRadius: '24px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)', border: '1px solid #cbd5e1' }}>
+            <div style={{ textAlign: 'center', marginBottom: '18px' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '18px', background: '#fef2f2', border: '1px solid #fecaca', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px auto', fontSize: '26px', color: '#dc2626' }}>
+                🔐
+              </div>
+              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '900', color: '#0f172a' }}>Return Authorization Lock</h3>
+              <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#64748b' }}>
+                Please enter your POS login password to authorize item return & refund.
+              </p>
+            </div>
+
+            <form onSubmit={handleVerifyReturnPassword}>
+              <div style={{ marginBottom: '18px' }}>
+                <label style={{ fontSize: '12px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '6px' }}>
+                  Cashier Password *
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type={showReturnAuthPassword ? 'text' : 'password'}
+                    required
+                    autoFocus
+                    placeholder="Enter your login password"
+                    value={returnAuthPassword}
+                    onChange={(e) => setReturnAuthPassword(e.target.value)}
+                    style={{ width: '100%', padding: '12px 40px 12px 14px', borderRadius: '12px', border: '1.5px solid #cbd5e1', fontSize: '14px', fontWeight: '600', color: '#0f172a', background: '#f8fafc' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowReturnAuthPassword(!showReturnAuthPassword)}
+                    style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', border: 'none', background: 'none', cursor: 'pointer', color: '#64748b', display: 'flex', alignItems: 'center' }}
+                  >
+                    {showReturnAuthPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowReturnAuthModal(false)}
+                  style={{ flex: 1, padding: '11px', borderRadius: '12px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#475569', fontWeight: '700', fontSize: '13px', cursor: 'pointer' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={verifyingReturnPassword || !returnAuthPassword}
+                  style={{
+                    flex: 1.4,
+                    padding: '11px',
+                    borderRadius: '12px',
+                    border: 'none',
+                    background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                    color: '#ffffff',
+                    fontWeight: '800',
+                    fontSize: '13px',
+                    cursor: (verifyingReturnPassword || !returnAuthPassword) ? 'not-allowed' : 'pointer',
+                    opacity: (verifyingReturnPassword || !returnAuthPassword) ? 0.6 : 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
+                  }}
+                >
+                  {verifyingReturnPassword ? 'Verifying...' : '🔓 Unlock Return'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Keyboard Shortcuts Help Modal (F1) */}
       {showShortcutsHelp && (
         <div className="pos-modal-overlay" onClick={() => setShowShortcutsHelp(false)}>
@@ -7317,10 +7435,7 @@ const POSScreen = () => {
                       {/* Bottom Row: Actions */}
                       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                         <button
-                          onClick={() => {
-                            setShowInvoiceSearchModal(false);
-                            setShowReturnModal(true);
-                          }}
+                          onClick={() => handleInitiateReturnWithAuth(inv)}
                           style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', padding: '6px 12px', borderRadius: '10px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}
                         >
                           <RefreshCw size={14} /> Return
