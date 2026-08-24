@@ -125,16 +125,22 @@ const AdminSettings = () => {
     if (!file) return;
     // Reset file input so same file can be re-uploaded
     e.target.value = '';
+
+    // Instant local Data URL preview so user sees uploaded image immediately
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const previewUrl = event.target.result;
+      setSettings(prev => ({ ...prev, logoUrl: previewUrl, logo: previewUrl }));
+    };
+    reader.readAsDataURL(file);
+
     const formData = new FormData();
     formData.append('logo', file);
     try {
       const { data } = await uploadLogo(formData);
-      // Backend returns relative path like /uploads/logo-xxx.png
       const logoPath = data.logoUrl || data.logo;
-      const merged = { ...settings, logoUrl: logoPath, logo: logoPath };
-      setSettings(merged);
-      // Force-update the global store so DashboardLayout & Navbar reflect instantly
-      setSettingsLocal(merged);
+      setSettings(prev => ({ ...prev, logoUrl: logoPath, logo: logoPath }));
+      setSettingsLocal({ ...settings, logoUrl: logoPath, logo: logoPath });
       toast.success('Logo uploaded successfully! ✅');
     } catch (err) {
       toast.error('Failed to upload logo: ' + (err.response?.data?.message || err.message));
@@ -145,14 +151,21 @@ const AdminSettings = () => {
     const file = e.target.files[0];
     if (!file) return;
     e.target.value = '';
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const previewUrl = event.target.result;
+      setSettings(prev => ({ ...prev, sealUrl: previewUrl, seal: previewUrl }));
+    };
+    reader.readAsDataURL(file);
+
     const formData = new FormData();
     formData.append('image', file);
     try {
       const { data } = await uploadImage(formData);
       const sealPath = data.url;
-      const merged = { ...settings, sealUrl: sealPath, seal: sealPath };
-      setSettings(merged);
-      setSettingsLocal(merged);
+      setSettings(prev => ({ ...prev, sealUrl: sealPath, seal: sealPath }));
+      setSettingsLocal({ ...settings, sealUrl: sealPath, seal: sealPath });
       toast.success('Seal uploaded successfully! ✅');
     } catch (err) {
       toast.error('Failed to upload seal: ' + (err.response?.data?.message || err.message));
@@ -210,11 +223,15 @@ const AdminSettings = () => {
               <div className="absolute top-0 right-0 w-32 h-32 bg-brand-indigo/5 rounded-bl-[100px] pointer-events-none -z-10"></div>
               <h2 className="text-lg font-black text-slate-900 mb-6 flex items-center gap-2">Shop Branding</h2>
               <div className="flex items-center gap-6 mb-8 bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                <div className="w-24 h-24 rounded-2xl border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden bg-white shadow-sm">
+                <div className="w-24 h-24 rounded-2xl border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden bg-white shadow-sm p-1">
                   <img
                     src={getImageUrl(settings.logoUrl || settings.logo) || '/logo.png'}
                     alt="Logo"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = '/logo.png';
+                    }}
                   />
                 </div>
                 <div>

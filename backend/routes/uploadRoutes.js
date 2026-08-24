@@ -51,9 +51,17 @@ router.post('/image', protect, uploadImage.single('image'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: 'No file uploaded' });
   }
+  let fileUrl;
+  if (req.file.buffer) {
+    fileUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+  } else if (req.file.filename) {
+    fileUrl = `/uploads/${req.file.filename}`;
+  } else {
+    fileUrl = `/uploads/${Date.now()}-${req.file.originalname}`;
+  }
   res.json({
     message: 'Image uploaded successfully',
-    url: `/uploads/${req.file.filename}`
+    url: fileUrl
   });
 });
 

@@ -95,8 +95,17 @@ const uploadLogo = async (req, res) => {
       settings = new Settings({});
     }
 
-    // Store as relative path — frontend will prefix with its own base URL
-    const logoPath = `/uploads/${req.file.filename}`;
+    let logoPath;
+    if (req.file.buffer) {
+      // Memory storage (serverless/Vercel)
+      logoPath = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+    } else if (req.file.filename) {
+      // Disk storage
+      logoPath = `/uploads/${req.file.filename}`;
+    } else {
+      logoPath = `/uploads/${Date.now()}-${req.file.originalname}`;
+    }
+
     settings.logo = logoPath;
     settings.logoUrl = logoPath;
     await settings.save();
