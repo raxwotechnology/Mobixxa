@@ -619,8 +619,68 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
           )}
         </div>
 
+        {/* Send Receipt Panel — hidden when printing */}
+        <div className="no-print" style={{ padding: '15px 20px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <h4 style={{ margin: 0, fontSize: '11px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            Send Invoice / Receipt
+          </h4>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px', alignItems: 'center' }}>
+            <input
+              type="text"
+              placeholder="WhatsApp Number (e.g., 0771234567)"
+              value={smsRecipient}
+              onChange={(e) => setSmsRecipient(e.target.value)}
+              style={{ fontSize: '12px', padding: '8px 12px', border: '1px solid #10b981', borderRadius: '8px', background: '#fff', color: '#1e293b' }}
+            />
+            <button
+              type="button"
+              onClick={() => sendWhatsAppInvoice({ ...order, customerPhone: smsRecipient || order.customerPhone }, brandName, brandPhone)}
+              style={{ padding: '8px 14px', fontSize: '12px', fontWeight: 'bold', background: '#10b981', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+            >
+              💬 WhatsApp Invoice
+            </button>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px', alignItems: 'center' }}>
+            <input
+              type="text"
+              placeholder="SMS Phone Number (+947XXXXXXXX)"
+              value={smsRecipient}
+              onChange={(e) => setSmsRecipient(e.target.value)}
+              style={{ fontSize: '12px', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', background: '#fff', color: '#1e293b' }}
+            />
+            <button
+              type="button"
+              onClick={handleSendSms}
+              disabled={sendingSms}
+              style={{ padding: '8px 14px', fontSize: '12px', fontWeight: 'bold', background: '#f59e0b', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', transition: 'opacity 0.2s' }}
+            >
+              {sendingSms ? 'Sending...' : 'Send SMS'}
+            </button>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px', alignItems: 'center' }}>
+            <input
+              type="email"
+              placeholder="Email Address"
+              value={emailRecipient}
+              onChange={(e) => setEmailRecipient(e.target.value)}
+              style={{ fontSize: '12px', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', background: '#fff', color: '#1e293b' }}
+            />
+            <button
+              type="button"
+              onClick={handleSendEmail}
+              disabled={sendingEmail}
+              style={{ padding: '8px 14px', fontSize: '12px', fontWeight: 'bold', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', transition: 'opacity 0.2s' }}
+            >
+              {sendingEmail ? 'Sending...' : 'Send Email'}
+            </button>
+          </div>
+        </div>
+
         {/* Action buttons — hidden when printing */}
-        <div className="pos-invoice-actions no-print" style={{ borderTop: '1px solid #e2e8f0', padding: '16px 20px', display: 'flex', gap: '10px', justifyContent: 'flex-end', background: '#f8fafc' }}>
+        <div className="pos-invoice-actions no-print" style={{ borderTop: '1px solid #e2e8f0', padding: '16px 20px', display: 'flex', gap: '10px', justifyContent: 'flex-end', background: '#ffffff' }}>
           <button
             type="button"
             className="pos-btn-outline"
