@@ -1191,19 +1191,23 @@ const POSScreen = () => {
 
   const triggerNativePrint = (htmlContent) => {
     try {
-      const pWin = window.open('', '_blank', 'width=800,height=600');
-      if (pWin) {
+      const pWin = window.open('', '_blank', 'width=850,height=700');
+      if (pWin && !pWin.closed) {
         pWin.document.open();
         pWin.document.write(htmlContent);
         pWin.document.close();
         pWin.focus();
-        setTimeout(() => { pWin.print(); }, 250);
+        setTimeout(() => { 
+          pWin.print(); 
+        }, 300);
         return;
       }
     } catch { /* fallback */ }
 
-    let iframe = document.getElementById('pos-print-iframe');
-    if (!iframe) {
+    try {
+      let iframe = document.getElementById('pos-print-iframe');
+      if (iframe) iframe.remove();
+
       iframe = document.createElement('iframe');
       iframe.id = 'pos-print-iframe';
       iframe.style.position = 'fixed';
@@ -1214,15 +1218,19 @@ const POSScreen = () => {
       iframe.style.border = '0';
       iframe.style.visibility = 'hidden';
       document.body.appendChild(iframe);
+
+      const doc = iframe.contentWindow.document;
+      doc.open();
+      doc.write(htmlContent);
+      doc.close();
+      setTimeout(() => {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+      }, 300);
+    } catch (e) {
+      console.error('Print trigger error:', e);
+      toast.error('Could not trigger print dialog');
     }
-    const doc = iframe.contentWindow.document;
-    doc.open();
-    doc.write(htmlContent);
-    doc.close();
-    setTimeout(() => {
-      iframe.contentWindow.focus();
-      iframe.contentWindow.print();
-    }, 250);
   };
 
   const handlePrintBillVoucher = (billItem) => {
@@ -1371,7 +1379,7 @@ const POSScreen = () => {
         </body>
       </html>
     `;
-    printContentViaHiddenIframe(html);
+    triggerNativePrint(html);
   };
 
   const handlePrintShiftSlip = () => {
