@@ -1226,9 +1226,9 @@ const POSScreen = () => {
   };
 
   const handlePrintBillVoucher = (billItem) => {
-    const storeName = currentStore?.name || user?.assignedStoreName || 'SR MOBILE';
-    const storeAddress = currentStore?.address || 'Main Street, Store Branch';
-    const storePhone = currentStore?.phone || '+94 77 123 4567';
+    const storeName = user?.assignedStoreName || user?.storeName || posSession?.storeName || 'SR MOBILE';
+    const storeAddress = user?.assignedStoreAddress || 'Main Street, Store Branch';
+    const storePhone = user?.assignedStorePhone || '+94 77 123 4567';
     const dateStr = new Date(billItem.date || billItem.createdAt || Date.now()).toLocaleString();
     const cashierName = billItem.createdBy?.name || user?.name || 'Cashier';
     const isIncome = billItem.type === 'Income';
@@ -1280,7 +1280,7 @@ const POSScreen = () => {
   };
 
   const handleExportBillsPDF = () => {
-    const storeName = currentStore?.name || user?.assignedStoreName || 'SR MOBILE';
+    const storeName = user?.assignedStoreName || user?.storeName || posSession?.storeName || 'SR MOBILE';
     const totalIncome = billsList.filter(b => b.type === 'Income').reduce((s, b) => s + Number(b.amount || 0), 0);
     const totalExpense = billsList.filter(b => b.type !== 'Income').reduce((s, b) => s + Number(b.amount || 0), 0);
     const netBalance = totalIncome - totalExpense;
@@ -6901,10 +6901,10 @@ const POSScreen = () => {
             <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '16px', marginBottom: '16px' }}>
               <div style={{ textAlign: 'center', marginBottom: '12px', paddingBottom: '10px', borderBottom: '1px dashed #cbd5e1' }}>
                 <div style={{ fontSize: '16px', fontWeight: '900', color: '#0f172a', textTransform: 'uppercase' }}>
-                  {currentStore?.name || user?.assignedStoreName || 'SR MOBILE'}
+                  {user?.assignedStoreName || user?.storeName || posSession?.storeName || 'SR MOBILE'}
                 </div>
                 <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
-                  {currentStore?.address || 'Main Street, Branch Store'}
+                  {user?.assignedStoreAddress || 'Main Street, Branch Store'}
                 </div>
                 <div style={{ marginTop: '8px', display: 'inline-block', padding: '3px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: '800', background: selectedVoucherForPreview.type === 'Income' ? '#dcfce7' : '#fee2e2', color: selectedVoucherForPreview.type === 'Income' ? '#166534' : '#991b1b' }}>
                   {selectedVoucherForPreview.type === 'Income' ? '🟢 OFFICIAL MONEY IN VOUCHER' : '🔴 OFFICIAL MONEY OUT VOUCHER'}
@@ -6989,7 +6989,7 @@ const POSScreen = () => {
             <div style={{ background: '#f8fafc', border: '1.5px solid #cbd5e1', borderRadius: '16px', padding: '20px', marginBottom: '18px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #2563eb', paddingBottom: '10px', marginBottom: '14px' }}>
                 <div>
-                  <div style={{ fontSize: '18px', fontWeight: '900', color: '#1e3a8a' }}>{currentStore?.name || user?.assignedStoreName || 'SR MOBILE'}</div>
+                  <div style={{ fontSize: '18px', fontWeight: '900', color: '#1e3a8a' }}>{user?.assignedStoreName || user?.storeName || posSession?.storeName || 'SR MOBILE'}</div>
                   <div style={{ fontSize: '12px', fontWeight: '800', color: '#2563eb' }}>COUNTER CASH LEDGER REPORT (INCOME & EXPENSE)</div>
                 </div>
                 <div style={{ textAlign: 'right', fontSize: '11px', color: '#475569' }}>
