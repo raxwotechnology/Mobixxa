@@ -41,6 +41,7 @@ import {
   ExternalLink,
   ChevronDown,
   Eye,
+  Download,
 } from 'lucide-react';
 
 import { getPosProducts, getProductByBarcode, posCheckout, getPosOrders, applyVoucher, getSettings, getActivePosSession, startPosSession, endPosSession, getPosPayHereHash, redeemPoints, getMyLoyaltyPoints, getCreditOrders, getCustomerCreditSummary, settleCreditOrder, getCategories, createQuotation, createProduct, getAccounts, loginUser, getCashiers, posLogin, getPosOrderByInvoice, createCustomerReturn, getHPRecords, recordHPPayment, createExpense } from '../../services/api';
@@ -6495,9 +6496,9 @@ const POSScreen = () => {
                             setShowInvoice(true);
                           }}
                           style={{ background: '#3730a3', color: '#ffffff', border: 'none', padding: '6px 14px', borderRadius: '10px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}
-                          title="View Full A4 Invoice & PDF Print"
+                          title="View & Save A4 PDF Invoice"
                         >
-                          <FileText size={14} /> View Invoice (A4 / PDF)
+                          <Download size={14} /> Save PDF
                         </button>
                       </div>
                     </div>

@@ -731,15 +731,6 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
             Print Layout
           </button>
 
-          <button
-            type="button"
-            onClick={handlePrint}
-            style={{ padding: '10px 20px', fontSize: '13px', fontWeight: '800', background: '#2563eb', color: '#ffffff', border: 'none', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)' }}
-          >
-            <Download size={18} />
-            Save PDF / Download
-          </button>
-
           {onNewSale && (
             <button className="pos-btn-green pos-btn-lg" onClick={handleNewSale} style={{ padding: '10px 18px', fontSize: '13px', fontWeight: 'bold' }}>
               <RotateCcw size={18} />
