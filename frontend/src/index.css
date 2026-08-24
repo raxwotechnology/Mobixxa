@@ -2644,7 +2644,7 @@ input[type=number] {
    Prevents black screen / overlay and eliminates popup tabs
    ======================================================= */
 @media print {
-  body>*:not(#voucher-print-area) {
+  body.printing-voucher > *:not(#voucher-print-area) {
     display: none !important;
   }
 
