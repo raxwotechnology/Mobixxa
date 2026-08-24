@@ -150,10 +150,11 @@ const POSScreen = () => {
   const [loadingHpSearch, setLoadingHpSearch] = useState(false);
   const [hpPayForm, setHpPayForm] = useState({
     amount: '',
-    paymentMethod: 'cash',
+    paymentMethod: 'Cash',
     accountId: '',
     referenceNo: '',
-    notes: ''
+    notes: '',
+    givenCash: ''
   });
   const [submittingHpPay, setSubmittingHpPay] = useState(false);
   const [hpReceiptData, setHpReceiptData] = useState(null);
@@ -867,6 +868,7 @@ const POSScreen = () => {
     setHpPayForm(prev => ({
       ...prev,
       amount: defaultAmt,
+      givenCash: '',
       paymentMethod: 'Cash',
       accountId: accounts.length > 0 ? accounts[0]._id : ''
     }));
@@ -883,15 +885,17 @@ const POSScreen = () => {
       return;
     }
     const targetAccountId = hpPayForm.accountId || (accounts && accounts.length > 0 ? accounts[0]._id : undefined);
+    const givenAmt = Number(hpPayForm.givenCash || 0);
+    const changeAmt = givenAmt > amt ? givenAmt - amt : 0;
 
     try {
       setSubmittingHpPay(true);
       const { data } = await recordHPPayment(selectedHpRecord._id, {
         amount: amt,
-        paymentMethod: hpPayForm.paymentMethod || 'cash',
+        paymentMethod: hpPayForm.paymentMethod || 'Cash',
         accountId: targetAccountId,
-        referenceNo: hpPayForm.referenceNo,
-        notes: hpPayForm.notes
+        referenceNo: hpPayForm.referenceNo || '',
+        notes: hpPayForm.notes || ''
       });
 
       toast.success('Installment payment recorded successfully! 💳');
@@ -901,11 +905,13 @@ const POSScreen = () => {
       const receiptObj = {
         payment: {
           amount: amt,
-          paymentMethod: hpPayForm.paymentMethod || 'cash',
+          givenCash: givenAmt,
+          changeAmount: changeAmt,
+          paymentMethod: hpPayForm.paymentMethod || 'Cash',
           date: new Date().toLocaleDateString('en-GB'),
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          referenceNo: hpPayForm.referenceNo,
-          notes: hpPayForm.notes,
+          referenceNo: hpPayForm.referenceNo || '',
+          notes: hpPayForm.notes || '',
           receivedBy: user?.name || 'Cashier'
         },
         hpRecord: data || selectedHpRecord,
@@ -1306,7 +1312,8 @@ const POSScreen = () => {
           <div class="total-box">
             <div style="font-size: 10px; font-weight: bold;">THIS PAYMENT (PART / INSTALLMENT)</div>
             <div style="font-size: 17px; font-weight: bold; margin: 2px 0;">Rs. ${thisPaymentVal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</div>
-            <div style="font-size: 10px; text-transform: uppercase;">Method: ${payment.paymentMethod} ${payment.referenceNo ? `| Ref: ${payment.referenceNo}` : ''}</div>
+            <div style="font-size: 10px; text-transform: uppercase;">Method: ${payment.paymentMethod}</div>
+            ${payment.givenCash ? `<div style="font-size: 10px; margin-top: 3px;">Tendered: Rs. ${Number(payment.givenCash).toLocaleString('en-LK', { minimumFractionDigits: 2 })} | Change: Rs. ${Number(payment.changeAmount || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</div>` : ''}
           </div>
 
           <div class="row"><span class="bold">Total Paid To Date:</span><span class="bold">Rs. ${cumulativePaid.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
@@ -5615,12 +5622,41 @@ const POSScreen = () => {
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '12px', fontSize: '12px', color: '#475569', fontWeight: '500' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', fontSize: '12px', color: '#475569', fontWeight: '500' }}>
                     <span>📞 Customer Phone: <strong style={{ color: '#0f172a' }}>{selectedHpRecord.customer?.phone || 'N/A'}</strong></span>
-                    <span>Monthly Installment: <strong style={{ color: '#2563eb' }}>Rs. {Number(selectedHpRecord.installmentAmount || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</strong></span>
+                    <span>🪪 NIC: <strong style={{ color: '#0f172a' }}>{selectedHpRecord.customer?.nic || 'N/A'}</strong></span>
                   </div>
 
-                  {/* Previous Payments List */}
+                  {/* Monthly Installment Fixed Read-Only Banner */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', background: '#eff6ff', border: '1.5px solid #bfdbfe', padding: '10px 14px', borderRadius: '12px' }}>
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#1e40af', fontWeight: '800', textTransform: 'uppercase' }}>📌 Fixed Monthly Installment / වාරික මුදල</div>
+                      <div style={{ fontSize: '16px', fontWeight: '900', color: '#1d4ed8', marginTop: '2px' }}>
+                        Rs. {Number(selectedHpRecord.installmentAmount || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })} / month
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setHpPayForm(prev => ({ ...prev, amount: selectedHpRecord.installmentAmount || 0 }))}
+                        style={{ padding: '6px 12px', background: '#2563eb', color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: '800', cursor: 'pointer' }}
+                      >
+                        ⚡ Fill 1-Month (Rs. {Number(selectedHpRecord.installmentAmount || 0).toLocaleString()})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const remBal = selectedHpRecord.balanceAmount ?? selectedHpRecord.remainingBalance ?? Math.max(0, (selectedHpRecord.netTotal || 0) - (selectedHpRecord.totalPaid || 0));
+                          setHpPayForm(prev => ({ ...prev, amount: remBal }));
+                        }}
+                        style={{ padding: '6px 12px', background: '#d97706', color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: '800', cursor: 'pointer' }}
+                      >
+                        ⚡ Fill Full Balance
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Previous Payments History List */}
                   {selectedHpRecord.payments && selectedHpRecord.payments.length > 0 && (
                     <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px dashed #cbd5e1' }}>
                       <div style={{ fontSize: '11px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', marginBottom: '6px' }}>
@@ -5642,31 +5678,9 @@ const POSScreen = () => {
                   )}
                 </div>
 
-                {/* Form fields */}
+                {/* Form Inputs Section */}
+                {/* Row 1: Payment Method & Drawer */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
-                  <div>
-                    <label style={{ fontSize: '12px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '6px' }}>
-                      Amount to Pay (Rs.) *
-                    </label>
-                    <input
-                      type="number"
-                      onWheel={(e) => e.target.blur()}
-                      value={hpPayForm.amount}
-                      onChange={(e) => setHpPayForm({ ...hpPayForm, amount: e.target.value })}
-                      placeholder="Enter amount (e.g. 50000)"
-                      style={{
-                        width: '100%',
-                        padding: '12px 14px',
-                        fontSize: '16px',
-                        fontWeight: '800',
-                        color: '#0f172a',
-                        background: '#ffffff',
-                        border: '2px solid #cbd5e1',
-                        borderRadius: '12px',
-                        outline: 'none'
-                      }}
-                    />
-                  </div>
                   <div>
                     <label style={{ fontSize: '12px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '6px' }}>
                       Payment Method *
@@ -5691,9 +5705,6 @@ const POSScreen = () => {
                       <option value="Bank Transfer">🏛️ Bank Transfer</option>
                     </select>
                   </div>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '20px' }}>
                   <div>
                     <label style={{ fontSize: '12px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '6px' }}>
                       Receiving Account / Drawer
@@ -5721,28 +5732,80 @@ const POSScreen = () => {
                       ))}
                     </select>
                   </div>
+                </div>
+
+                {/* Row 2: Customer Given Cash & Change Amount Calculator */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '16px' }}>
                   <div>
-                    <label style={{ fontSize: '12px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '6px' }}>
-                      Ref No / Notes (Optional)
+                    <label style={{ fontSize: '12px', fontWeight: '700', color: '#166534', display: 'block', marginBottom: '6px' }}>
+                      💵 Customer Given Cash / ලබාදුන් මුදල (Rs.)
                     </label>
                     <input
-                      type="text"
-                      value={hpPayForm.referenceNo}
-                      onChange={(e) => setHpPayForm({ ...hpPayForm, referenceNo: e.target.value })}
-                      placeholder="e.g. Card slip # / Txn ID"
+                      type="number"
+                      onWheel={(e) => e.target.blur()}
+                      value={hpPayForm.givenCash}
+                      onChange={(e) => setHpPayForm({ ...hpPayForm, givenCash: e.target.value })}
+                      placeholder="e.g. 50000"
                       style={{
                         width: '100%',
                         padding: '12px 14px',
-                        fontSize: '13px',
-                        fontWeight: '500',
-                        color: '#0f172a',
-                        background: '#ffffff',
-                        border: '2px solid #cbd5e1',
+                        fontSize: '16px',
+                        fontWeight: '800',
+                        color: '#166534',
+                        background: '#f0fdf4',
+                        border: '2px solid #86efac',
                         borderRadius: '12px',
                         outline: 'none'
                       }}
                     />
                   </div>
+
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: '700', color: '#1e40af', display: 'block', marginBottom: '6px' }}>
+                      🔄 Change to Return / ඉතිරි මුදල
+                    </label>
+                    <div style={{
+                      width: '100%',
+                      padding: '10px 14px',
+                      fontSize: '18px',
+                      fontWeight: '900',
+                      color: (Number(hpPayForm.givenCash || 0) >= Number(hpPayForm.amount || 0)) ? '#1d4ed8' : '#64748b',
+                      background: (Number(hpPayForm.givenCash || 0) >= Number(hpPayForm.amount || 0)) ? '#eff6ff' : '#f8fafc',
+                      border: '2px solid #bfdbfe',
+                      borderRadius: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      minHeight: '48px'
+                    }}>
+                      Rs. {Number(Math.max(0, Number(hpPayForm.givenCash || 0) - Number(hpPayForm.amount || 0))).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Row 3 (Bottom Position): Amount to Pay */}
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{ fontSize: '13px', fontWeight: '800', color: '#0f172a', display: 'block', marginBottom: '6px' }}>
+                    💰 Amount to Pay / ගෙවන වාරික මුදල (Rs.) *
+                  </label>
+                  <input
+                    type="number"
+                    onWheel={(e) => e.target.blur()}
+                    value={hpPayForm.amount}
+                    onChange={(e) => setHpPayForm({ ...hpPayForm, amount: e.target.value })}
+                    placeholder="Enter payment amount"
+                    style={{
+                      width: '100%',
+                      padding: '14px 16px',
+                      fontSize: '18px',
+                      fontWeight: '900',
+                      color: '#2563eb',
+                      background: '#ffffff',
+                      border: '2.5px solid #2563eb',
+                      borderRadius: '14px',
+                      outline: 'none',
+                      boxShadow: '0 2px 8px rgba(37, 99, 235, 0.15)'
+                    }}
+                  />
                 </div>
 
                 {/* Submit button */}
