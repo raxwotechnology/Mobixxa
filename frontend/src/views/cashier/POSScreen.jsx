@@ -6717,7 +6717,7 @@ const POSScreen = () => {
 
                 <div>
                   <label style={{ fontSize: '11px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '4px' }}>
-                    Description (මොනවටද) *
+                    Description *
                   </label>
                   <input
                     type="text"
@@ -6733,7 +6733,7 @@ const POSScreen = () => {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                 <div>
                   <label style={{ fontSize: '11px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '4px' }}>
-                    {billsForm.type === 'Income' ? 'Received From (කාගෙන්ද)' : 'Paid To (කාටද)'}
+                    {billsForm.type === 'Income' ? 'Received From / Client' : 'Paid To / Party'}
                   </label>
                   <input
                     type="text"
@@ -6837,8 +6837,8 @@ const POSScreen = () => {
                       <th style={{ padding: '8px 10px', textAlign: 'left' }}>Date</th>
                       <th style={{ padding: '8px 10px', textAlign: 'left' }}>Type</th>
                       <th style={{ padding: '8px 10px', textAlign: 'left' }}>Category</th>
-                      <th style={{ padding: '8px 10px', textAlign: 'left' }}>Description (මොනවටද)</th>
-                      <th style={{ padding: '8px 10px', textAlign: 'left' }}>Party (කාගෙන්ද/කාටද)</th>
+                      <th style={{ padding: '8px 10px', textAlign: 'left' }}>Description</th>
+                      <th style={{ padding: '8px 10px', textAlign: 'left' }}>Party / Client</th>
                       <th style={{ padding: '8px 10px', textAlign: 'left' }}>Method</th>
                       <th style={{ padding: '8px 10px', textAlign: 'right' }}>Amount (Rs.)</th>
                       <th style={{ padding: '8px 10px', textAlign: 'center' }}>Voucher</th>
@@ -6929,11 +6929,11 @@ const POSScreen = () => {
                   <span style={{ fontWeight: '800', color: '#2563eb' }}>{selectedVoucherForPreview.category || 'General'}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#64748b', fontWeight: '600' }}>Description (මොනවටද):</span>
+                  <span style={{ color: '#64748b', fontWeight: '600' }}>Description:</span>
                   <span style={{ fontWeight: '800', color: '#0f172a' }}>{selectedVoucherForPreview.title || 'N/A'}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#64748b', fontWeight: '600' }}>{selectedVoucherForPreview.type === 'Income' ? 'Party (කාගෙන්ද):' : 'Party (කාටද):'}</span>
+                  <span style={{ color: '#64748b', fontWeight: '600' }}>{selectedVoucherForPreview.type === 'Income' ? 'Received From:' : 'Paid To:'}</span>
                   <span style={{ fontWeight: '700', color: '#0f172a' }}>{selectedVoucherForPreview.payee || '-'}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
