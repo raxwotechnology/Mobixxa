@@ -6619,16 +6619,18 @@ const POSScreen = () => {
       )}
 
       {/* Reload Modal */}
-      <ReloadModal 
-        isOpen={showReloadModal} 
-        onClose={() => setShowReloadModal(false)}
-        storeId={user?.assignedStore || user?.assignedStoreId || user?.storeId || posSession?.storeId}
-        accountId={pos.accountId}
-        onSyncSuccess={() => {
-          if (fetchDailyFinancials) fetchDailyFinancials();
-          if (fetchSessionData) fetchSessionData();
-        }}
-      />
+      {showReloadModal && (
+        <ReloadModal 
+          isOpen={showReloadModal} 
+          onClose={() => setShowReloadModal(false)}
+          storeId={user?.assignedStore || user?.assignedStoreId || user?.storeId || posSession?.storeId}
+          accountId={pos.accountId}
+          onSyncSuccess={() => {
+            if (typeof fetchDailyFinancials === 'function') fetchDailyFinancials();
+            if (typeof fetchSessionData === 'function') fetchSessionData();
+          }}
+        />
+      )}
 
       <CustomerHistoryModal
         isOpen={showCustomerHistory}
@@ -8166,17 +8168,6 @@ const POSScreen = () => {
             </div>
           </div>
         </div>
-      )}
-
-      {/* Reload & Scratch Card Bookkeeping Modal */}
-      {showReloadModal && (
-        <ReloadModal
-          isOpen={showReloadModal}
-          onClose={() => setShowReloadModal(false)}
-          storeId={user?.assignedStore || posSession?.storeId}
-          accountId={null}
-          onSyncSuccess={loadProducts}
-        />
       )}
     </div>
   );
