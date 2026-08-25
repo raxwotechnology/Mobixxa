@@ -837,36 +837,12 @@ const getBalanceReport = async (req, res, next) => {
       });
     } catch (e) {}
 
-    // Fetch Reloads — combine individual Reload records + Sprint 3 ReloadSheet daily totals
+    // Fetch Reloads
     const Reload = require('../models/Reload');
-    const ReloadSheet = require('../models/ReloadSheet');
     let reloadIncome = 0;
     try {
-      // 1. Individual Reload records (quick credit reloads, legacy)
       const reloads = await Reload.find({ ...storeFilter, ...dateQuery }).lean();
-      const reloadFromIndividual = reloads.reduce((sum, r) => sum + (r.amount || 0), 0);
-
-      // 2. Daily float bookkeeping sheet (Sprint 3 — authoritative for float sell-out)
-      let reloadFromSheet = 0;
-      try {
-        const sheetFilter = { ...storeFilter };
-        // Convert date query from createdAt timestamps to the sheet's string date field
-        if (dateQuery && (dateQuery.$gte || dateQuery.$lte)) {
-          const dStart = dateQuery.$gte ? new Date(dateQuery.$gte).toISOString().split('T')[0] : null;
-          const dEnd   = dateQuery.$lte ? new Date(dateQuery.$lte).toISOString().split('T')[0] : null;
-          sheetFilter.date = {};
-          if (dStart) sheetFilter.date.$gte = dStart;
-          if (dEnd)   sheetFilter.date.$lte = dEnd;
-        }
-        const sheets = await ReloadSheet.find(sheetFilter).lean();
-        reloadFromSheet = sheets.reduce((sum, s) => sum + (s.totalSoldOutRevenue || 0), 0);
-      } catch (sheetErr) {
-        // Non-fatal — fall through to individual total
-      }
-
-      // Use whichever is larger (ReloadSheet is the canonical float bookkeeping total;
-      // individual Reload records capture credit/quick reloads not in the sheet)
-      reloadIncome = Math.max(reloadFromIndividual, reloadFromSheet);
+      reloadIncome = reloads.reduce((sum, r) => sum + (r.amount || 0), 0);
     } catch (e) {}
 
     // Fetch Transactions & Expenses (Service Costs & Supplier Costs)
