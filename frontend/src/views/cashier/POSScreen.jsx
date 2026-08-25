@@ -8167,6 +8167,17 @@ const POSScreen = () => {
           </div>
         </div>
       )}
+
+      {/* Reload & Scratch Card Bookkeeping Modal */}
+      {showReloadModal && (
+        <ReloadModal
+          isOpen={showReloadModal}
+          onClose={() => setShowReloadModal(false)}
+          storeId={user?.assignedStore || posSession?.storeId}
+          accountId={null}
+          onSyncSuccess={loadProducts}
+        />
+      )}
     </div>
   );
 };
