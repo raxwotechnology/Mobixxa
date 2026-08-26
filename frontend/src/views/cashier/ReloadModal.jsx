@@ -1,54 +1,58 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { X, Smartphone, CheckCircle, Loader2, Calendar, Printer, Save, TrendingUp, CreditCard, Layers, Plus, ArrowRight, DollarSign } from 'lucide-react';
+import { 
+  X, Smartphone, CheckCircle, Loader2, Calendar, Printer, Save, 
+  TrendingUp, CreditCard, Layers, Plus, DollarSign, Sparkles, 
+  Check, ArrowUpRight, ShieldCheck, RefreshCw, AlertCircle, Edit3 
+} from 'lucide-react';
 import { createReload, getReloadStocks, saveReloadDailySheet, saveReloadSheetApi, getTodayReloadSheetApi } from '../../services/api';
 import { toast } from 'react-toastify';
 
-// ── Default Operator & Scratch Card Master Data ──────────────────────────────
+// ── Master Config for Operators & Scratch Cards ───────────────────────────────
 const OPERATORS_CONFIG = [
   // E-Reload Machines
-  { id: 'dialog_ereload',  operatorName: 'Dialog E-Reload Float',     network: 'Dialog',  color: '#e11d48', tag: 'E-Reload', cardValue: 1, commissionRate: 4 },
-  { id: 'mobitel_ereload', operatorName: 'Mobitel E-Reload Float',    network: 'Mobitel', color: '#059669', tag: 'E-Reload', cardValue: 1, commissionRate: 4 },
-  { id: 'airtel_ereload',  operatorName: 'Airtel E-Reload Float',     network: 'Airtel',  color: '#ef4444', tag: 'E-Reload', cardValue: 1, commissionRate: 4 },
-  { id: 'hutch_ereload',   operatorName: 'Hutch Ez-Reload Float',     network: 'Hutch',   color: '#f59e0b', tag: 'E-Reload', cardValue: 1, commissionRate: 4 },
-  { id: 'ezcash_wallet',   operatorName: 'Ez-Cash Float / Wallet',    network: 'Dialog',  color: '#0284c7', tag: 'Wallet',   cardValue: 1, commissionRate: 2 },
-  { id: 'mcash_wallet',    operatorName: 'M-Cash Float / Wallet',     network: 'Mobitel', color: '#8b5cf6', tag: 'Wallet',   cardValue: 1, commissionRate: 2 },
+  { id: 'dialog_ereload',  operatorName: 'Dialog E-Reload',     network: 'Dialog',  color: '#e11d48', bgLight: '#fff1f2', border: '#fecdd3', tag: 'E-Reload', cardValue: 1, commissionRate: 4 },
+  { id: 'mobitel_ereload', operatorName: 'Mobitel E-Reload',    network: 'Mobitel', color: '#059669', bgLight: '#ecfdf5', border: '#a7f3d0', tag: 'E-Reload', cardValue: 1, commissionRate: 4 },
+  { id: 'airtel_ereload',  operatorName: 'Airtel E-Reload',     network: 'Airtel',  color: '#ef4444', bgLight: '#fef2f2', border: '#fecaca', tag: 'E-Reload', cardValue: 1, commissionRate: 4 },
+  { id: 'hutch_ereload',   operatorName: 'Hutch Ez-Reload',     network: 'Hutch',   color: '#f59e0b', bgLight: '#fffbeb', border: '#fde68a', tag: 'E-Reload', cardValue: 1, commissionRate: 4 },
+  { id: 'ezcash_wallet',   operatorName: 'Ez-Cash Wallet',      network: 'Dialog',  color: '#0284c7', bgLight: '#f0f9ff', border: '#bae6fd', tag: 'Wallet',   cardValue: 1, commissionRate: 2 },
+  { id: 'mcash_wallet',    operatorName: 'M-Cash Wallet',       network: 'Mobitel', color: '#8b5cf6', bgLight: '#f5f3ff', border: '#ddd6fe', tag: 'Wallet',   cardValue: 1, commissionRate: 2 },
 
   // Dialog Scratch Cards
-  { id: 'dialog_card_50',   operatorName: 'Dialog Scratch Card Rs. 50',   network: 'Dialog',  color: '#e11d48', tag: 'Scratch Card', cardValue: 50, commissionRate: 4 },
-  { id: 'dialog_card_100',  operatorName: 'Dialog Scratch Card Rs. 100',  network: 'Dialog',  color: '#e11d48', tag: 'Scratch Card', cardValue: 100, commissionRate: 4 },
-  { id: 'dialog_card_200',  operatorName: 'Dialog Scratch Card Rs. 200',  network: 'Dialog',  color: '#e11d48', tag: 'Scratch Card', cardValue: 200, commissionRate: 4 },
-  { id: 'dialog_card_500',  operatorName: 'Dialog Scratch Card Rs. 500',  network: 'Dialog',  color: '#e11d48', tag: 'Scratch Card', cardValue: 500, commissionRate: 4 },
-  { id: 'dialog_card_1000', operatorName: 'Dialog Scratch Card Rs. 1000', network: 'Dialog',  color: '#e11d48', tag: 'Scratch Card', cardValue: 1000, commissionRate: 4 },
+  { id: 'dialog_card_50',   operatorName: 'Dialog Card Rs. 50',   network: 'Dialog',  color: '#e11d48', bgLight: '#fff1f2', border: '#fecdd3', tag: 'Scratch Card', cardValue: 50, commissionRate: 4 },
+  { id: 'dialog_card_100',  operatorName: 'Dialog Card Rs. 100',  network: 'Dialog',  color: '#e11d48', bgLight: '#fff1f2', border: '#fecdd3', tag: 'Scratch Card', cardValue: 100, commissionRate: 4 },
+  { id: 'dialog_card_200',  operatorName: 'Dialog Card Rs. 200',  network: 'Dialog',  color: '#e11d48', bgLight: '#fff1f2', border: '#fecdd3', tag: 'Scratch Card', cardValue: 200, commissionRate: 4 },
+  { id: 'dialog_card_500',  operatorName: 'Dialog Card Rs. 500',  network: 'Dialog',  color: '#e11d48', bgLight: '#fff1f2', border: '#fecdd3', tag: 'Scratch Card', cardValue: 500, commissionRate: 4 },
+  { id: 'dialog_card_1000', operatorName: 'Dialog Card Rs. 1000', network: 'Dialog',  color: '#e11d48', bgLight: '#fff1f2', border: '#fecdd3', tag: 'Scratch Card', cardValue: 1000, commissionRate: 4 },
 
   // Mobitel Scratch Cards
-  { id: 'mobitel_card_50',   operatorName: 'Mobitel Scratch Card Rs. 50',   network: 'Mobitel', color: '#059669', tag: 'Scratch Card', cardValue: 50, commissionRate: 4 },
-  { id: 'mobitel_card_100',  operatorName: 'Mobitel Scratch Card Rs. 100',  network: 'Mobitel', color: '#059669', tag: 'Scratch Card', cardValue: 100, commissionRate: 4 },
-  { id: 'mobitel_card_200',  operatorName: 'Mobitel Scratch Card Rs. 200',  network: 'Mobitel', color: '#059669', tag: 'Scratch Card', cardValue: 200, commissionRate: 4 },
-  { id: 'mobitel_card_500',  operatorName: 'Mobitel Scratch Card Rs. 500',  network: 'Mobitel', color: '#059669', tag: 'Scratch Card', cardValue: 500, commissionRate: 4 },
-  { id: 'mobitel_card_1000', operatorName: 'Mobitel Scratch Card Rs. 1000', network: 'Mobitel', color: '#059669', tag: 'Scratch Card', cardValue: 1000, commissionRate: 4 },
+  { id: 'mobitel_card_50',   operatorName: 'Mobitel Card Rs. 50',   network: 'Mobitel', color: '#059669', bgLight: '#ecfdf5', border: '#a7f3d0', tag: 'Scratch Card', cardValue: 50, commissionRate: 4 },
+  { id: 'mobitel_card_100',  operatorName: 'Mobitel Card Rs. 100',  network: 'Mobitel', color: '#059669', bgLight: '#ecfdf5', border: '#a7f3d0', tag: 'Scratch Card', cardValue: 100, commissionRate: 4 },
+  { id: 'mobitel_card_200',  operatorName: 'Mobitel Card Rs. 200',  network: 'Mobitel', color: '#059669', bgLight: '#ecfdf5', border: '#a7f3d0', tag: 'Scratch Card', cardValue: 200, commissionRate: 4 },
+  { id: 'mobitel_card_500',  operatorName: 'Mobitel Card Rs. 500',  network: 'Mobitel', color: '#059669', bgLight: '#ecfdf5', border: '#a7f3d0', tag: 'Scratch Card', cardValue: 500, commissionRate: 4 },
+  { id: 'mobitel_card_1000', operatorName: 'Mobitel Card Rs. 1000', network: 'Mobitel', color: '#059669', bgLight: '#ecfdf5', border: '#a7f3d0', tag: 'Scratch Card', cardValue: 1000, commissionRate: 4 },
 
   // Airtel Scratch Cards
-  { id: 'airtel_card_50',   operatorName: 'Airtel Scratch Card Rs. 50',   network: 'Airtel',  color: '#ef4444', tag: 'Scratch Card', cardValue: 50, commissionRate: 4 },
-  { id: 'airtel_card_100',  operatorName: 'Airtel Scratch Card Rs. 100',  network: 'Airtel',  color: '#ef4444', tag: 'Scratch Card', cardValue: 100, commissionRate: 4 },
-  { id: 'airtel_card_200',  operatorName: 'Airtel Scratch Card Rs. 200',  network: 'Airtel',  color: '#ef4444', tag: 'Scratch Card', cardValue: 200, commissionRate: 4 },
-  { id: 'airtel_card_500',  operatorName: 'Airtel Scratch Card Rs. 500',  network: 'Airtel',  color: '#ef4444', tag: 'Scratch Card', cardValue: 500, commissionRate: 4 },
+  { id: 'airtel_card_50',   operatorName: 'Airtel Card Rs. 50',   network: 'Airtel',  color: '#ef4444', bgLight: '#fef2f2', border: '#fecaca', tag: 'Scratch Card', cardValue: 50, commissionRate: 4 },
+  { id: 'airtel_card_100',  operatorName: 'Airtel Card Rs. 100',  network: 'Airtel',  color: '#ef4444', bgLight: '#fef2f2', border: '#fecaca', tag: 'Scratch Card', cardValue: 100, commissionRate: 4 },
+  { id: 'airtel_card_200',  operatorName: 'Airtel Card Rs. 200',  network: 'Airtel',  color: '#ef4444', bgLight: '#fef2f2', border: '#fecaca', tag: 'Scratch Card', cardValue: 200, commissionRate: 4 },
+  { id: 'airtel_card_500',  operatorName: 'Airtel Card Rs. 500',  network: 'Airtel',  color: '#ef4444', bgLight: '#fef2f2', border: '#fecaca', tag: 'Scratch Card', cardValue: 500, commissionRate: 4 },
 
   // Hutch Scratch Cards
-  { id: 'hutch_card_50',    operatorName: 'Hutch Scratch Card Rs. 50',    network: 'Hutch',   color: '#f59e0b', tag: 'Scratch Card', cardValue: 50, commissionRate: 4 },
-  { id: 'hutch_card_100',   operatorName: 'Hutch Scratch Card Rs. 100',   network: 'Hutch',   color: '#f59e0b', tag: 'Scratch Card', cardValue: 100, commissionRate: 4 },
-  { id: 'hutch_card_200',   operatorName: 'Hutch Scratch Card Rs. 200',   network: 'Hutch',   color: '#f59e0b', tag: 'Scratch Card', cardValue: 200, commissionRate: 4 },
-  { id: 'hutch_card_500',   operatorName: 'Hutch Scratch Card Rs. 500',   network: 'Hutch',   color: '#f59e0b', tag: 'Scratch Card', cardValue: 500, commissionRate: 4 },
+  { id: 'hutch_card_50',    operatorName: 'Hutch Card Rs. 50',    network: 'Hutch',   color: '#f59e0b', bgLight: '#fffbeb', border: '#fde68a', tag: 'Scratch Card', cardValue: 50, commissionRate: 4 },
+  { id: 'hutch_card_100',   operatorName: 'Hutch Card Rs. 100',   network: 'Hutch',   color: '#f59e0b', bgLight: '#fffbeb', border: '#fde68a', tag: 'Scratch Card', cardValue: 100, commissionRate: 4 },
+  { id: 'hutch_card_200',   operatorName: 'Hutch Card Rs. 200',   network: 'Hutch',   color: '#f59e0b', bgLight: '#fffbeb', border: '#fde68a', tag: 'Scratch Card', cardValue: 200, commissionRate: 4 },
+  { id: 'hutch_card_500',   operatorName: 'Hutch Card Rs. 500',   network: 'Hutch',   color: '#f59e0b', bgLight: '#fffbeb', border: '#fde68a', tag: 'Scratch Card', cardValue: 500, commissionRate: 4 },
 ];
 
 const LEGACY_MAP = {
-  Dialog:  'Dialog E-Reload Float',
-  Mobitel: 'Mobitel E-Reload Float',
-  Airtel:  'Airtel E-Reload Float',
-  Hutch:   'Hutch Ez-Reload Float',
-  EzCash:  'Ez-Cash Float / Wallet',
-  mCash:   'M-Cash Float / Wallet',
+  Dialog:  'Dialog E-Reload',
+  Mobitel: 'Mobitel E-Reload',
+  Airtel:  'Airtel E-Reload',
+  Hutch:   'Hutch Ez-Reload',
+  EzCash:  'Ez-Cash Wallet',
+  mCash:   'M-Cash Wallet',
 };
 
 const makeRowState = (item) => ({
@@ -56,6 +60,8 @@ const makeRowState = (item) => ({
   operatorName: item.operatorName,
   network: item.network,
   color: item.color,
+  bgLight: item.bgLight,
+  border: item.border,
   tag: item.tag,
   cardValue: item.cardValue,
   commissionRate: item.commissionRate,
@@ -73,15 +79,15 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
   const [saving, setSaving] = useState(false);
   const [rows, setRows] = useState(() => OPERATORS_CONFIG.map(makeRowState));
 
-  // Quick Add Reload Float Modal State
+  // Quick Add Float Popup
   const [showAddReloadModal, setShowAddReloadModal] = useState(false);
   const [addReloadForm, setAddReloadForm] = useState({
-    operatorName: 'Dialog E-Reload Float',
+    operatorName: 'Dialog E-Reload',
     amount: '',
     notes: '',
   });
 
-  // Quick Add Card Stock Modal State
+  // Quick Add Card Popup
   const [showAddCardModal, setShowAddCardModal] = useState(false);
   const [addCardForm, setAddCardForm] = useState({
     network: 'Dialog',
@@ -104,7 +110,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
         if (res?.data?.data?.operators?.length > 0) {
           const serverOps = res.data.data.operators;
           setRows(prev => prev.map(row => {
-            const match = serverOps.find(s => s.operatorName === row.operatorName);
+            const match = serverOps.find(s => s.operatorName === row.operatorName || s.operatorName.includes(row.operatorName) || row.operatorName.includes(s.operatorName));
             if (match) {
               return {
                 ...row,
@@ -119,7 +125,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
           loaded = true;
         }
       } catch (err) {
-        // Fallback to legacy
+        // fallback
       }
 
       if (!loaded) {
@@ -128,7 +134,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
           if (Array.isArray(legacyData) && legacyData.length > 0) {
             setRows(prev => prev.map(row => {
               const legacyName = Object.entries(LEGACY_MAP).find(([, v]) => v === row.operatorName)?.[0];
-              const match = legacyData.find(s => (s.operator === legacyName || s.operator === row.operatorName) && Number(s.cardValue || 1) === row.cardValue);
+              const match = legacyData.find(s => (s.operator === legacyName || s.operator === row.operatorName || row.operatorName.includes(s.operator)) && Number(s.cardValue || 1) === row.cardValue);
               if (match) {
                 const closingVal = match.closingStock !== undefined && match.closingStock !== null ? match.closingStock : '';
                 return {
@@ -156,7 +162,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
     if (isOpen) loadDailyData();
   }, [isOpen, stockDate, storeId]); // eslint-disable-line
 
-  // ── Input Changes ──────────────────────────────────────────────────────────
+  // ── Cell Value Change ──────────────────────────────────────────────────────
   const handleInputChange = (operatorName, field, val) => {
     setRows(prev => prev.map(r => {
       if (r.operatorName === operatorName) {
@@ -166,7 +172,18 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
     }));
   };
 
-  // ── Quick Add Reload Float Submission ──────────────────────────────────────
+  // ── Quick Increment Shortcut (+1000, +2000, +5000) ─────────────────────────
+  const handleQuickAddValue = (operatorName, amountToAdd) => {
+    setRows(prev => prev.map(r => {
+      if (r.operatorName === operatorName) {
+        const cur = Number(r.addedToday || 0);
+        return { ...r, addedToday: cur + amountToAdd };
+      }
+      return r;
+    }));
+  };
+
+  // ── Quick Add Reload Float Modal Submit ─────────────────────────────────────
   const handleAddReloadFloatSubmit = (e) => {
     e.preventDefault();
     const amountVal = Number(addReloadForm.amount);
@@ -192,6 +209,8 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
           operatorName: addReloadForm.operatorName,
           network: 'Other',
           color: '#6366f1',
+          bgLight: '#eef2ff',
+          border: '#c7d2fe',
           tag: 'E-Reload',
           cardValue: 1,
           commissionRate: 4,
@@ -203,27 +222,27 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
       return updated;
     });
 
-    toast.success(`Added Rs. ${amountVal.toLocaleString()} float to ${addReloadForm.operatorName}! 📲✨`);
-    setAddReloadForm({ operatorName: 'Dialog E-Reload Float', amount: '', notes: '' });
+    toast.success(`+ Rs. ${amountVal.toLocaleString()} float added to ${addReloadForm.operatorName}! 📲`);
+    setAddReloadForm({ operatorName: 'Dialog E-Reload', amount: '', notes: '' });
     setShowAddReloadModal(false);
   };
 
-  // ── Quick Add Card Stock Submission ────────────────────────────────────────
+  // ── Quick Add Card Stock Modal Submit ───────────────────────────────────────
   const handleAddCardStockSubmit = (e) => {
     e.preventDefault();
     const qtyVal = Number(addCardForm.quantity);
     const cardVal = Number(addCardForm.cardValue);
     if (!qtyVal || qtyVal <= 0) {
-      toast.error('Please enter a valid card quantity');
+      toast.error('Please enter valid quantity');
       return;
     }
 
-    const targetOpName = `${addCardForm.network} Scratch Card Rs. ${cardVal}`;
+    const targetName = `${addCardForm.network} Card Rs. ${cardVal}`;
 
     setRows(prev => {
       let found = false;
       const updated = prev.map(r => {
-        if (r.operatorName === targetOpName || (r.network === addCardForm.network && Number(r.cardValue) === cardVal && r.tag === 'Scratch Card')) {
+        if (r.operatorName === targetName || (r.network === addCardForm.network && Number(r.cardValue) === cardVal && r.tag === 'Scratch Card')) {
           found = true;
           const currentAdded = Number(r.addedToday || 0);
           return { ...r, addedToday: currentAdded + qtyVal };
@@ -235,9 +254,11 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
         const netColors = { Dialog: '#e11d48', Mobitel: '#059669', Airtel: '#ef4444', Hutch: '#f59e0b' };
         updated.push({
           id: `custom_card_${Date.now()}`,
-          operatorName: targetOpName,
+          operatorName: targetName,
           network: addCardForm.network,
           color: netColors[addCardForm.network] || '#e11d48',
+          bgLight: '#fff1f2',
+          border: '#fecdd3',
           tag: 'Scratch Card',
           cardValue: cardVal,
           commissionRate: 4,
@@ -249,7 +270,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
       return updated;
     });
 
-    toast.success(`Added ${qtyVal} pcs of ${addCardForm.network} Rs. ${cardVal} Cards! 💳✨`);
+    toast.success(`+ ${qtyVal} pcs of ${addCardForm.network} Rs. ${cardVal} added! 💳`);
     setAddCardForm({ network: 'Dialog', cardValue: '100', quantity: '', notes: '' });
     setShowAddCardModal(false);
   };
@@ -339,7 +360,6 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
       try {
         await saveReloadSheetApi(payload);
       } catch (e) {
-        // Fallback to legacy save
         await saveReloadDailySheet({
           storeId,
           date: stockDate,
@@ -449,28 +469,28 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
   const { totalAdded, totalInHand, totalGrossSold, totalCommission, totalNetImpact } = calculations;
 
   return (
-    <div className="fixed inset-0 z-[1050] flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 sm:p-4 animate-in fade-in duration-150">
-      <div className="bg-white w-full max-w-7xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh] border border-slate-200">
+    <div className="fixed inset-0 z-[1050] flex items-center justify-center bg-black/85 backdrop-blur-md p-3 sm:p-4 animate-in fade-in duration-200">
+      <div className="bg-slate-900 w-full max-w-7xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[96vh] border border-slate-700/80">
         
         {/* ── Top Header ─────────────────────────────────────────────────── */}
-        <div className="p-4 sm:p-5 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white shrink-0 relative">
+        <div className="p-4 sm:p-5 bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 text-white shrink-0 relative border-b border-slate-800">
           <button 
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-all"
+            className="absolute top-4 right-4 p-2 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-all cursor-pointer"
           >
             <X size={20} />
           </button>
 
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pr-10">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-2xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-400 shrink-0">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pr-12">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 shrink-0">
                 <Smartphone size={24} />
               </div>
               <div>
-                <h2 className="text-lg sm:text-xl font-black text-white flex items-center gap-2">
-                  Reload &amp; Scratch Card Daily Terminal
-                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                    Auto 4% Commission
+                <h2 className="text-xl font-black text-white flex items-center gap-2.5">
+                  Reload &amp; Card Management
+                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    ⚡ Auto 4% Comm.
                   </span>
                 </h2>
                 <p className="text-xs text-slate-400 mt-0.5">
@@ -479,49 +499,57 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
               </div>
             </div>
 
-            {/* Quick Navigation Tabs & Date */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <div className="flex items-center bg-slate-800/90 p-1 rounded-xl border border-slate-700">
+            {/* Navigation Tabs & Date Selector */}
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <div className="flex items-center bg-slate-800/90 p-1.5 rounded-2xl border border-slate-700">
                 <button
                   type="button"
                   onClick={() => setActiveTab('ereload')}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-                    activeTab === 'ereload' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                    activeTab === 'ereload' 
+                      ? 'bg-gradient-to-r from-indigo-500 to-blue-600 text-white shadow-lg shadow-indigo-500/30' 
+                      : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  <Smartphone size={14} /> 📲 Reload
+                  <Smartphone size={15} /> 📲 Reload
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab('cards')}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-                    activeTab === 'cards' ? 'bg-rose-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                    activeTab === 'cards' 
+                      ? 'bg-gradient-to-r from-rose-500 to-pink-600 text-white shadow-lg shadow-rose-500/30' 
+                      : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  <CreditCard size={14} /> 💳 Card
+                  <CreditCard size={15} /> 💳 Card
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab('summary')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-                    activeTab === 'summary' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                    activeTab === 'summary' 
+                      ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/30' 
+                      : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  <Layers size={14} /> 📊 Daily Summary
+                  <Layers size={15} /> 📊 Summary
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab('credit')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-                    activeTab === 'credit' ? 'bg-amber-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                    activeTab === 'credit' 
+                      ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/30' 
+                      : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  🏷️ Credit Reload
+                  🏷️ Credit
                 </button>
               </div>
 
-              <div className="flex items-center gap-1.5 bg-slate-800/90 px-3 py-1.5 rounded-xl border border-slate-700">
-                <Calendar size={14} className="text-slate-400" />
+              <div className="flex items-center gap-2 bg-slate-800/90 px-3.5 py-2 rounded-2xl border border-slate-700">
+                <Calendar size={15} className="text-slate-400" />
                 <input
                   type="date"
                   value={stockDate}
@@ -533,165 +561,193 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
           </div>
         </div>
 
-        {/* ── Metric Summary Bar ─────────────────────────────────────────── */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 p-3.5 bg-slate-100/80 border-b border-slate-200 shrink-0">
-          <div className="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm">
-            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">(+) Added Today</div>
-            <div className="text-base font-black text-emerald-600 mt-0.5">+ Rs. {totalAdded.toLocaleString()}</div>
+        {/* ── Realtime KPI Metric Ribbon ─────────────────────────────────── */}
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 p-4 bg-slate-950/60 border-b border-slate-800 shrink-0">
+          <div className="bg-slate-900/80 p-3 rounded-2xl border border-slate-800">
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">(+) Added Today</div>
+            <div className="text-lg font-black text-emerald-400 mt-1">+ Rs. {totalAdded.toLocaleString()}</div>
           </div>
-          <div className="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm">
-            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Evening In-Hand</div>
-            <div className="text-base font-black text-slate-700 mt-0.5">Rs. {totalInHand.toLocaleString()}</div>
+          <div className="bg-slate-900/80 p-3 rounded-2xl border border-slate-800">
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Evening In-Hand</div>
+            <div className="text-lg font-black text-slate-300 mt-1">Rs. {totalInHand.toLocaleString()}</div>
           </div>
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-2.5 rounded-xl text-white shadow-sm">
-            <div className="text-[10px] font-bold text-blue-100 uppercase tracking-wider">🎯 Gross Sold Value</div>
-            <div className="text-lg font-black mt-0.5">Rs. {totalGrossSold.toLocaleString()}</div>
+          <div className="bg-gradient-to-br from-blue-900/40 to-indigo-900/40 p-3 rounded-2xl border border-blue-500/30 text-white">
+            <div className="text-[10px] font-bold text-blue-300 uppercase tracking-wider">🎯 Gross Sold</div>
+            <div className="text-xl font-black text-blue-100 mt-1">Rs. {totalGrossSold.toLocaleString()}</div>
           </div>
-          <div className="bg-white p-2.5 rounded-xl border border-amber-200 shadow-sm">
-            <div className="text-[10px] font-bold text-amber-600 uppercase tracking-wider">4% Commission Earned</div>
-            <div className="text-base font-black text-amber-700 mt-0.5">+ Rs. {totalCommission.toLocaleString()}</div>
+          <div className="bg-gradient-to-br from-amber-900/40 to-orange-900/40 p-3 rounded-2xl border border-amber-500/30">
+            <div className="text-[10px] font-bold text-amber-300 uppercase tracking-wider">4% Comm. Earned</div>
+            <div className="text-lg font-black text-amber-400 mt-1">+ Rs. {totalCommission.toLocaleString()}</div>
           </div>
-          <div className="bg-gradient-to-r from-emerald-600 to-teal-700 p-2.5 rounded-xl text-white shadow-sm">
-            <div className="text-[10px] font-bold text-emerald-100 uppercase tracking-wider">💰 Net Total (104%)</div>
-            <div className="text-lg font-black mt-0.5">Rs. {totalNetImpact.toLocaleString()}</div>
+          <div className="bg-gradient-to-br from-emerald-900/40 to-teal-900/40 p-3 rounded-2xl border border-emerald-500/40">
+            <div className="text-[10px] font-bold text-emerald-300 uppercase tracking-wider">💰 Net Total (104%)</div>
+            <div className="text-xl font-black text-emerald-400 mt-1">Rs. {totalNetImpact.toLocaleString()}</div>
           </div>
         </div>
 
-        {/* ── Main Tab Content ─────────────────────────────────────────────── */}
-        <div className="p-4 overflow-y-auto flex-1 bg-slate-50/50 space-y-4">
+        {/* ── Main Content Area ────────────────────────────────────────────── */}
+        <div className="p-4 sm:p-5 overflow-y-auto flex-1 bg-slate-950 space-y-4">
           
-          {/* TAB 1: E-Reload Machine Floats */}
+          {/* ════════════════════════════════════════════════════════════════════
+              TAB 1: RELOAD MACHINE FLOATS (MODERN POS CARD GRID)
+             ════════════════════════════════════════════════════════════════════ */}
           {activeTab === 'ereload' && (
-            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-              <div className="p-3.5 bg-slate-100/60 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <Smartphone size={18} className="text-indigo-600" />
-                  <span className="text-xs font-bold text-slate-800 uppercase tracking-wide">
-                    Reload Machine Floats (Dialog, Mobitel, Airtel, Hutch, Wallets)
+                  <Smartphone size={18} className="text-indigo-400" />
+                  <span className="text-sm font-black text-white uppercase tracking-wide">
+                    Reload Machine Floats
                   </span>
+                  <span className="text-xs text-slate-400 hidden sm:inline">• Enter Today Added Float &amp; Evening In-Hand</span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-[11px] text-slate-500 font-medium hidden md:inline">
-                    Enter Added Float &amp; Evening In-Hand to calculate sales
-                  </span>
-                  {/* + ADD RELOAD BUTTON (Form Trigger) */}
-                  <button
-                    type="button"
-                    onClick={() => setShowAddReloadModal(true)}
-                    className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-indigo-500/20 transition-all cursor-pointer"
-                  >
-                    <Plus size={15} /> + Add Reload
-                  </button>
-                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowAddReloadModal(true)}
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white text-xs font-bold flex items-center gap-2 shadow-lg shadow-indigo-500/25 transition-all cursor-pointer"
+                >
+                  <Plus size={16} /> + Add Reload Float
+                </button>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-extrabold uppercase text-[10px]">
-                    <tr>
-                      <th className="p-3 min-w-[200px]">Network / Machine</th>
-                      <th className="p-3 text-center min-w-[120px]">Opening Float (Rs.)</th>
-                      <th className="p-3 text-center min-w-[120px] text-emerald-700">(+) Added Today</th>
-                      <th className="p-3 text-center min-w-[110px] bg-slate-100/60">Total Float</th>
-                      <th className="p-3 text-center min-w-[130px] text-indigo-700">Evening In-Hand (Rs.)</th>
-                      <th className="p-3 text-center min-w-[120px] text-emerald-700 bg-emerald-50/60">Sold Out</th>
-                      <th className="p-3 text-center min-w-[110px] text-amber-700 bg-amber-50/40">4% Comm. (Rs.)</th>
-                      <th className="p-3 text-right min-w-[120px] text-teal-700 bg-teal-50/40">Net Revenue (104%)</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {loading ? (
-                      <tr>
-                        <td colSpan={8} className="p-8 text-center text-slate-400">
-                          <Loader2 size={24} className="animate-spin mx-auto mb-2 text-indigo-600" />
-                          Loading Reload machines...
-                        </td>
-                      </tr>
-                    ) : ereloadRows.map((row) => (
-                      <tr key={row.operatorName} className="hover:bg-slate-50/80 transition-colors">
-                        <td className="p-3">
-                          <div className="flex items-center gap-2.5">
-                            <div className="w-3.5 h-3.5 rounded-full shrink-0" style={{ backgroundColor: row.color }} />
-                            <div>
-                              <div className="font-bold text-slate-900 text-[13px]">{row.operatorName}</div>
-                              <div className="text-[10px] text-slate-400 font-semibold">{row.tag}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="p-2 text-center">
-                          <input
-                            type="number"
-                            min="0"
-                            onWheel={(e) => e.target.blur()}
-                            value={row.openingStock === '' ? '' : row.openingStock}
-                            onChange={(e) => handleInputChange(row.operatorName, 'openingStock', e.target.value)}
-                            placeholder="0"
-                            className="w-full text-center py-1.5 px-2 font-mono font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white focus:border-indigo-500 outline-none"
-                          />
-                        </td>
-                        <td className="p-2 text-center">
-                          <input
-                            type="number"
-                            min="0"
-                            onWheel={(e) => e.target.blur()}
-                            value={row.addedToday === '' ? '' : row.addedToday}
-                            onChange={(e) => handleInputChange(row.operatorName, 'addedToday', e.target.value)}
-                            placeholder="0"
-                            className="w-full text-center py-1.5 px-2 font-mono font-bold text-emerald-700 bg-emerald-50/50 border border-emerald-200 rounded-lg text-xs focus:bg-white focus:border-emerald-500 outline-none"
-                          />
-                        </td>
-                        <td className="p-3 text-center font-mono font-bold text-slate-700 bg-slate-100/60">
-                          Rs. {Number(row._totalFloat).toLocaleString()}
-                        </td>
-                        <td className="p-2 text-center">
-                          <input
-                            type="number"
-                            min="0"
-                            onWheel={(e) => e.target.blur()}
-                            value={row.eveningInHand === '' ? '' : row.eveningInHand}
-                            onChange={(e) => handleInputChange(row.operatorName, 'eveningInHand', e.target.value)}
-                            placeholder="0"
-                            className="w-full text-center py-1.5 px-2 font-mono font-black text-indigo-800 bg-indigo-50/50 border border-indigo-200 rounded-lg text-xs focus:bg-white focus:border-indigo-500 outline-none"
-                          />
-                        </td>
-                        <td className="p-3 text-center font-mono font-black text-emerald-600 text-sm bg-emerald-50/60">
-                          Rs. {Number(row._soldAmount).toLocaleString()}
-                        </td>
-                        <td className="p-3 text-center font-mono font-bold text-amber-700 bg-amber-50/40">
-                          + Rs. {Number(row._commAmount).toLocaleString()}
-                        </td>
-                        <td className="p-3 text-right font-mono font-black text-teal-700 text-sm bg-teal-50/40">
-                          Rs. {Number(row._netAmount).toLocaleString()}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              {/* Reload Operator Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {loading ? (
+                  <div className="col-span-full py-16 text-center text-slate-400">
+                    <Loader2 size={32} className="animate-spin mx-auto mb-3 text-indigo-500" />
+                    Loading reload floats...
+                  </div>
+                ) : ereloadRows.map((row) => (
+                  <div 
+                    key={row.operatorName} 
+                    className="bg-slate-900/90 rounded-2xl border border-slate-800 hover:border-slate-700 transition-all p-4 flex flex-col justify-between shadow-lg relative overflow-hidden group"
+                  >
+                    {/* Top Accent Line */}
+                    <div className="absolute top-0 left-0 right-0 h-1.5" style={{ backgroundColor: row.color }} />
+
+                    {/* Card Header */}
+                    <div className="flex items-center justify-between mb-3 pt-1">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-4 h-4 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: row.color }} />
+                        <div>
+                          <h4 className="text-sm font-black text-white leading-tight">{row.operatorName}</h4>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase">{row.tag} • 4% Comm</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-[10px] font-bold text-slate-500 uppercase">Total Float</div>
+                        <div className="text-xs font-mono font-black text-slate-200">Rs. {Number(row._totalFloat).toLocaleString()}</div>
+                      </div>
+                    </div>
+
+                    {/* Inputs Section */}
+                    <div className="grid grid-cols-2 gap-2.5 mb-3 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80">
+                      <div>
+                        <label className="text-[10px] font-bold text-emerald-400 block mb-1 uppercase tracking-wider">
+                          (+) Added Float (Rs.)
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          onWheel={(e) => e.target.blur()}
+                          placeholder="0"
+                          value={row.addedToday === '' ? '' : row.addedToday}
+                          onChange={(e) => handleInputChange(row.operatorName, 'addedToday', e.target.value)}
+                          className="w-full py-2 px-2.5 font-mono font-bold text-emerald-300 bg-slate-900 border border-emerald-500/30 rounded-lg text-sm focus:border-emerald-500 focus:bg-slate-800 outline-none transition-all"
+                        />
+                        {/* Quick increment chips */}
+                        <div className="flex items-center gap-1 mt-1.5">
+                          <button
+                            type="button"
+                            onClick={() => handleQuickAddValue(row.operatorName, 1000)}
+                            className="px-1.5 py-0.5 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-[10px] font-bold transition-colors cursor-pointer"
+                          >
+                            +1k
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleQuickAddValue(row.operatorName, 2000)}
+                            className="px-1.5 py-0.5 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-[10px] font-bold transition-colors cursor-pointer"
+                          >
+                            +2k
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleQuickAddValue(row.operatorName, 5000)}
+                            className="px-1.5 py-0.5 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-[10px] font-bold transition-colors cursor-pointer"
+                          >
+                            +5k
+                          </button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-bold text-indigo-400 block mb-1 uppercase tracking-wider">
+                          Evening In-Hand (Rs.)
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          onWheel={(e) => e.target.blur()}
+                          placeholder="0"
+                          value={row.eveningInHand === '' ? '' : row.eveningInHand}
+                          onChange={(e) => handleInputChange(row.operatorName, 'eveningInHand', e.target.value)}
+                          className="w-full py-2 px-2.5 font-mono font-bold text-indigo-300 bg-slate-900 border border-indigo-500/30 rounded-lg text-sm focus:border-indigo-500 focus:bg-slate-800 outline-none transition-all"
+                        />
+                        <div className="text-[10px] text-slate-500 font-medium mt-1.5 truncate">
+                          Opening: Rs. {Number(row._opening).toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bottom Live Calculation Ribbon */}
+                    <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex items-center justify-between">
+                      <div>
+                        <div className="text-[9px] font-bold text-slate-400 uppercase">Sold Out</div>
+                        <div className="text-xs font-mono font-black text-emerald-400">Rs. {Number(row._soldAmount).toLocaleString()}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-[9px] font-bold text-amber-400 uppercase">+4% Comm.</div>
+                        <div className="text-xs font-mono font-bold text-amber-300">+ Rs. {Number(row._commAmount).toLocaleString()}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-[9px] font-bold text-teal-400 uppercase">Net (104%)</div>
+                        <div className="text-sm font-mono font-black text-teal-300">Rs. {Number(row._netAmount).toLocaleString()}</div>
+                      </div>
+                    </div>
+
+                  </div>
+                ))}
               </div>
             </div>
           )}
 
-          {/* TAB 2: Scratch Cards */}
+          {/* ════════════════════════════════════════════════════════════════════
+              TAB 2: SCRATCH CARDS (MODERN POS CARD GRID)
+             ════════════════════════════════════════════════════════════════════ */}
           {activeTab === 'cards' && (
-            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden p-4 space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <CreditCard size={18} className="text-rose-600" />
-                  <span className="text-xs font-bold text-slate-800 uppercase tracking-wide">
-                    Physical Card Stock (Pieces)
+                  <CreditCard size={18} className="text-rose-400" />
+                  <span className="text-sm font-black text-white uppercase tracking-wide">
+                    Scratch Card Stock (Pieces)
                   </span>
                 </div>
 
                 <div className="flex items-center gap-2.5 flex-wrap">
-                  {/* Network Quick Selector Filter */}
-                  <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+                  {/* Network Filter Pills */}
+                  <div className="flex items-center bg-slate-900 p-1 rounded-xl border border-slate-800">
                     {['All', 'Dialog', 'Mobitel', 'Airtel', 'Hutch'].map((net) => (
                       <button
                         key={net}
                         type="button"
                         onClick={() => setSelectedNetwork(net)}
-                        className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
-                          selectedNetwork === net ? 'bg-rose-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          selectedNetwork === net 
+                            ? 'bg-rose-600 text-white shadow-md' 
+                            : 'text-slate-400 hover:text-white'
                         }`}
                       >
                         {net}
@@ -699,176 +755,164 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
                     ))}
                   </div>
 
-                  {/* + ADD CARD BUTTON (Form Trigger) */}
                   <button
                     type="button"
                     onClick={() => setShowAddCardModal(true)}
-                    className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-rose-500/20 transition-all cursor-pointer"
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white text-xs font-bold flex items-center gap-2 shadow-lg shadow-rose-500/25 transition-all cursor-pointer"
                   >
-                    <Plus size={15} /> + Add Card
+                    <Plus size={16} /> + Add Card Stock
                   </button>
                 </div>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-extrabold uppercase text-[10px]">
-                    <tr>
-                      <th className="p-3 min-w-[210px]">Scratch Card</th>
-                      <th className="p-3 text-center min-w-[90px]">Value</th>
-                      <th className="p-3 text-center min-w-[110px]">Opening (Pcs)</th>
-                      <th className="p-3 text-center min-w-[110px] text-emerald-700">(+) Added (Pcs)</th>
-                      <th className="p-3 text-center min-w-[120px] text-indigo-700">In-Hand (Pcs)</th>
-                      <th className="p-3 text-center min-w-[100px] text-emerald-700 bg-emerald-50/60">Sold (Pcs)</th>
-                      <th className="p-3 text-center min-w-[110px] text-blue-700 bg-blue-50/60">Gross (Rs.)</th>
-                      <th className="p-3 text-center min-w-[100px] text-amber-700 bg-amber-50/40">4% Comm</th>
-                      <th className="p-3 text-right min-w-[120px] text-teal-700 bg-teal-50/40">Net Value</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {loading ? (
-                      <tr>
-                        <td colSpan={9} className="p-8 text-center text-slate-400">
-                          <Loader2 size={24} className="animate-spin mx-auto mb-2 text-rose-600" />
-                          Loading card stock...
-                        </td>
-                      </tr>
-                    ) : cardRows.map((row) => (
-                      <tr key={row.operatorName} className="hover:bg-slate-50/80 transition-colors">
-                        <td className="p-3">
-                          <div className="flex items-center gap-2.5">
-                            <div className="w-3.5 h-3.5 rounded-full shrink-0" style={{ backgroundColor: row.color }} />
-                            <div>
-                              <div className="font-bold text-slate-900 text-[13px]">{row.operatorName}</div>
-                              <div className="text-[10px] text-slate-400 font-semibold">{row.network} Network</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="p-3 text-center font-bold text-slate-700">
-                          Rs. {row.cardValue}
-                        </td>
-                        <td className="p-2 text-center">
-                          <input
-                            type="number"
-                            min="0"
-                            onWheel={(e) => e.target.blur()}
-                            value={row.openingStock === '' ? '' : row.openingStock}
-                            onChange={(e) => handleInputChange(row.operatorName, 'openingStock', e.target.value)}
-                            placeholder="0"
-                            className="w-full text-center py-1.5 px-2 font-mono font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white focus:border-indigo-500 outline-none"
-                          />
-                        </td>
-                        <td className="p-2 text-center">
-                          <input
-                            type="number"
-                            min="0"
-                            onWheel={(e) => e.target.blur()}
-                            value={row.addedToday === '' ? '' : row.addedToday}
-                            onChange={(e) => handleInputChange(row.operatorName, 'addedToday', e.target.value)}
-                            placeholder="0"
-                            className="w-full text-center py-1.5 px-2 font-mono font-bold text-emerald-700 bg-emerald-50/50 border border-emerald-200 rounded-lg text-xs focus:bg-white focus:border-emerald-500 outline-none"
-                          />
-                        </td>
-                        <td className="p-2 text-center">
-                          <input
-                            type="number"
-                            min="0"
-                            onWheel={(e) => e.target.blur()}
-                            value={row.eveningInHand === '' ? '' : row.eveningInHand}
-                            onChange={(e) => handleInputChange(row.operatorName, 'eveningInHand', e.target.value)}
-                            placeholder="0"
-                            className="w-full text-center py-1.5 px-2 font-mono font-black text-indigo-800 bg-indigo-50/50 border border-indigo-200 rounded-lg text-xs focus:bg-white focus:border-indigo-500 outline-none"
-                          />
-                        </td>
-                        <td className="p-3 text-center font-mono font-black text-emerald-700 bg-emerald-50/60 text-sm">
-                          {row._soldQty} pcs
-                        </td>
-                        <td className="p-3 text-center font-mono font-bold text-blue-700 bg-blue-50/60">
-                          Rs. {Number(row._soldAmount).toLocaleString()}
-                        </td>
-                        <td className="p-3 text-center font-mono font-bold text-amber-700 bg-amber-50/40">
-                          + Rs. {Number(row._commAmount).toLocaleString()}
-                        </td>
-                        <td className="p-3 text-right font-mono font-black text-teal-700 text-sm bg-teal-50/40">
-                          Rs. {Number(row._netAmount).toLocaleString()}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              {/* Cards Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5">
+                {loading ? (
+                  <div className="col-span-full py-16 text-center text-slate-400">
+                    <Loader2 size={32} className="animate-spin mx-auto mb-3 text-rose-500" />
+                    Loading card inventory...
+                  </div>
+                ) : cardRows.map((row) => (
+                  <div 
+                    key={row.operatorName} 
+                    className="bg-slate-900/90 rounded-2xl border border-slate-800 hover:border-slate-700 transition-all p-3.5 flex flex-col justify-between shadow-lg relative overflow-hidden"
+                  >
+                    <div className="absolute top-0 left-0 right-0 h-1.5" style={{ backgroundColor: row.color }} />
+
+                    {/* Card Header */}
+                    <div className="flex items-center justify-between mb-2.5 pt-1">
+                      <div>
+                        <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full" style={{ backgroundColor: `${row.color}25`, color: row.color }}>
+                          {row.network}
+                        </span>
+                        <h4 className="text-sm font-black text-white mt-1">Rs. {row.cardValue} Card</h4>
+                      </div>
+                      <div className="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs" style={{ backgroundColor: `${row.color}20`, color: row.color }}>
+                        Rs.{row.cardValue}
+                      </div>
+                    </div>
+
+                    {/* Card Inputs */}
+                    <div className="grid grid-cols-2 gap-2 mb-2.5 bg-slate-950/60 p-2 rounded-xl border border-slate-800/80">
+                      <div>
+                        <label className="text-[9px] font-bold text-emerald-400 block mb-1 uppercase tracking-wider">
+                          (+) Added (Pcs)
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          onWheel={(e) => e.target.blur()}
+                          placeholder="0"
+                          value={row.addedToday === '' ? '' : row.addedToday}
+                          onChange={(e) => handleInputChange(row.operatorName, 'addedToday', e.target.value)}
+                          className="w-full py-1.5 px-2 font-mono font-bold text-emerald-300 bg-slate-900 border border-emerald-500/30 rounded-lg text-xs focus:border-emerald-500 focus:bg-slate-800 outline-none transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[9px] font-bold text-indigo-400 block mb-1 uppercase tracking-wider">
+                          In-Hand (Pcs)
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          onWheel={(e) => e.target.blur()}
+                          placeholder="0"
+                          value={row.eveningInHand === '' ? '' : row.eveningInHand}
+                          onChange={(e) => handleInputChange(row.operatorName, 'eveningInHand', e.target.value)}
+                          className="w-full py-1.5 px-2 font-mono font-bold text-indigo-300 bg-slate-900 border border-indigo-500/30 rounded-lg text-xs focus:border-indigo-500 focus:bg-slate-800 outline-none transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Live Metric Bar */}
+                    <div className="bg-slate-950 p-2 rounded-xl border border-slate-800 flex items-center justify-between text-xs font-mono">
+                      <div>
+                        <span className="text-[9px] text-slate-400 block uppercase">Sold</span>
+                        <span className="font-black text-emerald-400">{row._soldQty} pcs</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[9px] text-slate-400 block uppercase">Gross (104%)</span>
+                        <span className="font-black text-teal-300">Rs. {Number(row._netAmount).toLocaleString()}</span>
+                      </div>
+                    </div>
+
+                  </div>
+                ))}
               </div>
             </div>
           )}
 
-          {/* TAB 3: Daily Summary */}
+          {/* ════════════════════════════════════════════════════════════════════
+              TAB 3: DAILY SUMMARY
+             ════════════════════════════════════════════════════════════════════ */}
           {activeTab === 'summary' && (
-            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden p-4 space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="bg-slate-900 rounded-2xl border border-slate-800 p-5 space-y-5">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
                 <div>
-                  <h3 className="text-base font-black text-slate-900">📊 Combined Daily Reload &amp; Scratch Card Summary</h3>
-                  <p className="text-xs text-slate-500 mt-0.5">Overall daily float, sales volume, and 4% commission breakdown.</p>
+                  <h3 className="text-base font-black text-white">📊 Daily Reload &amp; Card Bookkeeping Summary</h3>
+                  <p className="text-xs text-slate-400 mt-0.5">Summary breakdown with 4% commissions and cash drawer impact</p>
                 </div>
                 <button
                   type="button"
                   onClick={handlePrint}
-                  className="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold flex items-center gap-2 hover:bg-slate-800 transition-colors shadow-md cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer border border-slate-700"
                 >
-                  <Printer size={15} /> Print 80mm Slip
+                  <Printer size={16} /> Print 80mm Receipt Slip
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                  <div className="text-xs font-bold text-slate-500 uppercase">Reload Float Sales</div>
-                  <div className="text-xl font-black text-slate-900 mt-1">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                  <div className="text-xs font-bold text-slate-400 uppercase">Reload Float Sales</div>
+                  <div className="text-2xl font-black text-white mt-1">
                     Rs. {ereloadRows.reduce((a, b) => a + b._soldAmount, 0).toLocaleString()}
                   </div>
                 </div>
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                  <div className="text-xs font-bold text-slate-500 uppercase">Card Gross Sales</div>
-                  <div className="text-xl font-black text-slate-900 mt-1">
+                <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                  <div className="text-xs font-bold text-slate-400 uppercase">Card Sales Value</div>
+                  <div className="text-2xl font-black text-white mt-1">
                     Rs. {calculations.computedRows.filter(r => r.tag === 'Scratch Card').reduce((a, b) => a + b._soldAmount, 0).toLocaleString()}
                   </div>
                 </div>
-                <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-200">
-                  <div className="text-xs font-bold text-emerald-700 uppercase">Total Shop Earnings (104%)</div>
-                  <div className="text-2xl font-black text-emerald-700 mt-1">
+                <div className="bg-emerald-950/40 p-4 rounded-2xl border border-emerald-500/40">
+                  <div className="text-xs font-bold text-emerald-400 uppercase">Total Shop Earnings (104%)</div>
+                  <div className="text-2xl font-black text-emerald-300 mt-1">
                     Rs. {totalNetImpact.toLocaleString()}
                   </div>
                 </div>
               </div>
 
-              <div className="overflow-x-auto border border-slate-200 rounded-xl">
+              <div className="overflow-x-auto border border-slate-800 rounded-2xl">
                 <table className="w-full text-left text-xs border-collapse">
-                  <thead className="bg-slate-100 text-slate-700 font-extrabold uppercase text-[10px]">
+                  <thead className="bg-slate-950 text-slate-400 font-extrabold uppercase text-[10px]">
                     <tr>
                       <th className="p-3">Item</th>
                       <th className="p-3 text-center">Type</th>
                       <th className="p-3 text-center">Sold Quantity</th>
                       <th className="p-3 text-center">Gross Sales</th>
                       <th className="p-3 text-center">4% Commission</th>
-                      <th className="p-3 text-right">Net Value</th>
+                      <th className="p-3 text-right">Net Total (104%)</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-slate-800/80">
                     {calculations.computedRows.filter(r => r._soldAmount > 0 || r._added > 0).map((r) => (
-                      <tr key={r.operatorName} className="hover:bg-slate-50">
-                        <td className="p-3 font-bold text-slate-800">{r.operatorName}</td>
+                      <tr key={r.operatorName} className="hover:bg-slate-800/50">
+                        <td className="p-3 font-bold text-slate-200">{r.operatorName}</td>
                         <td className="p-3 text-center">
-                          <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold">
+                          <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 text-[10px] font-bold">
                             {r.tag}
                           </span>
                         </td>
-                        <td className="p-3 text-center font-mono">
+                        <td className="p-3 text-center font-mono text-slate-300">
                           {r.tag === 'Scratch Card' ? `${r._soldQty} pcs` : `Rs. ${r._soldAmount}`}
                         </td>
-                        <td className="p-3 text-center font-mono font-bold text-slate-700">
+                        <td className="p-3 text-center font-mono font-bold text-slate-200">
                           Rs. {r._soldAmount.toLocaleString()}
                         </td>
-                        <td className="p-3 text-center font-mono text-amber-700 font-bold">
+                        <td className="p-3 text-center font-mono text-amber-400 font-bold">
                           + Rs. {r._commAmount.toLocaleString()}
                         </td>
-                        <td className="p-3 text-right font-mono font-black text-teal-700">
+                        <td className="p-3 text-right font-mono font-black text-teal-300">
                           Rs. {r._netAmount.toLocaleString()}
                         </td>
                       </tr>
@@ -879,16 +923,18 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
             </div>
           )}
 
-          {/* TAB 4: Credit Reload */}
+          {/* ════════════════════════════════════════════════════════════════════
+              TAB 4: CREDIT RELOAD
+             ════════════════════════════════════════════════════════════════════ */}
           {activeTab === 'credit' && (
-            <div className="max-w-xl mx-auto bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-5">
-              <div className="border-b border-slate-100 pb-3">
-                <h3 className="text-base font-black text-slate-900">🏷️ Record Credit Reload</h3>
-                <p className="text-xs text-slate-500 mt-1">Log reload given to a customer on credit without drawer float addition.</p>
+            <div className="max-w-xl mx-auto bg-slate-900 p-6 rounded-3xl border border-slate-800 shadow-xl space-y-5">
+              <div className="border-b border-slate-800 pb-3">
+                <h3 className="text-base font-black text-white">🏷️ Record Credit Reload</h3>
+                <p className="text-xs text-slate-400 mt-1">Log reload given to a customer on credit without drawer float addition.</p>
               </div>
               <form onSubmit={handleCreditSubmit} className="space-y-4">
                 <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1">Select Network *</label>
+                  <label className="text-xs font-bold text-slate-300 block mb-1.5">Select Network *</label>
                   <div className="grid grid-cols-4 gap-2">
                     {['Dialog', 'Mobitel', 'Airtel', 'Hutch'].map((op) => (
                       <button
@@ -897,8 +943,8 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
                         onClick={() => setCreditForm({ ...creditForm, operator: op })}
                         className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                           creditForm.operator === op
-                            ? 'bg-amber-500 text-white border-amber-600 shadow-sm'
-                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                            ? 'bg-amber-500 text-slate-950 border-amber-500 font-black shadow-md'
+                            : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
                         }`}
                       >
                         {op}
@@ -907,28 +953,28 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1">Mobile Number *</label>
+                  <label className="text-xs font-bold text-slate-300 block mb-1.5">Mobile Number *</label>
                   <input
                     type="text"
                     value={creditForm.mobileNumber}
                     onChange={(e) => setCreditForm({ ...creditForm, mobileNumber: e.target.value })}
                     placeholder="0771234567"
                     required
-                    className="w-full py-2.5 px-3 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 outline-none focus:border-amber-500"
+                    className="w-full py-2.5 px-3 border border-slate-700 bg-slate-950 rounded-xl text-sm font-bold text-white outline-none focus:border-amber-500"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1">Customer Name (Optional)</label>
+                  <label className="text-xs font-bold text-slate-300 block mb-1.5">Customer Name (Optional)</label>
                   <input
                     type="text"
                     value={creditForm.customerName}
                     onChange={(e) => setCreditForm({ ...creditForm, customerName: e.target.value })}
                     placeholder="Customer Name / NIC"
-                    className="w-full py-2.5 px-3 border border-slate-200 rounded-xl text-sm text-slate-800 outline-none focus:border-amber-500"
+                    className="w-full py-2.5 px-3 border border-slate-700 bg-slate-950 rounded-xl text-sm text-white outline-none focus:border-amber-500"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1">Reload Amount (Rs.) *</label>
+                  <label className="text-xs font-bold text-slate-300 block mb-1.5">Reload Amount (Rs.) *</label>
                   <input
                     type="number"
                     min="1"
@@ -936,23 +982,23 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
                     onChange={(e) => setCreditForm({ ...creditForm, amount: e.target.value })}
                     placeholder="100"
                     required
-                    className="w-full py-2.5 px-3 border border-slate-200 rounded-xl text-sm font-mono font-bold text-slate-800 outline-none focus:border-amber-500"
+                    className="w-full py-2.5 px-3 border border-slate-700 bg-slate-950 rounded-xl text-sm font-mono font-bold text-amber-400 outline-none focus:border-amber-500"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1">Notes</label>
+                  <label className="text-xs font-bold text-slate-300 block mb-1.5">Notes</label>
                   <textarea
                     value={creditForm.notes}
                     onChange={(e) => setCreditForm({ ...creditForm, notes: e.target.value })}
                     placeholder="e.g. Regular customer, will settle tomorrow"
                     rows={2}
-                    className="w-full py-2 px-3 border border-slate-200 rounded-xl text-xs text-slate-800 outline-none focus:border-amber-500"
+                    className="w-full py-2 px-3 border border-slate-700 bg-slate-950 rounded-xl text-xs text-white outline-none focus:border-amber-500"
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={submittingCredit}
-                  className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-black text-sm shadow-lg shadow-amber-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {submittingCredit ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle size={18} />}
                   Record Credit Reload
@@ -963,9 +1009,9 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
         </div>
 
         {/* ── Footer Actions ──────────────────────────────────────────────── */}
-        <div className="p-4 bg-slate-900 text-white flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0 border-t border-slate-800">
+        <div className="p-4 bg-slate-950 text-white flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0 border-t border-slate-800">
           <div className="text-xs text-slate-400 font-medium">
-            Total Net Impact: <span className="text-emerald-400 font-bold text-sm">Rs. {totalNetImpact.toLocaleString()}</span> (Includes 4% Commission)
+            Total Net Impact: <span className="text-emerald-400 font-black text-sm">Rs. {totalNetImpact.toLocaleString()}</span> (Includes 4% Commission)
           </div>
           <div className="flex items-center gap-3 w-full sm:w-auto">
             <button
@@ -979,7 +1025,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
               type="button"
               onClick={handleSave}
               disabled={saving}
-              className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/30 transition-all cursor-pointer"
+              className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/40 transition-all cursor-pointer"
             >
               {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
               Save Daily Sheet &amp; Sync
@@ -991,22 +1037,22 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
 
       {/* ── POPUP MODAL 1: ADD RELOAD FLOAT FORM ─────────────────────────── */}
       {showAddReloadModal && (
-        <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in zoom-in duration-150">
-          <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-slate-200 p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in zoom-in duration-150">
+          <div className="bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-slate-700 p-6 space-y-4 text-white">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                <div className="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold">
                   <Smartphone size={20} />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-slate-900">+ Add Reload Float</h3>
-                  <p className="text-xs text-slate-500">Record new stock/float added today</p>
+                  <h3 className="text-base font-black text-white">+ Add Reload Float</h3>
+                  <p className="text-xs text-slate-400">Record new float added today</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setShowAddReloadModal(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -1014,23 +1060,23 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
 
             <form onSubmit={handleAddReloadFloatSubmit} className="space-y-4">
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1.5">Select Machine / Operator *</label>
+                <label className="text-xs font-bold text-slate-300 block mb-1.5">Select Machine / Operator *</label>
                 <select
                   value={addReloadForm.operatorName}
                   onChange={(e) => setAddReloadForm({ ...addReloadForm, operatorName: e.target.value })}
-                  className="w-full py-2.5 px-3 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 outline-none focus:border-indigo-500 bg-slate-50 focus:bg-white"
+                  className="w-full py-2.5 px-3 border border-slate-700 rounded-xl text-xs font-bold text-white outline-none focus:border-indigo-500 bg-slate-950"
                 >
-                  <option value="Dialog E-Reload Float">Dialog E-Reload Float</option>
-                  <option value="Mobitel E-Reload Float">Mobitel E-Reload Float</option>
-                  <option value="Airtel E-Reload Float">Airtel E-Reload Float</option>
-                  <option value="Hutch Ez-Reload Float">Hutch Ez-Reload Float</option>
-                  <option value="Ez-Cash Float / Wallet">Ez-Cash Float / Wallet</option>
-                  <option value="M-Cash Float / Wallet">M-Cash Float / Wallet</option>
+                  <option value="Dialog E-Reload">Dialog E-Reload</option>
+                  <option value="Mobitel E-Reload">Mobitel E-Reload</option>
+                  <option value="Airtel E-Reload">Airtel E-Reload</option>
+                  <option value="Hutch Ez-Reload">Hutch Ez-Reload</option>
+                  <option value="Ez-Cash Wallet">Ez-Cash Wallet</option>
+                  <option value="M-Cash Wallet">M-Cash Wallet</option>
                 </select>
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1.5">Added Float Amount (Rs.) *</label>
+                <label className="text-xs font-bold text-slate-300 block mb-1.5">Added Float Amount (Rs.) *</label>
                 <input
                   type="number"
                   min="1"
@@ -1039,18 +1085,18 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
                   placeholder="e.g. 5000"
                   value={addReloadForm.amount}
                   onChange={(e) => setAddReloadForm({ ...addReloadForm, amount: e.target.value })}
-                  className="w-full py-2.5 px-3 border border-slate-200 rounded-xl text-sm font-mono font-black text-emerald-700 outline-none focus:border-indigo-500 bg-emerald-50/40 focus:bg-white"
+                  className="w-full py-2.5 px-3 border border-slate-700 rounded-xl text-sm font-mono font-black text-emerald-400 outline-none focus:border-indigo-500 bg-slate-950"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1.5">Notes / Distributor Reference</label>
+                <label className="text-xs font-bold text-slate-300 block mb-1.5">Notes / Distributor Info</label>
                 <input
                   type="text"
-                  placeholder="e.g. Cash payment / Cheque / Bank Transfer"
+                  placeholder="e.g. Cash payment / Bank transfer"
                   value={addReloadForm.notes}
                   onChange={(e) => setAddReloadForm({ ...addReloadForm, notes: e.target.value })}
-                  className="w-full py-2 px-3 border border-slate-200 rounded-xl text-xs text-slate-800 outline-none focus:border-indigo-500"
+                  className="w-full py-2 px-3 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-indigo-500 bg-slate-950"
                 />
               </div>
 
@@ -1058,13 +1104,13 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
                 <button
                   type="button"
                   onClick={() => setShowAddReloadModal(false)}
-                  className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 transition-colors cursor-pointer"
+                  className="flex-1 py-2.5 rounded-xl border border-slate-700 text-slate-400 font-bold text-xs hover:bg-slate-800 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-bold text-xs shadow-md shadow-indigo-500/20 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white font-bold text-xs shadow-md shadow-indigo-500/20 transition-all cursor-pointer flex items-center justify-center gap-1.5"
                 >
                   <Plus size={15} /> Add to Float
                 </button>
@@ -1076,22 +1122,22 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
 
       {/* ── POPUP MODAL 2: ADD CARD STOCK FORM ───────────────────────────── */}
       {showAddCardModal && (
-        <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in zoom-in duration-150">
-          <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-slate-200 p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in zoom-in duration-150">
+          <div className="bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-slate-700 p-6 space-y-4 text-white">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold">
+                <div className="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center font-bold">
                   <CreditCard size={20} />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-slate-900">+ Add Card Stock</h3>
-                  <p className="text-xs text-slate-500">Record scratch cards received today</p>
+                  <h3 className="text-base font-black text-white">+ Add Card Stock</h3>
+                  <p className="text-xs text-slate-400">Record scratch cards received today</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setShowAddCardModal(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -1099,7 +1145,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
 
             <form onSubmit={handleAddCardStockSubmit} className="space-y-4">
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1.5">Select Network *</label>
+                <label className="text-xs font-bold text-slate-300 block mb-1.5">Select Network *</label>
                 <div className="grid grid-cols-4 gap-1.5">
                   {['Dialog', 'Mobitel', 'Airtel', 'Hutch'].map((net) => (
                     <button
@@ -1109,7 +1155,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
                       className={`py-2 px-2 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                         addCardForm.network === net
                           ? 'bg-rose-600 text-white border-rose-600 shadow-sm'
-                          : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                          : 'bg-slate-950 text-slate-400 border-slate-700 hover:text-white'
                       }`}
                     >
                       {net}
@@ -1119,11 +1165,11 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1.5">Card Denomination (Value) *</label>
+                <label className="text-xs font-bold text-slate-300 block mb-1.5">Card Denomination (Value) *</label>
                 <select
                   value={addCardForm.cardValue}
                   onChange={(e) => setAddCardForm({ ...addCardForm, cardValue: e.target.value })}
-                  className="w-full py-2.5 px-3 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 outline-none focus:border-rose-500 bg-slate-50 focus:bg-white"
+                  className="w-full py-2.5 px-3 border border-slate-700 rounded-xl text-xs font-bold text-white outline-none focus:border-rose-500 bg-slate-950"
                 >
                   <option value="50">Rs. 50 Card</option>
                   <option value="100">Rs. 100 Card</option>
@@ -1134,7 +1180,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1.5">Added Quantity (Pieces) *</label>
+                <label className="text-xs font-bold text-slate-300 block mb-1.5">Added Quantity (Pieces) *</label>
                 <input
                   type="number"
                   min="1"
@@ -1143,18 +1189,18 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
                   placeholder="e.g. 50 pcs"
                   value={addCardForm.quantity}
                   onChange={(e) => setAddCardForm({ ...addCardForm, quantity: e.target.value })}
-                  className="w-full py-2.5 px-3 border border-slate-200 rounded-xl text-sm font-mono font-black text-rose-700 outline-none focus:border-rose-500 bg-rose-50/40 focus:bg-white"
+                  className="w-full py-2.5 px-3 border border-slate-700 rounded-xl text-sm font-mono font-black text-rose-400 outline-none focus:border-rose-500 bg-slate-950"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1.5">Notes / Batch No</label>
+                <label className="text-xs font-bold text-slate-300 block mb-1.5">Notes / Batch No</label>
                 <input
                   type="text"
                   placeholder="e.g. Received from Dialog distributor"
                   value={addCardForm.notes}
                   onChange={(e) => setAddCardForm({ ...addCardForm, notes: e.target.value })}
-                  className="w-full py-2 px-3 border border-slate-200 rounded-xl text-xs text-slate-800 outline-none focus:border-rose-500"
+                  className="w-full py-2 px-3 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-rose-500 bg-slate-950"
                 />
               </div>
 
@@ -1162,7 +1208,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
                 <button
                   type="button"
                   onClick={() => setShowAddCardModal(false)}
-                  className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 transition-colors cursor-pointer"
+                  className="flex-1 py-2.5 rounded-xl border border-slate-700 text-slate-400 font-bold text-xs hover:bg-slate-800 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
