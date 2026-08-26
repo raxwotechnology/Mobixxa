@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { X, Smartphone, CheckCircle, Loader2, Calendar, Printer, Save, TrendingUp, CreditCard, Layers, ShieldCheck, Plus, ArrowRight } from 'lucide-react';
+import { X, Smartphone, CheckCircle, Loader2, Calendar, Printer, Save, TrendingUp, CreditCard, Layers, Plus, ArrowRight, DollarSign } from 'lucide-react';
 import { createReload, getReloadStocks, saveReloadDailySheet, saveReloadSheetApi, getTodayReloadSheetApi } from '../../services/api';
 import { toast } from 'react-toastify';
 
@@ -73,6 +73,23 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
   const [saving, setSaving] = useState(false);
   const [rows, setRows] = useState(() => OPERATORS_CONFIG.map(makeRowState));
 
+  // Quick Add Reload Float Modal State
+  const [showAddReloadModal, setShowAddReloadModal] = useState(false);
+  const [addReloadForm, setAddReloadForm] = useState({
+    operatorName: 'Dialog E-Reload Float',
+    amount: '',
+    notes: '',
+  });
+
+  // Quick Add Card Stock Modal State
+  const [showAddCardModal, setShowAddCardModal] = useState(false);
+  const [addCardForm, setAddCardForm] = useState({
+    network: 'Dialog',
+    cardValue: '100',
+    quantity: '',
+    notes: '',
+  });
+
   // Credit Reload State
   const [creditForm, setCreditForm] = useState({ mobileNumber: '', customerName: '', operator: 'Dialog', amount: '', notes: '' });
   const [submittingCredit, setSubmittingCredit] = useState(false);
@@ -81,7 +98,6 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
   const loadDailyData = async () => {
     try {
       setLoading(true);
-      // Try fetching existing sheet
       let loaded = false;
       try {
         const res = await getTodayReloadSheetApi(storeId ? { storeId, date: stockDate } : { date: stockDate });
@@ -148,6 +164,94 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
       }
       return r;
     }));
+  };
+
+  // ── Quick Add Reload Float Submission ──────────────────────────────────────
+  const handleAddReloadFloatSubmit = (e) => {
+    e.preventDefault();
+    const amountVal = Number(addReloadForm.amount);
+    if (!amountVal || amountVal <= 0) {
+      toast.error('Please enter a valid float amount');
+      return;
+    }
+
+    setRows(prev => {
+      let found = false;
+      const updated = prev.map(r => {
+        if (r.operatorName === addReloadForm.operatorName) {
+          found = true;
+          const currentAdded = Number(r.addedToday || 0);
+          return { ...r, addedToday: currentAdded + amountVal };
+        }
+        return r;
+      });
+
+      if (!found) {
+        updated.push({
+          id: `custom_ereload_${Date.now()}`,
+          operatorName: addReloadForm.operatorName,
+          network: 'Other',
+          color: '#6366f1',
+          tag: 'E-Reload',
+          cardValue: 1,
+          commissionRate: 4,
+          openingStock: '',
+          addedToday: amountVal,
+          eveningInHand: '',
+        });
+      }
+      return updated;
+    });
+
+    toast.success(`Added Rs. ${amountVal.toLocaleString()} float to ${addReloadForm.operatorName}! 📲✨`);
+    setAddReloadForm({ operatorName: 'Dialog E-Reload Float', amount: '', notes: '' });
+    setShowAddReloadModal(false);
+  };
+
+  // ── Quick Add Card Stock Submission ────────────────────────────────────────
+  const handleAddCardStockSubmit = (e) => {
+    e.preventDefault();
+    const qtyVal = Number(addCardForm.quantity);
+    const cardVal = Number(addCardForm.cardValue);
+    if (!qtyVal || qtyVal <= 0) {
+      toast.error('Please enter a valid card quantity');
+      return;
+    }
+
+    const targetOpName = `${addCardForm.network} Scratch Card Rs. ${cardVal}`;
+
+    setRows(prev => {
+      let found = false;
+      const updated = prev.map(r => {
+        if (r.operatorName === targetOpName || (r.network === addCardForm.network && Number(r.cardValue) === cardVal && r.tag === 'Scratch Card')) {
+          found = true;
+          const currentAdded = Number(r.addedToday || 0);
+          return { ...r, addedToday: currentAdded + qtyVal };
+        }
+        return r;
+      });
+
+      if (!found) {
+        const netColors = { Dialog: '#e11d48', Mobitel: '#059669', Airtel: '#ef4444', Hutch: '#f59e0b' };
+        updated.push({
+          id: `custom_card_${Date.now()}`,
+          operatorName: targetOpName,
+          network: addCardForm.network,
+          color: netColors[addCardForm.network] || '#e11d48',
+          tag: 'Scratch Card',
+          cardValue: cardVal,
+          commissionRate: 4,
+          openingStock: '',
+          addedToday: qtyVal,
+          eveningInHand: '',
+        });
+      }
+      return updated;
+    });
+
+    toast.success(`Added ${qtyVal} pcs of ${addCardForm.network} Rs. ${cardVal} Cards! 💳✨`);
+    setAddCardForm({ network: 'Dialog', cardValue: '100', quantity: '', notes: '' });
+    setShowAddCardModal(false);
   };
 
   // ── Live Calculation (Sold, Commission, Net) ───────────────────────────────
@@ -381,20 +485,20 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
                 <button
                   type="button"
                   onClick={() => setActiveTab('ereload')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
                     activeTab === 'ereload' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  <Smartphone size={14} /> 📲 E-Reload
+                  <Smartphone size={14} /> 📲 Reload
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab('cards')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
                     activeTab === 'cards' ? 'bg-rose-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  <CreditCard size={14} /> 💳 Scratch Cards
+                  <CreditCard size={14} /> 💳 Card
                 </button>
                 <button
                   type="button"
@@ -459,16 +563,26 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
           {/* TAB 1: E-Reload Machine Floats */}
           {activeTab === 'ereload' && (
             <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-              <div className="p-3 bg-slate-100/60 border-b border-slate-200 flex items-center justify-between">
+              <div className="p-3.5 bg-slate-100/60 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <Smartphone size={16} className="text-indigo-600" />
+                  <Smartphone size={18} className="text-indigo-600" />
                   <span className="text-xs font-bold text-slate-800 uppercase tracking-wide">
-                    E-Reload Machine Floats (Dialog, Mobitel, Airtel, Hutch)
+                    Reload Machine Floats (Dialog, Mobitel, Airtel, Hutch, Wallets)
                   </span>
                 </div>
-                <span className="text-[11px] text-slate-500 font-medium">
-                  Enter Added Float &amp; Evening In-Hand to calculate sales
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className="text-[11px] text-slate-500 font-medium hidden md:inline">
+                    Enter Added Float &amp; Evening In-Hand to calculate sales
+                  </span>
+                  {/* + ADD RELOAD BUTTON (Form Trigger) */}
+                  <button
+                    type="button"
+                    onClick={() => setShowAddReloadModal(true)}
+                    className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-indigo-500/20 transition-all cursor-pointer"
+                  >
+                    <Plus size={15} /> + Add Reload
+                  </button>
+                </div>
               </div>
 
               <div className="overflow-x-auto">
@@ -490,7 +604,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
                       <tr>
                         <td colSpan={8} className="p-8 text-center text-slate-400">
                           <Loader2 size={24} className="animate-spin mx-auto mb-2 text-indigo-600" />
-                          Loading E-Reload machines...
+                          Loading Reload machines...
                         </td>
                       </tr>
                     ) : ereloadRows.map((row) => (
@@ -564,24 +678,35 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
                 <div className="flex items-center gap-2">
                   <CreditCard size={18} className="text-rose-600" />
                   <span className="text-xs font-bold text-slate-800 uppercase tracking-wide">
-                    Physical Scratch Card Stock (Pieces)
+                    Physical Card Stock (Pieces)
                   </span>
                 </div>
 
-                {/* Network Quick Selector Filter */}
-                <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl">
-                  {['All', 'Dialog', 'Mobitel', 'Airtel', 'Hutch'].map((net) => (
-                    <button
-                      key={net}
-                      type="button"
-                      onClick={() => setSelectedNetwork(net)}
-                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
-                        selectedNetwork === net ? 'bg-rose-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
-                      }`}
-                    >
-                      {net}
-                    </button>
-                  ))}
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  {/* Network Quick Selector Filter */}
+                  <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+                    {['All', 'Dialog', 'Mobitel', 'Airtel', 'Hutch'].map((net) => (
+                      <button
+                        key={net}
+                        type="button"
+                        onClick={() => setSelectedNetwork(net)}
+                        className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                          selectedNetwork === net ? 'bg-rose-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        {net}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* + ADD CARD BUTTON (Form Trigger) */}
+                  <button
+                    type="button"
+                    onClick={() => setShowAddCardModal(true)}
+                    className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-rose-500/20 transition-all cursor-pointer"
+                  >
+                    <Plus size={15} /> + Add Card
+                  </button>
                 </div>
               </div>
 
@@ -605,7 +730,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
                       <tr>
                         <td colSpan={9} className="p-8 text-center text-slate-400">
                           <Loader2 size={24} className="animate-spin mx-auto mb-2 text-rose-600" />
-                          Loading scratch cards...
+                          Loading card stock...
                         </td>
                       </tr>
                     ) : cardRows.map((row) => (
@@ -686,7 +811,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
                 <button
                   type="button"
                   onClick={handlePrint}
-                  className="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold flex items-center gap-2 hover:bg-slate-800 transition-colors shadow-md"
+                  className="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold flex items-center gap-2 hover:bg-slate-800 transition-colors shadow-md cursor-pointer"
                 >
                   <Printer size={15} /> Print 80mm Slip
                 </button>
@@ -694,13 +819,13 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                  <div className="text-xs font-bold text-slate-500 uppercase">E-Reload Float Sales</div>
+                  <div className="text-xs font-bold text-slate-500 uppercase">Reload Float Sales</div>
                   <div className="text-xl font-black text-slate-900 mt-1">
                     Rs. {ereloadRows.reduce((a, b) => a + b._soldAmount, 0).toLocaleString()}
                   </div>
                 </div>
                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                  <div className="text-xs font-bold text-slate-500 uppercase">Scratch Cards Gross Sales</div>
+                  <div className="text-xs font-bold text-slate-500 uppercase">Card Gross Sales</div>
                   <div className="text-xl font-black text-slate-900 mt-1">
                     Rs. {calculations.computedRows.filter(r => r.tag === 'Scratch Card').reduce((a, b) => a + b._soldAmount, 0).toLocaleString()}
                   </div>
@@ -770,7 +895,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
                         key={op}
                         type="button"
                         onClick={() => setCreditForm({ ...creditForm, operator: op })}
-                        className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all ${
+                        className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                           creditForm.operator === op
                             ? 'bg-amber-500 text-white border-amber-600 shadow-sm'
                             : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
@@ -827,7 +952,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
                 <button
                   type="submit"
                   disabled={submittingCredit}
-                  className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm shadow-md transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {submittingCredit ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle size={18} />}
                   Record Credit Reload
@@ -846,7 +971,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
             <button
               type="button"
               onClick={handlePrint}
-              className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center justify-center gap-2 border border-slate-700 transition-colors"
+              className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center justify-center gap-2 border border-slate-700 transition-colors cursor-pointer"
             >
               <Printer size={16} /> Print Slip
             </button>
@@ -854,7 +979,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
               type="button"
               onClick={handleSave}
               disabled={saving}
-              className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/30 transition-all"
+              className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/30 transition-all cursor-pointer"
             >
               {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
               Save Daily Sheet &amp; Sync
@@ -863,6 +988,196 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
         </div>
 
       </div>
+
+      {/* ── POPUP MODAL 1: ADD RELOAD FLOAT FORM ─────────────────────────── */}
+      {showAddReloadModal && (
+        <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in zoom-in duration-150">
+          <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-slate-200 p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                  <Smartphone size={20} />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900">+ Add Reload Float</h3>
+                  <p className="text-xs text-slate-500">Record new stock/float added today</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAddReloadModal(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddReloadFloatSubmit} className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1.5">Select Machine / Operator *</label>
+                <select
+                  value={addReloadForm.operatorName}
+                  onChange={(e) => setAddReloadForm({ ...addReloadForm, operatorName: e.target.value })}
+                  className="w-full py-2.5 px-3 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 outline-none focus:border-indigo-500 bg-slate-50 focus:bg-white"
+                >
+                  <option value="Dialog E-Reload Float">Dialog E-Reload Float</option>
+                  <option value="Mobitel E-Reload Float">Mobitel E-Reload Float</option>
+                  <option value="Airtel E-Reload Float">Airtel E-Reload Float</option>
+                  <option value="Hutch Ez-Reload Float">Hutch Ez-Reload Float</option>
+                  <option value="Ez-Cash Float / Wallet">Ez-Cash Float / Wallet</option>
+                  <option value="M-Cash Float / Wallet">M-Cash Float / Wallet</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1.5">Added Float Amount (Rs.) *</label>
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  required
+                  placeholder="e.g. 5000"
+                  value={addReloadForm.amount}
+                  onChange={(e) => setAddReloadForm({ ...addReloadForm, amount: e.target.value })}
+                  className="w-full py-2.5 px-3 border border-slate-200 rounded-xl text-sm font-mono font-black text-emerald-700 outline-none focus:border-indigo-500 bg-emerald-50/40 focus:bg-white"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1.5">Notes / Distributor Reference</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Cash payment / Cheque / Bank Transfer"
+                  value={addReloadForm.notes}
+                  onChange={(e) => setAddReloadForm({ ...addReloadForm, notes: e.target.value })}
+                  className="w-full py-2 px-3 border border-slate-200 rounded-xl text-xs text-slate-800 outline-none focus:border-indigo-500"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddReloadModal(false)}
+                  className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-bold text-xs shadow-md shadow-indigo-500/20 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <Plus size={15} /> Add to Float
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── POPUP MODAL 2: ADD CARD STOCK FORM ───────────────────────────── */}
+      {showAddCardModal && (
+        <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in zoom-in duration-150">
+          <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-slate-200 p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold">
+                  <CreditCard size={20} />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900">+ Add Card Stock</h3>
+                  <p className="text-xs text-slate-500">Record scratch cards received today</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAddCardModal(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddCardStockSubmit} className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1.5">Select Network *</label>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {['Dialog', 'Mobitel', 'Airtel', 'Hutch'].map((net) => (
+                    <button
+                      key={net}
+                      type="button"
+                      onClick={() => setAddCardForm({ ...addCardForm, network: net })}
+                      className={`py-2 px-2 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                        addCardForm.network === net
+                          ? 'bg-rose-600 text-white border-rose-600 shadow-sm'
+                          : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      {net}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1.5">Card Denomination (Value) *</label>
+                <select
+                  value={addCardForm.cardValue}
+                  onChange={(e) => setAddCardForm({ ...addCardForm, cardValue: e.target.value })}
+                  className="w-full py-2.5 px-3 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 outline-none focus:border-rose-500 bg-slate-50 focus:bg-white"
+                >
+                  <option value="50">Rs. 50 Card</option>
+                  <option value="100">Rs. 100 Card</option>
+                  <option value="200">Rs. 200 Card</option>
+                  <option value="500">Rs. 500 Card</option>
+                  <option value="1000">Rs. 1000 Card</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1.5">Added Quantity (Pieces) *</label>
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  required
+                  placeholder="e.g. 50 pcs"
+                  value={addCardForm.quantity}
+                  onChange={(e) => setAddCardForm({ ...addCardForm, quantity: e.target.value })}
+                  className="w-full py-2.5 px-3 border border-slate-200 rounded-xl text-sm font-mono font-black text-rose-700 outline-none focus:border-rose-500 bg-rose-50/40 focus:bg-white"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1.5">Notes / Batch No</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Received from Dialog distributor"
+                  value={addCardForm.notes}
+                  onChange={(e) => setAddCardForm({ ...addCardForm, notes: e.target.value })}
+                  className="w-full py-2 px-3 border border-slate-200 rounded-xl text-xs text-slate-800 outline-none focus:border-rose-500"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddCardModal(false)}
+                  className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white font-bold text-xs shadow-md shadow-rose-500/20 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <Plus size={15} /> Add to Stock
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
