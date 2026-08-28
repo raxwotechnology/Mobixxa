@@ -752,21 +752,30 @@ const getProfitReport = async (req, res, next) => {
 };
 
 // @desc    Get detailed Daily Balance Report
+// @desc    Get Daily Financial Summary / Balance Report
 // @route   GET /api/finance/balance-report
 // @access  Private
 const getBalanceReport = async (req, res, next) => {
   try {
     const { date, storeId } = req.query;
-    const targetDate = date ? new Date(date) : new Date();
+    const targetDateStr = date ? String(date).trim().split('T')[0] : new Date().toISOString().split('T')[0];
     
-    const startOfDay = new Date(targetDate);
-    startOfDay.setHours(0, 0, 0, 0);
-
-    const endOfDay = new Date(targetDate);
-    endOfDay.setHours(23, 59, 59, 999);
+    const parts = targetDateStr.split(/[-/]/);
+    let startOfDay, endOfDay;
+    if (parts.length === 3) {
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1;
+      const day = parseInt(parts[2], 10);
+      startOfDay = new Date(Date.UTC(year, month, day, 0, 0, 0, 0));
+      endOfDay = new Date(Date.UTC(year, month, day, 23, 59, 59, 999));
+    } else {
+      const d = new Date(targetDateStr);
+      startOfDay = new Date(d.setHours(0, 0, 0, 0));
+      endOfDay = new Date(d.setHours(23, 59, 59, 999));
+    }
 
     let storeFilter = {};
-    if (req.user.role === 'manager') {
+    if (req.user?.role === 'manager') {
       const store = await Store.findOne({ managerId: req.user._id });
       if (store) storeFilter = { storeId: store._id };
     } else if (storeId && storeId !== 'all') {
@@ -838,11 +847,29 @@ const getBalanceReport = async (req, res, next) => {
     } catch (e) {}
 
     // Fetch Reloads
-    const Reload = require('../models/Reload');
     let reloadIncome = 0;
     try {
-      const reloads = await Reload.find({ ...storeFilter, ...dateQuery }).lean();
-      reloadIncome = reloads.reduce((sum, r) => sum + (r.amount || 0), 0);
+      const ReloadStock = require('../models/ReloadStock');
+      const stocks = await ReloadStock.find({
+        date: targetDateStr,
+        ...storeFilter
+      }).lean();
+
+      if (stocks && stocks.length > 0) {
+        reloadIncome = stocks.reduce((sum, s) => sum + (s.sellOutValue || 0), 0);
+      } else {
+        const Reload = require('../models/Reload');
+        const reloads = await Reload.find({
+          ...storeFilter,
+          $or: [
+            { date: targetDateStr },
+            dateQuery
+          ],
+          status: { $ne: 'Failed' },
+          paymentMethod: { $ne: 'Credit' }
+        }).lean();
+        reloadIncome = reloads.reduce((sum, r) => sum + (r.amount || 0), 0);
+      }
     } catch (e) {}
 
     // Fetch Transactions & Expenses (Service Costs & Supplier Costs)
@@ -873,7 +900,7 @@ const getBalanceReport = async (req, res, next) => {
     const balanceAmount = totalIncome - totalCost;
 
     res.json({
-      date: startOfDay.toISOString().split('T')[0],
+      date: targetDateStr,
       mobileIncome,
       accessoriesIncome,
       wholesaleIncome,
@@ -896,6 +923,7 @@ const getBalanceReport = async (req, res, next) => {
 module.exports = {
   getFinancialDashboard,
   getBalanceReport,
+  getDailyFinancials: getBalanceReport,
   createTransaction,
   getTransactions,
   updateTransaction,

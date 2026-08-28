@@ -4,9 +4,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { 
   X, Smartphone, CheckCircle, Loader2, Calendar, Printer, Save, 
   TrendingUp, CreditCard, Layers, Plus, DollarSign, Sparkles, 
-  Check, ArrowUpRight, ShieldCheck, RefreshCw, AlertCircle, Edit3 
+  Check, ArrowUpRight, ShieldCheck, RefreshCw, AlertCircle, Edit3, User, Phone 
 } from 'lucide-react';
-import { createReload, getReloadStocks, saveReloadDailySheet, saveReloadSheetApi, getTodayReloadSheetApi } from '../../services/api';
+import { 
+  createReload, getReloads, getReloadStocks, saveReloadDailySheet, 
+  saveReloadSheetApi, getTodayReloadSheetApi 
+} from '../../services/api';
 import { toast } from 'react-toastify';
 
 // ── Master Config for Operators & Scratch Cards ───────────────────────────────
@@ -96,9 +99,11 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
     notes: '',
   });
 
-  // Credit Reload State
+  // Credit Reload State & Ledger
   const [creditForm, setCreditForm] = useState({ mobileNumber: '', customerName: '', operator: 'Dialog', amount: '', notes: '' });
   const [submittingCredit, setSubmittingCredit] = useState(false);
+  const [creditReloads, setCreditReloads] = useState([]);
+  const [loadingCredits, setLoadingCredits] = useState(false);
 
   // ── Data Fetching ──────────────────────────────────────────────────────────
   const loadDailyData = async () => {
@@ -158,9 +163,29 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
     }
   };
 
+  // ── Load Credit Reloads Ledger ─────────────────────────────────────────────
+  const loadCreditReloads = async () => {
+    try {
+      setLoadingCredits(true);
+      const { data } = await getReloads({
+        isCredit: true,
+        date: stockDate,
+        ...(storeId ? { storeId } : {}),
+      });
+      setCreditReloads(Array.isArray(data) ? data : (data?.data || []));
+    } catch (err) {
+      console.warn('Failed to load credit reloads:', err);
+    } finally {
+      setLoadingCredits(false);
+    }
+  };
+
   useEffect(() => {
-    if (isOpen) loadDailyData();
-  }, [isOpen, stockDate, storeId]); // eslint-disable-line
+    if (isOpen) {
+      loadDailyData();
+      if (activeTab === 'credit') loadCreditReloads();
+    }
+  }, [isOpen, stockDate, storeId, activeTab]); // eslint-disable-line
 
   // ── Cell Value Change ──────────────────────────────────────────────────────
   const handleInputChange = (operatorName, field, val) => {
@@ -340,6 +365,11 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
     });
   }, [calculations.computedRows, selectedNetwork]);
 
+  // Total Credit Amount
+  const totalCreditAmount = useMemo(() => {
+    return creditReloads.reduce((acc, cr) => acc + (Number(cr.amount) || 0), 0);
+  }, [creditReloads]);
+
   // ── Save Sheet ─────────────────────────────────────────────────────────────
   const handleSave = async () => {
     try {
@@ -457,7 +487,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
       await createReload({ ...creditForm, storeId, paymentMethod: 'Credit', type: 'Prepaid', accountId: null });
       toast.success('Credit Reload logged successfully! 🏷️');
       setCreditForm({ mobileNumber: '', customerName: '', operator: 'Dialog', amount: '', notes: '' });
-      setActiveTab('ereload');
+      loadCreditReloads();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to record credit reload');
     } finally {
@@ -924,86 +954,171 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
           )}
 
           {/* ════════════════════════════════════════════════════════════════════
-              TAB 4: CREDIT RELOAD
+              TAB 4: CREDIT RELOAD & LIVE LEDGER
              ════════════════════════════════════════════════════════════════════ */}
           {activeTab === 'credit' && (
-            <div className="max-w-xl mx-auto bg-slate-900 p-6 rounded-3xl border border-slate-800 shadow-xl space-y-5">
-              <div className="border-b border-slate-800 pb-3">
-                <h3 className="text-base font-black text-white">🏷️ Record Credit Reload</h3>
-                <p className="text-xs text-slate-400 mt-1">Log reload given to a customer on credit without drawer float addition.</p>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+              
+              {/* Left Form: Add Credit Reload */}
+              <div className="lg:col-span-5 bg-slate-900 p-6 rounded-3xl border border-slate-800 shadow-xl space-y-5">
+                <div className="border-b border-slate-800 pb-3">
+                  <h3 className="text-base font-black text-white">🏷️ Record Credit Reload</h3>
+                  <p className="text-xs text-slate-400 mt-1">Log reload given to a customer on credit.</p>
+                </div>
+                <form onSubmit={handleCreditSubmit} className="space-y-4">
+                  <div>
+                    <label className="text-xs font-bold text-slate-300 block mb-1.5">Select Network *</label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {['Dialog', 'Mobitel', 'Airtel', 'Hutch'].map((op) => (
+                        <button
+                          key={op}
+                          type="button"
+                          onClick={() => setCreditForm({ ...creditForm, operator: op })}
+                          className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                            creditForm.operator === op
+                              ? 'bg-amber-500 text-slate-950 border-amber-500 font-black shadow-md'
+                              : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
+                          }`}
+                        >
+                          {op}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-300 block mb-1.5">Mobile Number *</label>
+                    <input
+                      type="text"
+                      value={creditForm.mobileNumber}
+                      onChange={(e) => setCreditForm({ ...creditForm, mobileNumber: e.target.value })}
+                      placeholder="0771234567"
+                      required
+                      className="w-full py-2.5 px-3 border border-slate-700 bg-slate-950 rounded-xl text-sm font-bold text-white outline-none focus:border-amber-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-300 block mb-1.5">Customer Name (Optional)</label>
+                    <input
+                      type="text"
+                      value={creditForm.customerName}
+                      onChange={(e) => setCreditForm({ ...creditForm, customerName: e.target.value })}
+                      placeholder="Customer Name / NIC"
+                      className="w-full py-2.5 px-3 border border-slate-700 bg-slate-950 rounded-xl text-sm text-white outline-none focus:border-amber-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-300 block mb-1.5">Reload Amount (Rs.) *</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={creditForm.amount}
+                      onChange={(e) => setCreditForm({ ...creditForm, amount: e.target.value })}
+                      placeholder="100"
+                      required
+                      className="w-full py-2.5 px-3 border border-slate-700 bg-slate-950 rounded-xl text-sm font-mono font-bold text-amber-400 outline-none focus:border-amber-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-300 block mb-1.5">Notes</label>
+                    <textarea
+                      value={creditForm.notes}
+                      onChange={(e) => setCreditForm({ ...creditForm, notes: e.target.value })}
+                      placeholder="e.g. Regular customer, will settle tomorrow"
+                      rows={2}
+                      className="w-full py-2 px-3 border border-slate-700 bg-slate-950 rounded-xl text-xs text-white outline-none focus:border-amber-500"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={submittingCredit}
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-black text-sm shadow-lg shadow-amber-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    {submittingCredit ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle size={18} />}
+                    Save Credit Reload Entry
+                  </button>
+                </form>
               </div>
-              <form onSubmit={handleCreditSubmit} className="space-y-4">
-                <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1.5">Select Network *</label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {['Dialog', 'Mobitel', 'Airtel', 'Hutch'].map((op) => (
-                      <button
-                        key={op}
-                        type="button"
-                        onClick={() => setCreditForm({ ...creditForm, operator: op })}
-                        className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
-                          creditForm.operator === op
-                            ? 'bg-amber-500 text-slate-950 border-amber-500 font-black shadow-md'
-                            : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
-                        }`}
-                      >
-                        {op}
-                      </button>
-                    ))}
+
+              {/* Right Side: Credit Reloads Ledger */}
+              <div className="lg:col-span-7 bg-slate-900 p-6 rounded-3xl border border-slate-800 shadow-xl flex flex-col space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                  <div>
+                    <h3 className="text-base font-black text-white flex items-center gap-2">
+                      <span>📋 Credit Reloads Ledger ({stockDate})</span>
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      {creditReloads.length} Credit {creditReloads.length === 1 ? 'entry' : 'entries'} on record
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">Total Credit</span>
+                    <span className="text-lg font-black text-amber-300 font-mono">
+                      Rs. {totalCreditAmount.toLocaleString()}
+                    </span>
                   </div>
                 </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1.5">Mobile Number *</label>
-                  <input
-                    type="text"
-                    value={creditForm.mobileNumber}
-                    onChange={(e) => setCreditForm({ ...creditForm, mobileNumber: e.target.value })}
-                    placeholder="0771234567"
-                    required
-                    className="w-full py-2.5 px-3 border border-slate-700 bg-slate-950 rounded-xl text-sm font-bold text-white outline-none focus:border-amber-500"
-                  />
+
+                <div className="flex-1 overflow-y-auto max-h-[380px] space-y-2 pr-1">
+                  {loadingCredits ? (
+                    <div className="py-16 text-center text-slate-400">
+                      <Loader2 size={28} className="animate-spin mx-auto mb-2 text-amber-500" />
+                      Loading credit reloads...
+                    </div>
+                  ) : creditReloads.length === 0 ? (
+                    <div className="py-16 text-center text-slate-400">
+                      <CreditCard size={40} className="mx-auto mb-2 text-slate-600" />
+                      <p className="text-xs font-bold text-slate-300">No credit reloads recorded for {stockDate}</p>
+                      <p className="text-[10px] text-slate-500 mt-1">Submit the form on the left to add a credit reload.</p>
+                    </div>
+                  ) : (
+                    creditReloads.map((cr) => (
+                      <div 
+                        key={cr._id} 
+                        className="p-3.5 rounded-2xl border border-slate-800 bg-slate-950/80 hover:bg-slate-950 transition-all flex items-center justify-between gap-3"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center font-black text-xs shrink-0 border border-amber-500/20">
+                            {cr.operator?.slice(0, 3).toUpperCase() || 'REL'}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-black text-white text-xs">{cr.mobileNumber}</span>
+                              {cr.customerName && (
+                                <span className="text-xs font-semibold text-slate-300">({cr.customerName})</span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 text-[10px] text-slate-400 mt-0.5">
+                              <span className="font-bold text-slate-300">{cr.operator}</span>
+                              <span>•</span>
+                              <span>{new Date(cr.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                              {cr.notes && (
+                                <>
+                                  <span>•</span>
+                                  <span className="italic text-slate-400">{cr.notes}</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="text-right shrink-0">
+                          <div className="font-black text-amber-400 text-sm font-mono">
+                            Rs. {Number(cr.amount || 0).toLocaleString()}
+                          </div>
+                          <span className={`inline-block px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider mt-1 ${
+                            cr.creditSettled 
+                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' 
+                              : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                          }`}>
+                            {cr.creditSettled ? 'Settled' : 'Pending'}
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1.5">Customer Name (Optional)</label>
-                  <input
-                    type="text"
-                    value={creditForm.customerName}
-                    onChange={(e) => setCreditForm({ ...creditForm, customerName: e.target.value })}
-                    placeholder="Customer Name / NIC"
-                    className="w-full py-2.5 px-3 border border-slate-700 bg-slate-950 rounded-xl text-sm text-white outline-none focus:border-amber-500"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1.5">Reload Amount (Rs.) *</label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={creditForm.amount}
-                    onChange={(e) => setCreditForm({ ...creditForm, amount: e.target.value })}
-                    placeholder="100"
-                    required
-                    className="w-full py-2.5 px-3 border border-slate-700 bg-slate-950 rounded-xl text-sm font-mono font-bold text-amber-400 outline-none focus:border-amber-500"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1.5">Notes</label>
-                  <textarea
-                    value={creditForm.notes}
-                    onChange={(e) => setCreditForm({ ...creditForm, notes: e.target.value })}
-                    placeholder="e.g. Regular customer, will settle tomorrow"
-                    rows={2}
-                    className="w-full py-2 px-3 border border-slate-700 bg-slate-950 rounded-xl text-xs text-white outline-none focus:border-amber-500"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={submittingCredit}
-                  className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-black text-sm shadow-lg shadow-amber-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  {submittingCredit ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle size={18} />}
-                  Record Credit Reload
-                </button>
-              </form>
+              </div>
+
             </div>
           )}
         </div>
