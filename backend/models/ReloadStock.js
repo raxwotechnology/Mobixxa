@@ -14,7 +14,7 @@ const reloadStockSchema = new mongoose.Schema(
     operator: {
       type: String,
       required: true,
-      enum: ['Dialog', 'Mobitel', 'Hutch', 'Airtel', 'SLT', 'EzCash', 'mCash', 'Other'],
+      trim: true,
     },
     cardValue: {
       type: Number,

@@ -19,20 +19,28 @@ const createReload = async (req, res, next) => {
       notes, 
       storeId,
       accountId,
-      customerName 
+      customerName,
+      date,
+      isCredit: reqIsCredit,
+      status: reqStatus
     } = req.body;
 
     let assignedStore = storeId;
     if (!assignedStore) {
-      if (req.user.role === 'manager') {
+      if (req.user?.role === 'manager') {
         const store = await Store.findOne({ managerId: req.user._id });
         if (store) assignedStore = store._id;
-      } else if (req.user.assignedStore) {
+      } else if (req.user?.assignedStore) {
         assignedStore = req.user.assignedStore;
-      } else if (req.user.role === 'admin') {
+      } else if (req.user?.role === 'admin') {
         const store = await Store.findOne({ isActive: true });
         if (store) assignedStore = store._id;
       }
+    }
+
+    if (!assignedStore) {
+      const anyStore = await Store.findOne({ isActive: true });
+      if (anyStore) assignedStore = anyStore._id;
     }
 
     if (!assignedStore) {
@@ -40,7 +48,11 @@ const createReload = async (req, res, next) => {
       return next(new Error('No store found for this transaction. Please ensure your account is linked to a store.'));
     }
 
-    const isCredit = String(paymentMethod).toLowerCase() === 'credit';
+    const isCredit = reqIsCredit === true || reqIsCredit === 'true' || String(paymentMethod).toLowerCase() === 'credit';
+    const targetDate = (date ? String(date).trim().split('T')[0] : new Date().toISOString().split('T')[0]);
+    const finalPaymentMethod = isCredit ? 'Credit' : (paymentMethod || 'Cash');
+    const finalStatus = reqStatus || (isCredit ? 'Pending' : 'Completed');
+    const numericAmount = Math.max(0, Number(amount) || 0);
 
     // 1. Create Transaction for the record
     let transaction = null;
@@ -50,9 +62,9 @@ const createReload = async (req, res, next) => {
         accountId: isCredit ? null : (accountId || null),
         type: 'income',
         category: isCredit ? 'Credit Reload' : 'Reload & Bill Payment',
-        amount: Number(amount),
-        paymentMethod: isCredit ? 'Credit' : (paymentMethod || 'Cash'),
-        description: `${isCredit ? '[CREDIT] ' : ''}${type || 'Prepaid'} Reload: ${operator} - ${mobileNumber}${customerName ? ` (${customerName})` : ''}`,
+        amount: numericAmount,
+        paymentMethod: finalPaymentMethod,
+        description: `${isCredit ? '[CREDIT] ' : ''}${type || 'Prepaid'} Reload: ${operator || 'Telecom'} - ${mobileNumber}${customerName ? ` (${customerName})` : ''}`,
         date: new Date(),
         createdBy: req.user._id,
       });
@@ -63,18 +75,19 @@ const createReload = async (req, res, next) => {
     // 2. Create Reload record
     const reload = await Reload.create({
       storeId: assignedStore || null,
-      mobileNumber,
-      customerName: customerName || undefined,
-      operator,
-      amount: Number(amount),
+      date: targetDate,
+      mobileNumber: String(mobileNumber || '').trim(),
+      customerName: customerName ? String(customerName).trim() : undefined,
+      operator: String(operator || 'Other').trim(),
+      amount: numericAmount,
       type: type || 'Prepaid',
-      paymentMethod: isCredit ? 'Credit' : (paymentMethod || 'Cash'),
+      paymentMethod: finalPaymentMethod,
       isCredit,
       creditSettled: false,
-      notes,
+      notes: notes ? String(notes).trim() : '',
       transactionId: transaction?._id || null,
       createdBy: req.user._id,
-      status: 'Completed'
+      status: finalStatus
     });
 
     res.status(201).json({
@@ -92,13 +105,15 @@ const createReload = async (req, res, next) => {
 // @access  Private
 const getReloads = async (req, res, next) => {
   try {
-    const { startDate, endDate, storeId, operator } = req.query;
+    const { startDate, endDate, date, storeId, operator, isCredit, paymentMethod } = req.query;
     const filter = {};
 
     let assignedStore = storeId;
-    if (req.user.role === 'manager') {
+    if (req.user?.role === 'manager') {
       const store = await Store.findOne({ managerId: req.user._id });
       if (store) assignedStore = store._id;
+    } else if (req.user?.assignedStore) {
+      assignedStore = req.user.assignedStore;
     }
 
     if (assignedStore && assignedStore !== 'all') {
@@ -106,8 +121,22 @@ const getReloads = async (req, res, next) => {
     }
     
     if (operator) filter.operator = operator;
+    if (isCredit !== undefined) {
+      filter.isCredit = isCredit === 'true' || isCredit === true;
+    }
+    if (paymentMethod) {
+      filter.paymentMethod = paymentMethod;
+    }
 
-    if (startDate || endDate) {
+    if (date) {
+      const targetDateStr = String(date).trim().split('T')[0];
+      const startOfDay = new Date(`${targetDateStr}T00:00:00.000Z`);
+      const endOfDay = new Date(`${targetDateStr}T23:59:59.999Z`);
+      filter.$or = [
+        { date: targetDateStr },
+        { createdAt: { $gte: startOfDay, $lte: endOfDay } }
+      ];
+    } else if (startDate || endDate) {
       filter.createdAt = {};
       if (startDate) filter.createdAt.$gte = new Date(startDate);
       if (endDate) filter.createdAt.$lte = new Date(endDate);
@@ -127,22 +156,19 @@ const getReloads = async (req, res, next) => {
 // @desc    Get daily reload stocks
 // @route   GET /api/reloads/stocks
 // @access  Private
-// @desc    Get daily reload stocks
-// @route   GET /api/reloads/stocks
-// @access  Private
 const getReloadStocks = async (req, res, next) => {
   try {
     const { date, storeId } = req.query;
-    const targetDate = date || new Date().toISOString().split('T')[0];
+    const targetDate = (date ? String(date).trim().split('T')[0] : new Date().toISOString().split('T')[0]);
     const filter = { date: targetDate };
 
     let assignedStore = storeId;
     if (assignedStore && assignedStore !== 'all') {
       filter.storeId = assignedStore;
-    } else if (req.user.role === 'manager') {
+    } else if (req.user?.role === 'manager') {
       const store = await Store.findOne({ managerId: req.user._id });
       if (store) filter.storeId = store._id;
-    } else if (req.user.assignedStore) {
+    } else if (req.user?.assignedStore) {
       filter.storeId = req.user.assignedStore;
     }
 
@@ -165,14 +191,14 @@ const getReloadStocks = async (req, res, next) => {
 
         for (const prevItem of prevStocks) {
           const carriedOpening = prevItem.closingStock !== undefined && prevItem.closingStock !== null
-            ? prevItem.closingStock 
-            : prevItem.totalStock;
+            ? Number(prevItem.closingStock) || 0
+            : Number(prevItem.totalStock) || 0;
 
           await ReloadStock.create({
             storeId: filter.storeId,
             date: targetDate,
             operator: prevItem.operator,
-            cardValue: prevItem.cardValue,
+            cardValue: Number(prevItem.cardValue) || 1,
             openingStock: carriedOpening,
             addedStock: 0,
             totalStock: carriedOpening,
@@ -202,54 +228,62 @@ const getReloadStocks = async (req, res, next) => {
 const addReloadStock = async (req, res, next) => {
   try {
     const { storeId, operator, cardValue, openingStock, addedStock, notes, date } = req.body;
-    const targetDate = date || new Date().toISOString().split('T')[0];
+    const targetDate = (date ? String(date).trim().split('T')[0] : new Date().toISOString().split('T')[0]);
 
     let assignedStore = storeId;
     if (!assignedStore) {
-      if (req.user.role === 'manager') {
+      if (req.user?.role === 'manager') {
         const store = await Store.findOne({ managerId: req.user._id });
         if (store) assignedStore = store._id;
-      } else if (req.user.assignedStore) {
+      } else if (req.user?.assignedStore) {
         assignedStore = req.user.assignedStore;
-      } else if (req.user.role === 'admin') {
+      } else if (req.user?.role === 'admin') {
         const store = await Store.findOne({ isActive: true });
         if (store) assignedStore = store._id;
       }
     }
 
+    if (!assignedStore) {
+      const anyStore = await Store.findOne({ isActive: true });
+      if (anyStore) assignedStore = anyStore._id;
+    }
+
+    const cleanOperator = String(operator || 'Other').trim();
+    const cleanCardVal = Number(cardValue) || 1;
+
     let stockItem = await ReloadStock.findOne({
       storeId: assignedStore,
       date: targetDate,
-      operator,
-      cardValue: Number(cardValue || 1),
+      operator: cleanOperator,
+      cardValue: cleanCardVal,
     });
 
     if (stockItem) {
-      if (openingStock !== undefined && openingStock !== '') stockItem.openingStock = Number(openingStock);
-      if (addedStock !== undefined && addedStock !== '') stockItem.addedStock += Number(addedStock);
+      if (openingStock !== undefined && openingStock !== '') stockItem.openingStock = Math.max(0, Number(openingStock) || 0);
+      if (addedStock !== undefined && addedStock !== '') stockItem.addedStock += Math.max(0, Number(addedStock) || 0);
       stockItem.totalStock = stockItem.openingStock + stockItem.addedStock;
       stockItem.closingStock = stockItem.totalStock; // reset evening balance to total stock until closed
       stockItem.sellOutAmount = 0;
       stockItem.sellOutValue = 0;
-      if (notes) stockItem.notes = notes;
+      if (notes !== undefined) stockItem.notes = notes;
       stockItem.recordedBy = req.user._id;
       await stockItem.save();
     } else {
-      const openVal = Number(openingStock || 0);
-      const addVal = Number(addedStock || 0);
+      const openVal = Math.max(0, Number(openingStock) || 0);
+      const addVal = Math.max(0, Number(addedStock) || 0);
       const totalVal = openVal + addVal;
       stockItem = await ReloadStock.create({
         storeId: assignedStore,
         date: targetDate,
-        operator,
-        cardValue: Number(cardValue || 1),
+        operator: cleanOperator,
+        cardValue: cleanCardVal,
         openingStock: openVal,
         addedStock: addVal,
         totalStock: totalVal,
         closingStock: totalVal,
         sellOutAmount: 0,
         sellOutValue: 0,
-        notes,
+        notes: notes || '',
         recordedBy: req.user._id,
       });
     }
@@ -273,10 +307,11 @@ const closeReloadStock = async (req, res, next) => {
       return next(new Error('Reload stock record not found'));
     }
 
-    stockItem.closingStock = Number(closingStock);
+    const safeClosing = Math.max(0, Number(closingStock) || 0);
+    stockItem.closingStock = safeClosing;
     stockItem.sellOutAmount = Math.max(0, stockItem.totalStock - stockItem.closingStock);
-    stockItem.sellOutValue = stockItem.sellOutAmount * stockItem.cardValue;
-    if (notes) stockItem.notes = notes;
+    stockItem.sellOutValue = stockItem.sellOutAmount * (Number(stockItem.cardValue) || 1);
+    if (notes !== undefined) stockItem.notes = notes;
     stockItem.recordedBy = req.user._id;
 
     // Auto Create / Update Financial Transaction for Income Ledger
@@ -321,12 +356,12 @@ const addReloadSupplierPayment = async (req, res, next) => {
 
     let assignedStore = storeId;
     if (!assignedStore) {
-      if (req.user.role === 'manager') {
+      if (req.user?.role === 'manager') {
         const store = await Store.findOne({ managerId: req.user._id });
         if (store) assignedStore = store._id;
-      } else if (req.user.assignedStore) {
+      } else if (req.user?.assignedStore) {
         assignedStore = req.user.assignedStore;
-      } else if (req.user.role === 'admin') {
+      } else if (req.user?.role === 'admin') {
         const store = await Store.findOne({ isActive: true });
         if (store) assignedStore = store._id;
       }
@@ -364,6 +399,8 @@ const addReloadSupplierPayment = async (req, res, next) => {
     else if (pmLower.includes('cash')) mappedMethod = 'cash';
     else mappedMethod = 'other';
 
+    const numericAmount = Math.max(0, Number(amount) || 0);
+
     // 3. Create SupplierPayment record
     let supplierPaymentRecord = null;
     if (supplier && assignedStore) {
@@ -371,7 +408,7 @@ const addReloadSupplierPayment = async (req, res, next) => {
         supplierId: supplier._id,
         storeId: assignedStore,
         type: 'payment',
-        amount: Number(amount),
+        amount: numericAmount,
         paymentMethod: mappedMethod,
         description: `Reload Float / Card Payment (${operator || 'Network'}) - ${notes || cleanSupplierName}`,
         date: new Date(),
@@ -384,7 +421,7 @@ const addReloadSupplierPayment = async (req, res, next) => {
       storeId: assignedStore || null,
       type: 'expense',
       category: 'Reload Supplier Cost',
-      amount: Number(amount),
+      amount: numericAmount,
       paymentMethod: paymentMethod || 'Cash',
       description: `Reload Supplier Purchase (${operator || 'Float'}) - ${cleanSupplierName}`,
       notes,
@@ -408,16 +445,16 @@ const addReloadSupplierPayment = async (req, res, next) => {
 const saveReloadDailySheet = async (req, res, next) => {
   try {
     const { storeId, date, items } = req.body;
-    const targetDate = date || new Date().toISOString().split('T')[0];
+    const targetDate = (date ? String(date).trim().split('T')[0] : new Date().toISOString().split('T')[0]);
 
     let assignedStore = storeId;
     if (!assignedStore) {
-      if (req.user.role === 'manager') {
+      if (req.user?.role === 'manager') {
         const store = await Store.findOne({ managerId: req.user._id });
         if (store) assignedStore = store._id;
-      } else if (req.user.assignedStore) {
+      } else if (req.user?.assignedStore) {
         assignedStore = req.user.assignedStore;
-      } else if (req.user.role === 'admin') {
+      } else if (req.user?.role === 'admin') {
         const store = await Store.findOne({ isActive: true });
         if (store) assignedStore = store._id;
       }
@@ -437,13 +474,14 @@ const saveReloadDailySheet = async (req, res, next) => {
     let totalDailySellOutRevenue = 0;
 
     for (const item of items) {
-      const operator = item.operator;
-      const cardValue = Number(item.cardValue || 1);
-      const openingStock = Number(item.openingStock || 0);
-      const addedStock = Number(item.addedStock || 0);
+      const rawOperator = String(item.operator || item.label || 'Other').trim();
+      const operator = rawOperator || 'Other';
+      const cardValue = Number(item.cardValue) || 1;
+      const openingStock = Math.max(0, Number(item.openingStock) || 0);
+      const addedStock = Math.max(0, Number(item.addedStock) || 0);
       const totalStock = openingStock + addedStock;
-      const closingStock = item.closingStock !== undefined && item.closingStock !== null && item.closingStock !== ''
-        ? Number(item.closingStock)
+      const closingStock = (item.closingStock !== undefined && item.closingStock !== null && item.closingStock !== '')
+        ? Math.max(0, Number(item.closingStock) || 0)
         : totalStock;
       const sellOutAmount = Math.max(0, totalStock - closingStock);
       const sellOutValue = sellOutAmount * cardValue;
@@ -464,7 +502,7 @@ const saveReloadDailySheet = async (req, res, next) => {
         record.closingStock = closingStock;
         record.sellOutAmount = sellOutAmount;
         record.sellOutValue = sellOutValue;
-        if (item.notes) record.notes = item.notes;
+        if (item.notes !== undefined) record.notes = item.notes;
         record.recordedBy = req.user._id;
         await record.save();
       } else {
@@ -501,8 +539,10 @@ module.exports = {
   createReload,
   getReloads,
   getReloadStocks,
+  getTodayReloadSheet: getReloadStocks,
   addReloadStock,
   closeReloadStock,
   addReloadSupplierPayment,
   saveReloadDailySheet,
+  saveReloadSheet: saveReloadDailySheet,
 };

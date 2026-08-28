@@ -15,7 +15,7 @@ const reloadSchema = new mongoose.Schema(
     operator: {
       type: String,
       required: [true, 'Operator is required'],
-      enum: ['Dialog', 'Mobitel', 'Hutch', 'Airtel', 'SLT', 'Other'],
+      trim: true,
     },
     amount: {
       type: Number,
@@ -30,6 +30,7 @@ const reloadSchema = new mongoose.Schema(
     paymentMethod: {
       type: String,
       default: 'Cash',
+      trim: true,
     },
     customerName: {
       type: String,
@@ -45,6 +46,10 @@ const reloadSchema = new mongoose.Schema(
     },
     creditSettledAt: {
       type: Date,
+    },
+    date: {
+      type: String, // YYYY-MM-DD
+      trim: true,
     },
     status: {
       type: String,
@@ -71,6 +76,8 @@ const reloadSchema = new mongoose.Schema(
 );
 
 reloadSchema.index({ mobileNumber: 1 });
+reloadSchema.index({ storeId: 1, date: 1 });
+reloadSchema.index({ isCredit: 1, storeId: 1 });
 reloadSchema.index({ createdAt: -1 });
 
 module.exports = mongoose.model('Reload', reloadSchema);

@@ -22,7 +22,7 @@ import {
   Zap,
   ArrowRight
 } from 'lucide-react';
-import { createReload, getReloadStocks, saveReloadDailySheet } from '../../services/api';
+import { createReload, getReloads, getReloadStocks, saveReloadDailySheet } from '../../services/api';
 import { toast } from 'react-toastify';
 
 const DEFAULT_RELOAD_ITEMS = [
@@ -47,7 +47,9 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
   const [savingSheet, setSavingSheet] = useState(false);
   const [sheetRows, setSheetRows] = useState([]);
 
-  // Quick Credit Reload Form
+  // Credit Reload State & List
+  const [creditReloads, setCreditReloads] = useState([]);
+  const [loadingCredits, setLoadingCredits] = useState(false);
   const [creditFormData, setCreditFormData] = useState({
     mobileNumber: '',
     customerName: '',
@@ -131,9 +133,28 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
     }
   };
 
+  // Fetch Credit Reloads for selected date & store
+  const fetchCreditReloads = async () => {
+    try {
+      setLoadingCredits(true);
+      const params = {
+        date: stockDate,
+        isCredit: true,
+        ...(storeId ? { storeId } : {})
+      };
+      const { data } = await getReloads(params);
+      setCreditReloads(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Failed to fetch credit reload records:', err);
+    } finally {
+      setLoadingCredits(false);
+    }
+  };
+
   useEffect(() => {
     if (isOpen) {
       loadSheetData();
+      fetchCreditReloads();
     }
   }, [isOpen, stockDate, storeId]);
 
@@ -192,6 +213,10 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
     };
   }, [sheetRows]);
 
+  const totalCreditAmount = useMemo(() => {
+    return creditReloads.reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+  }, [creditReloads]);
+
   // Save the entire Daily Sheet
   const handleSaveDailySheet = async () => {
     try {
@@ -200,18 +225,18 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
         storeId,
         date: stockDate,
         items: sheetRows.map((r) => ({
-          operator: r.operator,
-          cardValue: r.cardValue,
-          openingStock: Number(r.openingStock || 0),
-          addedStock: Number(r.addedStock || 0),
-          closingStock: Number(r.closingStock || 0),
+          operator: r.operator || r.label || 'Other',
+          cardValue: Number(r.cardValue) || 1,
+          openingStock: Math.max(0, Number(r.openingStock) || 0),
+          addedStock: Math.max(0, Number(r.addedStock) || 0),
+          closingStock: Math.max(0, Number(r.closingStock !== undefined && r.closingStock !== null && r.closingStock !== '' ? r.closingStock : (Number(r.openingStock || 0) + Number(r.addedStock || 0))) || 0),
           notes: r.notes || ''
         }))
       };
 
       const res = await saveReloadDailySheet(payload);
-      toast.success(res.data?.message || 'Daily Reload Sheet saved & synced with drawer! 📊✅');
-      loadSheetData();
+      toast.success(res.data?.message || 'Daily Reload Sheet saved & synced successfully! 📊✅');
+      await Promise.all([loadSheetData(), fetchCreditReloads()]);
       if (onSyncSuccess) onSyncSuccess();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to save daily reload sheet');
@@ -314,13 +339,20 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
     try {
       setSubmittingCredit(true);
       await createReload({
-        ...creditFormData,
+        mobileNumber: creditFormData.mobileNumber.trim(),
+        customerName: creditFormData.customerName?.trim() || undefined,
+        operator: creditFormData.operator,
+        amount: Number(creditFormData.amount),
+        notes: creditFormData.notes?.trim() || '',
         storeId,
+        date: stockDate,
         paymentMethod: 'Credit',
         type: 'Prepaid',
+        isCredit: true,
+        status: 'Pending',
         accountId: null
       });
-      toast.success('Credit Reload recorded successfully! 🏷️✅');
+      toast.success('Credit reload logged successfully! 🏷️✅');
       setCreditFormData({
         mobileNumber: '',
         customerName: '',
@@ -328,7 +360,8 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
         amount: '',
         notes: ''
       });
-      setModalTab('sheet');
+      await Promise.all([loadSheetData(), fetchCreditReloads()]);
+      if (onSyncSuccess) onSyncSuccess();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to record credit reload');
     } finally {
@@ -392,21 +425,19 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  🏷️ Credit Reload
+                  🏷️ Credit Reload ({creditReloads.length})
                 </button>
               </div>
 
-              {modalTab === 'sheet' && (
-                <div className="flex items-center gap-1.5 bg-slate-800/80 px-2.5 py-1 rounded-xl border border-slate-700">
-                  <Calendar size={14} className="text-slate-400" />
-                  <input
-                    type="date"
-                    value={stockDate}
-                    onChange={(e) => setStockDate(e.target.value)}
-                    className="bg-transparent text-xs text-white font-bold outline-none cursor-pointer"
-                  />
-                </div>
-              )}
+              <div className="flex items-center gap-1.5 bg-slate-800/80 px-2.5 py-1 rounded-xl border border-slate-700">
+                <Calendar size={14} className="text-slate-400" />
+                <input
+                  type="date"
+                  value={stockDate}
+                  onChange={(e) => setStockDate(e.target.value)}
+                  className="bg-transparent text-xs text-white font-bold outline-none cursor-pointer"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -553,39 +584,41 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
               </div>
             </>
           ) : (
-            /* Quick Credit Reload Tab */
-            <div className="max-w-xl mx-auto bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-5">
-              <div className="border-b border-slate-100 pb-3">
-                <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
-                  <span>🏷️ Record Credit Reload (ණයට දැමූ Reload)</span>
-                </h3>
-                <p className="text-xs text-slate-500 mt-1">
-                  Log reload given to a known customer on credit without adding cash into drawer float.
-                </p>
-              </div>
-
-              <form onSubmit={handleSubmitCreditReload} className="space-y-4">
-                <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1">Select Operator *</label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {['Dialog', 'Mobitel', 'Airtel', 'Hutch'].map((op) => (
-                      <button
-                        key={op}
-                        type="button"
-                        onClick={() => setCreditFormData({ ...creditFormData, operator: op })}
-                        className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all ${
-                          creditFormData.operator === op 
-                            ? 'bg-amber-500 text-white border-amber-600 shadow-sm' 
-                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
-                        }`}
-                      >
-                        {op}
-                      </button>
-                    ))}
-                  </div>
+            /* Quick Credit Reload Tab: Form & Live Ledger */
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+              
+              {/* Credit Reload Entry Form */}
+              <div className="lg:col-span-5 bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                <div className="border-b border-slate-100 pb-3">
+                  <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+                    <span>🏷️ Record Credit Reload (ණය Reload)</span>
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Log reload given to customer on credit without adding cash into drawer float.
+                  </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <form onSubmit={handleSubmitCreditReload} className="space-y-4">
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Select Operator *</label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {['Dialog', 'Mobitel', 'Airtel', 'Hutch'].map((op) => (
+                        <button
+                          key={op}
+                          type="button"
+                          onClick={() => setCreditFormData({ ...creditFormData, operator: op })}
+                          className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                            creditFormData.operator === op 
+                              ? 'bg-amber-500 text-white border-amber-600 shadow-sm' 
+                              : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                          }`}
+                        >
+                          {op}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   <div>
                     <label className="text-xs font-bold text-slate-700 block mb-1">Customer Mobile Number *</label>
                     <input
@@ -594,53 +627,136 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
                       value={creditFormData.mobileNumber}
                       onChange={(e) => setCreditFormData({ ...creditFormData, mobileNumber: e.target.value })}
                       placeholder="0771234567"
-                      className="w-full p-2.5 text-sm font-semibold border border-slate-200 rounded-xl outline-none focus:border-amber-500"
+                      className="w-full p-2.5 text-sm font-semibold border border-slate-200 rounded-xl outline-none focus:border-amber-500 bg-slate-50 focus:bg-white"
                     />
                   </div>
+
                   <div>
                     <label className="text-xs font-bold text-slate-700 block mb-1">Customer Name (Optional)</label>
                     <input
                       type="text"
                       value={creditFormData.customerName}
                       onChange={(e) => setCreditFormData({ ...creditFormData, customerName: e.target.value })}
-                      placeholder="e.g. Kamal / Shop neighbor"
-                      className="w-full p-2.5 text-sm font-semibold border border-slate-200 rounded-xl outline-none focus:border-amber-500"
+                      placeholder="e.g. Kamal / Neighbor"
+                      className="w-full p-2.5 text-sm font-semibold border border-slate-200 rounded-xl outline-none focus:border-amber-500 bg-slate-50 focus:bg-white"
                     />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Reload Amount (Rs.) *</label>
+                    <input
+                      type="number"
+                      required
+                      min="1"
+                      value={creditFormData.amount}
+                      onChange={(e) => setCreditFormData({ ...creditFormData, amount: e.target.value })}
+                      placeholder="Enter amount (e.g. 500)"
+                      className="w-full p-3 text-lg font-black text-amber-700 border-2 border-amber-200 rounded-xl outline-none focus:border-amber-500 bg-amber-50/30 focus:bg-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Note / Reference (Optional)</label>
+                    <input
+                      type="text"
+                      value={creditFormData.notes}
+                      onChange={(e) => setCreditFormData({ ...creditFormData, notes: e.target.value })}
+                      placeholder="e.g. Promised to pay tomorrow"
+                      className="w-full p-2.5 text-xs font-medium border border-slate-200 rounded-xl outline-none bg-slate-50 focus:bg-white"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={submittingCredit}
+                    className="w-full py-3 bg-gradient-to-r from-amber-600 to-amber-700 text-white font-black rounded-xl text-sm shadow-md hover:from-amber-700 hover:to-amber-800 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    {submittingCredit ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle size={18} />}
+                    Save Credit Reload Entry
+                  </button>
+                </form>
+              </div>
+
+              {/* Credit Reload Ledger / History for Selected Date */}
+              <div className="lg:col-span-7 bg-white p-5 rounded-3xl border border-slate-200 shadow-sm flex flex-col space-y-3">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div>
+                    <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
+                      <span>📋 Credit Reloads Ledger ({stockDate})</span>
+                    </h3>
+                    <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+                      {creditReloads.length} Credit {creditReloads.length === 1 ? 'entry' : 'entries'} on record
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-amber-700 block">Total Credit</span>
+                    <span className="text-base font-black text-amber-800">
+                      Rs. {totalCreditAmount.toLocaleString()}
+                    </span>
                   </div>
                 </div>
 
-                <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1">Reload Amount (Rs.) *</label>
-                  <input
-                    type="number"
-                    required
-                    value={creditFormData.amount}
-                    onChange={(e) => setCreditFormData({ ...creditFormData, amount: e.target.value })}
-                    placeholder="Enter amount (e.g. 500)"
-                    className="w-full p-3 text-lg font-black text-amber-700 border-2 border-amber-200 rounded-xl outline-none focus:border-amber-500"
-                  />
-                </div>
+                <div className="flex-1 overflow-y-auto max-h-[380px] space-y-2">
+                  {loadingCredits ? (
+                    <div className="py-12 text-center text-slate-400">
+                      <Loader2 size={24} className="animate-spin mx-auto mb-2 text-amber-600" />
+                      Loading credit reloads...
+                    </div>
+                  ) : creditReloads.length === 0 ? (
+                    <div className="py-12 text-center text-slate-400">
+                      <CreditCard size={36} className="mx-auto mb-2 text-slate-300" />
+                      <p className="text-xs font-bold text-slate-600">No credit reloads recorded for {stockDate}</p>
+                      <p className="text-[10px] text-slate-400 mt-1">Submit the form on the left to add a credit reload.</p>
+                    </div>
+                  ) : (
+                    creditReloads.map((cr) => (
+                      <div 
+                        key={cr._id} 
+                        className="p-3 rounded-2xl border border-slate-100 bg-slate-50/70 hover:bg-slate-100/80 transition-all flex items-center justify-between gap-3"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-black text-xs shrink-0">
+                            {cr.operator?.slice(0, 3).toUpperCase() || 'REL'}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-black text-slate-900 text-xs">{cr.mobileNumber}</span>
+                              {cr.customerName && (
+                                <span className="text-[11px] font-semibold text-slate-600">({cr.customerName})</span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 text-[10px] text-slate-400 mt-0.5">
+                              <span>{cr.operator}</span>
+                              <span>•</span>
+                              <span>{new Date(cr.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                              {cr.notes && (
+                                <>
+                                  <span>•</span>
+                                  <span className="italic text-slate-500">{cr.notes}</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
 
-                <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1">Note / Reference (Optional)</label>
-                  <input
-                    type="text"
-                    value={creditFormData.notes}
-                    onChange={(e) => setCreditFormData({ ...creditFormData, notes: e.target.value })}
-                    placeholder="e.g. Promised to pay tomorrow"
-                    className="w-full p-2 text-xs font-medium border border-slate-200 rounded-xl outline-none"
-                  />
+                        <div className="text-right shrink-0">
+                          <div className="font-black text-amber-800 text-sm">
+                            Rs. {Number(cr.amount || 0).toLocaleString()}
+                          </div>
+                          <span className={`inline-block px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
+                            cr.creditSettled 
+                              ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' 
+                              : 'bg-amber-100 text-amber-800 border border-amber-200'
+                          }`}>
+                            {cr.creditSettled ? 'Settled' : 'Pending'}
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
+              </div>
 
-                <button
-                  type="submit"
-                  disabled={submittingCredit}
-                  className="w-full py-3 bg-gradient-to-r from-amber-600 to-amber-700 text-white font-black rounded-xl text-sm shadow-md hover:from-amber-700 hover:to-amber-800 transition-all flex items-center justify-center gap-2"
-                >
-                  {submittingCredit ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle size={18} />}
-                  Save Credit Reload Entry
-                </button>
-              </form>
             </div>
           )}
 
@@ -660,7 +776,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
               <button
                 type="button"
                 onClick={handlePrintDailySlip}
-                className="flex-1 sm:flex-none px-4 py-2.5 border border-slate-300 hover:bg-slate-100 text-slate-700 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors"
+                className="flex-1 sm:flex-none px-4 py-2.5 border border-slate-300 hover:bg-slate-100 text-slate-700 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
               >
                 <Printer size={15} />
                 Print 80mm Slip
@@ -670,7 +786,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
                 type="button"
                 onClick={handleSaveDailySheet}
                 disabled={savingSheet}
-                className="flex-1 sm:flex-none px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-extrabold rounded-xl text-xs shadow-md flex items-center justify-center gap-2 transition-all"
+                className="flex-1 sm:flex-none px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-extrabold rounded-xl text-xs shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer"
               >
                 {savingSheet ? (
                   <>
