@@ -374,6 +374,7 @@ export const getAccountTransactions = (id) => API.get(`/accounts/${id}/transacti
 
 // Hire Purchase
 export const getHPRecords = (params) => API.get('/hp', { params });
+export const getNextHpCode = () => API.get('/hp/next-code');
 export const getHPById = (id) => API.get(`/hp/${id}`);
 export const recordHPPayment = (id, data) => API.post(`/hp/${id}/payments`, data);
 export const getCustomerHistory = (phone) => API.get(`/hp/customer/${phone}/history`);

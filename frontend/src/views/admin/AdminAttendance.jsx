@@ -392,7 +392,9 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
           <div className="flex items-center gap-3 flex-wrap">
             {activeTab === 'records' && (
               <>
-                <button onClick={() => setShowAttModal(true)} className="bg-slate-900 hover:bg-slate-800 text-white text-[10px] uppercase tracking-wider font-black px-4 py-2.5 rounded-xl transition-all shadow-md flex items-center gap-2"><Clock size={14} /> Mark Attendance</button>
+                {user?.role === 'admin' && (
+                  <button onClick={() => setShowAttModal(true)} className="bg-slate-900 hover:bg-slate-800 text-white text-[10px] uppercase tracking-wider font-black px-4 py-2.5 rounded-xl transition-all shadow-md flex items-center gap-2"><Clock size={14} /> Mark Attendance</button>
+                )}
                 <button onClick={exportExcel} className="bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 text-[10px] uppercase tracking-wider font-black px-4 py-2.5 rounded-xl transition-all shadow-sm flex items-center gap-2"><FileSpreadsheet size={14} /> Excel</button>
                 <button onClick={exportPDF} className="bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 text-[10px] uppercase tracking-wider font-black px-4 py-2.5 rounded-xl transition-all shadow-sm flex items-center gap-2"><FileText size={14} /> PDF</button>
               </>

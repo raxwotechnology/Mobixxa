@@ -45,7 +45,7 @@ import {
   Download,
 } from 'lucide-react';
 
-import { getPosProducts, getProductByBarcode, posCheckout, getPosOrders, applyVoucher, getSettings, getActivePosSession, startPosSession, endPosSession, getPosPayHereHash, redeemPoints, getMyLoyaltyPoints, getCreditOrders, getCustomerCreditSummary, settleCreditOrder, getCategories, createQuotation, createProduct, getAccounts, loginUser, getCashiers, posLogin, getPosOrderByInvoice, createCustomerReturn, getHPRecords, recordHPPayment, createExpense, getExpenses, verifyPassword } from '../../services/api';
+import { getPosProducts, getProductByBarcode, posCheckout, getPosOrders, applyVoucher, getSettings, getActivePosSession, startPosSession, endPosSession, getPosPayHereHash, redeemPoints, getMyLoyaltyPoints, getCreditOrders, getCustomerCreditSummary, settleCreditOrder, getCategories, createQuotation, createProduct, getAccounts, loginUser, getCashiers, posLogin, getPosOrderByInvoice, createCustomerReturn, getHPRecords, recordHPPayment, createExpense, getExpenses, verifyPassword, getNextHpCode } from '../../services/api';
 
 
 
@@ -149,6 +149,7 @@ const POSScreen = () => {
   const [hpSearchInput, setHpSearchInput] = useState('');
   const [hpRecordsList, setHpRecordsList] = useState([]);
   const [selectedHpRecord, setSelectedHpRecord] = useState(null);
+  const [hpNextCode, setHpNextCode] = useState('');
   const [loadingHpSearch, setLoadingHpSearch] = useState(false);
   const [hpPayForm, setHpPayForm] = useState({
     amount: '',
@@ -2357,6 +2358,12 @@ const POSScreen = () => {
     }
   }, [pos.paymentMethod, grandTotal, accounts, isHP, isCredit, creditAmountPaid]);
 
+  useEffect(() => {
+    if (pos.paymentMethod === 'hire_purchase') {
+      getNextHpCode().then(({ data }) => setHpNextCode(data?.hpCode || '')).catch(() => {});
+    }
+  }, [pos.paymentMethod]);
+
 
   const fetchCustomerPoints = async () => {
     try {
@@ -4262,6 +4269,18 @@ const POSScreen = () => {
                       <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: '#92400e' }}>Installment Plan (Hire Purchase)</h4>
                     </div>
 
+                    {hpNextCode && (
+                      <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#92400e', background: '#fde68a', display: 'inline-block', padding: '3px 10px', borderRadius: '999px', marginBottom: '10px' }}>
+                        🔖 Reference Code: {hpNextCode}
+                      </div>
+                    )}
+
+                    {pos.cart?.some(i => i.barcode || i.sku) && (
+                      <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#92400e', marginBottom: '10px' }}>
+                        📦 Product Barcode: {pos.cart.filter(i => i.barcode || i.sku).map(i => i.barcode || i.sku).join(', ')}
+                      </div>
+                    )}
+
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
                       <div>
                         <label style={{ fontSize: '10px', fontWeight: 'bold', color: '#92400e' }}>Customer Name *</label>
@@ -5896,7 +5915,7 @@ const POSScreen = () => {
             {/* Step 1: Search HP Invoice */}
             <div style={{ marginBottom: '20px' }}>
               <label style={{ fontSize: '12px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                Search HP Invoice Number, Customer Phone, or Name *
+                Search HP Code, Invoice Number, Customer Phone, or Name *
               </label>
               <div style={{ display: 'flex', gap: '10px' }}>
                 <div style={{ position: 'relative', flex: 1 }}>
@@ -5906,7 +5925,7 @@ const POSScreen = () => {
                     value={hpSearchInput}
                     onChange={(e) => setHpSearchInput(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter') handleSearchHpRecords(); }}
-                    placeholder="e.g. #HP-INV-10025, INV-001, or 0771234567..."
+                    placeholder="e.g. HP-0001, INV-001, or 0771234567..."
                     style={{
                       width: '100%',
                       paddingLeft: '44px',
@@ -5974,7 +5993,7 @@ const POSScreen = () => {
                   >
                     <div>
                       <div style={{ fontWeight: '800', fontSize: '14px', color: '#0f172a' }}>
-                        {rec.invoiceNo} — <span style={{ color: '#2563eb' }}>{rec.customer?.name}</span>
+                        {rec.hpCode || rec.invoiceNo} — <span style={{ color: '#2563eb' }}>{rec.customer?.name}</span>
                       </div>
                       <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
                         📞 {rec.customer?.phone} | Due: <strong style={{ color: '#d97706' }}>Rs. {(rec.remainingBalance !== undefined ? rec.remainingBalance : rec.balanceAmount)?.toLocaleString()}</strong>
@@ -6002,7 +6021,7 @@ const POSScreen = () => {
                 <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '16px', marginBottom: '20px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                     <div>
-                      <span style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a' }}>{selectedHpRecord.invoiceNo}</span>
+                      <span style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a' }}>{selectedHpRecord.hpCode || selectedHpRecord.invoiceNo}</span>
                       <span style={{ fontSize: '13px', color: '#475569', marginLeft: '8px', fontWeight: '600' }}>({selectedHpRecord.customer?.name})</span>
                     </div>
                   </div>

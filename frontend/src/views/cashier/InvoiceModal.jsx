@@ -290,6 +290,11 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
                     <tr key={idx} style={{ borderBottom: '1px solid #e2e8f0' }}>
                       <td style={{ padding: '10px', fontSize: '12px', color: '#334155' }}>
                         <div style={{ fontWeight: 700 }}>{item.name}</div>
+                        {(item.barcode || item.sku) && (
+                          <div style={{ fontSize: '10px', color: '#64748b', marginTop: '1px' }}>
+                            Barcode: {item.barcode || item.sku}
+                          </div>
+                        )}
                         {(item.imei?.length > 0 || item.imeiNumber) && (
                           <div style={{ fontSize: '11px', color: '#2563eb', fontWeight: 800, marginTop: '2px' }}>
                             IMEI / S/N: {Array.isArray(item.imei) ? item.imei.join(', ') : (item.imei || item.imeiNumber)}
@@ -318,6 +323,9 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
                         INSTALLMENT PLAN (CREDIT SALE)
                       </h4>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', fontSize: '11px', color: '#92400e' }}>
+                        <div>HP Reference:</div>
+                        <div style={{ fontWeight: 700, textAlign: 'right' }}>{order.hirePurchaseData?.hpCode || 'N/A'}</div>
+
                         <div>Original Price:</div>
                         <div style={{ fontWeight: 700, textAlign: 'right' }}>Rs. {subtotal.toLocaleString()}</div>
 
@@ -518,6 +526,11 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
                       <span style={{ textAlign: 'right', color: '#555' }}>{item.price.toFixed(2)}</span>
                       <span style={{ textAlign: 'right', fontWeight: 600, color: '#111' }}>{(item.price * item.quantity).toFixed(2)}</span>
                     </div>
+                    {(item.barcode || item.sku) && (
+                      <div style={{ fontSize: '9px', color: '#666', marginTop: '1px' }}>
+                        Barcode: {item.barcode || item.sku}
+                      </div>
+                    )}
                     {(item.imei?.length > 0 || item.imeiNumber) && (
                       <div style={{ fontSize: '9.5px', color: '#000', fontWeight: 800, marginTop: '1px' }}>
                         IMEI: {Array.isArray(item.imei) ? item.imei.join(', ') : (item.imei || item.imeiNumber)}
@@ -596,6 +609,10 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
                     <p style={{ margin: '0 0 8px 0', fontSize: '12px', fontWeight: 800, color: '#92400e', textAlign: 'center', borderBottom: '1px solid #fde68a', paddingBottom: '4px' }}>
                       INSTALLMENT PLAN (HP)
                     </p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px', color: '#92400e' }}>
+                      <span>HP Reference:</span>
+                      <span style={{ fontWeight: 700 }}>{order.hirePurchaseData?.hpCode || 'N/A'}</span>
+                    </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px', color: '#92400e' }}>
                       <span>Down Payment:</span>
                       <span style={{ fontWeight: 700 }}>Rs. {(order.hirePurchaseData?.downPayment || order.tenderedAmount || 0).toFixed(2)}</span>

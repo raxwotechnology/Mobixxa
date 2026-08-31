@@ -167,7 +167,6 @@ const EmployeeAttendance = () => {
         onCheckOut={handleCheckOutAction}
         onStartBreak={handleStartBreakAction}
         onEndBreak={handleEndBreakAction}
-        onMarkAttendanceModal={() => setShowAttModal(true)}
         onExportExcel={exportExcel}
         onExportPDF={exportPDF}
       />

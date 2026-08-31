@@ -32,15 +32,16 @@ const getHPRecords = async (req, res, next) => {
     if (search) {
       const matchingOrders = await Order.find({
         $or: [
-          { invoiceNo: { $regex: search, $options: 'i' } },
-          { orderNumber: { $regex: search, $options: 'i' } },
-          { receiptNo: { $regex: search, $options: 'i' } },
-          { 'items.name': { $regex: search, $options: 'i' } }
+          { invoiceNumber: { $regex: search, $options: 'i' } },
+          { 'items.name': { $regex: search, $options: 'i' } },
+          { 'items.barcode': { $regex: search, $options: 'i' } },
+          { 'items.sku': { $regex: search, $options: 'i' } }
         ]
       }).select('_id');
       const matchingOrderIds = matchingOrders.map(o => o._id);
 
       const searchOr = [
+        { hpCode: { $regex: search, $options: 'i' } },
         { invoiceNo: { $regex: search, $options: 'i' } },
         { 'customer.name': { $regex: search, $options: 'i' } },
         { 'customer.phone': { $regex: search, $options: 'i' } },
@@ -319,6 +320,16 @@ const updateHPRecord = async (req, res, next) => {
   }
 };
 
+const getNextHPCode = async (req, res, next) => {
+  try {
+    const count = await HirePurchase.countDocuments({});
+    const hpCode = `HP-${String(count + 1).padStart(4, '0')}`;
+    res.json({ hpCode });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getHPRecords,
   getHPById,
@@ -326,5 +337,6 @@ module.exports = {
   getCustomerHistory,
   getAllCustomers,
   deleteHPRecord,
-  updateHPRecord
+  updateHPRecord,
+  getNextHPCode,
 };

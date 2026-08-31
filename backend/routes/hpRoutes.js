@@ -8,7 +8,8 @@ const {
   getCustomerHistory,
   getAllCustomers,
   deleteHPRecord,
-  updateHPRecord
+  updateHPRecord,
+  getNextHPCode
 } = require('../controllers/hpController');
 
 router.use(protect);
@@ -18,6 +19,7 @@ router.route('/')
 
 router.get('/customers/all', getAllCustomers);
 router.get('/customer/:phone/history', getCustomerHistory);
+router.get('/next-code', getNextHPCode);
 
 router.route('/:id')
   .get(getHPById)

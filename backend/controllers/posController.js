@@ -867,10 +867,14 @@ const posCheckout = async (req, res, next) => {
         hpNextDueDate.setMonth(hpNextDueDate.getMonth() + 1);
       }
 
-      await HirePurchase.create({
+      const hpCount = await HirePurchase.countDocuments({});
+      const hpCode = `HP-${String(hpCount + 1).padStart(4, '0')}`;
+
+      const hpRecord = await HirePurchase.create({
         storeId,
         orderId: order._id,
         invoiceNo: order.invoiceNumber || `HP-INV-${Date.now().toString().slice(-6)}`,
+        hpCode,
         customer: hirePurchaseData.customer,
         totalAmount: totalAmount,
         interestRate: hirePurchaseData.interestRate || 0,
@@ -887,6 +891,12 @@ const posCheckout = async (req, res, next) => {
         createdBy: req.user._id,
         notes: hirePurchaseData.notes
       });
+
+      populatedOrder.hirePurchaseData = {
+        ...populatedOrder.hirePurchaseData,
+        hpCode: hpRecord.hpCode,
+        invoiceNo: hpRecord.invoiceNo,
+      };
     }
 
     res.status(201).json(populatedOrder);
