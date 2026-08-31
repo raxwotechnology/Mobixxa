@@ -527,6 +527,8 @@ const posCheckout = async (req, res, next) => {
         productId: product._id,
         name: product.name,
         image: product.images?.[0] || '',
+        barcode: product.barcode || '',
+        sku: product.sku || '',
         quantity: item.quantity,
         price: item.price,
         unitCostAtSale: Number(product.avgCost || product.lastCost || 0),

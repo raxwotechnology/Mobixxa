@@ -21,6 +21,8 @@ const orderSchema = mongoose.Schema(
         },
         name: String,
         image: String,
+        barcode: String,
+        sku: String,
         quantity: { type: Number, required: true },
         price: { type: Number, required: true },
         unitCostAtSale: { type: Number, default: 0 },

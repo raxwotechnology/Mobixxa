@@ -201,6 +201,7 @@ const createProduct = async (req, res, next) => {
       supplierId,
       productLink,
       minPrice,
+      barcode,
     } = req.body;
 
     const numericPrice = Number(price || 0);
@@ -269,6 +270,7 @@ const createProduct = async (req, res, next) => {
       warranty,
       supplierId: supplierId || null,
       sku,
+      barcode: barcode ? String(barcode).trim() : undefined,
       lastCost: Number(purchasePrice || 0),
 
       avgCost: Number(purchasePrice || 0),
@@ -302,7 +304,8 @@ const updateProduct = async (req, res, next) => {
       'mrp', 'discount', 'unit', 'variants', 'stock', 'images',
       'isFeatured', 'isOnSale', 'status', 'allowKokoOnline', 'allowKokoPos',
       'stockType', 'oldStock', 'newStock', 'costPrice', 'storeId',
-      'brand', 'modelNumber', 'ram', 'storage', 'color', 'condition', 'imei', 'warranty', 'supplierId', 'productLink', 'minPrice'
+      'brand', 'modelNumber', 'ram', 'storage', 'color', 'condition', 'imei', 'warranty', 'supplierId', 'productLink', 'minPrice',
+      'barcode', 'sku'
     ];
 
 
@@ -361,6 +364,11 @@ const updateProduct = async (req, res, next) => {
         product[field] = req.body[field];
       }
     });
+
+    if (req.body.barcode !== undefined) {
+      const trimmedBarcode = String(req.body.barcode).trim();
+      product.barcode = trimmedBarcode || undefined;
+    }
 
     if (req.body.name) {
       product.slug = req.body.name.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now();
