@@ -972,6 +972,9 @@ const getPosOrders = async (req, res, next) => {
       if (storeId) orderFilter.storeId = storeId;
     }
 
+    const filterStoreId = orderFilter.storeId
+      || (req.user.role === 'cashier' ? (req.user.assignedStore || req.user.assignedStoreId || req.user.storeId) : null);
+
     const orders = await Order.find(orderFilter)
       .sort({ createdAt: -1 })
       .populate('storeId', 'name')
@@ -1030,13 +1033,13 @@ const getPosOrders = async (req, res, next) => {
     });
 
     // Query Reloads in date range (from ReloadStock or Reloads)
+    const targetDateStr = req.query.date || new Date().toISOString().split('T')[0];
     let reloadIncome = 0;
     try {
-      const targetDateStr = req.query.date || new Date().toISOString().split('T')[0];
       const ReloadStock = require('../models/ReloadStock');
       const stocks = await ReloadStock.find({
         date: targetDateStr,
-        ...(orderFilter.storeId ? { storeId: orderFilter.storeId } : {})
+        ...(filterStoreId ? { storeId: filterStoreId } : {})
       }).lean();
 
       if (stocks && stocks.length > 0) {
@@ -1045,11 +1048,33 @@ const getPosOrders = async (req, res, next) => {
         const Reload = require('../models/Reload');
         const reloads = await Reload.find({
           createdAt: { $gte: startOfDay, $lte: endOfDay },
-          status: { $ne: 'failed' },
+          status: { $ne: 'Failed' },
           paymentMethod: { $ne: 'Credit' }
         }).lean();
         reloadIncome = reloads.reduce((sum, r) => sum + (r.amount || 0), 0);
       }
+    } catch { /* ignore if model not present */ }
+
+    // Count individual reload transactions for the day (for the "completed transactions" total)
+    // and sum still-pending credit reload entries (Credit Reloads ledger) for the Credit Sales (Due) tile
+    let reloadTxnCount = 0;
+    let creditReloadDue = 0;
+    try {
+      const Reload = require('../models/Reload');
+      const reloadTxnFilter = {
+        createdAt: { $gte: startOfDay, $lte: endOfDay },
+        status: { $ne: 'Failed' },
+        ...(filterStoreId ? { storeId: filterStoreId } : {})
+      };
+      reloadTxnCount = await Reload.countDocuments(reloadTxnFilter);
+
+      const creditReloads = await Reload.find({
+        date: targetDateStr,
+        isCredit: true,
+        creditSettled: false,
+        ...(filterStoreId ? { storeId: filterStoreId } : {})
+      }).lean();
+      creditReloadDue = creditReloads.reduce((sum, r) => sum + Number(r.amount || 0), 0);
     } catch { /* ignore if model not present */ }
 
     // Query Repair Jobs in date range
@@ -1083,7 +1108,7 @@ const getPosOrders = async (req, res, next) => {
     let expenseCost = 0;
     try {
       const Expense = require('../models/Expense');
-      const storeQuery = targetStoreId ? { storeId: targetStoreId } : {};
+      const storeQuery = filterStoreId ? { storeId: filterStoreId } : {};
       const expenses = await Expense.find({
         ...storeQuery,
         $or: [
@@ -1098,6 +1123,7 @@ const getPosOrders = async (req, res, next) => {
     let hpTotalIncome = 0;
     let hpCashIncome = 0;
     let hpBankIncome = 0;
+    let hpPaymentCount = 0;
     try {
       const HPRecord = require('../models/HPRecord');
       const hpRecords = await HPRecord.find({
@@ -1109,6 +1135,7 @@ const getPosOrders = async (req, res, next) => {
           if (pDate >= startOfDay && pDate <= endOfDay) {
             const amt = Number(p.amount || 0);
             hpTotalIncome += amt;
+            hpPaymentCount += 1;
             const pMeth = (p.paymentMethod || '').toLowerCase();
             if (pMeth === 'cash' || !pMeth) {
               hpCashIncome += amt;
@@ -1134,7 +1161,6 @@ const getPosOrders = async (req, res, next) => {
     let kokoSales = 0;
     let payhereSales = 0;
     let chequeSales = 0;
-    let creditSales = 0;
     let hpDownPaymentSales = 0;
 
     orders.forEach((o) => {
@@ -1148,7 +1174,7 @@ const getPosOrders = async (req, res, next) => {
           else if (m === 'koko') kokoSales += amt;
           else if (m === 'payhere') payhereSales += amt;
           else if (m === 'cheque') chequeSales += amt;
-          else if (m === 'credit' || m === 'due') creditSales += amt;
+          else if (m === 'credit' || m === 'due') { /* tracked separately via creditBalance below */ }
           else if (m === 'hire_purchase') hpDownPaymentSales += amt;
           else cashSales += amt;
         });
@@ -1161,11 +1187,25 @@ const getPosOrders = async (req, res, next) => {
         else if (m === 'koko') kokoSales += amt;
         else if (m === 'payhere') payhereSales += amt;
         else if (m === 'cheque') chequeSales += amt;
-        else if (m === 'credit' || o.isCredit) creditSales += amt;
+        else if (m === 'credit' || o.isCredit) { /* tracked separately via creditBalance below */ }
         else if (m === 'hire_purchase') hpDownPaymentSales += amt;
         else cashSales += amt;
       }
     });
+
+    // Credit Sales (Due): still-pending amounts, combined from POS order credit balances
+    // and unsettled Credit Reloads ledger entries for this date (not the original amount
+    // recorded at sale time, since partial settlements since then should reduce it).
+    let posCreditDue = 0;
+    orders.forEach((o) => {
+      const isCreditOrder = o.isCredit === true || (o.paymentMethod || '').toLowerCase() === 'credit' || Number(o.creditBalance || 0) > 0;
+      if (!isCreditOrder) return;
+      const bal = o.creditBalance !== undefined && o.creditBalance !== null
+        ? Number(o.creditBalance)
+        : Math.max(0, Number(o.totalAmount || 0) - Number(o.amountPaid || 0));
+      posCreditDue += Math.max(0, bal);
+    });
+    const creditSales = posCreditDue + creditReloadDue;
 
     const totalBankOnline = bankSales + payhereSales + kokoSales + hpBankIncome;
 
@@ -1199,11 +1239,12 @@ const getPosOrders = async (req, res, next) => {
 
     let closedSession = null;
     try {
-      closedSession = await PosSession.findOne({
-        storeId,
-        startedAt: { $gte: startOfDay, $lte: endOfDay }
-      }).sort({ endedAt: -1, startedAt: -1 }).lean();
+      const sessionQuery = { startedAt: { $gte: startOfDay, $lte: endOfDay } };
+      if (filterStoreId) sessionQuery.storeId = filterStoreId;
+      closedSession = await PosSession.findOne(sessionQuery).sort({ endedAt: -1, startedAt: -1 }).lean();
     } catch { /* ignore */ }
+
+    const completedTransactionsCount = totalOrders + reloadTxnCount + hpPaymentCount;
 
     res.json({
       session: closedSession || null,
@@ -1232,6 +1273,9 @@ const getPosOrders = async (req, res, next) => {
       summary: {
         totalSales: parseFloat(totalSales.toFixed(2)),
         totalOrders,
+        reloadTxnCount,
+        hpPaymentCount,
+        completedTransactionsCount,
         cashSales: parseFloat(cashSales.toFixed(2)),
         cardSales: parseFloat(cardSales.toFixed(2)),
         bankSales: parseFloat(bankSales.toFixed(2)),

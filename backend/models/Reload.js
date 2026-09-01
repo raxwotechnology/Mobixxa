@@ -47,6 +47,10 @@ const reloadSchema = new mongoose.Schema(
     creditSettledAt: {
       type: Date,
     },
+    settledBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
     date: {
       type: String, // YYYY-MM-DD
       trim: true,

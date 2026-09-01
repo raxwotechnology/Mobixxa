@@ -56,6 +56,37 @@ const reloadStockSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Transaction',
     },
+    // Locking: once closed, this item's In-Hand/Sold for this date are final —
+    // further stock adds or closings are rejected; corrections go through the
+    // separate, logged adjustLog path instead.
+    status: {
+      type: String,
+      enum: ['open', 'closed'],
+      default: 'open',
+    },
+    closedAt: { type: Date },
+    closedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    // Append-only audit trail of every "Add Stock" action — addedStock is
+    // always derived as the sum of these, never set directly.
+    addLog: [
+      {
+        qty: { type: Number, required: true },
+        addedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        addedAt: { type: Date, default: Date.now },
+        notes: { type: String, trim: true, default: '' },
+      },
+    ],
+    // Logged corrections made after closing (admin/manager only).
+    adjustLog: [
+      {
+        field: { type: String, enum: ['openingStock', 'addedStock', 'closingStock'], required: true },
+        oldValue: { type: Number },
+        newValue: { type: Number },
+        reason: { type: String, required: true, trim: true },
+        adjustedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        adjustedAt: { type: Date, default: Date.now },
+      },
+    ],
   },
   {
     timestamps: true,

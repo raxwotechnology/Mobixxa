@@ -613,15 +613,19 @@ const POSScreen = () => {
   };
 
   const openBalanceModal = async (selectedDate = balanceDate) => {
+    console.log('[ShiftRegister] Fetching daily balance for date:', selectedDate);
     try {
       setBalanceLoading(true);
       const { data } = await getPosOrders({ date: selectedDate });
+      console.log('[ShiftRegister] Received summary:', data?.summary);
       setDailyFinancials(data?.financials || null);
       setPosDailySummary(data?.summary || null);
       setBalanceOrders(data?.orders || []);
       setBalanceSessionData(data?.session || null);
       setShowBalanceModal(true);
-    } catch {
+    } catch (err) {
+      console.error('[ShiftRegister] Failed to load daily balance:', err);
+      toast.error('Failed to load shift data for the selected date');
       setDailyFinancials(null);
       setPosDailySummary(null);
       setBalanceOrders([]);
@@ -3036,7 +3040,7 @@ const POSScreen = () => {
             <Clock size={15} />
             <span className="pos-topbar-btn-text">Close</span>
           </button>
-          <button className="pos-topbar-btn" onClick={openBalanceModal} title="View Daily Balance Sheet">
+          <button className="pos-topbar-btn" onClick={() => openBalanceModal()} title="View Daily Balance Sheet">
             <DollarSign size={15} />
             <span className="pos-topbar-btn-text">Balance</span>
           </button>
@@ -5333,8 +5337,19 @@ const POSScreen = () => {
               {balanceTab === 'shift' && (
                 <div>
                   {/* Top Stats Grid */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginBottom: '24px' }}>
-                    
+                  <div style={{ position: 'relative' }}>
+                  {balanceLoading && (
+                    <div style={{
+                      position: 'absolute', inset: 0, zIndex: 5,
+                      background: 'rgba(15, 23, 42, 0.82)', borderRadius: '14px',
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '10px'
+                    }}>
+                      <RefreshCw size={22} className="animate-spin" color="#38bdf8" />
+                      <span style={{ fontSize: '13px', fontWeight: '800', color: '#e5e7eb' }}>Loading shift data for {balanceDate}...</span>
+                    </div>
+                  )}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginBottom: '24px', opacity: balanceLoading ? 0.4 : 1, transition: 'opacity 0.2s' }}>
+
                     {/* Cash Sales */}
                     <div style={{ padding: '16px', borderRadius: '14px', background: '#1f2937', border: '1px solid #374151' }}>
                       <div style={{ fontSize: '11px', fontWeight: '800', color: '#9ca3af', textTransform: 'uppercase' }}>💵 Counter Cash Sales</div>
@@ -5424,9 +5439,10 @@ const POSScreen = () => {
                       <div style={{ fontSize: '18px', fontWeight: '900', color: '#ffffff', marginTop: '6px', fontFamily: 'monospace' }}>
                         Rs. {Number(posDailySummary?.systemRevenue || dailyFinancials?.totalIncome || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
                       </div>
-                      <div style={{ fontSize: '11px', color: '#c7d2fe', marginTop: '4px' }}>{posDailySummary?.totalOrders || balanceOrders.length} Completed transactions</div>
+                      <div style={{ fontSize: '11px', color: '#c7d2fe', marginTop: '4px' }}>{posDailySummary?.completedTransactionsCount ?? posDailySummary?.totalOrders ?? balanceOrders.length} Completed transactions</div>
                     </div>
 
+                  </div>
                   </div>
 
                   {/* Cash Drawer Handover Reconciliation Box */}
@@ -6639,11 +6655,12 @@ const POSScreen = () => {
 
       {/* Reload Modal */}
       {showReloadModal && (
-        <ReloadModal 
-          isOpen={showReloadModal} 
+        <ReloadModal
+          isOpen={showReloadModal}
           onClose={() => setShowReloadModal(false)}
           storeId={user?.assignedStore || user?.assignedStoreId || user?.storeId || posSession?.storeId}
           accountId={pos.accountId}
+          userRole={user?.role}
           onSyncSuccess={() => {
             if (typeof fetchDailyFinancials === 'function') fetchDailyFinancials();
             if (typeof fetchSessionData === 'function') fetchSessionData();
