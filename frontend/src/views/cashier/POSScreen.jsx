@@ -111,7 +111,6 @@ const POSScreen = () => {
   const [showBalanceModal, setShowBalanceModal] = useState(false);
   const [balanceLoading, setBalanceLoading] = useState(false);
   const [balanceDate, setBalanceDate] = useState(new Date().toISOString().split('T')[0]);
-  const [balanceTab, setBalanceTab] = useState('shift'); // 'shift' or 'financials'
   const [drawerCountInput, setDrawerCountInput] = useState('');
   const [closingNotes, setClosingNotes] = useState('');
   const [useDirectCount, setUseDirectCount] = useState(true);
@@ -579,7 +578,7 @@ const POSScreen = () => {
     }
   };
 
-  const handleEndSession = async () => {
+  const handleEndSession = async (overrideOptions = {}) => {
     try {
       setSettlingSession(true);
       const closingDenoms = denomsToLines(sessionForm.closing);
@@ -587,8 +586,10 @@ const POSScreen = () => {
       const hpCashIncome = Number(posDailySummary?.hpCashIncome || dailyFinancials?.hpCashIncome || 0);
       const reloadIncome = Number(posDailySummary?.reloadIncome || dailyFinancials?.reloadIncome || 0);
       const expenseCost = Number(posDailySummary?.expenseCost || dailyFinancials?.expenseCost || 0);
-      const cashInOther = Number(posDailySummary?.cashInOther || dailyFinancials?.cashInOther || 0);
-      const expectedDrawerCash = (Number(posSession?.openingCashAmount || 0) + cashSales + hpCashIncome + reloadIncome + cashInOther) - expenseCost;
+      // Cash-only subset of the ledger — a credit settlement paid by bank/card
+      // never lands in the physical drawer, so it must not inflate Expected Cash.
+      const cashInOtherCash = Number(posDailySummary?.cashInOtherCash ?? dailyFinancials?.cashInOtherCash ?? 0);
+      const expectedDrawerCash = (Number(posSession?.openingCashAmount || 0) + cashSales + hpCashIncome + reloadIncome + cashInOtherCash) - expenseCost;
 
       const closingCashCountedAmount = useDirectCount
         ? Number(directCountAmount || 0)
@@ -598,7 +599,8 @@ const POSScreen = () => {
         closingDenoms: useDirectCount ? [] : closingDenoms,
         closingCashCountedAmount,
         notes: closingNotes,
-        expectedDrawerCash
+        expectedDrawerCash,
+        ...overrideOptions
       });
 
       setPosSession(null);
@@ -621,7 +623,21 @@ const POSScreen = () => {
       setClosingNotes('');
       setShowStartSession(true);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to close session');
+      // Shift already closed & settled for today — only a manager/admin can
+      // correct it, and only with a logged reason (never a silent re-edit).
+      if (err.response?.status === 409 && (user?.role === 'manager' || user?.role === 'admin')) {
+        const reason = window.prompt(
+          'This shift is already closed & settled for today.\n\nEnter a reason to correct it — this will be permanently logged alongside the original settlement:'
+        );
+        if (reason && reason.trim()) {
+          setSettlingSession(false);
+          await handleEndSession({ override: true, correctionReason: reason.trim() });
+          return;
+        }
+        toast.info('Correction cancelled — the original settlement is unchanged.');
+      } else {
+        toast.error(err.response?.data?.message || 'Failed to close session');
+      }
     } finally {
       setSettlingSession(false);
     }
@@ -1617,9 +1633,10 @@ const POSScreen = () => {
     const reloadIncome = Number(summaryForPrint?.reloadIncome || financialsForPrint?.reloadIncome || 0);
     const expenseCost = Number(summaryForPrint?.expenseCost || financialsForPrint?.expenseCost || 0);
     const cashInOther = Number(summaryForPrint?.cashInOther || financialsForPrint?.cashInOther || 0);
+    const cashInOtherCash = Number(summaryForPrint?.cashInOtherCash ?? financialsForPrint?.cashInOtherCash ?? cashInOther);
     const totalRevenue = Number(summaryForPrint?.systemRevenue || financialsForPrint?.totalIncome || 0);
 
-    const netDrawerCash = (openingFloat + cashSales + hpCashIncome + reloadIncome + cashInOther) - expenseCost;
+    const netDrawerCash = (openingFloat + cashSales + hpCashIncome + reloadIncome + cashInOtherCash) - expenseCost;
 
     // A past date's slip must reflect that day's already-recorded closing count,
     // never today's still-in-progress cash count from the live session form.
@@ -5094,10 +5111,10 @@ const POSScreen = () => {
               const hpCashIncome = Number(posDailySummary?.hpCashIncome || dailyFinancials?.hpCashIncome || 0);
               const reloadIncome = Number(posDailySummary?.reloadIncome || dailyFinancials?.reloadIncome || 0);
               const expenseCost = Number(posDailySummary?.expenseCost || dailyFinancials?.expenseCost || 0);
-              const cashInOther = Number(posDailySummary?.cashInOther || dailyFinancials?.cashInOther || 0);
+              const cashInOtherCash = Number(posDailySummary?.cashInOtherCash ?? dailyFinancials?.cashInOtherCash ?? 0);
               const cardSales = Number(posDailySummary?.cardSales || 0);
 
-              const expectedDrawer = (openingFloat + cashSales + hpCashIncome + reloadIncome + cashInOther) - expenseCost;
+              const expectedDrawer = (openingFloat + cashSales + hpCashIncome + reloadIncome + cashInOtherCash) - expenseCost;
               const countedCash = useDirectCount
                 ? Number(directCountAmount || 0)
                 : calcTotal(sessionForm.closing);
@@ -5134,6 +5151,13 @@ const POSScreen = () => {
                           <span style={{ color: '#2dd4bf' }}>(+) Reload & Card Cash In:</span>
                           <span style={{ fontWeight: 'bold', color: '#2dd4bf', fontFamily: 'monospace' }}>+ Rs. {reloadIncome.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
                         </div>
+
+                        {cashInOtherCash > 0 && (
+                          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', background: '#0f172a', borderRadius: '10px' }}>
+                            <span style={{ color: '#4ade80' }}>(+) Other Cash In (Ledger):</span>
+                            <span style={{ fontWeight: 'bold', color: '#4ade80', fontFamily: 'monospace' }}>+ Rs. {cashInOtherCash.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+                          </div>
+                        )}
 
                         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', background: '#0f172a', borderRadius: '10px', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
                           <span style={{ color: '#f87171' }}>(-) Petty Cash Out (Expenses):</span>
@@ -5401,7 +5425,7 @@ const POSScreen = () => {
                     <button
                       type="button"
                       disabled={settlingSession || !posSession}
-                      onClick={handleEndSession}
+                      onClick={() => handleEndSession()}
                       style={{
                         flex: 2,
                         padding: '14px',
@@ -5568,7 +5592,7 @@ const POSScreen = () => {
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <button
-                  onClick={handlePrintShiftSlip}
+                  onClick={() => handlePrintShiftSlip()}
                   style={{
                     padding: '8px 16px',
                     background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
@@ -5599,43 +5623,11 @@ const POSScreen = () => {
             </div>
 
             <div style={{ padding: '24px' }}>
-              {/* Date Filter & Tab Switcher */}
+              {/* Date Filter */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '14px', marginBottom: '24px', flexWrap: 'wrap' }}>
-                
-                {/* Tabs */}
-                <div style={{ display: 'flex', background: '#1f2937', padding: '4px', borderRadius: '12px', border: '1px solid #374151' }}>
-                  <button
-                    onClick={() => setBalanceTab('shift')}
-                    style={{
-                      padding: '8px 18px',
-                      borderRadius: '8px',
-                      border: 'none',
-                      background: balanceTab === 'shift' ? 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)' : 'transparent',
-                      color: balanceTab === 'shift' ? '#ffffff' : '#9ca3af',
-                      fontWeight: '800',
-                      fontSize: '13px',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    ⚖️ Shift Register & Cash Drawer
-                  </button>
-                  <button
-                    onClick={() => setBalanceTab('financials')}
-                    style={{
-                      padding: '8px 18px',
-                      borderRadius: '8px',
-                      border: 'none',
-                      background: balanceTab === 'financials' ? 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)' : 'transparent',
-                      color: balanceTab === 'financials' ? '#ffffff' : '#9ca3af',
-                      fontWeight: '800',
-                      fontSize: '13px',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    📊 Category Incomes & Costs
-                  </button>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 18px', background: '#1f2937', borderRadius: '12px', border: '1px solid #374151' }}>
+                  <span style={{ fontWeight: '800', fontSize: '13px', color: '#ffffff' }}>⚖️ Shift Register & Cash Drawer</span>
                 </div>
 
                 {/* Date Selector */}
@@ -5680,11 +5672,10 @@ const POSScreen = () => {
                 </div>
               </div>
 
-              {/* ──────── TAB 1: SHIFT REGISTER & CASH DRAWER ──────── */}
-              {balanceTab === 'shift' && (
-                <div>
-                  {/* Top Stats Grid */}
-                  <div style={{ position: 'relative' }}>
+              {/* ──────── SHIFT REGISTER & CASH DRAWER ──────── */}
+              <div>
+                {/* Top Stats Grid */}
+                <div style={{ position: 'relative' }}>
                   {balanceLoading && (
                     <div style={{
                       position: 'absolute', inset: 0, zIndex: 5,
@@ -5789,6 +5780,41 @@ const POSScreen = () => {
                       <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '4px' }}>Counter Cash Ledger — Money IN entries</div>
                     </div>
 
+                    {/* Cash Settlement (Over/Short) */}
+                    {(() => {
+                      const isSettled = balanceSessionData?.status === 'closed';
+                      const variance = Number(balanceSessionData?.variance || 0);
+                      const isShort = isSettled && variance < -0.01;
+                      const isOver = isSettled && variance > 0.01;
+                      const correctionCount = (balanceSessionData?.corrections || []).length;
+
+                      if (!isSettled) {
+                        return (
+                          <div style={{ padding: '16px', borderRadius: '14px', background: '#1f2937', border: '1px dashed #4b5563' }}>
+                            <div style={{ fontSize: '11px', fontWeight: '800', color: '#9ca3af', textTransform: 'uppercase' }}>⚖️ Cash Settlement</div>
+                            <div style={{ fontSize: '16px', fontWeight: '900', color: '#6b7280', marginTop: '6px', fontFamily: 'monospace' }}>
+                              Not Settled Yet
+                            </div>
+                            <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '4px' }}>Close the shift to record cash over/short</div>
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div style={{ padding: '16px', borderRadius: '14px', background: '#1f2937', border: `1px solid ${isShort ? '#ef444455' : '#22c55e55'}` }}>
+                          <div style={{ fontSize: '11px', fontWeight: '800', color: isShort ? '#f87171' : '#4ade80', textTransform: 'uppercase' }}>
+                            {isShort ? '📉 Cash Short' : (isOver ? '📈 Cash Over' : '✅ Balanced')}
+                          </div>
+                          <div style={{ fontSize: '18px', fontWeight: '900', color: isShort ? '#f87171' : '#4ade80', marginTop: '6px', fontFamily: 'monospace' }}>
+                            {isShort ? '- ' : (isOver ? '+ ' : '')}Rs. {Math.abs(variance).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                          </div>
+                          <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '4px' }}>
+                            Actual counted vs. expected cash{correctionCount > 0 ? ` — corrected ${correctionCount}×` : ''}
+                          </div>
+                        </div>
+                      );
+                    })()}
+
                     {/* Total Revenue */}
                     <div style={{ padding: '16px', borderRadius: '14px', background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)', border: '1px solid #6366f1' }}>
                       <div style={{ fontSize: '11px', fontWeight: '800', color: '#a5b4fc', textTransform: 'uppercase' }}>🏦 Total Day Revenue</div>
@@ -5803,7 +5829,7 @@ const POSScreen = () => {
 
                   {/* Cash Drawer Handover Reconciliation Box */}
                   {(() => {
-                    const cashIn = Number(posDailySummary?.cashSales || 0) + Number(posDailySummary?.hpCashIncome || dailyFinancials?.hpCashIncome || 0) + Number(posDailySummary?.reloadIncome || dailyFinancials?.reloadIncome || 0) + Number(posDailySummary?.cashInOther || dailyFinancials?.cashInOther || 0);
+                    const cashIn = Number(posDailySummary?.cashSales || 0) + Number(posDailySummary?.hpCashIncome || dailyFinancials?.hpCashIncome || 0) + Number(posDailySummary?.reloadIncome || dailyFinancials?.reloadIncome || 0) + Number(posDailySummary?.cashInOtherCash ?? dailyFinancials?.cashInOtherCash ?? 0);
                     const expenseOut = Number(posDailySummary?.expenseCost || dailyFinancials?.expenseCost || 0);
                     const expectedDrawer = (Number(balanceSessionData?.openingCashAmount || posSession?.openingCashAmount || 0) + cashIn) - expenseOut;
                     
@@ -5897,141 +5923,6 @@ const POSScreen = () => {
                     );
                   })()}
                 </div>
-              )}
-
-              {/* ──────── TAB 2: CATEGORY INCOMES & COSTS ──────── */}
-              {balanceTab === 'financials' && (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '24px', marginBottom: '28px' }}>
-                  
-                  {/* ──────── LEFT COLUMN: Incomes ──────── */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                    <div style={{ fontSize: '13px', fontWeight: '900', color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                      INCOME BREAKDOWN
-                    </div>
-
-                    {/* Mobile Income */}
-                    <div>
-                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#cbd5e1', marginBottom: '4px' }}>MOBILE INCOME</div>
-                      <div style={{ padding: '10px 14px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '8px', color: '#ffffff', fontWeight: 'bold', fontSize: '14px', fontFamily: 'monospace' }}>
-                        Rs. {Number(dailyFinancials?.mobileIncome || 0).toFixed(2)}
-                      </div>
-                    </div>
-
-                    {/* Accessories Income */}
-                    <div>
-                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#cbd5e1', marginBottom: '4px' }}>ACCESSORIES INCOME</div>
-                      <div style={{ padding: '10px 14px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '8px', color: '#ffffff', fontWeight: 'bold', fontSize: '14px', fontFamily: 'monospace' }}>
-                        Rs. {Number(dailyFinancials?.accessoriesIncome || 0).toFixed(2)}
-                      </div>
-                    </div>
-
-                    {/* Wholesale | Advance Income */}
-                    <div>
-                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#cbd5e1', marginBottom: '4px' }}>WHOLESALE | ADVANCE INCOME</div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                        <div style={{ padding: '10px 12px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '8px', color: '#ffffff', fontWeight: 'bold', fontSize: '13px', fontFamily: 'monospace' }}>
-                          Rs. {Number(dailyFinancials?.wholesaleIncome || 0).toFixed(2)}
-                        </div>
-                        <div style={{ padding: '10px 12px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '8px', color: '#ffffff', fontWeight: 'bold', fontSize: '13px', fontFamily: 'monospace' }}>
-                          Rs. {Number(dailyFinancials?.advanceIncome || 0).toFixed(2)}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Repairing Income */}
-                    <div>
-                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#cbd5e1', marginBottom: '4px' }}>REPAIRING INCOME (Normal | Company)</div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                        <div style={{ padding: '10px 12px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '8px', color: '#ffffff', fontWeight: 'bold', fontSize: '13px', fontFamily: 'monospace' }}>
-                          Rs. {Number(dailyFinancials?.repairIncomeNormal || 0).toFixed(2)}
-                        </div>
-                        <div style={{ padding: '10px 12px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '8px', color: '#ffffff', fontWeight: 'bold', fontSize: '13px', fontFamily: 'monospace' }}>
-                          Rs. {Number(dailyFinancials?.repairIncomeCompany || 0).toFixed(2)}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Phone Card | SIM Card Income */}
-                    <div>
-                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#cbd5e1', marginBottom: '4px' }}>PHONE CARD | SIM CARD INCOME</div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                        <div style={{ padding: '10px 12px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '8px', color: '#ffffff', fontWeight: 'bold', fontSize: '13px', fontFamily: 'monospace' }}>
-                          Rs. {Number(dailyFinancials?.phoneCardIncome || 0).toFixed(2)}
-                        </div>
-                        <div style={{ padding: '10px 12px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '8px', color: '#ffffff', fontWeight: 'bold', fontSize: '13px', fontFamily: 'monospace' }}>
-                          Rs. {Number(dailyFinancials?.simCardIncome || 0).toFixed(2)}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* HP Collections Income */}
-                    <div>
-                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#cbd5e1', marginBottom: '4px' }}>HP INSTALLMENT COLLECTIONS</div>
-                      <div style={{ padding: '10px 14px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '8px', color: '#c084fc', fontWeight: 'bold', fontSize: '14px', fontFamily: 'monospace' }}>
-                        Rs. {Number(dailyFinancials?.hpIncome || 0).toFixed(2)}
-                      </div>
-                    </div>
-
-                  </div>
-
-                  {/* ──────── RIGHT COLUMN: Costs & Balances ──────── */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                    <div style={{ fontSize: '13px', fontWeight: '900', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                      COSTS & NET BALANCE
-                    </div>
-
-                    {/* Reload Income */}
-                    <div>
-                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#cbd5e1', marginBottom: '4px' }}>RELOAD INCOME</div>
-                      <div style={{ padding: '10px 14px', background: '#0f172a', border: '1.5px solid #22c55e', borderRadius: '8px', color: '#4ade80', fontWeight: 'bold', fontSize: '14px', fontFamily: 'monospace' }}>
-                        Rs. {Number(dailyFinancials?.reloadIncome || 0).toFixed(2)}
-                      </div>
-                    </div>
-
-                    {/* Service Cost */}
-                    <div>
-                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#cbd5e1', marginBottom: '4px' }}>SERVICE COST</div>
-                      <div style={{ padding: '10px 14px', background: '#0f172a', border: '1.5px solid #ef4444', borderRadius: '8px', color: '#f87171', fontWeight: 'bold', fontSize: '14px', fontFamily: 'monospace' }}>
-                        Rs. {Number(dailyFinancials?.serviceCost || 0).toFixed(2)}
-                      </div>
-                    </div>
-
-                    {/* Supplier & Expense Cost */}
-                    <div>
-                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#cbd5e1', marginBottom: '4px' }}>SUPPLIER & EXPENSE COST</div>
-                      <div style={{ padding: '10px 14px', background: '#0f172a', border: '1.5px solid #ef4444', borderRadius: '8px', color: '#f87171', fontWeight: 'bold', fontSize: '14px', fontFamily: 'monospace' }}>
-                        Rs. {Number(dailyFinancials?.supplierCost || 0).toFixed(2)}
-                      </div>
-                    </div>
-
-                    {/* Total Income */}
-                    <div>
-                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#cbd5e1', marginBottom: '4px' }}>TOTAL INCOME</div>
-                      <div style={{ padding: '10px 14px', background: '#0f172a', border: '1.5px solid #38bdf8', borderRadius: '8px', color: '#38bdf8', fontWeight: 'bold', fontSize: '14px', fontFamily: 'monospace' }}>
-                        Rs. {Number(dailyFinancials?.totalIncome || dailyFinancials?.totalSales || 0).toFixed(2)}
-                      </div>
-                    </div>
-
-                    {/* Total Cost */}
-                    <div>
-                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#cbd5e1', marginBottom: '4px' }}>TOTAL COST</div>
-                      <div style={{ padding: '10px 14px', background: '#0f172a', border: '1.5px solid #38bdf8', borderRadius: '8px', color: '#38bdf8', fontWeight: 'bold', fontSize: '14px', fontFamily: 'monospace' }}>
-                        Rs. {Number(dailyFinancials?.totalCost || 0).toFixed(2)}
-                      </div>
-                    </div>
-
-                    {/* Balance Amount */}
-                    <div>
-                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#ffffff', marginBottom: '4px' }}>NET BALANCE AMOUNT</div>
-                      <div style={{ padding: '12px 14px', background: '#0f172a', border: '2px solid #ffffff', borderRadius: '8px', color: '#ffffff', fontWeight: '900', fontSize: '16px', fontFamily: 'monospace', boxShadow: '0 0 10px rgba(255,255,255,0.15)' }}>
-                        Rs. {Number(dailyFinancials?.balanceAmount !== undefined ? dailyFinancials.balanceAmount : (dailyFinancials?.totalSales || 0)).toFixed(2)}
-                      </div>
-                    </div>
-
-                  </div>
-
-                </div>
-              )}
 
               {/* ──────── Sales History ──────── */}
               <div style={{ marginTop: '20px' }}>

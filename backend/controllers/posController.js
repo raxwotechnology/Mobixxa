@@ -99,11 +99,45 @@ const endSession = async (req, res, next) => {
     const storeId = await resolveStoreId(req.user);
     if (!storeId) { res.status(400); return next(new Error('No store found for your account')); }
 
+    const isOverride = req.body.override === true || req.body.override === 'true';
+
     let session = await PosSession.findOne({ storeId, cashierId: req.user._id, status: 'open' });
     if (!session) {
-      // Find any open session in store or create one to close
       session = await PosSession.findOne({ storeId, status: 'open' });
-      if (!session) {
+    }
+
+    if (!session) {
+      // No open session — the shift may already be closed for today. Check
+      // before silently minting a second, disconnected closed record for the
+      // same day (that used to happen here and left duplicate settlements).
+      const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
+      const todayEnd = new Date(new Date().setHours(23, 59, 59, 999));
+      const alreadyClosed = await PosSession.findOne({
+        storeId,
+        status: 'closed',
+        endedAt: { $gte: todayStart, $lte: todayEnd }
+      }).sort({ endedAt: -1 });
+
+      if (alreadyClosed && !isOverride) {
+        res.status(409);
+        return next(new Error('This shift has already been closed and settled for today. A manager or admin must confirm an override to correct it.'));
+      }
+
+      if (alreadyClosed && isOverride) {
+        if (req.user.role !== 'manager' && req.user.role !== 'admin') {
+          res.status(403);
+          return next(new Error('Only a manager or admin can correct an already-closed shift.'));
+        }
+        const reason = (req.body.correctionReason || '').trim();
+        if (!reason) {
+          res.status(400);
+          return next(new Error('A reason is required to correct an already-closed shift.'));
+        }
+        session = alreadyClosed;
+        session.$locals.isCorrection = true;
+        session.$locals.correctionReason = reason;
+      } else {
+        // Never explicitly opened today — settle from a fresh Rs. 0 float.
         session = new PosSession({
           storeId,
           cashierId: req.user._id,
@@ -167,13 +201,15 @@ const endSession = async (req, res, next) => {
       });
     } catch { /* ignore */ }
 
-    // Query Reloads in session
+    // Query Reloads in session (cash-settled only — Credit reloads haven't
+    // put cash in the drawer yet, and 'Failed' reloads never sold anything)
     let reloadIncome = 0;
     try {
       const Reload = require('../models/Reload');
       const reloads = await Reload.find({
         createdAt: { $gte: sessionStart, $lte: sessionEnd },
-        status: { $ne: 'failed' }
+        status: { $ne: 'Failed' },
+        paymentMethod: { $ne: 'Credit' }
       }).lean();
       reloadIncome = reloads.reduce((sum, r) => sum + (r.amount || 0), 0);
     } catch { /* ignore */ }
@@ -192,12 +228,14 @@ const endSession = async (req, res, next) => {
         ]
       }).lean();
       // Same split as getPosOrders: only Expense-type entries count as cash OUT;
-      // Income-type entries (Counter Cash Ledger "Money IN") add cash back in.
+      // Income-type entries (Counter Cash Ledger "Money IN") add cash back in —
+      // but only the ones actually collected in cash count toward the physical
+      // drawer; a credit settlement paid by bank/card never touches it.
       expenseCost = expenses
         .filter((ex) => ex.type !== 'Income')
         .reduce((sum, ex) => sum + (ex.amount || 0), 0);
       cashInOther = expenses
-        .filter((ex) => ex.type === 'Income')
+        .filter((ex) => ex.type === 'Income' && (!ex.paymentMethod || ex.paymentMethod === 'Cash'))
         .reduce((sum, ex) => sum + (ex.amount || 0), 0);
     } catch { /* ignore */ }
 
@@ -206,6 +244,20 @@ const endSession = async (req, res, next) => {
 
     const expectedCash = Number(session.openingCashAmount || 0) + Number(cashSales || 0) + Number(hpCashIncome || 0) + Number(reloadIncome || 0) + Number(cashInOther || 0) - Number(expenseCost || 0);
     const variance = Number(closingCashCountedAmount || 0) - expectedCash;
+
+    if (session.$locals.isCorrection) {
+      // Append-only: preserve what the prior close said before overwriting it.
+      session.corrections.push({
+        previousClosingCashCountedAmount: session.closingCashCountedAmount,
+        previousVariance: session.variance,
+        previousVarianceNote: session.varianceNote,
+        newClosingCashCountedAmount: Number(closingCashCountedAmount.toFixed(2)),
+        newVariance: Number(variance.toFixed(2)),
+        reason: session.$locals.correctionReason,
+        correctedBy: req.user._id,
+        correctedAt: new Date(),
+      });
+    }
 
     session.closingDenoms = closingDenoms;
     session.closingCashCountedAmount = Number(closingCashCountedAmount.toFixed(2));
@@ -217,7 +269,8 @@ const endSession = async (req, res, next) => {
     session.varianceFlagged = Math.abs(session.variance) > 0.01;
     session.varianceNote = req.body.notes || req.body.varianceNote || session.varianceNote;
     session.status = 'closed';
-    session.endedAt = sessionEnd;
+    session.closedBy = req.user._id;
+    if (!session.$locals.isCorrection) session.endedAt = sessionEnd;
 
     await session.save();
     res.json({
@@ -1127,6 +1180,7 @@ const getPosOrders = async (req, res, next) => {
 
     let expenseCost = 0;
     let cashInOther = 0;
+    let cashInOtherCash = 0;
     try {
       const Expense = require('../models/Expense');
       const storeQuery = filterStoreId ? { storeId: filterStoreId } : {};
@@ -1144,8 +1198,14 @@ const getPosOrders = async (req, res, next) => {
       expenseCost = expenses
         .filter((ex) => ex.type !== 'Income')
         .reduce((sum, ex) => sum + (ex.amount || 0), 0);
-      cashInOther = expenses
-        .filter((ex) => ex.type === 'Income')
+      const incomeEntries = expenses.filter((ex) => ex.type === 'Income');
+      // cashInOther (all tender types) feeds Total Day Revenue, which counts every
+      // sale regardless of how it was paid. cashInOtherCash is the physical-cash-only
+      // subset, used for the drawer reconciliation — a bank/card credit settlement
+      // never touches the till.
+      cashInOther = incomeEntries.reduce((sum, ex) => sum + (ex.amount || 0), 0);
+      cashInOtherCash = incomeEntries
+        .filter((ex) => !ex.paymentMethod || ex.paymentMethod === 'Cash')
         .reduce((sum, ex) => sum + (ex.amount || 0), 0);
     } catch { /* ignore */ }
 
@@ -1322,6 +1382,7 @@ const getPosOrders = async (req, res, next) => {
         reloadIncome: parseFloat(reloadIncome.toFixed(2)),
         expenseCost: parseFloat(expenseCost.toFixed(2)),
         cashInOther: parseFloat(cashInOther.toFixed(2)),
+        cashInOtherCash: parseFloat(cashInOtherCash.toFixed(2)),
         totalItemsSold: orders.reduce((sum, o) => sum + (o.items || []).reduce((line, item) => line + Number(item.quantity || 0), 0), 0),
         systemRevenue: parseFloat(totalIncome.toFixed(2)),
         profitOfDay: parseFloat(profitOfDay.toFixed(2)),
@@ -1571,6 +1632,30 @@ const settleCreditOrder = async (req, res, next) => {
       });
     } catch (txErr) {
       console.error('[Credit Settle] Transaction log notice:', txErr.message);
+    }
+
+    // Expense(type: Income) — the "Other Cash In (Ledger)" mechanism that
+    // actually flows into cashInOther / Total Day Revenue / the Expected Cash
+    // reconciliation. Same pattern as the sibling settleCreditReload feature;
+    // without this, a credit sale paid off in cash would show up nowhere and
+    // look like an unexplained overage in the drawer at shift close.
+    try {
+      const Expense = require('../models/Expense');
+      const allowedMethods = ['Cash', 'Bank Transfer', 'Card', 'Cheque'];
+      await Expense.create({
+        storeId: order.storeId,
+        type: 'Income',
+        category: 'Credit Settle Collection',
+        title: `Credit Settled - ${order.customerName || order.customerPhone || order.invoiceNumber}`,
+        amount: payAmount,
+        paymentMethod: allowedMethods.includes(paymentMethod) ? paymentMethod : 'Cash',
+        status: 'Paid',
+        date: new Date(),
+        notes: `Order ${order.invoiceNumber}`,
+        createdBy: req.user._id,
+      });
+    } catch (expErr) {
+      console.error('[Credit Settle] Expense(Income) log notice:', expErr.message);
     }
 
     res.json(order);
