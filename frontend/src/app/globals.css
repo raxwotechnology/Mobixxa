@@ -618,7 +618,7 @@ body {
 
 /* Left Panel - Products */
 .pos-products-panel {
-  flex: 7;
+  flex: 3;
   display: flex;
   flex-direction: column;
   border-right: 1px solid #e2e8f0;
@@ -928,12 +928,12 @@ body {
 
 /* ── Right Panel - Cart ── */
 .pos-cart-panel {
-  flex: 3;
+  flex: 2;
   display: flex;
   flex-direction: column;
   background: #ffffff;
-  min-width: 320px;
-  max-width: 400px;
+  min-width: 380px;
+  max-width: 460px;
   border-left: 1px solid #e2e8f0;
   overflow: hidden;
 }
@@ -1335,6 +1335,27 @@ body {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
+}
+
+/* ── Balance & Shift Summary: Stat Grid ── */
+.pos-balance-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 1200px) {
+  .pos-balance-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .pos-balance-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
 }
 
 /* ── Credit Sale ── */
@@ -2603,8 +2624,8 @@ input[type=number] {
   }
 
   .pos-cart-panel {
-    min-width: 280px !important;
-    max-width: 340px !important;
+    min-width: 300px !important;
+    max-width: 380px !important;
   }
 }
 

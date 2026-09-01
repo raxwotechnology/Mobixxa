@@ -213,7 +213,8 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
     profitCategory,
     profitBrand,
     profitStartDate,
-    profitEndDate
+    profitEndDate,
+    balanceDate
   ]);
 
   const handlePettySubmit = async (e) => {

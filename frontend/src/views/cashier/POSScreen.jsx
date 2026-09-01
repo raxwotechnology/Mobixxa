@@ -43,6 +43,7 @@ import {
   Eye,
   EyeOff,
   Download,
+  Calendar,
 } from 'lucide-react';
 
 import { getPosProducts, getProductByBarcode, posCheckout, getPosOrders, applyVoucher, getSettings, getActivePosSession, startPosSession, endPosSession, getPosPayHereHash, redeemPoints, getMyLoyaltyPoints, getCreditOrders, getCustomerCreditSummary, settleCreditOrder, getCategories, createQuotation, createProduct, getAccounts, loginUser, getCashiers, posLogin, getPosOrderByInvoice, createCustomerReturn, getHPRecords, recordHPPayment, createExpense, getExpenses, verifyPassword, getNextHpCode } from '../../services/api';
@@ -116,10 +117,19 @@ const POSScreen = () => {
   const [useDirectCount, setUseDirectCount] = useState(true);
   const [directCountAmount, setDirectCountAmount] = useState('');
   const [settlingSession, setSettlingSession] = useState(false);
+  const [startingSession, setStartingSession] = useState(false);
+  const [directOpeningAmount, setDirectOpeningAmount] = useState('');
   const [sessionForm, setSessionForm] = useState({
     opening: { 5000: 0, 1000: 0, 500: 0, 100: 0, 50: 0, 20: 0 },
     closing: { 5000: 0, 1000: 0, 500: 0, 100: 0, 50: 0, 20: 0 },
   });
+  // Admin: pull a balance report for any past day from within the EOD modal,
+  // kept fully separate from dailyFinancials/posDailySummary (the live figures
+  // Settle & Close computes from) so browsing history can never contaminate
+  // today's actual close-out numbers.
+  const [eodReportDate, setEodReportDate] = useState(new Date().toISOString().split('T')[0]);
+  const [eodReportData, setEodReportData] = useState(null);
+  const [eodReportLoading, setEodReportLoading] = useState(false);
   const [customerPoints, setCustomerPoints] = useState(0);
   const [pointsInput, setPointsInput] = useState('');
   const [showLoyalty, setShowLoyalty] = useState(false);
@@ -527,9 +537,11 @@ const POSScreen = () => {
         setPosSession(data);
         setShowStartSession(false);
       } else {
-        const { data: newSession } = await startPosSession({ openingDenoms: [], openingCashAmount: 0 });
-        setPosSession(newSession);
-        setShowStartSession(false);
+        // No open session for this cashier/store — prompt for a deliberate
+        // opening float instead of silently auto-starting one at Rs. 0, which
+        // previously masked every day's actual starting cash as zero.
+        setPosSession(null);
+        setShowStartSession(true);
       }
     } catch {
       // ignore
@@ -541,16 +553,29 @@ const POSScreen = () => {
   const calcTotal = (obj) =>
     Object.entries(obj).reduce((s, [d, q]) => s + Number(d) * Number(q || 0), 0);
 
+  // Native <input type="date"> silently returns "" for an impossible date (e.g.
+  // day 31 in a 30-day month) instead of throwing — so a bad manual edit was
+  // slipping through as a falsy value and quietly querying "today" instead.
+  const isValidCalendarDateStr = (str) => {
+    if (typeof str !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(str)) return false;
+    const [y, m, d] = str.split('-').map(Number);
+    const dt = new Date(Date.UTC(y, m - 1, d));
+    return dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d;
+  };
+
   const handleStartSession = async () => {
     try {
-      const openingDenoms = denomsToLines(sessionForm.opening);
-      const openingCashAmount = calcTotal(sessionForm.opening);
-      const { data } = await startPosSession({ openingDenoms, openingCashAmount });
+      setStartingSession(true);
+      const openingCashAmount = Number(directOpeningAmount || 0);
+      const { data } = await startPosSession({ openingDenoms: [], openingCashAmount });
       setPosSession(data);
       setShowStartSession(false);
-      toast.success('POS session started');
+      setDirectOpeningAmount('');
+      toast.success(`New shift started 🟢 Opening float: Rs. ${openingCashAmount.toLocaleString('en-LK', { minimumFractionDigits: 2 })}`);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to start session');
+      toast.error(err.response?.data?.message || 'Failed to start new shift');
+    } finally {
+      setStartingSession(false);
     }
   };
 
@@ -562,7 +587,8 @@ const POSScreen = () => {
       const hpCashIncome = Number(posDailySummary?.hpCashIncome || dailyFinancials?.hpCashIncome || 0);
       const reloadIncome = Number(posDailySummary?.reloadIncome || dailyFinancials?.reloadIncome || 0);
       const expenseCost = Number(posDailySummary?.expenseCost || dailyFinancials?.expenseCost || 0);
-      const expectedDrawerCash = (Number(posSession?.openingCashAmount || 0) + cashSales + hpCashIncome + reloadIncome) - expenseCost;
+      const cashInOther = Number(posDailySummary?.cashInOther || dailyFinancials?.cashInOther || 0);
+      const expectedDrawerCash = (Number(posSession?.openingCashAmount || 0) + cashSales + hpCashIncome + reloadIncome + cashInOther) - expenseCost;
 
       const closingCashCountedAmount = useDirectCount
         ? Number(directCountAmount || 0)
@@ -602,26 +628,78 @@ const POSScreen = () => {
   };
 
   const openEndSessionModal = async () => {
+    const todayStr = new Date().toISOString().split('T')[0];
     try {
-      const { data } = await getPosOrders({ date: new Date().toISOString().split('T')[0] });
+      const { data } = await getPosOrders({ date: todayStr });
       setDailyFinancials(data?.financials || null);
       setPosDailySummary(data?.summary || null);
       setBalanceOrders(data?.orders || []);
       setBalanceSessionData(data?.session || null);
     } catch { /* ignore */ }
+    if (user?.role === 'admin') {
+      setEodReportDate(todayStr);
+      fetchEodReport(todayStr);
+    }
     setShowEndSession(true);
   };
 
-  const openBalanceModal = async (selectedDate = balanceDate) => {
+  // Admin-only: pull the balance report for any date, independent of the live
+  // today-only figures used by Settle & Close above — always a fresh network
+  // fetch keyed by the exact date passed in, never a cached/stale value.
+  const fetchEodReport = async (dateStr) => {
+    const d = typeof dateStr === 'string' && dateStr ? dateStr : eodReportDate;
+    if (!isValidCalendarDateStr(d)) {
+      toast.error('That date doesn\'t exist — please pick a valid calendar date.');
+      return;
+    }
+    console.log('[EOD Report] fetching for date:', d);
+    try {
+      setEodReportLoading(true);
+      const { data } = await getPosOrders({ date: d });
+      setEodReportData({
+        financials: data?.financials || null,
+        summary: data?.summary || null,
+        session: data?.session || null,
+        orders: data?.orders || [],
+      });
+    } catch (err) {
+      console.error('[EOD Report] fetch failed:', err);
+      toast.error(err.response?.data?.message || 'Failed to load report for the selected date');
+      setEodReportData(null);
+    } finally {
+      setEodReportLoading(false);
+    }
+  };
+
+  const openBalanceModal = async (selectedDate) => {
+    // Guard against being wired as a raw onClick handler, which would pass the
+    // click SyntheticEvent here instead of a date string (and crash axios's
+    // param serializer on the event's circular refs) — always fall back to
+    // the current picker value for anything that isn't a plain date string.
+    let dateToFetch = typeof selectedDate === 'string' && selectedDate ? selectedDate : balanceDate;
+    if (!isValidCalendarDateStr(dateToFetch)) {
+      // Never let a bad stored date (e.g. an earlier invalid manual edit that
+      // left balanceDate as "") block the modal from opening at all — self-heal
+      // to today instead, so the picker is always reachable to fix it further.
+      const todayStr = new Date().toISOString().split('T')[0];
+      console.warn('[Balance Summary] invalid date detected, resetting to today:', dateToFetch, '->', todayStr);
+      dateToFetch = todayStr;
+      setBalanceDate(todayStr);
+      toast.warning('Selected date was invalid — reset to today.');
+    }
+    console.log('[Balance Summary] fetching for date:', dateToFetch);
     try {
       setBalanceLoading(true);
-      const { data } = await getPosOrders({ date: selectedDate });
+      const { data } = await getPosOrders({ date: dateToFetch });
+      console.log('[Balance Summary] response:', data?.summary);
       setDailyFinancials(data?.financials || null);
       setPosDailySummary(data?.summary || null);
       setBalanceOrders(data?.orders || []);
       setBalanceSessionData(data?.session || null);
       setShowBalanceModal(true);
-    } catch {
+    } catch (err) {
+      console.error('[Balance Summary] fetch failed:', err);
+      toast.error(err.response?.data?.message || 'Failed to load balance summary for the selected date');
       setDailyFinancials(null);
       setPosDailySummary(null);
       setBalanceOrders([]);
@@ -1489,38 +1567,82 @@ const POSScreen = () => {
     }
   };
 
-  const handlePrintShiftSlip = () => {
+  // `overrideData` lets a caller that already has fresh data for a specific
+  // date (the admin EOD report picker) print directly with it, without this
+  // function re-fetching and overwriting the Balance-modal's global state —
+  // that would otherwise leak a historical date's figures into today's live
+  // Settle & Close calculation. Omit it for the default "print today/whatever
+  // balanceDate is" behavior used by the Balance modal and auto-print-on-close.
+  const handlePrintShiftSlip = async (overrideData) => {
+    const dateStr = overrideData?.date || balanceDate;
+    if (!isValidCalendarDateStr(dateStr)) {
+      toast.error('That date doesn\'t exist — please pick a valid calendar date before printing.');
+      return;
+    }
+
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
       toast.error('Popup blocked! Please allow popups to print shift slip.');
       return;
     }
 
+    let financialsForPrint = dailyFinancials;
+    let summaryForPrint = posDailySummary;
+    let sessionForPrint = balanceSessionData;
+
+    if (overrideData) {
+      financialsForPrint = overrideData.financials || null;
+      summaryForPrint = overrideData.summary || null;
+      sessionForPrint = overrideData.session || null;
+    } else {
+      // Always re-fetch fresh data for the exact date currently selected in the
+      // picker before printing — the user may have changed the date without
+      // pressing "Search" yet, and printing must never fall back to stale/"today" data.
+      try {
+        const { data } = await getPosOrders({ date: dateStr });
+        financialsForPrint = data?.financials || null;
+        summaryForPrint = data?.summary || null;
+        sessionForPrint = data?.session || null;
+        setDailyFinancials(financialsForPrint);
+        setPosDailySummary(summaryForPrint);
+        setBalanceOrders(data?.orders || []);
+        setBalanceSessionData(sessionForPrint);
+      } catch (err) {
+        toast.warning('Could not refresh data for the selected date — printing last loaded figures.');
+      }
+    }
+
     const headerTitle = settings?.receiptSettings?.headerTitle || brandName;
     const subtitle = settings?.receiptSettings?.subtitle || settings?.address || '';
-    const dateStr = balanceDate || new Date().toISOString().split('T')[0];
     const cashierName = user?.name || 'Staff';
 
-    const openingFloat = Number(posSession?.openingCashAmount || 0);
-    const cashSales = Number(posDailySummary?.cashSales || 0);
-    const cardSales = Number(posDailySummary?.cardSales || 0);
-    const bankSales = Number(posDailySummary?.bankSales || 0);
-    const kokoSales = Number(posDailySummary?.kokoSales || 0);
-    const payhereSales = Number(posDailySummary?.payhereSales || 0);
-    const chequeSales = Number(posDailySummary?.chequeSales || 0);
-    const creditSales = Number(posDailySummary?.creditSales || 0);
-    const totalBankOnline = Number(posDailySummary?.totalBankOnline || (bankSales + payhereSales + kokoSales));
-    const mobileIncome = Number(dailyFinancials?.mobileIncome || 0);
-    const accessoriesIncome = Number(dailyFinancials?.accessoriesIncome || 0);
-    const hpCashIncome = Number(posDailySummary?.hpCashIncome || dailyFinancials?.hpCashIncome || 0);
-    const reloadIncome = Number(posDailySummary?.reloadIncome || dailyFinancials?.reloadIncome || 0);
-    const expenseCost = Number(posDailySummary?.expenseCost || dailyFinancials?.expenseCost || 0);
-    const totalRevenue = Number(posDailySummary?.systemRevenue || dailyFinancials?.totalIncome || 0);
+    const openingFloat = Number(sessionForPrint?.openingCashAmount || posSession?.openingCashAmount || 0);
+    const cashSales = Number(summaryForPrint?.cashSales || 0);
+    const cardSales = Number(summaryForPrint?.cardSales || 0);
+    const bankSales = Number(summaryForPrint?.bankSales || 0);
+    const kokoSales = Number(summaryForPrint?.kokoSales || 0);
+    const payhereSales = Number(summaryForPrint?.payhereSales || 0);
+    const chequeSales = Number(summaryForPrint?.chequeSales || 0);
+    const creditSales = Number(summaryForPrint?.creditSales || 0);
+    const totalBankOnline = Number(summaryForPrint?.totalBankOnline || (bankSales + payhereSales + kokoSales));
+    const mobileIncome = Number(financialsForPrint?.mobileIncome || 0);
+    const accessoriesIncome = Number(financialsForPrint?.accessoriesIncome || 0);
+    const hpCashIncome = Number(summaryForPrint?.hpCashIncome || financialsForPrint?.hpCashIncome || 0);
+    const reloadIncome = Number(summaryForPrint?.reloadIncome || financialsForPrint?.reloadIncome || 0);
+    const expenseCost = Number(summaryForPrint?.expenseCost || financialsForPrint?.expenseCost || 0);
+    const cashInOther = Number(summaryForPrint?.cashInOther || financialsForPrint?.cashInOther || 0);
+    const totalRevenue = Number(summaryForPrint?.systemRevenue || financialsForPrint?.totalIncome || 0);
 
-    const netDrawerCash = (openingFloat + cashSales + hpCashIncome + reloadIncome) - expenseCost;
-    const actualCount = directCountAmount !== ''
-      ? Number(directCountAmount)
-      : (calcTotal(sessionForm.closing) > 0 ? calcTotal(sessionForm.closing) : (posSession?.closingCashCountedAmount !== undefined ? Number(posSession.closingCashCountedAmount) : netDrawerCash));
+    const netDrawerCash = (openingFloat + cashSales + hpCashIncome + reloadIncome + cashInOther) - expenseCost;
+
+    // A past date's slip must reflect that day's already-recorded closing count,
+    // never today's still-in-progress cash count from the live session form.
+    const isTodaySlip = dateStr === new Date().toISOString().split('T')[0];
+    const actualCount = isTodaySlip
+      ? (directCountAmount !== ''
+          ? Number(directCountAmount)
+          : (calcTotal(sessionForm.closing) > 0 ? calcTotal(sessionForm.closing) : (sessionForPrint?.closingCashCountedAmount !== undefined ? Number(sessionForPrint.closingCashCountedAmount) : netDrawerCash)))
+      : (sessionForPrint?.closingCashCountedAmount !== undefined ? Number(sessionForPrint.closingCashCountedAmount) : netDrawerCash);
     const discrepancy = actualCount - netDrawerCash;
 
     printWindow.document.write(`
@@ -1577,6 +1699,7 @@ const POSScreen = () => {
           <div class="row"><span>(+) Cash Sales In:</span><span>Rs. ${cashSales.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
           <div class="row"><span>(+) HP Cash In:</span><span>Rs. ${hpCashIncome.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
           <div class="row"><span>(+) Reload Cash In:</span><span>Rs. ${reloadIncome.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
+          <div class="row"><span>(+) Other Cash In (Ledger):</span><span>Rs. ${cashInOther.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
           <div class="row" style="color:#b91c1c;"><span>(-) Petty Cash Out:</span><span>Rs. ${expenseCost.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div>
           
           <div class="total-box bold">
@@ -1610,6 +1733,22 @@ const POSScreen = () => {
     setTimeout(() => {
       printWindow.print();
     }, 500);
+  };
+
+  // Admin EOD report picker's own Print button — reuses the same printable
+  // slip layout via handlePrintShiftSlip's overrideData path, so it never
+  // touches the live Balance-modal state or today's Settle & Close figures.
+  const handlePrintEodReport = () => {
+    if (!eodReportData) {
+      toast.error('Please search for a date first.');
+      return;
+    }
+    handlePrintShiftSlip({
+      date: eodReportDate,
+      financials: eodReportData.financials,
+      summary: eodReportData.summary,
+      session: eodReportData.session,
+    });
   };
 
   const handlePrintHpReceipt = (customData = null) => {
@@ -1993,6 +2132,12 @@ const POSScreen = () => {
       return;
     }
 
+    if (!posSession) {
+      toast.error('No active shift — start a new shift before taking sales.');
+      setShowStartSession(true);
+      return;
+    }
+
     const isHP = pos.paymentMethod === 'hire_purchase';
 
     // Determine if any item is a mobile device and validate customer info
@@ -2142,6 +2287,7 @@ const POSScreen = () => {
       } else {
         toast.success(isHP ? 'Installment/HP sale recorded! 📋' : isCredit ? 'Credit sale recorded! 📋' : 'Sale completed! 🎉');
       }
+      pos.clearCart();
       setIsCredit(false);
       setCreditAmountPaid('');
       setCreditNote('');
@@ -3032,11 +3178,26 @@ const POSScreen = () => {
           </button>
 
           {/* Shift & Daily Accounting */}
+          {posSession ? (
+            <span
+              title={`Shift started at ${new Date(posSession.startedAt).toLocaleTimeString()}`}
+              style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '0.35rem 0.55rem', borderRadius: '8px', background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', fontSize: '0.72rem', fontWeight: '700', whiteSpace: 'nowrap' }}
+            >
+              🟢 Shift Active — {new Date(posSession.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          ) : (
+            <span
+              title="No active shift — start a new shift to take sales"
+              style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '0.35rem 0.55rem', borderRadius: '8px', background: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca', fontSize: '0.72rem', fontWeight: '700', whiteSpace: 'nowrap' }}
+            >
+              🔴 Shift Closed
+            </span>
+          )}
           <button className="pos-topbar-btn" onClick={openEndSessionModal} title="Close POS Session">
             <Clock size={15} />
             <span className="pos-topbar-btn-text">Close</span>
           </button>
-          <button className="pos-topbar-btn" onClick={openBalanceModal} title="View Daily Balance Sheet">
+          <button className="pos-topbar-btn" onClick={() => openBalanceModal(balanceDate)} title="View Daily Balance Sheet">
             <DollarSign size={15} />
             <span className="pos-topbar-btn-text">Balance</span>
           </button>
@@ -3368,7 +3529,7 @@ const POSScreen = () => {
 
 
         {/* ──────── RIGHT PANEL: Cart ──────── */}
-        <div className="pos-cart-panel" style={pos.cart.length > 0 ? { flex: '4.5', maxWidth: '600px', transition: 'all 0.3s ease' } : { transition: 'all 0.3s ease' }}>
+        <div className="pos-cart-panel" style={pos.cart.length > 0 ? { flex: '5.5', maxWidth: '680px', transition: 'all 0.3s ease' } : { transition: 'all 0.3s ease' }}>
           <div className="pos-cart-header">
             <Receipt size={20} />
             <h2>Current Sale</h2>
@@ -4281,6 +4442,26 @@ const POSScreen = () => {
                       </div>
                     )}
 
+                    <div style={{ marginBottom: '10px' }}>
+                      <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#92400e', display: 'block', marginBottom: '4px' }}>
+                        Product Barcode (editable)
+                      </label>
+                      <input
+                        type="text"
+                        value={pos.hirePurchaseData.barcode || ''}
+                        onChange={(e) => pos.setHirePurchaseData({ ...pos.hirePurchaseData, barcode: e.target.value })}
+                        placeholder="Enter or edit barcode"
+                        style={{
+                          width: '100%',
+                          padding: '10px 12px',
+                          borderRadius: '10px',
+                          border: '1px solid #fcd34d',
+                          fontSize: '13px',
+                          background: '#fff',
+                        }}
+                      />
+                    </div>
+
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
                       <div>
                         <label style={{ fontSize: '10px', fontWeight: 'bold', color: '#92400e' }}>Customer Name *</label>
@@ -4819,14 +5000,15 @@ const POSScreen = () => {
               border: '1.5px solid #334155',
               borderRadius: '24px',
               color: '#ffffff',
-              width: 'min(980px, 96vw)',
+              width: 'min(1400px, 96vw)',
+              maxWidth: 'min(1400px, 96vw)',
               maxHeight: '94vh',
               overflowY: 'auto',
               boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.9)'
             }}
           >
             {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 26px', borderBottom: '1px solid #1e293b' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 26px', borderBottom: '1px solid #1e293b', flexWrap: 'wrap', gap: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ width: '44px', height: '44px', borderRadius: '14px', background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 4px 14px rgba(239, 68, 68, 0.4)' }}>
                   <Store size={24} />
@@ -4840,7 +5022,7 @@ const POSScreen = () => {
                   </p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => setShowEndSession(false)}
                 style={{ background: '#1e293b', border: 'none', color: '#94a3b8', width: '36px', height: '36px', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
@@ -4848,15 +5030,88 @@ const POSScreen = () => {
               </button>
             </div>
 
+            {user?.role === 'admin' && (
+              <div style={{ padding: '16px 26px 0' }}>
+                <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '14px', padding: '14px 18px', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: '900', color: '#facc15', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Calendar size={14} /> Admin: Pull Balance Report For Any Day
+                  </div>
+                  <input
+                    type="date"
+                    value={eodReportDate}
+                    onChange={(e) => setEodReportDate(e.target.value)}
+                    style={{
+                      padding: '8px 12px',
+                      background: '#0f172a',
+                      border: '1.5px solid #ca8a04',
+                      borderRadius: '8px',
+                      color: '#ffffff',
+                      fontSize: '13px',
+                      fontWeight: 'bold',
+                      outline: 'none',
+                    }}
+                  />
+                  <button
+                    onClick={() => fetchEodReport(eodReportDate)}
+                    disabled={eodReportLoading}
+                    style={{
+                      padding: '8px 14px',
+                      background: 'linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)',
+                      border: 'none',
+                      borderRadius: '8px',
+                      color: '#ffffff',
+                      fontWeight: 'bold',
+                      fontSize: '13px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                    }}
+                  >
+                    <Search size={14} />
+                    {eodReportLoading ? 'Loading...' : 'Search'}
+                  </button>
+                  <button
+                    onClick={handlePrintEodReport}
+                    disabled={!eodReportData}
+                    style={{
+                      padding: '8px 14px',
+                      background: eodReportData ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : '#334155',
+                      border: 'none',
+                      borderRadius: '8px',
+                      color: '#ffffff',
+                      fontWeight: 'bold',
+                      fontSize: '13px',
+                      cursor: eodReportData ? 'pointer' : 'not-allowed',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                    }}
+                    title="Print the balance report for the selected date above (separate from today's EOD slip)"
+                  >
+                    <Printer size={14} />
+                    Print Report
+                  </button>
+                  {eodReportData && (
+                    <div style={{ fontSize: '13px', fontWeight: '900', color: '#4ade80', fontFamily: 'monospace', marginLeft: 'auto' }}>
+                      Total Day Revenue: Rs. {Number(eodReportData.summary?.systemRevenue || eodReportData.financials?.totalIncome || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                      {' '}({eodReportData.summary?.totalOrders ?? eodReportData.orders.length} orders)
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {(() => {
               const openingFloat = Number(posSession?.openingCashAmount || 0);
               const cashSales = Number(posDailySummary?.cashSales || 0);
               const hpCashIncome = Number(posDailySummary?.hpCashIncome || dailyFinancials?.hpCashIncome || 0);
               const reloadIncome = Number(posDailySummary?.reloadIncome || dailyFinancials?.reloadIncome || 0);
               const expenseCost = Number(posDailySummary?.expenseCost || dailyFinancials?.expenseCost || 0);
+              const cashInOther = Number(posDailySummary?.cashInOther || dailyFinancials?.cashInOther || 0);
               const cardSales = Number(posDailySummary?.cardSales || 0);
 
-              const expectedDrawer = (openingFloat + cashSales + hpCashIncome + reloadIncome) - expenseCost;
+              const expectedDrawer = (openingFloat + cashSales + hpCashIncome + reloadIncome + cashInOther) - expenseCost;
               const countedCash = useDirectCount
                 ? Number(directCountAmount || 0)
                 : calcTotal(sessionForm.closing);
@@ -5132,6 +5387,12 @@ const POSScreen = () => {
                     />
                   </div>
 
+                  {!posSession && (
+                    <div style={{ padding: '12px 16px', borderRadius: '12px', background: '#1e293b', border: '1px solid #475569', color: '#94a3b8', fontSize: '13px', fontWeight: '700', marginBottom: '14px', textAlign: 'center' }}>
+                      🔒 Shift already closed — start a new shift from the prompt after closing, or reopen this dialog once one begins.
+                    </div>
+                  )}
+
                   {/* Action Buttons */}
                   <div style={{ display: 'flex', gap: '14px' }}>
                     <button
@@ -5153,32 +5414,135 @@ const POSScreen = () => {
                     </button>
                     <button
                       type="button"
-                      disabled={settlingSession}
+                      disabled={settlingSession || !posSession}
                       onClick={handleEndSession}
                       style={{
                         flex: 2,
                         padding: '14px',
                         borderRadius: '12px',
                         border: 'none',
-                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                        background: (settlingSession || !posSession) ? '#334155' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                         color: '#ffffff',
                         fontWeight: '900',
                         fontSize: '14px',
-                        cursor: 'pointer',
+                        cursor: (settlingSession || !posSession) ? 'not-allowed' : 'pointer',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: '8px',
-                        boxShadow: '0 4px 15px rgba(16, 185, 129, 0.4)'
+                        boxShadow: (settlingSession || !posSession) ? 'none' : '0 4px 15px rgba(16, 185, 129, 0.4)'
                       }}
                     >
                       <Printer size={18} />
-                      {settlingSession ? 'Settling & Printing...' : 'Settle & Close Shop Register (Print EOD Slip)'}
+                      {settlingSession ? 'Settling & Printing...' : !posSession ? 'Shift Closed' : 'Settle & Close Shop Register (Print EOD Slip)'}
                     </button>
                   </div>
                 </div>
               );
             })()}
+          </div>
+        </div>
+      )}
+
+      {/* New Shift / Next Business Day Start Modal — shown automatically right
+          after Settle & Close finishes, so a fresh shift with its own opening
+          float always follows a closed one. Previously this state (showStartSession)
+          was set but never rendered anywhere, so closing a shift left the
+          cashier stuck with no active session and no way to start the next one
+          short of reloading the page. */}
+      {showStartSession && (
+        <div className="pos-modal-overlay" style={{ zIndex: 1070 }}>
+          <div
+            className="pos-shift-modal"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: '#0f172a',
+              border: '1.5px solid #334155',
+              borderRadius: '24px',
+              color: '#ffffff',
+              width: 'min(480px, 96vw)',
+              maxWidth: 'min(480px, 96vw)',
+              boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.9)'
+            }}
+          >
+            <div style={{ padding: '26px', textAlign: 'center' }}>
+              <div style={{ width: '52px', height: '52px', borderRadius: '16px', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', margin: '0 auto 14px', boxShadow: '0 4px 14px rgba(16, 185, 129, 0.4)' }}>
+                <Store size={26} />
+              </div>
+              <h2 style={{ margin: 0, fontSize: '19px', fontWeight: '900', color: '#ffffff' }}>
+                Ready For Next Shift
+              </h2>
+              <p style={{ margin: '6px 0 20px', fontSize: '13px', color: '#94a3b8' }}>
+                {new Date().toLocaleDateString('en-GB')}, {new Date().toLocaleTimeString()} — start a new shift now with its opening cash float, or skip this if you're actually closing the shop for the day.
+              </p>
+
+              <label style={{ fontSize: '13px', fontWeight: '800', color: '#cbd5e1', display: 'block', marginBottom: '8px', textAlign: 'left' }}>
+                Opening Cash Float (Rs.) *
+              </label>
+              <input
+                type="number"
+                min="0"
+                placeholder="0.00"
+                value={directOpeningAmount}
+                onChange={(e) => setDirectOpeningAmount(e.target.value)}
+                autoFocus
+                style={{
+                  width: '100%',
+                  padding: '14px',
+                  borderRadius: '12px',
+                  border: '2px solid #10b981',
+                  background: '#1e293b',
+                  color: '#ffffff',
+                  fontSize: '22px',
+                  fontWeight: '900',
+                  outline: 'none',
+                  fontFamily: 'monospace',
+                  textAlign: 'center',
+                  marginBottom: '20px',
+                  boxSizing: 'border-box'
+                }}
+              />
+
+              <button
+                type="button"
+                disabled={startingSession}
+                onClick={handleStartSession}
+                style={{
+                  width: '100%',
+                  padding: '14px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: startingSession ? '#334155' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  color: '#ffffff',
+                  fontWeight: '900',
+                  fontSize: '14px',
+                  cursor: startingSession ? 'not-allowed' : 'pointer',
+                  boxShadow: startingSession ? 'none' : '0 4px 15px rgba(16, 185, 129, 0.4)'
+                }}
+              >
+                {startingSession ? 'Starting Shift...' : '🟢 Start New Shift'}
+              </button>
+
+              <button
+                type="button"
+                disabled={startingSession}
+                onClick={() => { setShowStartSession(false); setDirectOpeningAmount(''); }}
+                style={{
+                  width: '100%',
+                  marginTop: '10px',
+                  padding: '12px',
+                  borderRadius: '12px',
+                  border: '1px solid #334155',
+                  background: 'transparent',
+                  color: '#94a3b8',
+                  fontWeight: '700',
+                  fontSize: '13px',
+                  cursor: startingSession ? 'not-allowed' : 'pointer'
+                }}
+              >
+                Not now — closing the shop for today
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -5192,8 +5556,9 @@ const POSScreen = () => {
               background: '#111827', 
               border: '1px solid #374151', 
               borderRadius: '20px',
-              color: '#ffffff', 
-              width: 'min(1150px, 96vw)', 
+              color: '#ffffff',
+              width: 'min(1440px, 96vw)',
+              maxWidth: 'min(1440px, 96vw)',
               maxHeight: '92vh',
               overflowY: 'auto',
               boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.85)'
@@ -5216,6 +5581,42 @@ const POSScreen = () => {
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <input
+                  type="date"
+                  value={balanceDate}
+                  onChange={(e) => setBalanceDate(e.target.value)}
+                  style={{
+                    padding: '8px 12px',
+                    background: '#0f172a',
+                    border: '1.5px solid #ca8a04',
+                    borderRadius: '8px',
+                    color: '#ffffff',
+                    fontSize: '13px',
+                    fontWeight: 'bold',
+                    outline: 'none',
+                  }}
+                />
+                <button
+                  onClick={() => openBalanceModal(balanceDate)}
+                  disabled={balanceLoading}
+                  style={{
+                    padding: '8px 14px',
+                    background: 'linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: '#ffffff',
+                    fontWeight: 'bold',
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 2px 8px rgba(37, 99, 235, 0.4)'
+                  }}
+                >
+                  <Search size={14} />
+                  {balanceLoading ? 'Loading...' : 'Search'}
+                </button>
                 <button
                   onClick={handlePrintShiftSlip}
                   style={{
@@ -5333,8 +5734,8 @@ const POSScreen = () => {
               {balanceTab === 'shift' && (
                 <div>
                   {/* Top Stats Grid */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginBottom: '24px' }}>
-                    
+                  <div className="pos-balance-grid">
+
                     {/* Cash Sales */}
                     <div style={{ padding: '16px', borderRadius: '14px', background: '#1f2937', border: '1px solid #374151' }}>
                       <div style={{ fontSize: '11px', fontWeight: '800', color: '#9ca3af', textTransform: 'uppercase' }}>💵 Counter Cash Sales</div>
@@ -5418,6 +5819,15 @@ const POSScreen = () => {
                       <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '4px' }}>Tea, meals, supplies paid out</div>
                     </div>
 
+                    {/* Other Cash In (Ledger) */}
+                    <div style={{ padding: '16px', borderRadius: '14px', background: '#1f2937', border: '1px solid #22c55e55' }}>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#4ade80', textTransform: 'uppercase' }}>💰 Other Cash In (Ledger)</div>
+                      <div style={{ fontSize: '18px', fontWeight: '900', color: '#4ade80', marginTop: '6px', fontFamily: 'monospace' }}>
+                        + Rs. {Number(posDailySummary?.cashInOther || dailyFinancials?.cashInOther || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '4px' }}>Counter Cash Ledger — Money IN entries</div>
+                    </div>
+
                     {/* Total Revenue */}
                     <div style={{ padding: '16px', borderRadius: '14px', background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)', border: '1px solid #6366f1' }}>
                       <div style={{ fontSize: '11px', fontWeight: '800', color: '#a5b4fc', textTransform: 'uppercase' }}>🏦 Total Day Revenue</div>
@@ -5431,7 +5841,7 @@ const POSScreen = () => {
 
                   {/* Cash Drawer Handover Reconciliation Box */}
                   {(() => {
-                    const cashIn = Number(posDailySummary?.cashSales || 0) + Number(posDailySummary?.hpCashIncome || dailyFinancials?.hpCashIncome || 0) + Number(posDailySummary?.reloadIncome || dailyFinancials?.reloadIncome || 0);
+                    const cashIn = Number(posDailySummary?.cashSales || 0) + Number(posDailySummary?.hpCashIncome || dailyFinancials?.hpCashIncome || 0) + Number(posDailySummary?.reloadIncome || dailyFinancials?.reloadIncome || 0) + Number(posDailySummary?.cashInOther || dailyFinancials?.cashInOther || 0);
                     const expenseOut = Number(posDailySummary?.expenseCost || dailyFinancials?.expenseCost || 0);
                     const expectedDrawer = (Number(balanceSessionData?.openingCashAmount || posSession?.openingCashAmount || 0) + cashIn) - expenseOut;
                     

@@ -16,10 +16,15 @@ const resolveStoreId = async (user) => {
   // Cashier / stockEmployee — use assignedStore
   if (user.assignedStore) return user.assignedStore;
 
-  // Manager — find store they manage
+  // Manager — find store they manage, falling back to any active store like
+  // cashier/admin below (a manager not yet linked via managerId on a Store
+  // doc was otherwise hard-blocked from every POS/EOD action with "No store
+  // found for your account").
   if (user.role === 'manager') {
     const store = await Store.findOne({ managerId: user._id });
-    return store?._id || null;
+    if (store) return store._id;
+    const fallback = await Store.findOne({ isActive: true });
+    return fallback?._id || null;
   }
 
   // Admin — use first store (they can access any)
@@ -175,22 +180,31 @@ const endSession = async (req, res, next) => {
 
     // Query Petty Cash / Expenses in session
     let expenseCost = 0;
+    let cashInOther = 0;
     try {
       const Expense = require('../models/Expense');
       const expenses = await Expense.find({
         storeId: session.storeId,
+        status: { $ne: 'Cancelled' },
         $or: [
           { createdAt: { $gte: sessionStart, $lte: sessionEnd } },
           { date: { $gte: sessionStart, $lte: sessionEnd } }
         ]
       }).lean();
-      expenseCost = expenses.reduce((sum, ex) => sum + (ex.amount || 0), 0);
+      // Same split as getPosOrders: only Expense-type entries count as cash OUT;
+      // Income-type entries (Counter Cash Ledger "Money IN") add cash back in.
+      expenseCost = expenses
+        .filter((ex) => ex.type !== 'Income')
+        .reduce((sum, ex) => sum + (ex.amount || 0), 0);
+      cashInOther = expenses
+        .filter((ex) => ex.type === 'Income')
+        .reduce((sum, ex) => sum + (ex.amount || 0), 0);
     } catch { /* ignore */ }
 
     const totalSales = orders.reduce((s, o) => s + (o.totalAmount || 0), 0);
     const totalItemsSold = orders.reduce((s, o) => s + (o.items || []).reduce((x, it) => x + (it.quantity || 0), 0), 0);
 
-    const expectedCash = Number(session.openingCashAmount || 0) + Number(cashSales || 0) + Number(hpCashIncome || 0) + Number(reloadIncome || 0) - Number(expenseCost || 0);
+    const expectedCash = Number(session.openingCashAmount || 0) + Number(cashSales || 0) + Number(hpCashIncome || 0) + Number(reloadIncome || 0) + Number(cashInOther || 0) - Number(expenseCost || 0);
     const variance = Number(closingCashCountedAmount || 0) - expectedCash;
 
     session.closingDenoms = closingDenoms;
@@ -214,6 +228,7 @@ const endSession = async (req, res, next) => {
         hpCashIncome,
         reloadIncome,
         expenseCost,
+        cashInOther,
         expectedCash,
         actualCount: closingCashCountedAmount,
         variance,
@@ -952,8 +967,10 @@ const getPosOrders = async (req, res, next) => {
       ];
     }
 
+    let targetStoreId = null;
     if (req.user.role === 'cashier') {
       const cashierStore = req.user.assignedStore || req.user.assignedStoreId || req.user.storeId;
+      targetStoreId = cashierStore || null;
       const roleFilter = [
         { cashierId: req.user._id },
         cashierStore ? { storeId: cashierStore } : null
@@ -970,7 +987,10 @@ const getPosOrders = async (req, res, next) => {
     } else if (req.user.role === 'manager') {
       const storeId = await resolveStoreId(req.user);
       if (storeId) orderFilter.storeId = storeId;
+      targetStoreId = storeId || null;
     }
+    // Admins see all stores (orderFilter is left unscoped above), so targetStoreId
+    // stays null here to keep the expense/petty-cash query consistent with that.
 
     const orders = await Order.find(orderFilter)
       .sort({ createdAt: -1 })
@@ -1081,17 +1101,27 @@ const getPosOrders = async (req, res, next) => {
     } catch { /* ignore */ }
 
     let expenseCost = 0;
+    let cashInOther = 0;
     try {
       const Expense = require('../models/Expense');
       const storeQuery = targetStoreId ? { storeId: targetStoreId } : {};
       const expenses = await Expense.find({
         ...storeQuery,
+        status: { $ne: 'Cancelled' },
         $or: [
           { date: { $gte: startOfDay, $lte: endOfDay } },
           { createdAt: { $gte: startOfDay, $lte: endOfDay } }
         ]
       }).lean();
-      expenseCost = expenses.reduce((sum, ex) => sum + (ex.amount || 0), 0);
+      // "Petty Cash Out" is Expense-type ledger entries only; Income-type entries
+      // (Counter Cash Ledger "Money IN") are cash coming in and must not be summed
+      // into the same bucket, or they'd wrongly reduce the drawer/expense total.
+      expenseCost = expenses
+        .filter((ex) => ex.type !== 'Income')
+        .reduce((sum, ex) => sum + (ex.amount || 0), 0);
+      cashInOther = expenses
+        .filter((ex) => ex.type === 'Income')
+        .reduce((sum, ex) => sum + (ex.amount || 0), 0);
     } catch { /* ignore */ }
 
     // Query HP Installment payments in date range
@@ -1121,7 +1151,7 @@ const getPosOrders = async (req, res, next) => {
     } catch { /* ignore */ }
 
     const orderRevenue = orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
-    const totalIncome = orderRevenue + reloadIncome + repairIncomeNormal + repairIncomeCompany + advanceIncome + hpTotalIncome;
+    const totalIncome = orderRevenue + reloadIncome + repairIncomeNormal + repairIncomeCompany + advanceIncome + hpTotalIncome + cashInOther;
     const totalCost = serviceCost + supplierCost + expenseCost;
     const balanceAmount = totalIncome - totalCost;
 
@@ -1225,6 +1255,7 @@ const getPosOrders = async (req, res, next) => {
         serviceCost: Number(serviceCost.toFixed(2)),
         supplierCost: Number((supplierCost + expenseCost).toFixed(2)),
         expenseCost: Number(expenseCost.toFixed(2)),
+        cashInOther: Number(cashInOther.toFixed(2)),
         totalIncome: Number(totalIncome.toFixed(2)),
         totalCost: Number(totalCost.toFixed(2)),
         balanceAmount: Number(balanceAmount.toFixed(2)),
@@ -1246,6 +1277,7 @@ const getPosOrders = async (req, res, next) => {
         hpBankIncome: parseFloat(hpBankIncome.toFixed(2)),
         reloadIncome: parseFloat(reloadIncome.toFixed(2)),
         expenseCost: parseFloat(expenseCost.toFixed(2)),
+        cashInOther: parseFloat(cashInOther.toFixed(2)),
         totalItemsSold: orders.reduce((sum, o) => sum + (o.items || []).reduce((line, item) => line + Number(item.quantity || 0), 0), 0),
         systemRevenue: parseFloat(totalIncome.toFixed(2)),
         profitOfDay: parseFloat(profitOfDay.toFixed(2)),

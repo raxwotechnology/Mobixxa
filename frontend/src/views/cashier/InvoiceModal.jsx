@@ -255,6 +255,11 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
                     Invoice No: <strong style={{ color: '#1e293b' }}>{order.invoiceNumber || order._id?.slice(-8).toUpperCase()}</strong><br />
                     Date: {formatDate(order.createdAt)} | Time: {formatTime(order.createdAt)}
                   </p>
+                  {order.hirePurchaseData && (order.hirePurchaseData.hpCode || order.hirePurchaseData.referenceCode) && (
+                    <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#92400e', marginTop: '6px' }}>
+                      Installment Reference No: {order.hirePurchaseData.hpCode || order.hirePurchaseData.referenceCode}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -458,6 +463,12 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
                   <span style={{ color: '#666' }}>{order.quotationNumber ? 'Quotation #' : 'Invoice #'}</span>
                   <span style={{ fontWeight: 700, color: '#111' }}>{order.quotationNumber || order.invoiceNumber || order._id?.slice(-8).toUpperCase()}</span>
                 </div>
+                {order.hirePurchaseData && (order.hirePurchaseData.hpCode || order.hirePurchaseData.referenceCode) && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+                    <span style={{ fontWeight: 'bold', color: '#92400e' }}>Installment Reference No:</span>
+                    <span style={{ fontWeight: 'bold', color: '#92400e' }}>{order.hirePurchaseData.hpCode || order.hirePurchaseData.referenceCode}</span>
+                  </div>
+                )}
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
                   <span style={{ color: '#666' }}>Date:</span>
                   <span style={{ color: '#111' }}>{formatDate(order.createdAt)}</span>
