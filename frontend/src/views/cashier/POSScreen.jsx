@@ -5581,42 +5581,6 @@ const POSScreen = () => {
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <input
-                  type="date"
-                  value={balanceDate}
-                  onChange={(e) => setBalanceDate(e.target.value)}
-                  style={{
-                    padding: '8px 12px',
-                    background: '#0f172a',
-                    border: '1.5px solid #ca8a04',
-                    borderRadius: '8px',
-                    color: '#ffffff',
-                    fontSize: '13px',
-                    fontWeight: 'bold',
-                    outline: 'none',
-                  }}
-                />
-                <button
-                  onClick={() => openBalanceModal(balanceDate)}
-                  disabled={balanceLoading}
-                  style={{
-                    padding: '8px 14px',
-                    background: 'linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)',
-                    border: 'none',
-                    borderRadius: '8px',
-                    color: '#ffffff',
-                    fontWeight: 'bold',
-                    fontSize: '13px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    boxShadow: '0 2px 8px rgba(37, 99, 235, 0.4)'
-                  }}
-                >
-                  <Search size={14} />
-                  {balanceLoading ? 'Loading...' : 'Search'}
-                </button>
                 <button
                   onClick={handlePrintShiftSlip}
                   style={{
