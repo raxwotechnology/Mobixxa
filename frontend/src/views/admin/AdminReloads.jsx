@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Smartphone, Search, Filter, Calendar, ArrowUpRight, Phone, User as UserIcon, Plus, CheckCircle2, Layers, DollarSign, Calculator, RefreshCw, Wallet, CreditCard, Building2, FileText, Check } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
-import { getReloads, getReloadStocks, addReloadStock, closeReloadStock, addReloadSupplierPayment } from '../../services/api';
+import { getReloads, getReloadStocks, addReloadStock, closeReloadStock, adjustReloadStock, addReloadSupplierPayment } from '../../services/api';
 import { adminNavGroups } from './adminNavItems';
 import { managerNavGroups, getFilteredManagerNavGroups } from '../storeOwner/managerNavItems';
 import { getEmployeeNavGroups } from '../employee/employeeNav';
@@ -123,11 +123,24 @@ const AdminReloads = ({ navItems: propNavItems }) => {
     e.preventDefault();
     if (!selectedStockItem) return;
     try {
-      await closeReloadStock({
-        stockId: selectedStockItem._id,
-        closingStock: Number(closingStockInput)
-      });
-      toast.success('Evening balance updated & Sales Income posted to accounts! ✅');
+      // Once a closing is locked, re-entering the evening count for the same
+      // item/date now goes through the logged adjust action instead of
+      // silently overwriting the earlier close.
+      if (selectedStockItem.status === 'closed') {
+        await adjustReloadStock({
+          stockId: selectedStockItem._id,
+          field: 'closingStock',
+          newValue: Number(closingStockInput),
+          reason: 'Evening count correction via Admin panel',
+        });
+        toast.success('Evening balance corrected & logged! ✅');
+      } else {
+        await closeReloadStock({
+          stockId: selectedStockItem._id,
+          closingStock: Number(closingStockInput)
+        });
+        toast.success('Evening balance updated & Sales Income posted to accounts! ✅');
+      }
       setIsCloseStockOpen(false);
       setSelectedStockItem(null);
       fetchStocks();

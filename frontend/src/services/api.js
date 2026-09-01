@@ -385,15 +385,13 @@ export const updateHPRecord = (id, data) => API.put(`/hp/${id}`, data);
 // Reloads & Stock API (existing)
 export const createReload = (data) => API.post('/reloads', data);
 export const getReloads = (params) => API.get('/reloads', { params });
+export const settleCreditReload = (id, data) => API.put(`/reloads/${id}/settle`, data);
 export const getReloadStocks = (params) => API.get('/reloads/stocks', { params });
 export const addReloadStock = (data) => API.post('/reloads/stocks/add', data);
 export const closeReloadStock = (data) => API.post('/reloads/stocks/close', data);
+export const adjustReloadStock = (data) => API.post('/reloads/stocks/adjust', data);
 export const saveReloadDailySheet = (data) => API.post('/reloads/stocks/save-sheet', data);
 export const addReloadSupplierPayment = (data) => API.post('/reloads/supplier-payment', data);
-
-// Sprint 3 — ReloadSheet daily float bookkeeping endpoints
-export const saveReloadSheetApi = (data) => API.post('/reloads/save-sheet', data);
-export const getTodayReloadSheetApi = (params) => API.get('/reloads/today', { params });
 export const getReloadHistoryApi = (params) => API.get('/reloads/history', { params });
 
 

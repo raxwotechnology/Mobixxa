@@ -144,6 +144,7 @@ const getReloads = async (req, res, next) => {
 
     const reloads = await Reload.find(filter)
       .populate('createdBy', 'name')
+      .populate('settledBy', 'name')
       .populate('storeId', 'name')
       .sort({ createdAt: -1 });
 
@@ -151,6 +152,146 @@ const getReloads = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+// @desc    Mark a pending credit reload as paid — always settled in full,
+//          locked afterward (no un-settle from this endpoint).
+// @route   PUT /api/reloads/:id/settle
+// @access  Private (any cashier/manager/admin)
+const settleCreditReload = async (req, res, next) => {
+  try {
+    const reload = await Reload.findById(req.params.id);
+    if (!reload) {
+      res.status(404);
+      return next(new Error('Credit reload entry not found'));
+    }
+    if (!reload.isCredit) {
+      res.status(400);
+      return next(new Error('This entry is not a credit reload'));
+    }
+    if (reload.creditSettled) {
+      res.status(400);
+      return next(new Error('This credit reload has already been settled'));
+    }
+
+    const paymentMethod = req.body.paymentMethod || 'Cash';
+
+    reload.creditSettled = true;
+    reload.creditSettledAt = new Date();
+    reload.settledBy = req.user._id;
+    await reload.save();
+
+    const desc = `Credit Reload Settled: ${reload.operator} - ${reload.mobileNumber}${reload.customerName ? ` (${reload.customerName})` : ''}`;
+
+    // 1. Transaction — general ledger / audit trail, same pattern as the
+    //    sibling settleCreditOrder feature for POS sale credit.
+    try {
+      await Transaction.create({
+        storeId: reload.storeId,
+        type: 'income',
+        category: 'Credit Reload Settle',
+        amount: reload.amount,
+        paymentMethod,
+        description: desc,
+        date: new Date(),
+        createdBy: req.user._id,
+      });
+    } catch (txErr) {
+      console.error('[Credit Reload Settle] Transaction log notice:', txErr.message);
+    }
+
+    // 2. Expense(type: Income) — the "Other Cash In (Ledger)" mechanism that
+    //    actually flows into cashInOther / Total Day Revenue / Balance & Shift
+    //    Summary. Without this, the settlement would be recorded but invisible
+    //    to daily cash reporting.
+    try {
+      const Expense = require('../models/Expense');
+      const allowedMethods = ['Cash', 'Bank Transfer', 'Card', 'Cheque'];
+      await Expense.create({
+        storeId: reload.storeId,
+        type: 'Income',
+        category: 'Credit Reload Collection',
+        title: `Credit Reload Collected - ${reload.mobileNumber}`,
+        amount: reload.amount,
+        paymentMethod: allowedMethods.includes(paymentMethod) ? paymentMethod : 'Cash',
+        status: 'Paid',
+        date: new Date(),
+        notes: desc,
+        createdBy: req.user._id,
+      });
+    } catch (expErr) {
+      console.error('[Credit Reload Settle] Expense(Income) log notice:', expErr.message);
+    }
+
+    const populated = await Reload.findById(reload._id)
+      .populate('createdBy', 'name')
+      .populate('settledBy', 'name');
+
+    res.json({ success: true, data: populated });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Helper: resolve the store to act on, same fallback chain used by every
+// reload endpoint (explicit storeId > manager's store > user's assignedStore
+// > admin's first active store > any active store).
+const resolveReloadStoreId = async (req, explicitStoreId) => {
+  let assignedStore = explicitStoreId;
+  if (!assignedStore) {
+    if (req.user?.role === 'manager') {
+      const store = await Store.findOne({ managerId: req.user._id });
+      if (store) assignedStore = store._id;
+    } else if (req.user?.assignedStore) {
+      assignedStore = req.user.assignedStore;
+    } else if (req.user?.role === 'admin') {
+      const store = await Store.findOne({ isActive: true });
+      if (store) assignedStore = store._id;
+    }
+  }
+  if (!assignedStore) {
+    const anyStore = await Store.findOne({ isActive: true });
+    if (anyStore) assignedStore = anyStore._id;
+  }
+  return assignedStore;
+};
+
+// Helper: opening stock for a new day always carries forward from the most
+// recent prior day's closing balance for that exact operator/cardValue (or 0
+// if this item has never been tracked before).
+const getCarriedOpeningStock = async (storeId, operator, cardValue, targetDate) => {
+  const prev = await ReloadStock.findOne({
+    storeId,
+    operator,
+    cardValue,
+    date: { $lt: targetDate },
+  }).sort({ date: -1 });
+  if (!prev) return 0;
+  return prev.closingStock !== undefined && prev.closingStock !== null
+    ? Number(prev.closingStock) || 0
+    : Number(prev.totalStock) || 0;
+};
+
+// Helper: find today's stock record for this item, creating it (with the
+// carried-forward opening) if it doesn't exist yet.
+const findOrCreateReloadStockItem = async (req, { storeId, operator, cardValue, date }) => {
+  const stockItem = await ReloadStock.findOne({ storeId, date, operator, cardValue });
+  if (stockItem) return stockItem;
+  const carriedOpening = await getCarriedOpeningStock(storeId, operator, cardValue, date);
+  return ReloadStock.create({
+    storeId,
+    date,
+    operator,
+    cardValue,
+    openingStock: carriedOpening,
+    addedStock: 0,
+    totalStock: carriedOpening,
+    closingStock: carriedOpening,
+    sellOutAmount: 0,
+    sellOutValue: 0,
+    status: 'open',
+    recordedBy: req.user._id,
+  });
 };
 
 // @desc    Get daily reload stocks
@@ -222,71 +363,53 @@ const getReloadStocks = async (req, res, next) => {
   }
 };
 
-// @desc    Add or update reload stock (Opening / Added stock)
+// @desc    Add stock (append-only log entry) to a reload/card item for a date
 // @route   POST /api/reloads/stocks/add
 // @access  Private
 const addReloadStock = async (req, res, next) => {
   try {
-    const { storeId, operator, cardValue, openingStock, addedStock, notes, date } = req.body;
+    // `qty` is the new, preferred field name for the amount being added.
+    // `addedStock` is accepted too for the older AdminReloads.jsx caller.
+    // `openingStock` is accepted only for that same legacy caller — Opening
+    // is otherwise always system-derived (carried forward) and never
+    // settable from the newer Reload & Card Management screen, which never
+    // sends it.
+    const { storeId, operator, cardValue, openingStock, addedStock, qty, notes, date } = req.body;
     const targetDate = (date ? String(date).trim().split('T')[0] : new Date().toISOString().split('T')[0]);
+    const addQty = Math.max(0, Number(qty ?? addedStock) || 0);
 
-    let assignedStore = storeId;
-    if (!assignedStore) {
-      if (req.user?.role === 'manager') {
-        const store = await Store.findOne({ managerId: req.user._id });
-        if (store) assignedStore = store._id;
-      } else if (req.user?.assignedStore) {
-        assignedStore = req.user.assignedStore;
-      } else if (req.user?.role === 'admin') {
-        const store = await Store.findOne({ isActive: true });
-        if (store) assignedStore = store._id;
-      }
+    if (!addQty) {
+      res.status(400);
+      return next(new Error('Please enter a valid quantity to add'));
     }
 
-    if (!assignedStore) {
-      const anyStore = await Store.findOne({ isActive: true });
-      if (anyStore) assignedStore = anyStore._id;
-    }
-
+    const assignedStore = await resolveReloadStoreId(req, storeId);
     const cleanOperator = String(operator || 'Other').trim();
     const cleanCardVal = Number(cardValue) || 1;
 
-    let stockItem = await ReloadStock.findOne({
+    const stockItem = await findOrCreateReloadStockItem(req, {
       storeId: assignedStore,
-      date: targetDate,
       operator: cleanOperator,
       cardValue: cleanCardVal,
+      date: targetDate,
     });
 
-    if (stockItem) {
-      if (openingStock !== undefined && openingStock !== '') stockItem.openingStock = Math.max(0, Number(openingStock) || 0);
-      if (addedStock !== undefined && addedStock !== '') stockItem.addedStock += Math.max(0, Number(addedStock) || 0);
-      stockItem.totalStock = stockItem.openingStock + stockItem.addedStock;
-      stockItem.closingStock = stockItem.totalStock; // reset evening balance to total stock until closed
-      stockItem.sellOutAmount = 0;
-      stockItem.sellOutValue = 0;
-      if (notes !== undefined) stockItem.notes = notes;
-      stockItem.recordedBy = req.user._id;
-      await stockItem.save();
-    } else {
-      const openVal = Math.max(0, Number(openingStock) || 0);
-      const addVal = Math.max(0, Number(addedStock) || 0);
-      const totalVal = openVal + addVal;
-      stockItem = await ReloadStock.create({
-        storeId: assignedStore,
-        date: targetDate,
-        operator: cleanOperator,
-        cardValue: cleanCardVal,
-        openingStock: openVal,
-        addedStock: addVal,
-        totalStock: totalVal,
-        closingStock: totalVal,
-        sellOutAmount: 0,
-        sellOutValue: 0,
-        notes: notes || '',
-        recordedBy: req.user._id,
-      });
+    if (stockItem.status === 'closed') {
+      res.status(400);
+      return next(new Error(`${cleanOperator} is already closed for ${targetDate}. Use the adjust action if a correction is needed.`));
     }
+
+    if (openingStock !== undefined && openingStock !== '') {
+      stockItem.openingStock = Math.max(0, Number(openingStock) || 0);
+    }
+
+    stockItem.addLog.push({ qty: addQty, addedBy: req.user._id, addedAt: new Date(), notes: notes || '' });
+    stockItem.addedStock = stockItem.addLog.reduce((sum, l) => sum + (l.qty || 0), 0);
+    stockItem.totalStock = stockItem.openingStock + stockItem.addedStock;
+    stockItem.closingStock = stockItem.totalStock; // live preview until actually closed
+    if (notes !== undefined) stockItem.notes = notes;
+    stockItem.recordedBy = req.user._id;
+    await stockItem.save();
 
     res.status(200).json({ success: true, data: stockItem });
   } catch (error) {
@@ -299,18 +422,40 @@ const addReloadStock = async (req, res, next) => {
 // @access  Private
 const closeReloadStock = async (req, res, next) => {
   try {
-    const { stockId, closingStock, notes } = req.body;
+    const { stockId, storeId, operator, cardValue, date, closingStock, notes } = req.body;
 
-    const stockItem = await ReloadStock.findById(stockId);
-    if (!stockItem) {
-      res.status(404);
-      return next(new Error('Reload stock record not found'));
+    let stockItem = null;
+    if (stockId) {
+      stockItem = await ReloadStock.findById(stockId);
+      if (!stockItem) {
+        res.status(404);
+        return next(new Error('Reload stock record not found'));
+      }
+    } else {
+      // No stockId yet (item never had a stock action today) — find or
+      // create it (with carried-forward opening) so closing still works.
+      const targetDate = (date ? String(date).trim().split('T')[0] : new Date().toISOString().split('T')[0]);
+      const assignedStore = await resolveReloadStoreId(req, storeId);
+      stockItem = await findOrCreateReloadStockItem(req, {
+        storeId: assignedStore,
+        operator: String(operator || 'Other').trim(),
+        cardValue: Number(cardValue) || 1,
+        date: targetDate,
+      });
+    }
+
+    if (stockItem.status === 'closed') {
+      res.status(400);
+      return next(new Error(`${stockItem.operator} is already closed for ${stockItem.date}. Use the adjust action if a correction is needed.`));
     }
 
     const safeClosing = Math.max(0, Number(closingStock) || 0);
     stockItem.closingStock = safeClosing;
     stockItem.sellOutAmount = Math.max(0, stockItem.totalStock - stockItem.closingStock);
     stockItem.sellOutValue = stockItem.sellOutAmount * (Number(stockItem.cardValue) || 1);
+    stockItem.status = 'closed';
+    stockItem.closedAt = new Date();
+    stockItem.closedBy = req.user._id;
     if (notes !== undefined) stockItem.notes = notes;
     stockItem.recordedBy = req.user._id;
 
@@ -337,6 +482,76 @@ const closeReloadStock = async (req, res, next) => {
         });
         stockItem.transactionId = trans._id;
       }
+    }
+
+    await stockItem.save();
+
+    res.status(200).json({ success: true, data: stockItem });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Correct a locked (closed) reload stock record — the only way to
+//          change openingStock/addedStock/closingStock once closed. Always
+//          logged to adjustLog with a mandatory reason.
+// @route   POST /api/reloads/stocks/adjust
+// @access  Private/Admin/Manager (route-level authorize)
+const adjustReloadStock = async (req, res, next) => {
+  try {
+    const { stockId, field, newValue, reason } = req.body;
+
+    if (!reason || !String(reason).trim()) {
+      res.status(400);
+      return next(new Error('A reason is required to adjust a locked stock record'));
+    }
+    if (!['openingStock', 'addedStock', 'closingStock'].includes(field)) {
+      res.status(400);
+      return next(new Error('Invalid field to adjust'));
+    }
+
+    const stockItem = await ReloadStock.findById(stockId);
+    if (!stockItem) {
+      res.status(404);
+      return next(new Error('Reload stock record not found'));
+    }
+
+    const oldValue = Number(stockItem[field] || 0);
+    const updatedValue = Math.max(0, Number(newValue) || 0);
+
+    stockItem[field] = updatedValue;
+    stockItem.totalStock = stockItem.openingStock + stockItem.addedStock;
+    stockItem.sellOutAmount = Math.max(0, stockItem.totalStock - stockItem.closingStock);
+    stockItem.sellOutValue = stockItem.sellOutAmount * (Number(stockItem.cardValue) || 1);
+
+    stockItem.adjustLog.push({
+      field,
+      oldValue,
+      newValue: updatedValue,
+      reason: String(reason).trim(),
+      adjustedBy: req.user._id,
+      adjustedAt: new Date(),
+    });
+    stockItem.recordedBy = req.user._id;
+
+    // Keep the income ledger entry in sync with the corrected sell-out value.
+    if (stockItem.transactionId) {
+      await Transaction.findByIdAndUpdate(stockItem.transactionId, {
+        amount: stockItem.sellOutValue,
+        description: `[ADJUSTED] Daily Reload Sales (${stockItem.operator}): ${reason}`,
+      });
+    } else if (stockItem.sellOutValue > 0) {
+      const trans = await Transaction.create({
+        storeId: stockItem.storeId,
+        type: 'income',
+        category: 'Reload & Bill Payment',
+        amount: stockItem.sellOutValue,
+        paymentMethod: 'Cash',
+        description: `[ADJUSTED] Daily Reload Sales (${stockItem.operator}): ${reason}`,
+        date: new Date(),
+        createdBy: req.user._id,
+      });
+      stockItem.transactionId = trans._id;
     }
 
     await stockItem.save();
@@ -538,10 +753,12 @@ const saveReloadDailySheet = async (req, res, next) => {
 module.exports = {
   createReload,
   getReloads,
+  settleCreditReload,
   getReloadStocks,
   getTodayReloadSheet: getReloadStocks,
   addReloadStock,
   closeReloadStock,
+  adjustReloadStock,
   addReloadSupplierPayment,
   saveReloadDailySheet,
   saveReloadSheet: saveReloadDailySheet,

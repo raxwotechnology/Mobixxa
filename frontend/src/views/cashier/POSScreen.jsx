@@ -643,16 +643,13 @@ const POSScreen = () => {
     setShowEndSession(true);
   };
 
-  // Admin-only: pull the balance report for any date, independent of the live
-  // today-only figures used by Settle & Close above — always a fresh network
-  // fetch keyed by the exact date passed in, never a cached/stale value.
+  // Admin-only: pull the balance report for any date
   const fetchEodReport = async (dateStr) => {
     const d = typeof dateStr === 'string' && dateStr ? dateStr : eodReportDate;
-    if (!isValidCalendarDateStr(d)) {
+    if (typeof isValidCalendarDateStr === 'function' && !isValidCalendarDateStr(d)) {
       toast.error('That date doesn\'t exist — please pick a valid calendar date.');
       return;
     }
-    console.log('[EOD Report] fetching for date:', d);
     try {
       setEodReportLoading(true);
       const { data } = await getPosOrders({ date: d });
@@ -671,27 +668,16 @@ const POSScreen = () => {
     }
   };
 
-  const openBalanceModal = async (selectedDate) => {
-    // Guard against being wired as a raw onClick handler, which would pass the
-    // click SyntheticEvent here instead of a date string (and crash axios's
-    // param serializer on the event's circular refs) — always fall back to
-    // the current picker value for anything that isn't a plain date string.
+  const openBalanceModal = async (selectedDate = balanceDate) => {
     let dateToFetch = typeof selectedDate === 'string' && selectedDate ? selectedDate : balanceDate;
-    if (!isValidCalendarDateStr(dateToFetch)) {
-      // Never let a bad stored date (e.g. an earlier invalid manual edit that
-      // left balanceDate as "") block the modal from opening at all — self-heal
-      // to today instead, so the picker is always reachable to fix it further.
+    if (typeof isValidCalendarDateStr === 'function' && !isValidCalendarDateStr(dateToFetch)) {
       const todayStr = new Date().toISOString().split('T')[0];
-      console.warn('[Balance Summary] invalid date detected, resetting to today:', dateToFetch, '->', todayStr);
       dateToFetch = todayStr;
       setBalanceDate(todayStr);
-      toast.warning('Selected date was invalid — reset to today.');
     }
-    console.log('[Balance Summary] fetching for date:', dateToFetch);
     try {
       setBalanceLoading(true);
       const { data } = await getPosOrders({ date: dateToFetch });
-      console.log('[Balance Summary] response:', data?.summary);
       setDailyFinancials(data?.financials || null);
       setPosDailySummary(data?.summary || null);
       setBalanceOrders(data?.orders || []);
@@ -5698,7 +5684,18 @@ const POSScreen = () => {
               {balanceTab === 'shift' && (
                 <div>
                   {/* Top Stats Grid */}
-                  <div className="pos-balance-grid">
+                  <div style={{ position: 'relative' }}>
+                  {balanceLoading && (
+                    <div style={{
+                      position: 'absolute', inset: 0, zIndex: 5,
+                      background: 'rgba(15, 23, 42, 0.82)', borderRadius: '14px',
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '10px'
+                    }}>
+                      <RefreshCw size={22} className="animate-spin" color="#38bdf8" />
+                      <span style={{ fontSize: '13px', fontWeight: '800', color: '#e5e7eb' }}>Loading shift data for {balanceDate}...</span>
+                    </div>
+                  )}
+                  <div className="pos-balance-grid" style={{ opacity: balanceLoading ? 0.4 : 1, transition: 'opacity 0.2s' }}>
 
                     {/* Cash Sales */}
                     <div style={{ padding: '16px', borderRadius: '14px', background: '#1f2937', border: '1px solid #374151' }}>
@@ -5798,9 +5795,10 @@ const POSScreen = () => {
                       <div style={{ fontSize: '18px', fontWeight: '900', color: '#ffffff', marginTop: '6px', fontFamily: 'monospace' }}>
                         Rs. {Number(posDailySummary?.systemRevenue || dailyFinancials?.totalIncome || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
                       </div>
-                      <div style={{ fontSize: '11px', color: '#c7d2fe', marginTop: '4px' }}>{posDailySummary?.totalOrders || balanceOrders.length} Completed transactions</div>
+                      <div style={{ fontSize: '11px', color: '#c7d2fe', marginTop: '4px' }}>{posDailySummary?.completedTransactionsCount ?? posDailySummary?.totalOrders ?? balanceOrders.length} Completed transactions</div>
                     </div>
 
+                  </div>
                   </div>
 
                   {/* Cash Drawer Handover Reconciliation Box */}
@@ -7013,11 +7011,12 @@ const POSScreen = () => {
 
       {/* Reload Modal */}
       {showReloadModal && (
-        <ReloadModal 
-          isOpen={showReloadModal} 
+        <ReloadModal
+          isOpen={showReloadModal}
           onClose={() => setShowReloadModal(false)}
           storeId={user?.assignedStore || user?.assignedStoreId || user?.storeId || posSession?.storeId}
           accountId={pos.accountId}
+          userRole={user?.role}
           onSyncSuccess={() => {
             if (typeof fetchDailyFinancials === 'function') fetchDailyFinancials();
             if (typeof fetchSessionData === 'function') fetchSessionData();

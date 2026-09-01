@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  X, Smartphone, CheckCircle, Loader2, Calendar, Printer, Save, 
-  TrendingUp, CreditCard, Layers, Plus, DollarSign, Sparkles, 
-  Check, ArrowUpRight, ShieldCheck, RefreshCw, AlertCircle, Edit3, User, Phone 
+import {
+  X, Smartphone, CheckCircle, Loader2, Calendar, Printer, Lock,
+  TrendingUp, CreditCard, Layers, Plus, DollarSign, Sparkles,
+  Check, ArrowUpRight, ShieldCheck, RefreshCw, AlertCircle, Edit3, User, Phone
 } from 'lucide-react';
-import { 
-  createReload, getReloads, getReloadStocks, saveReloadDailySheet, 
-  saveReloadSheetApi, getTodayReloadSheetApi 
+import {
+  createReload, getReloads, settleCreditReload, getReloadStocks,
+  addReloadStock, closeReloadStock, adjustReloadStock
 } from '../../services/api';
 import { toast } from 'react-toastify';
 
@@ -68,19 +68,34 @@ const makeRowState = (item) => ({
   tag: item.tag,
   cardValue: item.cardValue,
   commissionRate: item.commissionRate,
+  stockId: null,
+  status: 'open', // 'open' | 'closed' — locked once a closing is submitted
   openingStock: '',
-  addedToday: '',
+  addedToday: '', // locked, server-derived sum of addLog entries — never typed directly
   eveningInHand: '',
+  addLog: [],
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => {
+const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userRole }) => {
   const [activeTab, setActiveTab] = useState('ereload'); // 'ereload' | 'cards' | 'summary' | 'credit'
   const [selectedNetwork, setSelectedNetwork] = useState('All'); // 'All' | 'Dialog' | 'Mobitel' | 'Airtel' | 'Hutch'
   const [stockDate, setStockDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [rows, setRows] = useState(() => OPERATORS_CONFIG.map(makeRowState));
+  const canAdjust = userRole === 'admin' || userRole === 'manager';
+
+  // Uncommitted In-Hand counts typed but not yet submitted as a closing —
+  // keyed by operatorName. Kept separate from `rows` so a locked/closed
+  // value can never be quietly retyped over.
+  const [closingDraft, setClosingDraft] = useState({});
+  const [closingBusy, setClosingBusy] = useState(null); // operatorName currently submitting
+
+  // Admin/Manager-only correction of an already-closed item
+  const [adjustTarget, setAdjustTarget] = useState(null); // row being adjusted, or null
+  const [adjustValue, setAdjustValue] = useState('');
+  const [adjustReason, setAdjustReason] = useState('');
+  const [submittingAdjust, setSubmittingAdjust] = useState(false);
 
   // Quick Add Float Popup
   const [showAddReloadModal, setShowAddReloadModal] = useState(false);
@@ -104,60 +119,47 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
   const [submittingCredit, setSubmittingCredit] = useState(false);
   const [creditReloads, setCreditReloads] = useState([]);
   const [loadingCredits, setLoadingCredits] = useState(false);
+  const [creditStatusFilter, setCreditStatusFilter] = useState('all'); // 'all' | 'pending' | 'paid'
+  const [settleTarget, setSettleTarget] = useState(null); // credit entry pending confirmation, or null
+  const [submittingSettle, setSubmittingSettle] = useState(false);
 
   // ── Data Fetching ──────────────────────────────────────────────────────────
+  // Sole source of truth: getReloadStocks. It already carries the previous
+  // day's closingStock forward as today's openingStock (backend-side) the
+  // first time a date has no records yet, so Opening always reflects the
+  // real running balance without this screen ever writing to it directly.
   const loadDailyData = async () => {
     try {
       setLoading(true);
-      let loaded = false;
-      try {
-        const res = await getTodayReloadSheetApi(storeId ? { storeId, date: stockDate } : { date: stockDate });
-        if (res?.data?.data?.operators?.length > 0) {
-          const serverOps = res.data.data.operators;
-          setRows(prev => prev.map(row => {
-            const match = serverOps.find(s => s.operatorName === row.operatorName || s.operatorName.includes(row.operatorName) || row.operatorName.includes(s.operatorName));
-            if (match) {
-              return {
-                ...row,
-                openingStock: match.openingStock ?? '',
-                addedToday: match.addedToday ?? '',
-                eveningInHand: match.eveningInHand ?? '',
-                commissionRate: match.commissionRate ?? row.commissionRate,
-              };
-            }
-            return row;
-          }));
-          loaded = true;
-        }
-      } catch (err) {
-        // fallback
-      }
+      const { data } = await getReloadStocks({ date: stockDate, ...(storeId ? { storeId } : {}) });
+      const serverStocks = Array.isArray(data) ? data : [];
 
-      if (!loaded) {
-        try {
-          const { data: legacyData } = await getReloadStocks({ date: stockDate, ...(storeId ? { storeId } : {}) });
-          if (Array.isArray(legacyData) && legacyData.length > 0) {
-            setRows(prev => prev.map(row => {
-              const legacyName = Object.entries(LEGACY_MAP).find(([, v]) => v === row.operatorName)?.[0];
-              const match = legacyData.find(s => (s.operator === legacyName || s.operator === row.operatorName || row.operatorName.includes(s.operator)) && Number(s.cardValue || 1) === row.cardValue);
-              if (match) {
-                const closingVal = match.closingStock !== undefined && match.closingStock !== null ? match.closingStock : '';
-                return {
-                  ...row,
-                  openingStock: match.openingStock ?? '',
-                  addedToday: match.addedStock ?? '',
-                  eveningInHand: closingVal,
-                };
-              }
-              return row;
-            }));
-          }
-        } catch (e) {
-          // ignore
+      setRows(prev => prev.map(row => {
+        const legacyName = Object.entries(LEGACY_MAP).find(([, v]) => v === row.operatorName)?.[0];
+        const match = serverStocks.find(s =>
+          Number(s.cardValue || 1) === row.cardValue &&
+          (s.operator === row.operatorName || s.operator === legacyName)
+        );
+        if (!match) {
+          // No record yet for this item today — nothing added, nothing closed.
+          return { ...row, stockId: null, status: 'open', openingStock: 0, addedToday: 0, eveningInHand: '', addLog: [] };
         }
-      }
+        return {
+          ...row,
+          stockId: match._id,
+          status: match.status || 'open',
+          openingStock: match.openingStock ?? 0,
+          addedToday: match.addedStock ?? 0,
+          eveningInHand: match.status === 'closed' ? (match.closingStock ?? 0) : '',
+          addLog: match.addLog || [],
+        };
+      }));
+
+      // Clear any stale unsubmitted drafts left over from a previous date/load.
+      setClosingDraft({});
     } catch (err) {
       console.warn('Reload data fetch error:', err);
+      toast.error('Failed to load reload & card stock for the selected date');
     } finally {
       setLoading(false);
     }
@@ -187,73 +189,65 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
     }
   }, [isOpen, stockDate, storeId, activeTab]); // eslint-disable-line
 
-  // ── Cell Value Change ──────────────────────────────────────────────────────
-  const handleInputChange = (operatorName, field, val) => {
-    setRows(prev => prev.map(r => {
-      if (r.operatorName === operatorName) {
-        return { ...r, [field]: val === '' ? '' : Math.max(0, Number(val) || 0) };
-      }
-      return r;
-    }));
+  // ── In-Hand draft entry (uncommitted until "Submit Closing") ───────────────
+  const handleClosingDraftChange = (operatorName, val) => {
+    setClosingDraft(prev => ({ ...prev, [operatorName]: val === '' ? '' : Math.max(0, Number(val) || 0) }));
   };
 
-  // ── Quick Increment Shortcut (+1000, +2000, +5000) ─────────────────────────
-  const handleQuickAddValue = (operatorName, amountToAdd) => {
-    setRows(prev => prev.map(r => {
-      if (r.operatorName === operatorName) {
-        const cur = Number(r.addedToday || 0);
-        return { ...r, addedToday: cur + amountToAdd };
+  // ── Add Stock: persists immediately as a log entry via the backend; the
+  //     running total shown on the card is always server-derived afterward. ──
+  const submitAddStock = async ({ operatorName, network, color, bgLight, border, tag, cardValue, commissionRate, qty, notes }) => {
+    // addReloadStock responds { success, data: stockItem } — unwrap fully.
+    const { data: { data } } = await addReloadStock({
+      storeId,
+      operator: operatorName,
+      cardValue,
+      qty,
+      notes,
+      date: stockDate,
+    });
+
+    setRows(prev => {
+      const exists = prev.some(r => r.operatorName === operatorName && r.cardValue === cardValue);
+      if (exists) {
+        return prev.map(r => (r.operatorName === operatorName && r.cardValue === cardValue)
+          ? { ...r, stockId: data._id, status: data.status, openingStock: data.openingStock, addedToday: data.addedStock, addLog: data.addLog || [] }
+          : r);
       }
-      return r;
-    }));
+      return [...prev, {
+        id: `custom_${Date.now()}`,
+        operatorName, network, color, bgLight, border, tag, cardValue, commissionRate,
+        stockId: data._id, status: data.status, openingStock: data.openingStock,
+        addedToday: data.addedStock, eveningInHand: '', addLog: data.addLog || [],
+      }];
+    });
   };
 
   // ── Quick Add Reload Float Modal Submit ─────────────────────────────────────
-  const handleAddReloadFloatSubmit = (e) => {
+  const handleAddReloadFloatSubmit = async (e) => {
     e.preventDefault();
     const amountVal = Number(addReloadForm.amount);
     if (!amountVal || amountVal <= 0) {
       toast.error('Please enter a valid float amount');
       return;
     }
-
-    setRows(prev => {
-      let found = false;
-      const updated = prev.map(r => {
-        if (r.operatorName === addReloadForm.operatorName) {
-          found = true;
-          const currentAdded = Number(r.addedToday || 0);
-          return { ...r, addedToday: currentAdded + amountVal };
-        }
-        return r;
+    try {
+      await submitAddStock({
+        operatorName: addReloadForm.operatorName,
+        network: 'Other', color: '#6366f1', bgLight: '#eef2ff', border: '#c7d2fe',
+        tag: 'E-Reload', cardValue: 1, commissionRate: 4,
+        qty: amountVal, notes: addReloadForm.notes,
       });
-
-      if (!found) {
-        updated.push({
-          id: `custom_ereload_${Date.now()}`,
-          operatorName: addReloadForm.operatorName,
-          network: 'Other',
-          color: '#6366f1',
-          bgLight: '#eef2ff',
-          border: '#c7d2fe',
-          tag: 'E-Reload',
-          cardValue: 1,
-          commissionRate: 4,
-          openingStock: '',
-          addedToday: amountVal,
-          eveningInHand: '',
-        });
-      }
-      return updated;
-    });
-
-    toast.success(`+ Rs. ${amountVal.toLocaleString()} float added to ${addReloadForm.operatorName}! 📲`);
-    setAddReloadForm({ operatorName: 'Dialog E-Reload', amount: '', notes: '' });
-    setShowAddReloadModal(false);
+      toast.success(`+ Rs. ${amountVal.toLocaleString()} float added to ${addReloadForm.operatorName}! 📲`);
+      setAddReloadForm({ operatorName: 'Dialog E-Reload', amount: '', notes: '' });
+      setShowAddReloadModal(false);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to add stock');
+    }
   };
 
   // ── Quick Add Card Stock Modal Submit ───────────────────────────────────────
-  const handleAddCardStockSubmit = (e) => {
+  const handleAddCardStockSubmit = async (e) => {
     e.preventDefault();
     const qtyVal = Number(addCardForm.quantity);
     const cardVal = Number(addCardForm.cardValue);
@@ -261,43 +255,84 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
       toast.error('Please enter valid quantity');
       return;
     }
-
-    const targetName = `${addCardForm.network} Card Rs. ${cardVal}`;
-
-    setRows(prev => {
-      let found = false;
-      const updated = prev.map(r => {
-        if (r.operatorName === targetName || (r.network === addCardForm.network && Number(r.cardValue) === cardVal && r.tag === 'Scratch Card')) {
-          found = true;
-          const currentAdded = Number(r.addedToday || 0);
-          return { ...r, addedToday: currentAdded + qtyVal };
-        }
-        return r;
+    const netColors = { Dialog: '#e11d48', Mobitel: '#059669', Airtel: '#ef4444', Hutch: '#f59e0b' };
+    try {
+      await submitAddStock({
+        operatorName: `${addCardForm.network} Card Rs. ${cardVal}`,
+        network: addCardForm.network, color: netColors[addCardForm.network] || '#e11d48',
+        bgLight: '#fff1f2', border: '#fecdd3', tag: 'Scratch Card', cardValue: cardVal, commissionRate: 4,
+        qty: qtyVal, notes: addCardForm.notes,
       });
+      toast.success(`+ ${qtyVal} pcs of ${addCardForm.network} Rs. ${cardVal} added! 💳`);
+      setAddCardForm({ network: 'Dialog', cardValue: '100', quantity: '', notes: '' });
+      setShowAddCardModal(false);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to add card stock');
+    }
+  };
 
-      if (!found) {
-        const netColors = { Dialog: '#e11d48', Mobitel: '#059669', Airtel: '#ef4444', Hutch: '#f59e0b' };
-        updated.push({
-          id: `custom_card_${Date.now()}`,
-          operatorName: targetName,
-          network: addCardForm.network,
-          color: netColors[addCardForm.network] || '#e11d48',
-          bgLight: '#fff1f2',
-          border: '#fecdd3',
-          tag: 'Scratch Card',
-          cardValue: cardVal,
-          commissionRate: 4,
-          openingStock: '',
-          addedToday: qtyVal,
-          eveningInHand: '',
-        });
-      }
-      return updated;
-    });
+  // ── Submit Closing (In-Hand count) — one-directional lock ──────────────────
+  const handleSubmitClosing = async (row) => {
+    const draftVal = closingDraft[row.operatorName];
+    if (draftVal === undefined || draftVal === '') {
+      toast.error('Please enter the physically counted In-Hand quantity first');
+      return;
+    }
+    try {
+      setClosingBusy(row.operatorName);
+      // closeReloadStock responds { success, data: stockItem } — unwrap fully.
+      const { data: { data } } = await closeReloadStock({
+        stockId: row.stockId || undefined,
+        storeId, operator: row.operatorName, cardValue: row.cardValue, date: stockDate,
+        closingStock: draftVal,
+      });
+      setRows(prev => prev.map(r => (r.operatorName === row.operatorName && r.cardValue === row.cardValue)
+        ? { ...r, stockId: data._id, status: data.status, closingStock: data.closingStock, eveningInHand: data.closingStock }
+        : r));
+      setClosingDraft(prev => { const next = { ...prev }; delete next[row.operatorName]; return next; });
+      toast.success(`${row.operatorName} closed for the day — Sold locked in. ✅`);
+      if (onSyncSuccess) onSyncSuccess();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to submit closing count');
+    } finally {
+      setClosingBusy(null);
+    }
+  };
 
-    toast.success(`+ ${qtyVal} pcs of ${addCardForm.network} Rs. ${cardVal} added! 💳`);
-    setAddCardForm({ network: 'Dialog', cardValue: '100', quantity: '', notes: '' });
-    setShowAddCardModal(false);
+  // ── Adjust a locked (closed) item — Admin/Manager only, logged ─────────────
+  const openAdjustModal = (row) => {
+    setAdjustTarget(row);
+    setAdjustValue(String(row.eveningInHand ?? ''));
+    setAdjustReason('');
+  };
+
+  const handleSubmitAdjust = async (e) => {
+    e.preventDefault();
+    if (!adjustTarget?.stockId) return;
+    if (!adjustReason.trim()) {
+      toast.error('Please enter a reason for this correction');
+      return;
+    }
+    try {
+      setSubmittingAdjust(true);
+      // adjustReloadStock responds { success, data: stockItem } — unwrap fully.
+      const { data: { data } } = await adjustReloadStock({
+        stockId: adjustTarget.stockId,
+        field: 'closingStock',
+        newValue: Number(adjustValue) || 0,
+        reason: adjustReason.trim(),
+      });
+      setRows(prev => prev.map(r => r.stockId === adjustTarget.stockId
+        ? { ...r, closingStock: data.closingStock, eveningInHand: data.closingStock, openingStock: data.openingStock, addedToday: data.addedStock }
+        : r));
+      toast.success('Correction saved & logged ✅');
+      setAdjustTarget(null);
+      if (onSyncSuccess) onSyncSuccess();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to save correction');
+    } finally {
+      setSubmittingAdjust(false);
+    }
   };
 
   // ── Live Calculation (Sold, Commission, Net) ───────────────────────────────
@@ -315,7 +350,13 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
       const opening = Number(r.openingStock === '' ? 0 : r.openingStock);
       const added = Number(r.addedToday === '' ? 0 : r.addedToday);
       const totalFloat = opening + added;
-      const inHand = r.eveningInHand === '' || r.eveningInHand == null ? totalFloat : Number(r.eveningInHand);
+      // Closed items use the locked count. Open items preview against
+      // whatever's been typed in the (uncommitted) In-Hand draft, or the
+      // full float if nothing's been typed yet.
+      const draft = closingDraft[r.operatorName];
+      const inHand = r.status === 'closed'
+        ? Number(r.eveningInHand || 0)
+        : (draft === undefined || draft === '' ? totalFloat : Number(draft));
 
       const soldQty = Math.max(0, totalFloat - inHand);
       const soldAmount = soldQty * multiplier;
@@ -353,7 +394,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
       totalCommission: Number(totalCommission.toFixed(2)),
       totalNetImpact: Number(totalNetImpact.toFixed(2)),
     };
-  }, [rows]);
+  }, [rows, closingDraft]);
 
   // Tab row subsets
   const ereloadRows = useMemo(() => calculations.computedRows.filter(r => r.tag === 'E-Reload' || r.tag === 'Wallet'), [calculations.computedRows]);
@@ -365,53 +406,19 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
     });
   }, [calculations.computedRows, selectedNetwork]);
 
-  // Total Credit Amount
+  // Total Credit (outstanding, still owed) vs Collected Today (settled), both
+  // scoped to the entries shown for the selected date.
   const totalCreditAmount = useMemo(() => {
-    return creditReloads.reduce((acc, cr) => acc + (Number(cr.amount) || 0), 0);
+    return creditReloads.filter(cr => !cr.creditSettled).reduce((acc, cr) => acc + (Number(cr.amount) || 0), 0);
   }, [creditReloads]);
-
-  // ── Save Sheet ─────────────────────────────────────────────────────────────
-  const handleSave = async () => {
-    try {
-      setSaving(true);
-      const payload = {
-        storeId,
-        date: stockDate,
-        syncToDrawer: true,
-        operators: calculations.computedRows.map(r => ({
-          operatorName: r.operatorName,
-          openingStock: r._opening,
-          addedToday: r._added,
-          eveningInHand: r._inHand,
-          commissionRate: r._commRate,
-        })),
-      };
-
-      try {
-        await saveReloadSheetApi(payload);
-      } catch (e) {
-        await saveReloadDailySheet({
-          storeId,
-          date: stockDate,
-          items: calculations.computedRows.map(r => ({
-            operator: r.operatorName,
-            cardValue: r.cardValue || 1,
-            openingStock: r._opening,
-            addedStock: r._added,
-            closingStock: r._inHand,
-          })),
-        });
-      }
-
-      toast.success('Reload & Card Daily Sheet Saved Successfully! 📊✅');
-      if (onSyncSuccess) onSyncSuccess();
-      loadDailyData();
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to save daily sheet');
-    } finally {
-      setSaving(false);
-    }
-  };
+  const totalCollectedAmount = useMemo(() => {
+    return creditReloads.filter(cr => cr.creditSettled).reduce((acc, cr) => acc + (Number(cr.amount) || 0), 0);
+  }, [creditReloads]);
+  const filteredCreditReloads = useMemo(() => {
+    if (creditStatusFilter === 'pending') return creditReloads.filter(cr => !cr.creditSettled);
+    if (creditStatusFilter === 'paid') return creditReloads.filter(cr => cr.creditSettled);
+    return creditReloads;
+  }, [creditReloads, creditStatusFilter]);
 
   // ── 80mm Print Slip ────────────────────────────────────────────────────────
   const handlePrint = () => {
@@ -492,6 +499,23 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
       toast.error(err.response?.data?.message || 'Failed to record credit reload');
     } finally {
       setSubmittingCredit(false);
+    }
+  };
+
+  // ── Settle a pending credit reload — always in full, locked afterward ─────
+  const handleConfirmSettleCredit = async () => {
+    if (!settleTarget) return;
+    try {
+      setSubmittingSettle(true);
+      const { data: { data: updated } } = await settleCreditReload(settleTarget._id, { paymentMethod: 'Cash' });
+      setCreditReloads(prev => prev.map(cr => (cr._id === updated._id ? updated : cr)));
+      toast.success(`Rs. ${Number(settleTarget.amount).toLocaleString()} collected from ${settleTarget.mobileNumber} ✅`);
+      setSettleTarget(null);
+      if (onSyncSuccess) onSyncSuccess();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to settle credit reload');
+    } finally {
+      setSubmittingSettle(false);
     }
   };
 
@@ -677,38 +701,12 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
                         <label className="text-[10px] font-bold text-emerald-400 block mb-1 uppercase tracking-wider">
                           (+) Added Float (Rs.)
                         </label>
-                        <input
-                          type="number"
-                          min="0"
-                          onWheel={(e) => e.target.blur()}
-                          placeholder="0"
-                          value={row.addedToday === '' ? '' : row.addedToday}
-                          onChange={(e) => handleInputChange(row.operatorName, 'addedToday', e.target.value)}
-                          className="w-full py-2 px-2.5 font-mono font-bold text-emerald-300 bg-slate-900 border border-emerald-500/30 rounded-lg text-sm focus:border-emerald-500 focus:bg-slate-800 outline-none transition-all"
-                        />
-                        {/* Quick increment chips */}
-                        <div className="flex items-center gap-1 mt-1.5">
-                          <button
-                            type="button"
-                            onClick={() => handleQuickAddValue(row.operatorName, 1000)}
-                            className="px-1.5 py-0.5 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-[10px] font-bold transition-colors cursor-pointer"
-                          >
-                            +1k
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleQuickAddValue(row.operatorName, 2000)}
-                            className="px-1.5 py-0.5 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-[10px] font-bold transition-colors cursor-pointer"
-                          >
-                            +2k
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleQuickAddValue(row.operatorName, 5000)}
-                            className="px-1.5 py-0.5 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-[10px] font-bold transition-colors cursor-pointer"
-                          >
-                            +5k
-                          </button>
+                        <div className="w-full py-2 px-2.5 font-mono font-bold text-emerald-300 bg-slate-900 border border-emerald-500/30 rounded-lg text-sm flex items-center justify-between">
+                          <span>Rs. {Number(row._added).toLocaleString()}</span>
+                          <Lock size={11} className="text-emerald-500/50" />
+                        </div>
+                        <div className="text-[10px] text-slate-500 font-medium mt-1.5">
+                          {row.addLog?.length || 0} add{row.addLog?.length === 1 ? '' : 's'} logged today
                         </div>
                       </div>
 
@@ -716,20 +714,49 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
                         <label className="text-[10px] font-bold text-indigo-400 block mb-1 uppercase tracking-wider">
                           Evening In-Hand (Rs.)
                         </label>
-                        <input
-                          type="number"
-                          min="0"
-                          onWheel={(e) => e.target.blur()}
-                          placeholder="0"
-                          value={row.eveningInHand === '' ? '' : row.eveningInHand}
-                          onChange={(e) => handleInputChange(row.operatorName, 'eveningInHand', e.target.value)}
-                          className="w-full py-2 px-2.5 font-mono font-bold text-indigo-300 bg-slate-900 border border-indigo-500/30 rounded-lg text-sm focus:border-indigo-500 focus:bg-slate-800 outline-none transition-all"
-                        />
+                        {row.status === 'closed' ? (
+                          <div className="w-full py-2 px-2.5 font-mono font-bold text-slate-300 bg-slate-900 border border-slate-700 rounded-lg text-sm flex items-center justify-between">
+                            <span>Rs. {Number(row.eveningInHand).toLocaleString()}</span>
+                            <Lock size={11} className="text-slate-500" />
+                          </div>
+                        ) : (
+                          <input
+                            type="number"
+                            min="0"
+                            onWheel={(e) => e.target.blur()}
+                            placeholder="0"
+                            value={closingDraft[row.operatorName] ?? ''}
+                            onChange={(e) => handleClosingDraftChange(row.operatorName, e.target.value)}
+                            className="w-full py-2 px-2.5 font-mono font-bold text-indigo-300 bg-slate-900 border border-indigo-500/30 rounded-lg text-sm focus:border-indigo-500 focus:bg-slate-800 outline-none transition-all"
+                          />
+                        )}
                         <div className="text-[10px] text-slate-500 font-medium mt-1.5 truncate">
                           Opening: Rs. {Number(row._opening).toLocaleString()}
                         </div>
                       </div>
                     </div>
+
+                    {row.status === 'closed' ? (
+                      canAdjust && (
+                        <button
+                          type="button"
+                          onClick={() => openAdjustModal(row)}
+                          className="w-full mb-2.5 py-1.5 rounded-lg border border-amber-500/30 text-amber-400 text-[10px] font-bold hover:bg-amber-500/10 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                        >
+                          <Edit3 size={11} /> Adjust (logged)
+                        </button>
+                      )
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleSubmitClosing(row)}
+                        disabled={closingBusy === row.operatorName}
+                        className="w-full mb-2.5 py-1.5 rounded-lg bg-indigo-600/90 hover:bg-indigo-600 text-white text-[10px] font-bold transition-colors cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-60"
+                      >
+                        {closingBusy === row.operatorName ? <Loader2 size={11} className="animate-spin" /> : <CheckCircle size={11} />}
+                        Submit Closing
+                      </button>
+                    )}
 
                     {/* Bottom Live Calculation Ribbon */}
                     <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex items-center justify-between">
@@ -828,31 +855,55 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
                         <label className="text-[9px] font-bold text-emerald-400 block mb-1 uppercase tracking-wider">
                           (+) Added (Pcs)
                         </label>
-                        <input
-                          type="number"
-                          min="0"
-                          onWheel={(e) => e.target.blur()}
-                          placeholder="0"
-                          value={row.addedToday === '' ? '' : row.addedToday}
-                          onChange={(e) => handleInputChange(row.operatorName, 'addedToday', e.target.value)}
-                          className="w-full py-1.5 px-2 font-mono font-bold text-emerald-300 bg-slate-900 border border-emerald-500/30 rounded-lg text-xs focus:border-emerald-500 focus:bg-slate-800 outline-none transition-all"
-                        />
+                        <div className="w-full py-1.5 px-2 font-mono font-bold text-emerald-300 bg-slate-900 border border-emerald-500/30 rounded-lg text-xs flex items-center justify-between">
+                          <span>{row._added} pcs</span>
+                          <Lock size={10} className="text-emerald-500/50" />
+                        </div>
                       </div>
                       <div>
                         <label className="text-[9px] font-bold text-indigo-400 block mb-1 uppercase tracking-wider">
                           In-Hand (Pcs)
                         </label>
-                        <input
-                          type="number"
-                          min="0"
-                          onWheel={(e) => e.target.blur()}
-                          placeholder="0"
-                          value={row.eveningInHand === '' ? '' : row.eveningInHand}
-                          onChange={(e) => handleInputChange(row.operatorName, 'eveningInHand', e.target.value)}
-                          className="w-full py-1.5 px-2 font-mono font-bold text-indigo-300 bg-slate-900 border border-indigo-500/30 rounded-lg text-xs focus:border-indigo-500 focus:bg-slate-800 outline-none transition-all"
-                        />
+                        {row.status === 'closed' ? (
+                          <div className="w-full py-1.5 px-2 font-mono font-bold text-slate-300 bg-slate-900 border border-slate-700 rounded-lg text-xs flex items-center justify-between">
+                            <span>{row.eveningInHand} pcs</span>
+                            <Lock size={10} className="text-slate-500" />
+                          </div>
+                        ) : (
+                          <input
+                            type="number"
+                            min="0"
+                            onWheel={(e) => e.target.blur()}
+                            placeholder="0"
+                            value={closingDraft[row.operatorName] ?? ''}
+                            onChange={(e) => handleClosingDraftChange(row.operatorName, e.target.value)}
+                            className="w-full py-1.5 px-2 font-mono font-bold text-indigo-300 bg-slate-900 border border-indigo-500/30 rounded-lg text-xs focus:border-indigo-500 focus:bg-slate-800 outline-none transition-all"
+                          />
+                        )}
                       </div>
                     </div>
+
+                    {row.status === 'closed' ? (
+                      canAdjust && (
+                        <button
+                          type="button"
+                          onClick={() => openAdjustModal(row)}
+                          className="w-full mb-2.5 py-1 rounded-lg border border-amber-500/30 text-amber-400 text-[9px] font-bold hover:bg-amber-500/10 transition-colors cursor-pointer flex items-center justify-center gap-1"
+                        >
+                          <Edit3 size={10} /> Adjust
+                        </button>
+                      )
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleSubmitClosing(row)}
+                        disabled={closingBusy === row.operatorName}
+                        className="w-full mb-2.5 py-1 rounded-lg bg-indigo-600/90 hover:bg-indigo-600 text-white text-[9px] font-bold transition-colors cursor-pointer flex items-center justify-center gap-1 disabled:opacity-60"
+                      >
+                        {closingBusy === row.operatorName ? <Loader2 size={10} className="animate-spin" /> : <CheckCircle size={10} />}
+                        Submit Closing
+                      </button>
+                    )}
 
                     {/* Live Metric Bar */}
                     <div className="bg-slate-950 p-2 rounded-xl border border-slate-800 flex items-center justify-between text-xs font-mono">
@@ -1041,7 +1092,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
 
               {/* Right Side: Credit Reloads Ledger */}
               <div className="lg:col-span-7 bg-slate-900 p-6 rounded-3xl border border-slate-800 shadow-xl flex flex-col space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-3 flex-wrap gap-3">
                   <div>
                     <h3 className="text-base font-black text-white flex items-center gap-2">
                       <span>📋 Credit Reloads Ledger ({stockDate})</span>
@@ -1050,12 +1101,42 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
                       {creditReloads.length} Credit {creditReloads.length === 1 ? 'entry' : 'entries'} on record
                     </p>
                   </div>
-                  <div className="text-right">
-                    <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">Total Credit</span>
-                    <span className="text-lg font-black text-amber-300 font-mono">
-                      Rs. {totalCreditAmount.toLocaleString()}
-                    </span>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">Total Credit</span>
+                      <span className="text-lg font-black text-amber-300 font-mono">
+                        Rs. {totalCreditAmount.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider block">Collected Today</span>
+                      <span className="text-lg font-black text-emerald-300 font-mono">
+                        Rs. {totalCollectedAmount.toLocaleString()}
+                      </span>
+                    </div>
                   </div>
+                </div>
+
+                {/* Status Filter */}
+                <div className="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 w-fit">
+                  {[
+                    { key: 'all', label: 'All' },
+                    { key: 'pending', label: 'Pending' },
+                    { key: 'paid', label: 'Paid' },
+                  ].map((f) => (
+                    <button
+                      key={f.key}
+                      type="button"
+                      onClick={() => setCreditStatusFilter(f.key)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        creditStatusFilter === f.key
+                          ? 'bg-amber-600 text-white shadow-md'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
                 </div>
 
                 <div className="flex-1 overflow-y-auto max-h-[380px] space-y-2 pr-1">
@@ -1064,16 +1145,20 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
                       <Loader2 size={28} className="animate-spin mx-auto mb-2 text-amber-500" />
                       Loading credit reloads...
                     </div>
-                  ) : creditReloads.length === 0 ? (
+                  ) : filteredCreditReloads.length === 0 ? (
                     <div className="py-16 text-center text-slate-400">
                       <CreditCard size={40} className="mx-auto mb-2 text-slate-600" />
-                      <p className="text-xs font-bold text-slate-300">No credit reloads recorded for {stockDate}</p>
-                      <p className="text-[10px] text-slate-500 mt-1">Submit the form on the left to add a credit reload.</p>
+                      <p className="text-xs font-bold text-slate-300">
+                        {creditReloads.length === 0 ? `No credit reloads recorded for ${stockDate}` : `No ${creditStatusFilter} entries`}
+                      </p>
+                      {creditReloads.length === 0 && (
+                        <p className="text-[10px] text-slate-500 mt-1">Submit the form on the left to add a credit reload.</p>
+                      )}
                     </div>
                   ) : (
-                    creditReloads.map((cr) => (
-                      <div 
-                        key={cr._id} 
+                    filteredCreditReloads.map((cr) => (
+                      <div
+                        key={cr._id}
                         className="p-3.5 rounded-2xl border border-slate-800 bg-slate-950/80 hover:bg-slate-950 transition-all flex items-center justify-between gap-3"
                       >
                         <div className="flex items-center gap-3">
@@ -1098,6 +1183,12 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
                                 </>
                               )}
                             </div>
+                            {cr.creditSettled && (
+                              <div className="text-[10px] text-emerald-400 mt-0.5">
+                                ✓ Paid {new Date(cr.creditSettledAt).toLocaleString([], { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })}
+                                {cr.settledBy?.name ? ` by ${cr.settledBy.name}` : ''}
+                              </div>
+                            )}
                           </div>
                         </div>
 
@@ -1106,12 +1197,21 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
                             Rs. {Number(cr.amount || 0).toLocaleString()}
                           </div>
                           <span className={`inline-block px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider mt-1 ${
-                            cr.creditSettled 
-                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' 
+                            cr.creditSettled
+                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                               : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                           }`}>
-                            {cr.creditSettled ? 'Settled' : 'Pending'}
+                            {cr.creditSettled ? 'Paid' : 'Pending'}
                           </span>
+                          {!cr.creditSettled && (
+                            <button
+                              type="button"
+                              onClick={() => setSettleTarget(cr)}
+                              className="block mt-1.5 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold transition-colors cursor-pointer"
+                            >
+                              Mark as Paid
+                            </button>
+                          )}
                         </div>
                       </div>
                     ))
@@ -1131,19 +1231,19 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
           <div className="flex items-center gap-3 w-full sm:w-auto">
             <button
               type="button"
-              onClick={handlePrint}
+              onClick={loadDailyData}
+              disabled={loading}
               className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center justify-center gap-2 border border-slate-700 transition-colors cursor-pointer"
+              title="Add Stock and Submit Closing already save immediately — this just re-fetches the latest figures"
             >
-              <Printer size={16} /> Print Slip
+              {loading ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />} Refresh
             </button>
             <button
               type="button"
-              onClick={handleSave}
-              disabled={saving}
+              onClick={handlePrint}
               className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/40 transition-all cursor-pointer"
             >
-              {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-              Save Daily Sheet &amp; Sync
+              <Printer size={16} /> Print Slip
             </button>
           </div>
         </div>
@@ -1335,6 +1435,145 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess }) => 
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── POPUP MODAL 3: ADJUST LOCKED ITEM (Admin/Manager only) ─────────── */}
+      {adjustTarget && (
+        <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in zoom-in duration-150">
+          <div className="bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-slate-700 p-6 space-y-4 text-white">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+                  <Edit3 size={20} />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-white">Adjust Closed Item</h3>
+                  <p className="text-xs text-slate-400">{adjustTarget.operatorName} — {stockDate}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAdjustTarget(null)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="rounded-xl bg-amber-500/10 border border-amber-500/30 p-3 text-[11px] text-amber-300">
+              This is a logged correction — it will be recorded with your name, the old value, and your reason.
+            </div>
+
+            <form onSubmit={handleSubmitAdjust} className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-slate-300 block mb-1.5">
+                  Corrected In-Hand {adjustTarget.tag === 'Scratch Card' ? '(Pcs)' : '(Rs.)'} *
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  required
+                  value={adjustValue}
+                  onChange={(e) => setAdjustValue(e.target.value)}
+                  className="w-full py-2.5 px-3 border border-slate-700 rounded-xl text-sm font-mono font-black text-amber-400 outline-none focus:border-amber-500 bg-slate-950"
+                />
+                <div className="text-[10px] text-slate-500 mt-1">Current: {adjustTarget.eveningInHand} {adjustTarget.tag === 'Scratch Card' ? 'pcs' : ''}</div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-300 block mb-1.5">Reason for Correction *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Miscounted at closing, recounted this morning"
+                  value={adjustReason}
+                  onChange={(e) => setAdjustReason(e.target.value)}
+                  className="w-full py-2 px-3 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-500 bg-slate-950"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setAdjustTarget(null)}
+                  className="flex-1 py-2.5 rounded-xl border border-slate-700 text-slate-400 font-bold text-xs hover:bg-slate-800 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingAdjust}
+                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold text-xs shadow-md shadow-amber-500/20 transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-60"
+                >
+                  {submittingAdjust ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />} Save Correction
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── POPUP MODAL 4: SETTLE CREDIT RELOAD CONFIRMATION ────────────────── */}
+      {settleTarget && (
+        <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in zoom-in duration-150">
+          <div className="bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-slate-700 p-6 space-y-4 text-white">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+                  <CheckCircle size={20} />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-white">Mark as Paid</h3>
+                  <p className="text-xs text-slate-400">Confirm this credit has been collected</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSettleTarget(null)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="rounded-xl bg-slate-950 border border-slate-800 p-4 space-y-1.5">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-400">Customer</span>
+                <span className="font-bold text-white">{settleTarget.mobileNumber}{settleTarget.customerName ? ` (${settleTarget.customerName})` : ''}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-400">Network</span>
+                <span className="font-bold text-white">{settleTarget.operator}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm pt-1.5 border-t border-slate-800 mt-1.5">
+                <span className="text-slate-300 font-bold">Amount to Collect</span>
+                <span className="font-black text-emerald-400 font-mono">Rs. {Number(settleTarget.amount).toLocaleString()}</span>
+              </div>
+            </div>
+
+            <div className="rounded-xl bg-amber-500/10 border border-amber-500/30 p-3 text-[11px] text-amber-300">
+              This is final — once marked paid, it can't be flipped back to pending from this screen.
+            </div>
+
+            <div className="flex items-center gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setSettleTarget(null)}
+                className="flex-1 py-2.5 rounded-xl border border-slate-700 text-slate-400 font-bold text-xs hover:bg-slate-800 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmSettleCredit}
+                disabled={submittingSettle}
+                className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-xs shadow-md shadow-emerald-500/20 transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-60"
+              >
+                {submittingSettle ? <Loader2 size={15} className="animate-spin" /> : <CheckCircle size={15} />} Confirm Paid
+              </button>
+            </div>
           </div>
         </div>
       )}
