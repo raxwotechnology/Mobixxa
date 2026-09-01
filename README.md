@@ -1,36 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SR Mobile Official
 
-## Getting Started
+Multi-store POS, inventory, and e-commerce platform for a mobile phone & accessories retailer — covers point-of-sale checkout, multi-branch inventory, reload/scratch-card float management, HP (installment) sales, repairs, HR/payroll, delivery, and a customer-facing storefront, all behind role-based portals (Admin, Store Owner, Manager, Cashier, Inventory, HR, Employee, Delivery).
 
-First, run the development server:
+## Tech stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Frontend**: Next.js 15 (App Router) + React 19, Tailwind CSS, Zustand, Axios, Recharts
+- **Backend**: Node.js + Express 5, MongoDB via Mongoose 9, JWT auth
+- **Deployment**: Vercel (frontend + backend deployed as separate projects; see [Deployment](#deployment))
+
+## Project structure
+
+```
+.
+├── backend/          Express API server (routes, controllers, models, middleware)
+├── frontend/          Next.js app (role-based views under src/views, shared services under src/services)
+├── server.js          Root entry point that re-exports backend/server.js (for platforms expecting a root server file)
+├── vercel.json         Root-level rewrites for the frontend's Vercel deployment
+└── package.json        Root convenience scripts to run both apps together
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Prerequisites
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Node.js 18+
+- A MongoDB database (local or a hosted cluster such as MongoDB Atlas)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Getting started
 
-## Learn More
+### 1. Install dependencies
 
-To learn more about Next.js, take a look at the following resources:
+Install each app's dependencies separately:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+cd backend && npm install
+cd ../frontend && npm install
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 2. Configure environment variables
 
-## Deploy on Vercel
+**`backend/.env`**
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Variable | Description |
+| --- | --- |
+| `MONGO_URI` | MongoDB connection string |
+| `JWT_SECRET` | Secret used to sign auth tokens |
+| `PORT` | Port for the API server (defaults to `5000`) |
+| `NODE_ENV` | `development` or `production` |
+| `EMAIL_FROM` | Sender address used for outgoing email (receipts, notifications) |
+| `EMAIL_APP_PASSWORD` | App password for the email account above |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**`frontend/.env.local`** (optional for local dev)
+
+| Variable | Description |
+| --- | --- |
+| `NEXT_PUBLIC_API_URL` | Base URL of the backend API. In development this can be left unset — `next.config.mjs` proxies `/api/*` and `/uploads/*` to `http://127.0.0.1:5000` automatically. Set it when the backend runs somewhere other than the local default. |
+
+### 3. Run the apps
+
+Run backend and frontend in two terminals:
+
+```bash
+# Terminal 1
+cd backend && npm run dev
+
+# Terminal 2
+cd frontend && npm run dev
+```
+
+Frontend: [http://localhost:3000](http://localhost:3000) · Backend API: `http://localhost:5000/api`
+
+Alternatively, from the repo root, `npm run dev` runs both concurrently — this requires `concurrently` to be available (install it at the root first: `npm install concurrently --save-dev`).
+
+### 4. Bootstrap an admin account
+
+The backend ships a couple of one-off scripts for local setup:
+
+```bash
+cd backend
+node create-admin.js [email] [password] [name]   # creates/promotes a super admin user
+node seed.js                                       # seeds demo stores, categories, products & vouchers (keeps existing users)
+```
+
+## Deployment
+
+- The frontend is deployed on Vercel; `vercel.json` rewrites `/api/*` and `/uploads/*` to the deployed backend.
+- The backend is deployed as its own Vercel project (see `backend/api/index.js`) or any Node host — `server.js` at the repo root simply re-exports `backend/server.js` for platforms that expect a root-level entry file.
