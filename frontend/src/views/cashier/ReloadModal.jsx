@@ -1381,17 +1381,42 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
 
               <div>
                 <label className="text-xs font-bold text-slate-300 block mb-1.5">Card Denomination (Value) *</label>
-                <select
-                  value={addCardForm.cardValue}
-                  onChange={(e) => setAddCardForm({ ...addCardForm, cardValue: e.target.value })}
-                  className="w-full py-2.5 px-3 border border-slate-700 rounded-xl text-xs font-bold text-white outline-none focus:border-rose-500 bg-slate-950"
-                >
-                  <option value="50">Rs. 50 Card</option>
-                  <option value="100">Rs. 100 Card</option>
-                  <option value="200">Rs. 200 Card</option>
-                  <option value="500">Rs. 500 Card</option>
-                  <option value="1000">Rs. 1000 Card</option>
-                </select>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-black text-slate-500">Rs.</span>
+                  <input
+                    type="number"
+                    min="1"
+                    required
+                    placeholder="e.g. 100, 199, 350, 500 or 1 for E-Reload Float"
+                    value={addCardForm.cardValue}
+                    onChange={(e) => setAddCardForm({ ...addCardForm, cardValue: e.target.value })}
+                    className="w-full py-2.5 pl-8 pr-3 border border-slate-700 rounded-xl text-xs font-bold text-white outline-none focus:border-rose-500 bg-slate-950"
+                  />
+                </div>
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {[
+                    { label: '📱 E-Reload Float (1)', value: '1' },
+                    { label: 'Rs. 50', value: '50' },
+                    { label: 'Rs. 100', value: '100' },
+                    { label: 'Rs. 199', value: '199' },
+                    { label: 'Rs. 350', value: '350' },
+                    { label: 'Rs. 500', value: '500' },
+                    { label: 'Rs. 1000', value: '1000' },
+                  ].map((preset) => (
+                    <button
+                      key={preset.value}
+                      type="button"
+                      onClick={() => setAddCardForm({ ...addCardForm, cardValue: preset.value })}
+                      className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${
+                        addCardForm.cardValue === preset.value
+                          ? 'bg-rose-600 text-white border-rose-600'
+                          : 'bg-slate-950 text-slate-400 border-slate-700 hover:text-white'
+                      }`}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div>
