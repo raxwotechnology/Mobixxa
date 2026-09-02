@@ -3,10 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { X, History, ShoppingBag, Clock, Calendar, ExternalLink, Loader2 } from 'lucide-react';
 import { getCustomerHistory } from '../../services/api';
+import InvoiceModal from './InvoiceModal';
 
 const CustomerHistoryModal = ({ isOpen, onClose, phone }) => {
   const [history, setHistory] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [viewingOrder, setViewingOrder] = useState(null);
 
   useEffect(() => {
     if (isOpen && phone) {
@@ -92,18 +94,31 @@ const CustomerHistoryModal = ({ isOpen, onClose, phone }) => {
                         <span className="text-[10px] font-bold text-slate-400">#{order.invoiceNumber || order._id.slice(-6).toUpperCase()}</span>
                         <span className="text-xs font-bold text-indigo-600">Rs. {order.totalAmount.toLocaleString()}</span>
                       </div>
-                      <p className="text-xs font-semibold text-slate-700 mb-1 line-clamp-1">
-                        {order.items.map(i => i.name).join(', ')}
-                      </p>
+                      <div className="space-y-0.5 mb-1">
+                        {order.items.map((item, idx) => (
+                          <p key={idx} className="text-xs font-semibold text-slate-700 flex justify-between gap-2">
+                            <span className="line-clamp-1">{item.name} <span className="text-slate-400 font-medium">x{item.quantity}</span></span>
+                            <span className="text-slate-500 font-medium whitespace-nowrap">Rs. {item.price.toLocaleString()}</span>
+                          </p>
+                        ))}
+                      </div>
                       <div className="flex items-center justify-between">
                         <span className="text-[10px] text-slate-400 font-medium">
                           {new Date(order.createdAt).toLocaleDateString()}
                         </span>
-                        <span className={`text-[9px] font-bold uppercase ${
-                          order.paymentStatus === 'Paid' || order.paymentStatus === 'completed' ? 'text-emerald-600' : 'text-amber-600'
-                        }`}>
-                          {order.paymentStatus}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-[9px] font-bold uppercase ${
+                            order.paymentStatus === 'Paid' || order.paymentStatus === 'completed' ? 'text-emerald-600' : 'text-amber-600'
+                          }`}>
+                            {order.paymentStatus}
+                          </span>
+                          <button
+                            onClick={() => setViewingOrder(order)}
+                            className="flex items-center gap-1 text-[10px] font-bold text-indigo-600 hover:text-indigo-800"
+                          >
+                            View Invoice <ExternalLink size={10} />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -156,6 +171,12 @@ const CustomerHistoryModal = ({ isOpen, onClose, phone }) => {
           </button>
         </div>
       </div>
+
+      <InvoiceModal
+        isOpen={!!viewingOrder}
+        order={viewingOrder}
+        onClose={() => setViewingOrder(null)}
+      />
     </div>
   );
 };

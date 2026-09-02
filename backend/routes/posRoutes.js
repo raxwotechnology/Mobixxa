@@ -13,6 +13,7 @@ const {
   getCashierSalesReport,
   getCreditOrders,
   getCustomerCreditSummary,
+  getCustomerByPhone,
   settleCreditOrder,
   createQuotation,
   sendReceipt,
@@ -37,6 +38,7 @@ router.get('/cashier-report', getCashierSalesReport);
 
 router.get('/credit-orders', getCreditOrders);
 router.get('/customer-credit/:phone', getCustomerCreditSummary);
+router.get('/customer-lookup/:phone', getCustomerByPhone);
 router.put('/credit-orders/:id/settle', settleCreditOrder);
 
 module.exports = router;
