@@ -135,11 +135,17 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
       const serverStocks = Array.isArray(data) ? data : [];
 
       setRows(prev => prev.map(row => {
+        // Exact operator-name match always wins. The legacy short-name
+        // fallback (e.g. "Dialog" for "Dialog E-Reload") is only for items
+        // that have never once been recorded under their real name — if
+        // both happen to exist for this date, a plain .find() with an OR
+        // condition would silently bind to whichever sorts first
+        // alphabetically (the backend returns records operator-sorted),
+        // which is almost always the legacy one, showing stale/wrong data
+        // even though the real, correctly carried-forward record exists.
         const legacyName = Object.entries(LEGACY_MAP).find(([, v]) => v === row.operatorName)?.[0];
-        const match = serverStocks.find(s =>
-          Number(s.cardValue || 1) === row.cardValue &&
-          (s.operator === row.operatorName || s.operator === legacyName)
-        );
+        const match = serverStocks.find(s => Number(s.cardValue || 1) === row.cardValue && s.operator === row.operatorName)
+          || (legacyName ? serverStocks.find(s => Number(s.cardValue || 1) === row.cardValue && s.operator === legacyName) : undefined);
         if (!match) {
           // No record yet for this item today — nothing added, nothing closed.
           return { ...row, stockId: null, status: 'open', openingStock: 0, addedToday: 0, eveningInHand: '', addLog: [] };
@@ -227,7 +233,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
   const handleAddReloadFloatSubmit = async (e) => {
     e.preventDefault();
     const amountVal = Number(addReloadForm.amount);
-    if (!amountVal || amountVal <= 0) {
+    if (!addReloadForm.amount || !Number.isFinite(amountVal) || amountVal <= 0) {
       toast.error('Please enter a valid float amount');
       return;
     }
@@ -251,6 +257,10 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
     e.preventDefault();
     const qtyVal = Number(addCardForm.quantity);
     const cardVal = Number(addCardForm.cardValue);
+    if (!addCardForm.cardValue || !Number.isFinite(cardVal) || cardVal <= 0) {
+      toast.error('Please enter a valid card denomination amount (e.g. 159)');
+      return;
+    }
     if (!qtyVal || qtyVal <= 0) {
       toast.error('Please enter valid quantity');
       return;
@@ -273,7 +283,12 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
 
   // ── Submit Closing (In-Hand count) — one-directional lock ──────────────────
   const handleSubmitClosing = async (row) => {
-    const draftVal = closingDraft[row.operatorName];
+    // The In-Hand box is pre-filled with today's running float (Opening +
+    // Added) when staff hasn't typed a count yet — same fallback the input
+    // displays — so submitting untouched closes as "nothing sold" rather
+    // than being blocked. Explicitly clearing the box (typed to '') still
+    // requires a real count before this will proceed.
+    const draftVal = closingDraft[row.operatorName] ?? row._totalFloat;
     if (draftVal === undefined || draftVal === '') {
       toast.error('Please enter the physically counted In-Hand quantity first');
       return;
@@ -401,10 +416,28 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
   const cardRows = useMemo(() => {
     return calculations.computedRows.filter(r => {
       if (r.tag !== 'Scratch Card') return false;
+      if (r._inHand <= 0) return false; // hide denominations with no current stock
       if (selectedNetwork === 'All') return true;
       return r.network === selectedNetwork;
     });
   }, [calculations.computedRows, selectedNetwork]);
+
+  // Quick-pick chips for the Add Card Stock denomination field — same
+  // "currently has stock" rule as the Scratch Card Stock grid filter
+  // (In-Hand pcs > 0), scoped to the network selected in that form. No
+  // hardcoded/example values — a denomination drops off once sold out and
+  // reappears once restocked, staying in sync with the grid.
+  const cardDenomChips = useMemo(() => {
+    const seen = new Set();
+    const values = [];
+    calculations.computedRows.forEach(r => {
+      if (r.tag !== 'Scratch Card' || r.network !== addCardForm.network || r._inHand <= 0) return;
+      if (seen.has(r.cardValue)) return;
+      seen.add(r.cardValue);
+      values.push(r.cardValue);
+    });
+    return values.sort((a, b) => a - b);
+  }, [calculations.computedRows, addCardForm.network]);
 
   // Total Credit (outstanding, still owed) vs Collected Today (settled), both
   // scoped to the entries shown for the selected date.
@@ -725,7 +758,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                             min="0"
                             onWheel={(e) => e.target.blur()}
                             placeholder="0"
-                            value={closingDraft[row.operatorName] ?? ''}
+                            value={closingDraft[row.operatorName] ?? row._totalFloat}
                             onChange={(e) => handleClosingDraftChange(row.operatorName, e.target.value)}
                             className="w-full py-2 px-2.5 font-mono font-bold text-indigo-300 bg-slate-900 border border-indigo-500/30 rounded-lg text-sm focus:border-indigo-500 focus:bg-slate-800 outline-none transition-all"
                           />
@@ -829,6 +862,14 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                     <Loader2 size={32} className="animate-spin mx-auto mb-3 text-rose-500" />
                     Loading card inventory...
                   </div>
+                ) : cardRows.length === 0 ? (
+                  <div className="col-span-full py-16 text-center text-slate-400">
+                    <CreditCard size={32} className="mx-auto mb-3 text-slate-600" />
+                    <p className="text-sm font-bold text-slate-300">
+                      No card stock currently in hand{selectedNetwork !== 'All' ? ` for ${selectedNetwork}` : ''}.
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">Use + Add Card Stock to add some.</p>
+                  </div>
                 ) : cardRows.map((row) => (
                   <div 
                     key={row.operatorName} 
@@ -875,12 +916,16 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                             min="0"
                             onWheel={(e) => e.target.blur()}
                             placeholder="0"
-                            value={closingDraft[row.operatorName] ?? ''}
+                            value={closingDraft[row.operatorName] ?? row._totalFloat}
                             onChange={(e) => handleClosingDraftChange(row.operatorName, e.target.value)}
                             className="w-full py-1.5 px-2 font-mono font-bold text-indigo-300 bg-slate-900 border border-indigo-500/30 rounded-lg text-xs focus:border-indigo-500 focus:bg-slate-800 outline-none transition-all"
                           />
                         )}
                       </div>
+                    </div>
+
+                    <div className="text-[9px] text-slate-500 font-medium mb-2 truncate">
+                      Opening: {row._opening} pcs
                     </div>
 
                     {row.status === 'closed' ? (
@@ -1387,36 +1432,34 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                     type="number"
                     min="1"
                     required
-                    placeholder="e.g. 100, 199, 350, 500 or 1 for E-Reload Float"
+                    placeholder="Type this network's card value, e.g. 100"
                     value={addCardForm.cardValue}
                     onChange={(e) => setAddCardForm({ ...addCardForm, cardValue: e.target.value })}
                     className="w-full py-2.5 pl-8 pr-3 border border-slate-700 rounded-xl text-xs font-bold text-white outline-none focus:border-rose-500 bg-slate-950"
                   />
                 </div>
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {[
-                    { label: '📱 E-Reload Float (1)', value: '1' },
-                    { label: 'Rs. 50', value: '50' },
-                    { label: 'Rs. 100', value: '100' },
-                    { label: 'Rs. 199', value: '199' },
-                    { label: 'Rs. 350', value: '350' },
-                    { label: 'Rs. 500', value: '500' },
-                    { label: 'Rs. 1000', value: '1000' },
-                  ].map((preset) => (
-                    <button
-                      key={preset.value}
-                      type="button"
-                      onClick={() => setAddCardForm({ ...addCardForm, cardValue: preset.value })}
-                      className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${
-                        addCardForm.cardValue === preset.value
-                          ? 'bg-rose-600 text-white border-rose-600'
-                          : 'bg-slate-950 text-slate-400 border-slate-700 hover:text-white'
-                      }`}
-                    >
-                      {preset.label}
-                    </button>
-                  ))}
-                </div>
+                {cardDenomChips.length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {cardDenomChips.map((v) => (
+                      <button
+                        key={v}
+                        type="button"
+                        onClick={() => setAddCardForm({ ...addCardForm, cardValue: String(v) })}
+                        className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${
+                          addCardForm.cardValue === String(v)
+                            ? 'bg-rose-600 text-white border-rose-600'
+                            : 'bg-slate-950 text-slate-400 border-slate-700 hover:text-white'
+                        }`}
+                      >
+                        Rs. {v}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[10px] text-slate-500 mt-2">
+                    No card stock currently in hand for {addCardForm.network} — type an amount below to add your first denomination.
+                  </p>
+                )}
               </div>
 
               <div>

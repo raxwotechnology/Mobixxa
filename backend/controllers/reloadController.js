@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Reload = require('../models/Reload');
 const ReloadStock = require('../models/ReloadStock');
 const Transaction = require('../models/Transaction');
@@ -256,28 +257,58 @@ const resolveReloadStoreId = async (req, explicitStoreId) => {
   return assignedStore;
 };
 
-// Helper: opening stock for a new day always carries forward from the most
-// recent prior day's closing balance for that exact operator/cardValue (or 0
-// if this item has never been tracked before).
+// Helper: opening stock for a new day always carries forward from that exact
+// operator/cardValue's most recent ACTUALLY CLOSED day (however far back the
+// gap) — or 0 if it has never been closed before. Deliberately ignores any
+// still-open/untouched placeholder days in between: those have no finalized
+// In-Hand count yet, so they must never be treated as a source of truth for
+// a later day's Opening.
 const getCarriedOpeningStock = async (storeId, operator, cardValue, targetDate) => {
-  const prev = await ReloadStock.findOne({
+  const prevClosed = await ReloadStock.findOne({
     storeId,
     operator,
     cardValue,
     date: { $lt: targetDate },
+    status: 'closed',
   }).sort({ date: -1 });
-  if (!prev) return 0;
-  return prev.closingStock !== undefined && prev.closingStock !== null
-    ? Number(prev.closingStock) || 0
-    : Number(prev.totalStock) || 0;
+  if (!prevClosed) return 0;
+  return Number(prevClosed.closingStock) || 0;
 };
 
+// A record counts as "pristine" — a system-generated carry-forward preview
+// that no one has actually acted on yet — only while it has never been
+// added to, closed, or corrected. Only pristine records are safe to
+// silently refresh; anything a cashier has actually touched must never be
+// rewritten here.
+const isPristineStockRecord = (stockItem) => (
+  stockItem.status === 'open'
+  && (stockItem.addedStock || 0) === 0
+  && (!stockItem.addLog || stockItem.addLog.length === 0)
+  && (!stockItem.adjustLog || stockItem.adjustLog.length === 0)
+);
+
 // Helper: find today's stock record for this item, creating it (with the
-// carried-forward opening) if it doesn't exist yet.
+// carried-forward opening) if it doesn't exist yet. If a record already
+// exists but is still just a pristine, untouched preview, its Opening is
+// refreshed against the current carry-forward source before being returned
+// — otherwise it would stay permanently frozen at whatever value was true
+// the moment it was first auto-created (e.g. from viewing a future date
+// before an earlier day actually got closed), even after that earlier day's
+// real closing later changes.
 const findOrCreateReloadStockItem = async (req, { storeId, operator, cardValue, date }) => {
   const stockItem = await ReloadStock.findOne({ storeId, date, operator, cardValue });
-  if (stockItem) return stockItem;
   const carriedOpening = await getCarriedOpeningStock(storeId, operator, cardValue, date);
+
+  if (stockItem) {
+    if (isPristineStockRecord(stockItem) && stockItem.openingStock !== carriedOpening) {
+      stockItem.openingStock = carriedOpening;
+      stockItem.totalStock = carriedOpening;
+      stockItem.closingStock = carriedOpening;
+      await stockItem.save();
+    }
+    return stockItem;
+  }
+
   return ReloadStock.create({
     storeId,
     date,
@@ -313,49 +344,38 @@ const getReloadStocks = async (req, res, next) => {
       filter.storeId = req.user.assignedStore;
     }
 
-    let stocks = await ReloadStock.find(filter)
-      .populate('recordedBy', 'name')
-      .sort({ operator: 1, cardValue: 1 });
+    // Ensure every operator/denomination this store has EVER tracked has its
+    // own record for targetDate, Opening auto-carried from that exact
+    // item's own most recent CLOSED day (however far back the gap). Runs
+    // for every known item on every view — not just ones missing a row for
+    // today — because an item that already has a record here might still be
+    // a pristine, untouched preview that was auto-created before a later
+    // real closing changed its true carry value; findOrCreateReloadStockItem
+    // self-heals that case (and only that case) in place, using the same
+    // logic the add/close endpoints use, so this listing endpoint can never
+    // disagree with them on Opening.
+    if (filter.storeId) {
+      const storeObjectId = mongoose.Types.ObjectId.isValid(filter.storeId)
+        ? new mongoose.Types.ObjectId(filter.storeId)
+        : filter.storeId;
+      const knownPairs = await ReloadStock.aggregate([
+        { $match: { storeId: storeObjectId, date: { $lt: targetDate } } },
+        { $group: { _id: { operator: '$operator', cardValue: '$cardValue' } } },
+      ]);
 
-    // Auto-carry forward Opening Stock from previous date if today's records don't exist yet
-    if (stocks.length === 0 && filter.storeId) {
-      const prevStockItem = await ReloadStock.findOne({
-        storeId: filter.storeId,
-        date: { $lt: targetDate }
-      }).sort({ date: -1 });
-
-      if (prevStockItem) {
-        const prevStocks = await ReloadStock.find({
+      for (const { _id: pair } of knownPairs) {
+        await findOrCreateReloadStockItem(req, {
           storeId: filter.storeId,
-          date: prevStockItem.date
+          operator: pair.operator,
+          cardValue: pair.cardValue,
+          date: targetDate,
         });
-
-        for (const prevItem of prevStocks) {
-          const carriedOpening = prevItem.closingStock !== undefined && prevItem.closingStock !== null
-            ? Number(prevItem.closingStock) || 0
-            : Number(prevItem.totalStock) || 0;
-
-          await ReloadStock.create({
-            storeId: filter.storeId,
-            date: targetDate,
-            operator: prevItem.operator,
-            cardValue: Number(prevItem.cardValue) || 1,
-            openingStock: carriedOpening,
-            addedStock: 0,
-            totalStock: carriedOpening,
-            closingStock: carriedOpening,
-            sellOutAmount: 0,
-            sellOutValue: 0,
-            notes: `Auto-carried from ${prevItem.date}`,
-            recordedBy: req.user._id
-          });
-        }
-
-        stocks = await ReloadStock.find(filter)
-          .populate('recordedBy', 'name')
-          .sort({ operator: 1, cardValue: 1 });
       }
     }
+
+    const stocks = await ReloadStock.find(filter)
+      .populate('recordedBy', 'name')
+      .sort({ operator: 1, cardValue: 1 });
 
     res.json(stocks);
   } catch (error) {
