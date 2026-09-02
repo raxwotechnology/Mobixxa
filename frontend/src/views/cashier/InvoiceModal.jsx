@@ -19,9 +19,8 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
   const invoiceTemplate = settings?.documentTemplates?.invoice || {};
 
   const [layoutMode, setLayoutMode] = useState(initialLayoutMode);
-  const [smsRecipient, setSmsRecipient] = useState('');
+  const [whatsappRecipient, setWhatsappRecipient] = useState('');
   const [emailRecipient, setEmailRecipient] = useState('');
-  const [sendingSms, setSendingSms] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
 
   useEffect(() => {
@@ -35,7 +34,7 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
 
   useEffect(() => {
     if (order) {
-      setSmsRecipient(order.customerPhone || '');
+      setWhatsappRecipient(order.customerPhone || '');
       setEmailRecipient(order.customerEmail || '');
     }
   }, [order]);
@@ -83,22 +82,6 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
       minute: '2-digit',
       second: '2-digit',
     });
-  };
-
-  const handleSendSms = async () => {
-    if (!smsRecipient) {
-      toast.error('Please enter a phone number');
-      return;
-    }
-    try {
-      setSendingSms(true);
-      await sendInvoiceReceipt(order._id, { type: 'sms', recipient: smsRecipient });
-      toast.success('SMS receipt sent successfully!');
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to send SMS receipt');
-    } finally {
-      setSendingSms(false);
-    }
   };
 
   const handleSendEmail = async () => {
@@ -697,34 +680,16 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
             <input
               type="text"
               placeholder="WhatsApp Number (e.g., 0771234567)"
-              value={smsRecipient}
-              onChange={(e) => setSmsRecipient(e.target.value)}
+              value={whatsappRecipient}
+              onChange={(e) => setWhatsappRecipient(e.target.value)}
               style={{ fontSize: '12px', padding: '8px 12px', border: '1px solid #10b981', borderRadius: '8px', background: '#fff', color: '#1e293b' }}
             />
             <button
               type="button"
-              onClick={() => sendWhatsAppInvoice({ ...order, customerPhone: smsRecipient || order.customerPhone }, brandName, brandPhone)}
+              onClick={() => sendWhatsAppInvoice({ ...order, customerPhone: whatsappRecipient || order.customerPhone }, brandName, brandPhone)}
               style={{ padding: '8px 14px', fontSize: '12px', fontWeight: 'bold', background: '#10b981', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
             >
               💬 WhatsApp Invoice
-            </button>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px', alignItems: 'center' }}>
-            <input
-              type="text"
-              placeholder="SMS Phone Number (+947XXXXXXXX)"
-              value={smsRecipient}
-              onChange={(e) => setSmsRecipient(e.target.value)}
-              style={{ fontSize: '12px', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', background: '#fff', color: '#1e293b' }}
-            />
-            <button
-              type="button"
-              onClick={handleSendSms}
-              disabled={sendingSms}
-              style={{ padding: '8px 14px', fontSize: '12px', fontWeight: 'bold', background: '#f59e0b', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', transition: 'opacity 0.2s' }}
-            >
-              {sendingSms ? 'Sending...' : 'Send SMS'}
             </button>
           </div>
 
@@ -772,9 +737,32 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
             Save PDF
           </button>
 
+          <button
+            type="button"
+            onClick={handlePrint}
+            style={{
+              padding: '10px 22px',
+              fontSize: '13px',
+              fontWeight: '800',
+              background: '#334155',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '12px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              boxShadow: '0 4px 12px rgba(51, 65, 85, 0.35)',
+              transition: 'all 0.2s'
+            }}
+          >
+            <Printer size={18} />
+            Print Receipt
+          </button>
+
           {onNewSale && (
-            <button className="pos-btn-green pos-btn-lg" onClick={handleNewSale} style={{ padding: '10px 22px', fontSize: '13px', fontWeight: 'bold' }}>
-              <RotateCcw size={18} />
+            <button className="pos-btn-green pos-btn-lg" onClick={handleNewSale} style={{ padding: '6px 14px', fontSize: '11px', fontWeight: 'bold' }}>
+              <RotateCcw size={14} />
               New Sale
             </button>
           )}

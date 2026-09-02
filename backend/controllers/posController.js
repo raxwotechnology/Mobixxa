@@ -3,7 +3,7 @@ const Order = require('../models/Order');
 const User = require('../models/User');
 const Store = require('../models/Store');
 const PosSession = require('../models/PosSession');
-const { isValidSLPhone, formatSLPhone, isStrictSLE164Phone, isValidEmail } = require('../utils/validators');
+const { isValidSLPhone, formatSLPhone, isValidEmail } = require('../utils/validators');
 const { sendSms, buildPosReceiptMessage } = require('../utils/smsService');
 const { sendEmail, posReceiptEmail } = require('../utils/emailService');
 const Quotation = require('../models/Quotation');
@@ -484,7 +484,6 @@ const posCheckout = async (req, res, next) => {
       customerPhone,
       customerNic,
       customerAddress,
-      sendSmsReceipt = false,
       sendReceiptEmail = false,
       receiptEmail,
       printReceipt = true,
@@ -509,14 +508,6 @@ const posCheckout = async (req, res, next) => {
     if (customerPhone && !isValidSLPhone(customerPhone)) {
       res.status(400);
       return next(new Error('Customer phone must be a valid Sri Lankan mobile number.'));
-    }
-    if (sendSmsReceipt && !normalizedCustomerPhone) {
-      res.status(400);
-      return next(new Error('Customer phone is required when SMS receipt is enabled.'));
-    }
-    if (sendSmsReceipt && !isStrictSLE164Phone(normalizedCustomerPhone)) {
-      res.status(400);
-      return next(new Error('Customer phone must be in +947XXXXXXXX format for SMS receipts.'));
     }
     if (sendReceiptEmail && receiptEmail && !isValidEmail(receiptEmail)) {
       res.status(400);
@@ -755,7 +746,6 @@ const posCheckout = async (req, res, next) => {
       couponCode: appliedCoupon || undefined,
       sendReceiptEmail: !!sendReceiptEmail,
       receiptEmail: receiptEmail || undefined,
-      sendSmsReceipt: !!sendSmsReceipt,
       printReceipt: !!printReceipt,
       isCredit: !!isOrderCredit,
       amountPaid: isOrderCredit ? (totalAmount - creditBalance) : totalAmount,
@@ -860,19 +850,7 @@ const posCheckout = async (req, res, next) => {
     populatedOrder.couponDiscount = couponDiscount;
     populatedOrder.sendReceiptEmail = !!sendReceiptEmail;
     populatedOrder.receiptEmail = receiptEmail || undefined;
-    populatedOrder.sendSmsReceipt = !!sendSmsReceipt;
     populatedOrder.printReceipt = !!printReceipt;
-
-    if (sendSmsReceipt && normalizedCustomerPhone) {
-      try {
-        await sendSms(normalizedCustomerPhone, await buildPosReceiptMessage(totalAmount, {
-          invoiceNo: invoiceNumber,
-          orderNo: order._id.toString().slice(-8).toUpperCase(),
-        }));
-      } catch (smsErr) {
-        populatedOrder.smsReceiptError = smsErr.message;
-      }
-    }
 
     if (sendReceiptEmail) {
       try {
@@ -1591,6 +1569,41 @@ const getCustomerCreditSummary = async (req, res, next) => {
   }
 };
 
+// @desc    Look up a returning customer's saved details by phone (for checkout auto-fill)
+// @route   GET /api/pos/customer-lookup/:phone
+// @access  Private (cashier, manager, admin)
+const getCustomerByPhone = async (req, res, next) => {
+  try {
+    const rawPhone = (req.params.phone || '').trim();
+    const cleanPhone = rawPhone.replace(/\D/g, '');
+    if (!cleanPhone || cleanPhone.length < 9) {
+      return res.json({ found: false });
+    }
+
+    const phonePattern = cleanPhone.slice(-9);
+    const order = await Order.findOne({
+      customerPhone: { $regex: phonePattern, $options: 'i' }
+    })
+      .sort({ createdAt: -1 })
+      .select('customerName customerPhone customerNic customerAddress')
+      .lean();
+
+    if (!order) {
+      return res.json({ found: false });
+    }
+
+    res.json({
+      found: true,
+      customerName: order.customerName || '',
+      customerPhone: order.customerPhone || '',
+      customerNic: order.customerNic || '',
+      customerAddress: order.customerAddress || '',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Settle credit order (mark remaining as paid)
 // @route   PUT /api/pos/credit-orders/:id/settle
 // @access  Private/Cashier/Manager/Admin
@@ -1843,6 +1856,7 @@ module.exports = {
   getCashierSalesReport,
   getCreditOrders,
   getCustomerCreditSummary,
+  getCustomerByPhone,
   settleCreditOrder,
   createQuotation,
   sendReceipt,
