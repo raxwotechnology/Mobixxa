@@ -9,7 +9,9 @@ try {
   dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
 } catch (e) {}
 
-dotenv.config({ path: path.join(__dirname, '.env') });
+// ENV_FILE lets a staging/test run point at a different .env (e.g. `.env.staging`)
+// without touching the default production config.
+dotenv.config({ path: path.join(__dirname, process.env.ENV_FILE || '.env') });
 const connectDB = require('./config/db');
 
 // Initialize DB connection

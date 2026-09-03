@@ -185,12 +185,13 @@ const endSession = async (req, res, next) => {
     // Query HP Installments in session
     let hpCashIncome = 0;
     try {
-      const HPRecord = require('../models/HPRecord');
-      const hpRecords = await HPRecord.find({
-        'paymentHistory.date': { $gte: sessionStart, $lte: sessionEnd }
+      const HirePurchase = require('../models/HirePurchase');
+      const hpRecords = await HirePurchase.find({
+        ...(session.storeId ? { storeId: session.storeId } : {}),
+        'payments.date': { $gte: sessionStart, $lte: sessionEnd }
       }).lean();
       hpRecords.forEach(rec => {
-        (rec.paymentHistory || []).forEach(p => {
+        (rec.payments || []).forEach(p => {
           const pDate = new Date(p.date);
           if (pDate >= sessionStart && pDate <= sessionEnd) {
             if (!p.paymentMethod || p.paymentMethod.toLowerCase() === 'cash') {
@@ -1193,12 +1194,13 @@ const getPosOrders = async (req, res, next) => {
     let hpBankIncome = 0;
     let hpPaymentCount = 0;
     try {
-      const HPRecord = require('../models/HPRecord');
-      const hpRecords = await HPRecord.find({
-        'paymentHistory.date': { $gte: startOfDay, $lte: endOfDay }
+      const HirePurchase = require('../models/HirePurchase');
+      const hpRecords = await HirePurchase.find({
+        ...(filterStoreId ? { storeId: filterStoreId } : {}),
+        'payments.date': { $gte: startOfDay, $lte: endOfDay }
       }).lean();
       hpRecords.forEach(rec => {
-        (rec.paymentHistory || []).forEach(p => {
+        (rec.payments || []).forEach(p => {
           const pDate = new Date(p.date);
           if (pDate >= startOfDay && pDate <= endOfDay) {
             const amt = Number(p.amount || 0);
@@ -1207,7 +1209,7 @@ const getPosOrders = async (req, res, next) => {
             const pMeth = (p.paymentMethod || '').toLowerCase();
             if (pMeth === 'cash' || !pMeth) {
               hpCashIncome += amt;
-            } else if (pMeth === 'bank' || pMeth === 'bank_transfer' || pMeth === 'card') {
+            } else if (pMeth === 'bank' || pMeth === 'bank transfer' || pMeth === 'bank_transfer' || pMeth === 'card') {
               hpBankIncome += amt;
             }
           }
