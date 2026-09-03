@@ -780,61 +780,68 @@ const AdminOrders = ({ navItems: propNavItems }) => {
       {viewBillOrder && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={() => setViewBillOrder(null)}>
           <div className="bg-white rounded-3xl border border-slate-100 shadow-2xl w-full max-w-xl p-8 max-h-[90vh] overflow-y-auto text-left relative" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setViewBillOrder(null)} className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 bg-slate-100 rounded-full border-0 cursor-pointer">
+            <button onClick={() => setViewBillOrder(null)} className="no-print absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 bg-slate-100 rounded-full border-0 cursor-pointer">
               <X size={16} />
             </button>
 
-            {/* Bill Header */}
-            <div className="border-b-2 border-slate-900 pb-4 mb-4 flex justify-between items-start">
-              <div>
-                <h2 className="text-lg font-black text-slate-900 uppercase tracking-wider m-0">{viewBillOrder.storeId?.name || 'Mobixa'}</h2>
-                <p className="text-[10px] text-slate-500 font-semibold m-0">Official Sales Receipt & Warranty</p>
+            {/* Printable content: id="pos-receipt-content" is the same
+                convention InvoiceModal/ManagerRepairs use — index.css/
+                globals.css hide the rest of the page and pin this to the
+                page via position:fixed for print, independent of this
+                modal's own overflow-y-auto/max-height. */}
+            <div id="pos-receipt-content">
+              {/* Bill Header */}
+              <div className="border-b-2 border-slate-900 pb-4 mb-4 flex justify-between items-start">
+                <div>
+                  <h2 className="text-lg font-black text-slate-900 uppercase tracking-wider m-0">{viewBillOrder.storeId?.name || 'Mobixa'}</h2>
+                  <p className="text-[10px] text-slate-500 font-semibold m-0">Official Sales Receipt & Warranty</p>
+                </div>
+                <div className="text-right">
+                  <span className="font-mono text-xs font-black text-brand-indigo bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
+                    #{viewBillOrder.invoiceNumber || viewBillOrder._id.slice(-8).toUpperCase()}
+                  </span>
+                  <p className="text-[10px] text-slate-400 font-bold m-0 mt-1">{new Date(viewBillOrder.createdAt).toLocaleDateString()}</p>
+                </div>
               </div>
-              <div className="text-right">
-                <span className="font-mono text-xs font-black text-brand-indigo bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
-                  #{viewBillOrder.invoiceNumber || viewBillOrder._id.slice(-8).toUpperCase()}
-                </span>
-                <p className="text-[10px] text-slate-400 font-bold m-0 mt-1">{new Date(viewBillOrder.createdAt).toLocaleDateString()}</p>
+
+              {/* Customer Info */}
+              <div className="text-xs space-y-1 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-200/60">
+                <p className="m-0"><strong>Customer:</strong> {viewBillOrder.customerName || viewBillOrder.userId?.name || 'Walk-in'}</p>
+                <p className="m-0"><strong>Phone:</strong> {viewBillOrder.customerPhone || viewBillOrder.userId?.phone || 'N/A'}</p>
+                <p className="m-0 uppercase"><strong>Payment Method:</strong> {viewBillOrder.paymentMethod} ({viewBillOrder.paymentStatus})</p>
               </div>
-            </div>
 
-            {/* Customer Info */}
-            <div className="text-xs space-y-1 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-200/60">
-              <p className="m-0"><strong>Customer:</strong> {viewBillOrder.customerName || viewBillOrder.userId?.name || 'Walk-in'}</p>
-              <p className="m-0"><strong>Phone:</strong> {viewBillOrder.customerPhone || viewBillOrder.userId?.phone || 'N/A'}</p>
-              <p className="m-0 uppercase"><strong>Payment Method:</strong> {viewBillOrder.paymentMethod} ({viewBillOrder.paymentStatus})</p>
-            </div>
-
-            {/* Items Breakdown Table */}
-            <table className="w-full text-xs text-left mb-4">
-              <thead>
-                <tr className="border-b border-slate-200 text-slate-400 font-black uppercase text-[10px]">
-                  <th className="py-2">Item</th>
-                  <th className="py-2 text-center">Qty</th>
-                  <th className="py-2 text-right">Price</th>
-                  <th className="py-2 text-right">Total</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 font-semibold text-slate-800">
-                {viewBillOrder.items?.map((it, idx) => (
-                  <tr key={idx}>
-                    <td className="py-2">{it.name}</td>
-                    <td className="py-2 text-center">{it.quantity}</td>
-                    <td className="py-2 text-right">Rs. {Number(it.price || 0).toLocaleString()}</td>
-                    <td className="py-2 text-right font-black">Rs. {Number((it.price || 0) * (it.quantity || 1)).toLocaleString()}</td>
+              {/* Items Breakdown Table */}
+              <table className="w-full text-xs text-left mb-4">
+                <thead>
+                  <tr className="border-b border-slate-200 text-slate-400 font-black uppercase text-[10px]">
+                    <th className="py-2">Item</th>
+                    <th className="py-2 text-center">Qty</th>
+                    <th className="py-2 text-right">Price</th>
+                    <th className="py-2 text-right">Total</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-100 font-semibold text-slate-800">
+                  {viewBillOrder.items?.map((it, idx) => (
+                    <tr key={idx}>
+                      <td className="py-2">{it.name}</td>
+                      <td className="py-2 text-center">{it.quantity}</td>
+                      <td className="py-2 text-right">Rs. {Number(it.price || 0).toLocaleString()}</td>
+                      <td className="py-2 text-right font-black">Rs. {Number((it.price || 0) * (it.quantity || 1)).toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
 
-            {/* Total Footer */}
-            <div className="border-t-2 border-slate-900 pt-3 flex justify-between items-center mb-6">
-              <span className="font-black text-sm uppercase text-slate-900">Total Net Amount</span>
-              <span className="font-black text-xl text-brand-indigo">LKR {Number(viewBillOrder.totalAmount || 0).toLocaleString()}</span>
+              {/* Total Footer */}
+              <div className="border-t-2 border-slate-900 pt-3 flex justify-between items-center mb-6">
+                <span className="font-black text-sm uppercase text-slate-900">Total Net Amount</span>
+                <span className="font-black text-xl text-brand-indigo">LKR {Number(viewBillOrder.totalAmount || 0).toLocaleString()}</span>
+              </div>
             </div>
 
             {/* Print & Download Actions */}
-            <div className="flex gap-2 pt-2 border-t border-slate-100">
+            <div className="no-print flex gap-2 pt-2 border-t border-slate-100">
               <button
                 onClick={() => window.print()}
                 className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-black py-3 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer border-0 flex items-center justify-center gap-2"

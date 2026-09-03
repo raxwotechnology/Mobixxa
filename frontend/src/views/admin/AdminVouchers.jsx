@@ -561,9 +561,16 @@ const AdminVouchers = () => {
         </div>
       )}
 
-      {/* Hidden Printable Voucher Container for Direct Clean Print without popup windows or black screen */}
+      {/* Hidden Printable Voucher Container for Direct Clean Print without popup windows or black screen.
+          id="pos-receipt-content" is the same convention InvoiceModal/ManagerRepairs/AdminOrders/
+          AdminBarcodes use — index.css/globals.css hide the rest of the page and pin this via
+          position:fixed for print. The previous "#voucher-print-area" + "body.printing-voucher" pairing
+          relied on a body class that nothing ever set, and even fixed, the app's other unconditional
+          print rule (visibility:hidden on every body descendant) still had nothing un-hiding this
+          element's own children — so printing here previously printed the whole dashboard, not just
+          the voucher. */}
       {selectedVoucherForPreview && (
-        <div id="voucher-print-area" className="hidden print:block">
+        <div id="pos-receipt-content" className="hidden print:block">
           {Array(printQty[selectedVoucherForPreview._id] || 1).fill(0).map((_, idx) => (
             <div key={idx} style={{ width: '380px', border: '2px dashed #d946a0', borderRadius: '20px', padding: '24px', margin: '20px auto', textAlign: 'center', background: '#ffffff', pageBreakInside: 'avoid', pageBreakAfter: 'always' }}>
               <h2 style={{ margin: '0 0 4px', fontSize: '18px', color: '#1f1f1f', fontWeight: 'bold' }}>{settings?.shopName || 'Mobixa'}</h2>
