@@ -62,6 +62,22 @@ import ReloadModal from './ReloadModal';
 import CustomerHistoryModal from './CustomerHistoryModal';
 import TradeInModal from './TradeInModal';
 
+// Single shared "Expected Cash in Drawer" calculation — used by the Shift
+// Handover Reconciliation box, the Close Shift modal preview, and the
+// settlement submit handler, so they can never disagree with each other.
+// Formula: Opening Float + Counter Cash Sales + HP Installment Cash In +
+// Reload & Card Cash In + Other Cash In (Ledger) - Petty Cash Out.
+const computeExpectedDrawerCash = (summary, financials, openingCashAmount) => {
+  const openingFloat = Number(openingCashAmount || 0);
+  const cashSales = Number(summary?.cashSales || 0);
+  const hpCashIncome = Number(summary?.hpCashIncome || financials?.hpCashIncome || 0);
+  const reloadIncome = Number(summary?.reloadIncome || financials?.reloadIncome || 0);
+  const expenseCost = Number(summary?.expenseCost || financials?.expenseCost || 0);
+  const cashInOtherCash = Number(summary?.cashInOtherCash ?? financials?.cashInOtherCash ?? 0);
+  const expectedDrawer = (openingFloat + cashSales + hpCashIncome + reloadIncome + cashInOtherCash) - expenseCost;
+  return { openingFloat, cashSales, hpCashIncome, reloadIncome, expenseCost, cashInOtherCash, expectedDrawer };
+};
+
 const POSScreen = () => {
   const navigate = useNavigate();
   const { user, login, logout } = useAuthStore();
@@ -604,14 +620,9 @@ const POSScreen = () => {
     try {
       setSettlingSession(true);
       const closingDenoms = denomsToLines(sessionForm.closing);
-      const cashSales = Number(posDailySummary?.cashSales || 0);
-      const hpCashIncome = Number(posDailySummary?.hpCashIncome || dailyFinancials?.hpCashIncome || 0);
-      const reloadIncome = Number(posDailySummary?.reloadIncome || dailyFinancials?.reloadIncome || 0);
-      const expenseCost = Number(posDailySummary?.expenseCost || dailyFinancials?.expenseCost || 0);
-      // Cash-only subset of the ledger — a credit settlement paid by bank/card
-      // never lands in the physical drawer, so it must not inflate Expected Cash.
-      const cashInOtherCash = Number(posDailySummary?.cashInOtherCash ?? dailyFinancials?.cashInOtherCash ?? 0);
-      const expectedDrawerCash = (Number(posSession?.openingCashAmount || 0) + cashSales + hpCashIncome + reloadIncome + cashInOtherCash) - expenseCost;
+      const { expectedDrawer: expectedDrawerCash } = computeExpectedDrawerCash(
+        posDailySummary, dailyFinancials, posSession?.openingCashAmount
+      );
 
       const closingCashCountedAmount = useDirectCount
         ? Number(directCountAmount || 0)
@@ -667,6 +678,13 @@ const POSScreen = () => {
 
   const openEndSessionModal = async () => {
     const todayStr = new Date().toISOString().split('T')[0];
+    // Always start the Close Shift form from a clean slate — leftover note
+    // counts or a direct-count amount from a prior attempt must never carry
+    // over and silently inflate Total Counted Cash on a fresh open.
+    setSessionForm((s) => ({ ...s, closing: { 5000: 0, 1000: 0, 500: 0, 100: 0, 50: 0, 20: 0 } }));
+    setDirectCountAmount('');
+    setClosingNotes('');
+    setUseDirectCount(true);
     try {
       const { data } = await getPosOrders({ date: todayStr });
       setDailyFinancials(data?.financials || null);
@@ -5134,15 +5152,10 @@ const POSScreen = () => {
             )}
 
             {(() => {
-              const openingFloat = Number(posSession?.openingCashAmount || 0);
-              const cashSales = Number(posDailySummary?.cashSales || 0);
-              const hpCashIncome = Number(posDailySummary?.hpCashIncome || dailyFinancials?.hpCashIncome || 0);
-              const reloadIncome = Number(posDailySummary?.reloadIncome || dailyFinancials?.reloadIncome || 0);
-              const expenseCost = Number(posDailySummary?.expenseCost || dailyFinancials?.expenseCost || 0);
-              const cashInOtherCash = Number(posDailySummary?.cashInOtherCash ?? dailyFinancials?.cashInOtherCash ?? 0);
+              const { openingFloat, cashSales, hpCashIncome, reloadIncome, expenseCost, cashInOtherCash, expectedDrawer } =
+                computeExpectedDrawerCash(posDailySummary, dailyFinancials, posSession?.openingCashAmount);
               const cardSales = Number(posDailySummary?.cardSales || 0);
 
-              const expectedDrawer = (openingFloat + cashSales + hpCashIncome + reloadIncome + cashInOtherCash) - expenseCost;
               const countedCash = useDirectCount
                 ? Number(directCountAmount || 0)
                 : calcTotal(sessionForm.closing);
@@ -5857,9 +5870,9 @@ const POSScreen = () => {
 
                   {/* Cash Drawer Handover Reconciliation Box */}
                   {(() => {
-                    const cashIn = Number(posDailySummary?.cashSales || 0) + Number(posDailySummary?.hpCashIncome || dailyFinancials?.hpCashIncome || 0) + Number(posDailySummary?.reloadIncome || dailyFinancials?.reloadIncome || 0) + Number(posDailySummary?.cashInOtherCash ?? dailyFinancials?.cashInOtherCash ?? 0);
-                    const expenseOut = Number(posDailySummary?.expenseCost || dailyFinancials?.expenseCost || 0);
-                    const expectedDrawer = (Number(balanceSessionData?.openingCashAmount || posSession?.openingCashAmount || 0) + cashIn) - expenseOut;
+                    const { expectedDrawer } = computeExpectedDrawerCash(
+                      posDailySummary, dailyFinancials, balanceSessionData?.openingCashAmount || posSession?.openingCashAmount
+                    );
                     
                     const savedCounted = balanceSessionData?.closingCashCountedAmount;
                     const counted = savedCounted !== undefined && savedCounted !== null
