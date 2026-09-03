@@ -174,7 +174,14 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
               visibility: visible !important;
             }
             #pos-receipt-content {
-              position: absolute !important;
+              /* fixed, not absolute: .pos-invoice-modal (the nearest
+                 positioned ancestor) has overflow-y:auto and collapses to
+                 0 height in print once this content is taken out of its
+                 flow — position:absolute would anchor here and get
+                 clipped to that 0-height box, printing blank even though
+                 the element itself still reports its real size. Fixed
+                 anchors to the page/viewport instead, immune to that. */
+              position: fixed !important;
               left: 0 !important;
               top: 0 !important;
               width: 100% !important;
@@ -185,10 +192,22 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
               border: none !important;
             }
             .no-print,
-            .pos-modal-overlay,
             .pos-invoice-close,
             .pos-invoice-actions {
               display: none !important;
+            }
+            /* .pos-modal-overlay is the ANCESTOR that #pos-receipt-content
+               lives inside — display:none here would remove the whole
+               subtree from rendering, and no visibility:visible on the
+               descendant can undo that, producing a blank printed page.
+               It's kept visible (repositioned to static, background
+               cleared) instead, matching index.css/globals.css. */
+            .pos-modal-overlay {
+              position: static !important;
+              background: transparent !important;
+              backdrop-filter: none !important;
+              box-shadow: none !important;
+              padding: 0 !important;
             }
           }
         ` }} />
