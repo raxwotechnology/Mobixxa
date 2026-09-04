@@ -1069,16 +1069,14 @@ const POSScreen = () => {
 
   const handleSelectHpRecord = (rec) => {
     setSelectedHpRecord(rec);
-    const net = Number(rec.netTotal || 0);
-    const paid = Number(rec.totalPaid || 0);
-    const rem = rec.balanceAmount !== undefined && rec.balanceAmount !== null
-      ? Number(rec.balanceAmount)
-      : (rec.remainingBalance !== undefined ? Number(rec.remainingBalance) : Math.max(0, net - paid));
-    const instAmt = Number(rec.installmentAmount || 0);
-    const defaultAmt = rem > 0 ? (instAmt > 0 && instAmt <= rem ? instAmt : rem) : '';
+    // Amount to Pay is intentionally left blank — cashier must type it or use
+    // the explicit "Fill 1-Month" / "Fill Full Balance" buttons. Auto-filling
+    // this risked silently pre-selecting the full remaining balance whenever
+    // an installment was near its end, letting a hurried click accidentally
+    // settle/close it.
     setHpPayForm(prev => ({
       ...prev,
-      amount: defaultAmt,
+      amount: '',
       givenCash: '',
       paymentMethod: 'Cash',
       accountId: accounts.length > 0 ? accounts[0]._id : ''
@@ -1095,6 +1093,15 @@ const POSScreen = () => {
       toast.error('Please enter a valid payment amount');
       return;
     }
+
+    const currentRem = selectedHpRecord.balanceAmount ?? (selectedHpRecord.remainingBalance ?? Math.max(0, (selectedHpRecord.netTotal || 0) - (selectedHpRecord.totalPaid || 0)));
+    if (amt >= currentRem) {
+      const proceed = window.confirm(
+        `This payment of Rs. ${amt.toLocaleString('en-LK', { minimumFractionDigits: 2 })} will fully settle and CLOSE this HP installment (Remaining Due → Rs. 0.00).\n\nConfirm you intend to close this installment?`
+      );
+      if (!proceed) return;
+    }
+
     const targetAccountId = hpPayForm.accountId || (accounts && accounts.length > 0 ? accounts[0]._id : undefined);
     const givenAmt = Number(hpPayForm.givenCash || 0);
     const changeAmt = givenAmt > amt ? givenAmt - amt : 0;
@@ -6477,12 +6484,9 @@ const POSScreen = () => {
                       value={hpPayForm.givenCash}
                       onChange={(e) => {
                         const val = e.target.value;
-                        const numVal = Number(val || 0);
-                        const instVal = Number(selectedHpRecord.installmentAmount || 0);
-                        setHpPayForm(prev => {
-                          const newAmount = (!prev.amount || Number(prev.amount) <= 0 || (numVal > 0 && numVal <= instVal)) ? val : prev.amount;
-                          return { ...prev, givenCash: val, amount: newAmount };
-                        });
+                        // Only updates Given Cash — "Amount to Pay" must be typed or
+                        // set explicitly by the cashier, never inferred from this field.
+                        setHpPayForm(prev => ({ ...prev, givenCash: val }));
                       }}
                       placeholder="e.g. 50000"
                       style={{

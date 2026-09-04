@@ -1218,7 +1218,12 @@ const getPosOrders = async (req, res, next) => {
     } catch { /* ignore */ }
 
     const orderRevenue = orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
-    const totalIncome = orderRevenue + reloadIncome + repairIncomeNormal + repairIncomeCompany + advanceIncome + hpTotalIncome + cashInOther;
+    // advanceIncome (HP down payments) is NOT added here — it's already inside
+    // orderRevenue, since a hire-purchase order's totalAmount includes whatever
+    // was paid today (cash + the hire_purchase-tagged down payment). Adding it
+    // again double-counted every same-day HP down payment into Total Day Revenue.
+    // It's still returned below as its own informational field for reports.
+    const totalIncome = orderRevenue + reloadIncome + repairIncomeNormal + repairIncomeCompany + hpTotalIncome + cashInOther;
     const totalCost = serviceCost + supplierCost + expenseCost;
     const balanceAmount = totalIncome - totalCost;
 

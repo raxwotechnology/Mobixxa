@@ -2299,7 +2299,11 @@ body {
   color: white;
 }
 
-/* ── Print Styles ── */
+/* ── Print Styles ──
+   Single source of truth for printing #pos-receipt-content. Do not add a
+   second @media print block for this — a duplicate elsewhere in this file
+   previously fought this one over position/background on the same
+   selectors and caused printed receipts to come out blank. */
 @media print {
   .no-print {
     display: none !important;
@@ -2310,67 +2314,53 @@ body {
     color: black !important;
   }
 
+  body * {
+    visibility: hidden !important;
+  }
+
+  #pos-receipt-content,
+  #pos-receipt-content * {
+    visibility: visible !important;
+  }
+
+  /* Forcing position/backdrop-filter/filter off here matters: any of those
+     left on an ancestor makes it a containing block for the fixed-position
+     receipt below, which otherwise anchors to the viewport. */
   .pos-modal-overlay {
-    position: static;
-    background: white !important;
-    backdrop-filter: none;
+    position: static !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    filter: none !important;
+    padding: 0 !important;
   }
 
   .pos-invoice-modal {
+    position: static !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+  }
+
+  #pos-receipt-content {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 10px !important;
     background: white !important;
-    border: none;
-    border-radius: 0;
-    max-width: 100%;
-    max-height: none;
-    box-shadow: none;
+    box-shadow: none !important;
+    border: none !important;
+    color: black !important;
   }
 
   .pos-receipt {
     color: black !important;
     padding: 0;
-  }
-
-  .pos-receipt-store-name {
-    color: black !important;
-  }
-
-  .pos-receipt-title {
-    color: black !important;
-  }
-
-  .pos-receipt-meta-row,
-  .pos-receipt-store-info {
-    color: #333 !important;
-  }
-
-  .pos-receipt-divider,
-  .pos-receipt-divider-thin {
-    color: #999 !important;
-  }
-
-  .pos-receipt-item-row {
-    color: black !important;
-  }
-
-  .pos-receipt-total-row {
-    color: #333 !important;
-  }
-
-  .pos-receipt-grand-total {
-    color: black !important;
-  }
-
-  .pos-receipt-change {
-    color: black !important;
-  }
-
-  .pos-receipt-footer p {
-    color: #666 !important;
-  }
-
-  .pos-receipt-payment-badge {
-    background: #eee !important;
-    color: black !important;
   }
 }
 
@@ -2484,50 +2474,6 @@ body {
     justify-content: flex-end;
     flex: 1;
     min-width: 200px;
-  }
-}
-
-/* ── Printing Styles ── */
-@media print {
-
-  /* Hide everything on the page */
-  body * {
-    visibility: hidden !important;
-  }
-
-  /* Specifically show ONLY the receipt content */
-  #pos-receipt-content,
-  #pos-receipt-content * {
-    visibility: visible !important;
-  }
-
-  /* Position the receipt at the very top left of the printed page */
-  #pos-receipt-content {
-    position: fixed !important;
-    left: 0 !important;
-    top: 0 !important;
-    width: 100% !important;
-    margin: 0 !important;
-    padding: 10px !important;
-    background: white !important;
-    box-shadow: none !important;
-    border: none !important;
-  }
-
-  /* Hide the modal background, overlay, and buttons */
-  .pos-modal-overlay,
-  .pos-invoice-modal,
-  .no-print,
-  .pos-invoice-close,
-  .pos-invoice-actions {
-    background: transparent !important;
-    backdrop-filter: none !important;
-    box-shadow: none !important;
-    border: none !important;
-  }
-
-  .no-print {
-    display: none !important;
   }
 }
 

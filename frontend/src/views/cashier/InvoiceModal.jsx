@@ -153,42 +153,19 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
           </button>
         </div>
 
-        {/* Dynamic Print & PDF Export Styles */}
+        {/* Dynamic page size only — visibility/positioning for #pos-receipt-content
+            is handled centrally by the @media print rules in index.css/globals.css.
+            Do not re-declare those rules here: an earlier version of this block set
+            .pos-modal-overlay to display:none, which also removed its descendant
+            #pos-receipt-content from the print render and produced a blank page. */}
         <style dangerouslySetInnerHTML={{ __html: `
           @media print {
             @page {
               size: ${layoutMode === 'invoice' ? 'A4 portrait' : '80mm auto'};
               margin: ${layoutMode === 'invoice' ? '8mm' : '0mm'};
             }
-            body {
-              background: #ffffff !important;
-              color: #000000 !important;
-              margin: 0 !important;
-              padding: 0 !important;
-            }
-            body * {
-              visibility: hidden !important;
-            }
-            #pos-receipt-content,
-            #pos-receipt-content * {
-              visibility: visible !important;
-            }
             #pos-receipt-content {
-              position: absolute !important;
-              left: 0 !important;
-              top: 0 !important;
-              width: 100% !important;
-              margin: 0 !important;
               padding: ${layoutMode === 'invoice' ? '0' : '10px'} !important;
-              background: #ffffff !important;
-              box-shadow: none !important;
-              border: none !important;
-            }
-            .no-print,
-            .pos-modal-overlay,
-            .pos-invoice-close,
-            .pos-invoice-actions {
-              display: none !important;
             }
           }
         ` }} />
