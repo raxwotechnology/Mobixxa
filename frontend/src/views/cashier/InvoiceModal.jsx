@@ -153,48 +153,19 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
           </button>
         </div>
 
-        {/* Dynamic Print & PDF Export Styles */}
+        {/* Dynamic page size only — visibility/positioning for #pos-receipt-content
+            is handled centrally by the @media print rules in index.css/globals.css.
+            Do not re-declare those rules here: an earlier version of this block set
+            .pos-modal-overlay to display:none, which also removed its descendant
+            #pos-receipt-content from the print render and produced a blank page. */}
         <style dangerouslySetInnerHTML={{ __html: `
           @media print {
             @page {
               size: ${layoutMode === 'invoice' ? 'A4 portrait' : '80mm auto'};
               margin: ${layoutMode === 'invoice' ? '8mm' : '0mm'};
             }
-            body {
-              background: #ffffff !important;
-              color: #000000 !important;
-              margin: 0 !important;
-              padding: 0 !important;
-            }
-            body * {
-              visibility: hidden !important;
-            }
-            #pos-receipt-content,
-            #pos-receipt-content * {
-              visibility: visible !important;
-            }
             #pos-receipt-content {
-              /* fixed, not absolute: .pos-invoice-modal (the nearest
-                 positioned ancestor) has overflow-y:auto and collapses to
-                 0 height in print once this content is taken out of its
-                 flow — position:absolute would anchor here and get
-                 clipped to that 0-height box, printing blank even though
-                 the element itself still reports its real size. Fixed
-                 anchors to the page/viewport instead, immune to that. */
-              position: fixed !important;
-              left: 0 !important;
-              top: 0 !important;
-              width: 100% !important;
-              margin: 0 !important;
               padding: ${layoutMode === 'invoice' ? '0' : '10px'} !important;
-              background: #ffffff !important;
-              box-shadow: none !important;
-              border: none !important;
-            }
-            .no-print,
-            .pos-invoice-close,
-            .pos-invoice-actions {
-              display: none !important;
             }
             /* .pos-modal-overlay is the ANCESTOR that #pos-receipt-content
                lives inside — display:none here would remove the whole

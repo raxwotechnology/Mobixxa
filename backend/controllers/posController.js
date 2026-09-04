@@ -1218,7 +1218,58 @@ const getPosOrders = async (req, res, next) => {
     } catch { /* ignore */ }
 
     const orderRevenue = orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
-    const totalIncome = orderRevenue + reloadIncome + repairIncomeNormal + repairIncomeCompany + advanceIncome + hpTotalIncome + cashInOther;
+    // advanceIncome is NOT added here. A hire-purchase order's `payments` array
+    // has two entries: the real down payment (tagged with its actual tender
+    // method, e.g. 'cash' — already counted via orderRevenue and surfaced in
+    // cashSales/cardSales/etc.) and a second entry tagged 'hire_purchase' for
+    // the remaining balance going onto the installment plan. advanceIncome sums
+    // that second entry, but it's already inside orderRevenue too (orderRevenue
+    // is every order's full totalAmount), so adding it again double-counted the
+    // installment balance into Total Day Revenue. advanceIncome is still
+    // returned below as its own informational field for the Admin Financials
+    // report — just not summed into totalIncome.
+    //
+    // Reconciling totalIncome (Total Day Revenue) against the summary tiles:
+    // orderRevenue gets sliced twice, on two independent axes — by payment
+    // method (cashSales/cardSales/bankSales/creditSales) and by product
+    // category (mobileIncome/accessoriesIncome). The category axis has no gap
+    // (every item lands in exactly one bucket), so mobileIncome +
+    // accessoriesIncome always equals orderRevenue. The payment-method axis
+    // does NOT — it has no bucket for the uncollected hire-purchase balance —
+    // so summing cashSales+cardSales+bankSales+creditSales will fall short of
+    // orderRevenue whenever there's a same-day HP sale. Never sum tiles across
+    // both axes together (that double-counts orderRevenue); the tile-based
+    // reconciliation is: totalIncome = (mobileIncome + accessoriesIncome) +
+    // reloadIncome + hpCashIncome + hpBankIncome + cashInOther (+ any repair
+    // income, which has no tile) - posCreditUncollectedAtSale.
+    //
+    // posCreditUncollectedAtSale: an ad-hoc POS credit sale (mobile/accessory
+    // given to a customer on credit — NOT hire-purchase, which has its own
+    // deliberate handling above) still lands in orderRevenue at its full
+    // totalAmount, same as any other order. But unlike a cash/card sale, no
+    // money actually changed hands for the un-tendered portion, and settling
+    // that credit later (settleCreditOrder) independently adds the collected
+    // amount into cashInOther on the settlement date. Left alone, that sale
+    // would be counted twice — once here by accrual, again on whatever day
+    // it's paid off — which is exactly what live testing against staging
+    // confirmed happens today. So the portion not actually tendered at sale
+    // time (derived from the order's frozen `payments` array, which
+    // settleCreditOrder never touches — never the live, settlement-mutated
+    // creditBalance/amountPaid) is subtracted back out here, deferring that
+    // revenue to the day it's actually collected. Reload credit sales need no
+    // equivalent term: they're already excluded from reloadIncome above via
+    // `paymentMethod: { $ne: 'Credit' }` and only recognized on settlement.
+    let posCreditUncollectedAtSale = 0;
+    orders.forEach((o) => {
+      const isAdHocCredit = o.isCredit === true && o.paymentMethod !== 'hire_purchase';
+      if (!isAdHocCredit) return;
+      const tenderedAtSale = (o.payments || []).reduce((s, p) => {
+        const m = (p.method || '').toLowerCase();
+        return (m === 'credit' || m === 'due') ? s : s + Number(p.amount || 0);
+      }, 0);
+      posCreditUncollectedAtSale += Math.max(0, Number(o.totalAmount || 0) - tenderedAtSale);
+    });
+    const totalIncome = orderRevenue + reloadIncome + repairIncomeNormal + repairIncomeCompany + hpTotalIncome + cashInOther - posCreditUncollectedAtSale;
     const totalCost = serviceCost + supplierCost + expenseCost;
     const balanceAmount = totalIncome - totalCost;
 
@@ -1337,6 +1388,7 @@ const getPosOrders = async (req, res, next) => {
         supplierCost: Number((supplierCost + expenseCost).toFixed(2)),
         expenseCost: Number(expenseCost.toFixed(2)),
         cashInOther: Number(cashInOther.toFixed(2)),
+        posCreditUncollectedAtSale: Number(posCreditUncollectedAtSale.toFixed(2)),
         totalIncome: Number(totalIncome.toFixed(2)),
         totalCost: Number(totalCost.toFixed(2)),
         balanceAmount: Number(balanceAmount.toFixed(2)),

@@ -187,6 +187,7 @@ const POSScreen = () => {
   });
   const [submittingHpPay, setSubmittingHpPay] = useState(false);
   const [hpReceiptData, setHpReceiptData] = useState(null);
+  const [hpConfirmOpen, setHpConfirmOpen] = useState(false);
 
   // Customer Credit Collection / Settle Modal States
   const [showCreditSettleModal, setShowCreditSettleModal] = useState(false);
@@ -1069,23 +1070,26 @@ const POSScreen = () => {
 
   const handleSelectHpRecord = (rec) => {
     setSelectedHpRecord(rec);
-    const net = Number(rec.netTotal || 0);
-    const paid = Number(rec.totalPaid || 0);
-    const rem = rec.balanceAmount !== undefined && rec.balanceAmount !== null
-      ? Number(rec.balanceAmount)
-      : (rec.remainingBalance !== undefined ? Number(rec.remainingBalance) : Math.max(0, net - paid));
-    const instAmt = Number(rec.installmentAmount || 0);
-    const defaultAmt = rem > 0 ? (instAmt > 0 && instAmt <= rem ? instAmt : rem) : '';
+    // Amount to Pay is intentionally left blank — cashier must type it or use
+    // the explicit "Fill 1-Month" / "Fill Full Balance" buttons. Auto-filling
+    // this risked silently pre-selecting the full remaining balance whenever
+    // an installment was near its end, letting a hurried click accidentally
+    // settle/close it.
     setHpPayForm(prev => ({
       ...prev,
-      amount: defaultAmt,
+      amount: '',
       givenCash: '',
       paymentMethod: 'Cash',
       accountId: accounts.length > 0 ? accounts[0]._id : ''
     }));
   };
 
-  const handleSubmitHpPayment = async () => {
+  // Validates the form and opens the confirmation dialog — no request is
+  // sent yet. The actual POST only happens from handleConfirmHpPayment once
+  // the cashier explicitly presses "Confirm & Record Payment" inside the
+  // popup. Guards against a second click opening a second overlapping dialog.
+  const handleOpenHpConfirm = () => {
+    if (hpConfirmOpen || submittingHpPay) return;
     if (!selectedHpRecord) {
       toast.error('Please select an HP agreement first');
       return;
@@ -1095,6 +1099,22 @@ const POSScreen = () => {
       toast.error('Please enter a valid payment amount');
       return;
     }
+    setHpConfirmOpen(true);
+  };
+
+  const handleCancelHpConfirm = () => {
+    if (submittingHpPay) return; // don't let an accidental dismiss cancel an in-flight request
+    setHpConfirmOpen(false);
+  };
+
+  // Performs the actual write (payment POST + receipt generation). Only
+  // reachable from the "Confirm & Record Payment" button inside the dialog.
+  const handleConfirmHpPayment = async () => {
+    if (submittingHpPay) return; // ignore re-entrant/double clicks while a request is in flight
+    if (!selectedHpRecord) return;
+    const amt = Number(hpPayForm.amount);
+    if (!amt || amt <= 0) return;
+
     const targetAccountId = hpPayForm.accountId || (accounts && accounts.length > 0 ? accounts[0]._id : undefined);
     const givenAmt = Number(hpPayForm.givenCash || 0);
     const changeAmt = givenAmt > amt ? givenAmt - amt : 0;
@@ -1110,9 +1130,15 @@ const POSScreen = () => {
       });
 
       toast.success('Installment payment recorded successfully! 💳');
-      
-      const currentBal = selectedHpRecord.balanceAmount ?? (selectedHpRecord.remainingBalance ?? Math.max(0, (selectedHpRecord.netTotal || 0) - (selectedHpRecord.totalPaid || 0)));
-      const newBal = Math.max(0, currentBal - amt);
+
+      // The API response is the fully updated HP record (totalPaid, balanceAmount,
+      // payments[] all recalculated server-side) — apply it immediately so the
+      // invoice view reflects the new figures without leaving and re-opening it.
+      const updatedRecord = data || selectedHpRecord;
+      setSelectedHpRecord(updatedRecord);
+      setHpPayForm(prev => ({ ...prev, amount: '', givenCash: '' }));
+
+      const newBal = updatedRecord.balanceAmount ?? Math.max(0, (updatedRecord.netTotal || 0) - (updatedRecord.totalPaid || 0));
       const receiptObj = {
         payment: {
           amount: amt,
@@ -1125,23 +1151,28 @@ const POSScreen = () => {
           notes: hpPayForm.notes || '',
           receivedBy: user?.name || 'Cashier'
         },
-        hpRecord: data || selectedHpRecord,
+        hpRecord: updatedRecord,
         newBalance: newBal
       };
       setHpReceiptData(receiptObj);
-      
+
       // Auto-trigger thermal receipt print window
       setTimeout(() => {
         handlePrintHpReceipt(receiptObj);
       }, 300);
 
-      // Refresh accounts & records
-      handleSearchHpRecords(hpSearchInput);
+      // Refresh the underlying records list (for when the cashier goes back to search)
+      // and accounts, without letting it clobber the just-applied selectedHpRecord.
+      getHPRecords({ search: hpSearchInput, status: 'all' })
+        .then(res => setHpRecordsList(res.data || []))
+        .catch(() => {});
       if (getAccounts) {
         getAccounts().then(res => setAccounts(res.data || [])).catch(() => {});
       }
+      setHpConfirmOpen(false);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to record installment payment');
+      setHpConfirmOpen(false);
     } finally {
       setSubmittingHpPay(false);
     }
@@ -5160,6 +5191,13 @@ const POSScreen = () => {
                 ? Number(directCountAmount || 0)
                 : calcTotal(sessionForm.closing);
               const discrepancy = countedCash - expectedDrawer;
+              // Same "nothing entered yet" gate as the Balance & Shift Summary
+              // reconciliation box: a freshly opened form has directCountAmount
+              // === '' or every denom count at 0, which must not be shown as an
+              // actual zero count.
+              const hasCounted = useDirectCount
+                ? directCountAmount !== ''
+                : Object.values(sessionForm.closing || {}).some((v) => Number(v) > 0);
 
               return (
                 <div style={{ padding: '24px' }}>
@@ -5385,8 +5423,8 @@ const POSScreen = () => {
                     padding: '16px 20px',
                     borderRadius: '16px',
                     marginBottom: '20px',
-                    background: Math.abs(discrepancy) <= 0.01 ? '#064e3b' : (discrepancy < 0 ? '#7f1d1d' : '#1e3a8a'),
-                    border: `1.5px solid ${Math.abs(discrepancy) <= 0.01 ? '#10b981' : (discrepancy < 0 ? '#ef4444' : '#3b82f6')}`,
+                    background: !hasCounted ? '#1e293b' : (Math.abs(discrepancy) <= 0.01 ? '#064e3b' : (discrepancy < 0 ? '#7f1d1d' : '#1e3a8a')),
+                    border: !hasCounted ? '1.5px dashed #475569' : `1.5px solid ${Math.abs(discrepancy) <= 0.01 ? '#10b981' : (discrepancy < 0 ? '#ef4444' : '#3b82f6')}`,
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
@@ -5397,8 +5435,10 @@ const POSScreen = () => {
                       <div style={{ fontSize: '12px', fontWeight: '900', textTransform: 'uppercase', color: '#e2e8f0', letterSpacing: '0.5px' }}>
                         RECONCILIATION & SETTLEMENT STATUS
                       </div>
-                      <div style={{ fontSize: '18px', fontWeight: '900', color: '#ffffff', marginTop: '2px' }}>
-                        {Math.abs(discrepancy) <= 0.01 ? (
+                      <div style={{ fontSize: '18px', fontWeight: '900', color: !hasCounted ? '#9ca3af' : '#ffffff', marginTop: '2px' }}>
+                        {!hasCounted ? (
+                          <span>⏳ NOT YET COUNTED — enter the drawer count above</span>
+                        ) : Math.abs(discrepancy) <= 0.01 ? (
                           <span>✅ BALANCED: Exact match (Rs. 0.00 discrepancy)</span>
                         ) : discrepancy < 0 ? (
                           <span>⚠️ ARREARS / SHORTAGE: - Rs. {Math.abs(discrepancy).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
@@ -5409,8 +5449,8 @@ const POSScreen = () => {
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontSize: '11px', color: '#cbd5e1' }}>Variance:</div>
-                      <div style={{ fontSize: '18px', fontWeight: '900', fontFamily: 'monospace', color: '#ffffff' }}>
-                        {discrepancy >= 0 ? `+Rs. ${discrepancy.toFixed(2)}` : `-Rs. ${Math.abs(discrepancy).toFixed(2)}`}
+                      <div style={{ fontSize: '18px', fontWeight: '900', fontFamily: 'monospace', color: !hasCounted ? '#9ca3af' : '#ffffff' }}>
+                        {!hasCounted ? '—' : (discrepancy >= 0 ? `+Rs. ${discrepancy.toFixed(2)}` : `-Rs. ${Math.abs(discrepancy).toFixed(2)}`)}
                       </div>
                     </div>
                   </div>
@@ -5873,11 +5913,19 @@ const POSScreen = () => {
                     const { expectedDrawer } = computeExpectedDrawerCash(
                       posDailySummary, dailyFinancials, balanceSessionData?.openingCashAmount || posSession?.openingCashAmount
                     );
-                    
-                    const savedCounted = balanceSessionData?.closingCashCountedAmount;
+
+                    // closingCashCountedAmount defaults to 0 in the PosSession schema for
+                    // every session, including ones never closed — so its mere presence
+                    // can't mean "someone counted." status === 'closed' is the only
+                    // reliable "has this actually been settled" signal (same one the Cash
+                    // Settlement tile above uses), so a saved count is trusted only then.
+                    const isSettled = balanceSessionData?.status === 'closed';
+                    const savedCounted = isSettled ? balanceSessionData?.closingCashCountedAmount : undefined;
+                    const hasUserInput = drawerCountInput !== '';
+                    const hasCount = isSettled || hasUserInput;
                     const counted = savedCounted !== undefined && savedCounted !== null
                       ? Number(savedCounted)
-                      : (drawerCountInput !== '' ? Number(drawerCountInput) : expectedDrawer);
+                      : (hasUserInput ? Number(drawerCountInput) : 0);
                     const diff = counted - expectedDrawer;
 
                     const denomsList = (balanceSessionData?.closingDenoms || []).filter(d => Number(d.qty || 0) > 0);
@@ -5909,7 +5957,7 @@ const POSScreen = () => {
                             <input
                               type="number"
                               placeholder={`Expected: ${expectedDrawer.toFixed(2)}`}
-                              value={drawerCountInput !== '' ? drawerCountInput : (savedCounted !== undefined ? savedCounted : '')}
+                              value={drawerCountInput !== '' ? drawerCountInput : (savedCounted !== undefined && savedCounted !== null ? savedCounted : '')}
                               onChange={(e) => setDrawerCountInput(e.target.value)}
                               style={{
                                 width: '100%',
@@ -5926,12 +5974,12 @@ const POSScreen = () => {
                             />
                           </div>
 
-                          <div style={{ padding: '14px', borderRadius: '12px', background: Math.abs(diff) <= 0.01 ? '#064e3b' : (diff > 0 ? '#1e3a8a' : '#7f1d1d'), border: '1px solid rgba(255,255,255,0.15)' }}>
+                          <div style={{ padding: '14px', borderRadius: '12px', background: !hasCount ? '#1e293b' : (Math.abs(diff) <= 0.01 ? '#064e3b' : (diff > 0 ? '#1e3a8a' : '#7f1d1d')), border: !hasCount ? '1px dashed #475569' : '1px solid rgba(255,255,255,0.15)' }}>
                             <div style={{ fontSize: '11px', fontWeight: '800', color: '#e2e8f0', textTransform: 'uppercase' }}>
                               Cash Drawer Status / Discrepancy
                             </div>
-                            <div style={{ fontSize: '16px', fontWeight: '900', color: '#ffffff', marginTop: '2px' }}>
-                              {Math.abs(diff) <= 0.01 ? '✅ Exact Match (No Discrepancy)' : (diff > 0 ? `+ Rs. ${diff.toLocaleString('en-LK', { minimumFractionDigits: 2 })} (Overage)` : `- Rs. ${Math.abs(diff).toLocaleString('en-LK', { minimumFractionDigits: 2 })} (Shortage)`)}
+                            <div style={{ fontSize: '16px', fontWeight: '900', color: !hasCount ? '#9ca3af' : '#ffffff', marginTop: '2px' }}>
+                              {!hasCount ? '⏳ Not Yet Counted' : (Math.abs(diff) <= 0.01 ? '✅ Exact Match (No Discrepancy)' : (diff > 0 ? `+ Rs. ${diff.toLocaleString('en-LK', { minimumFractionDigits: 2 })} (Overage)` : `- Rs. ${Math.abs(diff).toLocaleString('en-LK', { minimumFractionDigits: 2 })} (Shortage)`))}
                             </div>
                           </div>
                         </div>
@@ -6161,7 +6209,7 @@ const POSScreen = () => {
       {showHpQuickPayModal && (
         <div 
           className="pos-modal-overlay" 
-          onClick={() => { setShowHpQuickPayModal(false); setSelectedHpRecord(null); setHpReceiptData(null); }}
+          onClick={() => { setShowHpQuickPayModal(false); setSelectedHpRecord(null); setHpReceiptData(null); setHpConfirmOpen(false); }}
           style={{ background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(6px)', zIndex: 99999 }}
         >
           <div
@@ -6195,7 +6243,7 @@ const POSScreen = () => {
                 </div>
               </div>
               <button
-                onClick={() => { setShowHpQuickPayModal(false); setSelectedHpRecord(null); setHpReceiptData(null); }}
+                onClick={() => { setShowHpQuickPayModal(false); setSelectedHpRecord(null); setHpReceiptData(null); setHpConfirmOpen(false); }}
                 style={{
                   border: 'none',
                   background: '#f1f5f9',
@@ -6477,12 +6525,9 @@ const POSScreen = () => {
                       value={hpPayForm.givenCash}
                       onChange={(e) => {
                         const val = e.target.value;
-                        const numVal = Number(val || 0);
-                        const instVal = Number(selectedHpRecord.installmentAmount || 0);
-                        setHpPayForm(prev => {
-                          const newAmount = (!prev.amount || Number(prev.amount) <= 0 || (numVal > 0 && numVal <= instVal)) ? val : prev.amount;
-                          return { ...prev, givenCash: val, amount: newAmount };
-                        });
+                        // Only updates Given Cash — "Amount to Pay" must be typed or
+                        // set explicitly by the cashier, never inferred from this field.
+                        setHpPayForm(prev => ({ ...prev, givenCash: val }));
                       }}
                       placeholder="e.g. 50000"
                       style={{
@@ -6563,13 +6608,13 @@ const POSScreen = () => {
                       background: 'linear-gradient(135deg, #10b981 0%, #047857 100%)',
                       border: 'none',
                       borderRadius: '14px',
-                      cursor: (submittingHpPay || !hpPayForm.amount || Number(hpPayForm.amount) <= 0) ? 'not-allowed' : 'pointer',
-                      opacity: (submittingHpPay || !hpPayForm.amount || Number(hpPayForm.amount) <= 0) ? 0.6 : 1,
+                      cursor: (submittingHpPay || hpConfirmOpen || !hpPayForm.amount || Number(hpPayForm.amount) <= 0) ? 'not-allowed' : 'pointer',
+                      opacity: (submittingHpPay || hpConfirmOpen || !hpPayForm.amount || Number(hpPayForm.amount) <= 0) ? 0.6 : 1,
                       boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
                       transition: 'all 0.2s'
                     }}
-                    onClick={handleSubmitHpPayment}
-                    disabled={submittingHpPay || !hpPayForm.amount || Number(hpPayForm.amount) <= 0}
+                    onClick={handleOpenHpConfirm}
+                    disabled={submittingHpPay || hpConfirmOpen || !hpPayForm.amount || Number(hpPayForm.amount) <= 0}
                   >
                     {submittingHpPay ? <RefreshCw size={20} className="animate-spin" /> : <CreditCard size={20} />}
                     Record Payment & Generate Receipt
@@ -6616,6 +6661,117 @@ const POSScreen = () => {
           </div>
         </div>
       )}
+
+      {/* ──────────────── HP Payment Confirmation Dialog ────────────────
+          Sits on top of the Quick HP Installment modal. The actual payment
+          write + receipt generation only happens from the "Confirm & Record
+          Payment" button below — the outer form button only opens this. */}
+      {hpConfirmOpen && selectedHpRecord && (() => {
+        const amt = Number(hpPayForm.amount || 0);
+        const currentBal = selectedHpRecord.balanceAmount ?? (selectedHpRecord.remainingBalance ?? Math.max(0, (selectedHpRecord.netTotal || 0) - (selectedHpRecord.totalPaid || 0)));
+        const newRemaining = Math.max(0, currentBal - amt);
+        const willSettle = amt >= currentBal;
+        const accountLabel = hpPayForm.accountId
+          ? (accounts.find(a => a._id === hpPayForm.accountId)?.name || 'Selected Account')
+          : 'Default Counter Drawer';
+
+        return (
+          <div
+            onClick={handleCancelHpConfirm}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)', zIndex: 100000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{ maxWidth: '440px', width: '100%', background: '#ffffff', color: '#0f172a', padding: '26px', borderRadius: '20px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.45)', border: '1px solid #e2e8f0' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                <div style={{ background: '#dbeafe', padding: '10px', borderRadius: '14px', color: '#2563eb', display: 'flex' }}>
+                  <CreditCard size={22} />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '17px', fontWeight: '800', color: '#0f172a' }}>Confirm Installment Payment</h3>
+                  <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#64748b', fontWeight: '500' }}>Please review before recording</p>
+                </div>
+              </div>
+
+              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#64748b', fontWeight: '600' }}>Invoice / Customer</span>
+                  <span style={{ fontWeight: '800', color: '#0f172a', textAlign: 'right' }}>{selectedHpRecord.hpCode || selectedHpRecord.invoiceNo} — {selectedHpRecord.customer?.name}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#64748b', fontWeight: '600' }}>Payment Method</span>
+                  <span style={{ fontWeight: '700', color: '#0f172a' }}>{hpPayForm.paymentMethod || 'Cash'}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#64748b', fontWeight: '600' }}>Receiving Account / Drawer</span>
+                  <span style={{ fontWeight: '700', color: '#0f172a', textAlign: 'right' }}>{accountLabel}</span>
+                </div>
+                <div style={{ borderTop: '1px dashed #cbd5e1', margin: '2px 0' }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ color: '#166534', fontWeight: '700' }}>Amount to Pay</span>
+                  <span style={{ fontWeight: '900', fontSize: '18px', color: '#166534' }}>Rs. {amt.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ color: '#b45309', fontWeight: '700' }}>New Remaining Due</span>
+                  <span style={{ fontWeight: '900', fontSize: '16px', color: '#b45309' }}>Rs. {newRemaining.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+                </div>
+              </div>
+
+              {willSettle && (
+                <div style={{ marginTop: '12px', padding: '10px 14px', background: '#fef3c7', border: '1px solid #fde68a', borderRadius: '12px', fontSize: '12px', fontWeight: '700', color: '#92400e' }}>
+                  ⚠️ This payment will fully settle and CLOSE this HP installment (Remaining Due → Rs. 0.00).
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                <button
+                  onClick={handleCancelHpConfirm}
+                  disabled={submittingHpPay}
+                  style={{
+                    flex: 1,
+                    padding: '12px 20px',
+                    fontSize: '14px',
+                    fontWeight: '700',
+                    color: '#334155',
+                    background: '#f1f5f9',
+                    border: 'none',
+                    borderRadius: '12px',
+                    cursor: submittingHpPay ? 'not-allowed' : 'pointer',
+                    opacity: submittingHpPay ? 0.6 : 1
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmHpPayment}
+                  disabled={submittingHpPay}
+                  style={{
+                    flex: 1.4,
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '12px 20px',
+                    fontSize: '14px',
+                    fontWeight: '800',
+                    color: '#ffffff',
+                    background: 'linear-gradient(135deg, #10b981 0%, #047857 100%)',
+                    border: 'none',
+                    borderRadius: '12px',
+                    cursor: submittingHpPay ? 'not-allowed' : 'pointer',
+                    opacity: submittingHpPay ? 0.75 : 1,
+                    boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)'
+                  }}
+                >
+                  {submittingHpPay ? <RefreshCw size={18} className="animate-spin" /> : <CreditCard size={18} />}
+                  {submittingHpPay ? 'Recording…' : 'Confirm & Record Payment'}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Customer Credit Collection & Debt Settlement Modal */}
       {showCreditSettleModal && (
