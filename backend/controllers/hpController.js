@@ -128,6 +128,25 @@ const recordHPPayment = async (req, res, next) => {
       ? 'Card'
       : ((paymentMethod || '').toLowerCase().includes('bank') ? 'Bank Transfer' : 'Cash');
 
+    // Defense in depth against a double-submitted payment (double-click, slow-network
+    // re-tap) reaching this endpoint twice: reject a second payment on the same
+    // agreement that repeats the same amount + method within a short window, even if
+    // the frontend's own submit guard were ever bypassed. Legitimate back-to-back
+    // payments of the same amount are rare enough, and delayed enough by the cashier
+    // re-opening/confirming the form, that this window does not block them.
+    const DUP_WINDOW_MS = 8000;
+    const now = Date.now();
+    const isDuplicate = (record.payments || []).some((p) => {
+      if (Number(p.amount) !== Number(amount)) return false;
+      if (p.paymentMethod !== normalizedMethod) return false;
+      const pDate = p.date ? new Date(p.date).getTime() : 0;
+      return (now - pDate) >= 0 && (now - pDate) < DUP_WINDOW_MS;
+    });
+    if (isDuplicate) {
+      res.status(409);
+      return next(new Error('A matching payment was just recorded for this agreement — possible duplicate submission. Please check Payment History before retrying.'));
+    }
+
     const payment = {
       amount: Number(amount),
       paymentMethod: normalizedMethod,
