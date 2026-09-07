@@ -427,6 +427,16 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
   // (In-Hand pcs > 0), scoped to the network selected in that form. No
   // hardcoded/example values — a denomination drops off once sold out and
   // reappears once restocked, staying in sync with the grid.
+  // "In stock at a glance" for the Card tab header — sums the same _inHand
+  // pieces already shown in each card's In-Hand (Pcs) field, scoped to
+  // whichever network filter is active (or all networks with stock, when
+  // "All" is selected). No new stock calculation — reuses cardRows as-is.
+  const cardStockSummary = useMemo(() => {
+    const totalPcs = cardRows.reduce((a, r) => a + Number(r._inHand || 0), 0);
+    const totalValue = cardRows.reduce((a, r) => a + Number(r._inHand || 0) * Number(r.cardValue || 0), 0);
+    return { totalPcs, totalValue };
+  }, [cardRows]);
+
   const cardDenomChips = useMemo(() => {
     const seen = new Set();
     const values = [];
@@ -723,8 +733,9 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-[10px] font-bold text-slate-500 uppercase">Total Float</div>
-                        <div className="text-xs font-mono font-black text-slate-200">Rs. {Number(row._totalFloat).toLocaleString()}</div>
+                        <div className="text-[10px] font-bold text-emerald-400 uppercase">In Stock</div>
+                        <div className="text-sm font-mono font-black text-emerald-300">Rs. {Number(row._inHand).toLocaleString()}</div>
+                        <div className="text-[9px] font-medium text-slate-500 uppercase mt-0.5">Float: Rs. {Number(row._totalFloat).toLocaleString()}</div>
                       </div>
                     </div>
 
@@ -819,10 +830,13 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
           {activeTab === 'cards' && (
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <CreditCard size={18} className="text-rose-400" />
                   <span className="text-sm font-black text-white uppercase tracking-wide">
                     Scratch Card Stock (Pieces)
+                  </span>
+                  <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-mono font-bold">
+                    📦 In Stock: Rs. {cardStockSummary.totalValue.toLocaleString()} ({cardStockSummary.totalPcs} pcs)
                   </span>
                 </div>
 
@@ -885,8 +899,9 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                         </span>
                         <h4 className="text-sm font-black text-white mt-1">Rs. {row.cardValue} Card</h4>
                       </div>
-                      <div className="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs" style={{ backgroundColor: `${row.color}20`, color: row.color }}>
-                        Rs.{row.cardValue}
+                      <div className="flex flex-col items-center justify-center px-2.5 py-1 rounded-xl min-w-[52px]" style={{ backgroundColor: `${row.color}20`, color: row.color }}>
+                        <span className="text-[8px] font-bold uppercase leading-none">In Stock</span>
+                        <span className="text-base font-black leading-tight mt-0.5">{row._inHand} <span className="text-[9px] font-bold">pcs</span></span>
                       </div>
                     </div>
 
@@ -906,9 +921,9 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                           In-Hand (Pcs)
                         </label>
                         {row.status === 'closed' ? (
-                          <div className="w-full py-1.5 px-2 font-mono font-bold text-slate-300 bg-slate-900 border border-slate-700 rounded-lg text-xs flex items-center justify-between">
+                          <div className="w-full py-2 px-2 font-mono font-black text-indigo-200 bg-indigo-950/50 border border-indigo-500/40 rounded-lg text-sm flex items-center justify-between">
                             <span>{row.eveningInHand} pcs</span>
-                            <Lock size={10} className="text-slate-500" />
+                            <Lock size={11} className="text-indigo-400/60" />
                           </div>
                         ) : (
                           <input
@@ -918,14 +933,14 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                             placeholder="0"
                             value={closingDraft[row.operatorName] ?? row._totalFloat}
                             onChange={(e) => handleClosingDraftChange(row.operatorName, e.target.value)}
-                            className="w-full py-1.5 px-2 font-mono font-bold text-indigo-300 bg-slate-900 border border-indigo-500/30 rounded-lg text-xs focus:border-indigo-500 focus:bg-slate-800 outline-none transition-all"
+                            className="w-full py-2 px-2 font-mono font-black text-indigo-200 bg-indigo-950/50 border border-indigo-500/40 rounded-lg text-sm focus:border-indigo-400 focus:bg-slate-800 outline-none transition-all"
                           />
                         )}
                       </div>
                     </div>
 
                     <div className="text-[9px] text-slate-500 font-medium mb-2 truncate">
-                      Opening: {row._opening} pcs
+                      Opening: {row._opening} pcs • Float: {row._totalFloat} pcs
                     </div>
 
                     {row.status === 'closed' ? (
