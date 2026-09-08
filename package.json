@@ -1,0 +1,13 @@
+{
+  "name": "sr-mobile-official",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SR Mobile Official - Multi-Store POS, Inventory & E-Commerce Platform",
+  "scripts": {
+    "dev:backend": "npm run dev --prefix backend",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "build:frontend": "npm run build --prefix frontend",
+    "start:backend": "npm start --prefix backend"
+  }
+}
