@@ -366,6 +366,14 @@ export const deleteOvertimeRecord = (id) => API.delete(`/overtime/${id}`);
 export const getEmployeeOTReport = (employeeId, params) => API.get(`/overtime/employee/${employeeId}`, { params });
 export const getMyOvertime = (params) => API.get('/overtime/my', { params });
 
+// Cashier Cash Accountability
+export const getCashierShortageSummary = (params) => API.get('/cashier-accountability/summary', { params });
+export const getCashierShortageLedger = (params) => API.get('/cashier-accountability/shortages', { params });
+export const reassignCashierShortage = (id, data) => API.put(`/cashier-accountability/shortages/${id}/reassign`, data);
+export const getCashierRecoveries = (params) => API.get('/cashier-accountability/recoveries', { params });
+export const recordCashierDeduction = (data) => API.post('/cashier-accountability/recoveries', data);
+export const getAccountabilityCashiersList = (params) => API.get('/cashier-accountability/cashiers', { params });
+
 // Accounts
 export const getAccounts = (params) => API.get('/accounts', { params });
 export const createAccount = (data) => API.post('/accounts', data);

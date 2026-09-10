@@ -70,6 +70,7 @@ import UserSettings from './views/UserSettings';
 
 import AdminPredictions from './views/admin/AdminPredictions';
 import AdminOvertime from './views/admin/AdminOvertime';
+import AdminCashierAccountability from './views/admin/AdminCashierAccountability';
 import AdminAccounts from './views/admin/AdminAccounts';
 import AdminHP from './views/admin/AdminHP';
 import AdminCustomerHistory from './views/admin/AdminCustomerHistory';
@@ -255,6 +256,7 @@ function App() {
           <Route path="/admin/hp" element={<ProtectedRoute roles={['admin', 'manager', 'cashier']} permission="finance"><AdminHP /></ProtectedRoute>} />
           <Route path="/admin/customer-history" element={<ProtectedRoute roles={['admin']} permission="reports"><AdminCustomerHistory /></ProtectedRoute>} />
           <Route path="/admin/overtime" element={<ProtectedRoute roles={['admin', 'manager']} permission="finance"><AdminOvertime /></ProtectedRoute>} />
+          <Route path="/admin/cash-accountability" element={<ProtectedRoute roles={['admin', 'manager']} permission="finance"><AdminCashierAccountability /></ProtectedRoute>} />
           <Route path="/admin/reloads" element={<ProtectedRoute roles={['admin', 'manager', 'cashier']}><AdminReloads /></ProtectedRoute>} />
           <Route path="/admin/repairs" element={<ProtectedRoute roles={['admin', 'manager']} permission="sales"><AdminRepairs /></ProtectedRoute>} />
 

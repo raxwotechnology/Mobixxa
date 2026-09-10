@@ -274,6 +274,47 @@ const endSession = async (req, res, next) => {
     if (!session.$locals.isCorrection) session.endedAt = sessionEnd;
 
     await session.save();
+
+    // Best-effort: mirror a non-zero variance into the Cashier Cash
+    // Accountability ledger, keyed by this session so it's never recomputed
+    // independently of the settlement figures above. A failure here must not
+    // block the shift-close response.
+    try {
+      const CashierShortage = require('../models/CashierShortage');
+      const existing = await CashierShortage.findOne({ sourceSessionId: session._id });
+      const isNonZero = Math.abs(session.variance) > 0.01;
+
+      if (existing) {
+        existing.correctionHistory.push({
+          previousVariance: existing.variance,
+          newVariance: session.variance,
+          correctedAt: new Date(),
+        });
+        existing.expectedCash = session.expectedCash;
+        existing.countedCash = session.closingCashCountedAmount;
+        existing.variance = session.variance;
+        existing.type = session.variance < 0 ? 'short' : 'over';
+        existing.varianceNote = session.varianceNote;
+        existing.date = session.endedAt || existing.date;
+        await existing.save();
+      } else if (isNonZero) {
+        await CashierShortage.create({
+          storeId: session.storeId,
+          sourceSessionId: session._id,
+          cashierId: session.cashierId,
+          date: session.endedAt || new Date(),
+          expectedCash: session.expectedCash,
+          countedCash: session.closingCashCountedAmount,
+          variance: session.variance,
+          type: session.variance < 0 ? 'short' : 'over',
+          varianceNote: session.varianceNote,
+          createdBy: req.user._id,
+        });
+      }
+    } catch (e) {
+      console.error('Failed to sync CashierShortage ledger for session', session._id, e);
+    }
+
     res.json({
       ...session.toObject(),
       breakdown: {
