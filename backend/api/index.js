@@ -87,6 +87,7 @@ app.use('/api/barcodes', require('../routes/barcodeRoutes'));
 app.use('/api/supplier-payments', require('../routes/supplierPaymentRoutes'));
 app.use('/api/predictions', require('../routes/predictionRoutes'));
 app.use('/api/overtime', require('../routes/overtimeRoutes'));
+app.use('/api/cashier-accountability', require('../routes/cashierAccountabilityRoutes'));
 app.use('/api/upload', require('../routes/uploadRoutes'));
 app.use('/api/reloads', require('../routes/reloadRoutes'));
 app.use('/api/repairs', require('../routes/repairRoutes'));
