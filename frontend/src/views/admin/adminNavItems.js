@@ -2,7 +2,7 @@ import {
   LayoutDashboard, Users, Store, Tag, ShoppingBag, Monitor,
   Ticket, BarChart3, DollarSign, Wallet, Package, Gift,
   CreditCard, UserCog, UsersRound, RotateCcw, Barcode, TrendingUp, Brain,
-  Clock, Target, Settings, ChevronRight, Globe, History, Landmark, FileText, Smartphone, Wrench, ShieldCheck,
+  Clock, Target, Settings, ChevronRight, Globe, History, Landmark, FileText, Smartphone, Wrench, ShieldCheck, ShieldAlert,
 
 } from 'lucide-react';
 
@@ -92,6 +92,7 @@ const adminNavGroups = [
       { path: '/admin/financials', label: 'Financials',        icon: DollarSign },
       { path: '/admin/profit-reports', label: 'Profit Reports', icon: TrendingUp },
       { path: '/admin/overtime',   label: 'Overtime Pay',      icon: Clock },
+      { path: '/admin/cash-accountability', label: 'Cashier Cash Accountability', icon: ShieldAlert },
     ],
   },
   {
@@ -151,6 +152,7 @@ const pathToPermissionKey = {
   '/admin/financials': 'financials',
   '/admin/profit-reports': 'profitReports',
   '/admin/overtime': 'overtime',
+  '/admin/cash-accountability': 'cashAccountability',
   '/admin/reports': 'reports',
   '/admin/customer-history': 'customerHistory',
   '/admin/predictions': 'predictions',
@@ -186,7 +188,7 @@ export const getAdminNavGroups = (user) => {
     if (['orders', 'warranty', 'returns', 'pos', 'repairs', 'reloads', 'salesTracking', 'tradeIn', 'vouchers', 'promotions'].includes(key)) {
       return p.sales === true || (key === 'reloads' && p.reloads === true) || (key === 'repairs' && p.repairs === true);
     }
-    if (['accounts', 'cheques', 'hp', 'expenses', 'financials', 'profitReports', 'overtime'].includes(key)) {
+    if (['accounts', 'cheques', 'hp', 'expenses', 'financials', 'profitReports', 'overtime', 'cashAccountability'].includes(key)) {
       return p.finance === true || (key === 'expenses' && p.expenses === true);
     }
     if (['suppliers', 'supplierPayments'].includes(key)) {

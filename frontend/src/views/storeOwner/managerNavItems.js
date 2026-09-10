@@ -2,7 +2,7 @@ import {
   LayoutDashboard, Package, ShoppingBag, Users, UsersRound, Clock,
   Calendar, Target, BarChart3, RotateCcw, Barcode,
   Wallet, Monitor, Globe, TrendingUp, Wrench, ShieldCheck, Smartphone,
-  Building2, Receipt, DollarSign, PieChart, Coins, SmartphoneCharging
+  Building2, Receipt, DollarSign, PieChart, Coins, SmartphoneCharging, ShieldAlert
 } from 'lucide-react';
 
 const managerNavGroups = [
@@ -42,6 +42,7 @@ const managerNavGroups = [
       { path: '/admin/financials',     label: 'Financials & P&L',   icon: TrendingUp },
       { path: '/admin/profit-reports', label: 'Profit Reports',     icon: PieChart },
       { path: '/admin/reloads',        label: 'Reload & Card Stock',icon: SmartphoneCharging },
+      { path: '/admin/cash-accountability', label: 'Cashier Cash Accountability', icon: ShieldAlert },
     ],
   },
   {
@@ -106,6 +107,7 @@ const getFilteredManagerNavGroups = (user) => {
     '/admin/financials': p.finance,
     '/admin/profit-reports': p.reports || p.finance,
     '/admin/reloads': p.reloads || p.sales,
+    '/admin/cash-accountability': p.finance,
     '/admin/payroll': p.employees,
     '/admin/overtime': p.employees,
     '/admin/trade-in': p.products || p.sales,
