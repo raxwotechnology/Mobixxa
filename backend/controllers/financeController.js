@@ -148,7 +148,7 @@ const getFinancialDashboard = async (req, res, next) => {
 
     // Fetch Repairs and Reloads revenue/profit
     const RepairJob = require('../models/RepairJob');
-    const ReloadLog = require('../models/ReloadLog');
+    const Reload = require('../models/Reload');
 
     const repairFilter = { ...storeFilter, status: 'delivered' };
     if (Object.keys(dateFilter).length > 0) repairFilter.updatedAt = dateFilter;
@@ -157,9 +157,9 @@ const getFinancialDashboard = async (req, res, next) => {
     const repairsCost = repairJobs.reduce((sum, r) => sum + (r.partsUsed || []).reduce((pc, p) => pc + (p.cost || 0), 0), 0);
     const repairsProfit = repairsRevenue - repairsCost;
 
-    const reloadFilter = { ...storeFilter, status: 'completed' };
+    const reloadFilter = { ...storeFilter, status: 'Completed' };
     if (Object.keys(dateFilter).length > 0) reloadFilter.createdAt = dateFilter;
-    const reloadLogs = await ReloadLog.find(reloadFilter).lean();
+    const reloadLogs = await Reload.find(reloadFilter).lean();
     const reloadsRevenue = reloadLogs.reduce((sum, r) => sum + (r.amount || 0), 0);
     const reloadsCommission = reloadLogs.reduce((sum, r) => sum + (r.commission || 0), 0);
 
@@ -831,11 +831,11 @@ const getBalanceReport = async (req, res, next) => {
     });
 
     // Fetch Repairs
-    const Repair = require('../models/Repair');
+    const RepairJob = require('../models/RepairJob');
     let repairingIncomeNormal = 0;
     let repairingIncomeCompany = 0;
     try {
-      const repairs = await Repair.find({ ...storeFilter, ...dateQuery }).lean();
+      const repairs = await RepairJob.find({ ...storeFilter, ...dateQuery, status: { $nin: ['cancelled'] } }).lean();
       repairs.forEach(r => {
         const cost = r.cost || r.estimatedCost || 0;
         if (r.repairType === 'company' || r.isCompanyWarranty) {
