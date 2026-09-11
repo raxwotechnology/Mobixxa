@@ -111,7 +111,9 @@ const AdminPhones = () => {
       mrp: product.mrp || '',
       discount: product.discount || '',
       unit: product.unit || 'pcs',
-      stock: product.stock || 0,
+      // If IMEIs are tracked, stock must always equal the IMEI count — self-heals
+      // any pre-existing drift the moment the product is opened for edit.
+      stock: (product.imei || []).length > 0 ? (product.imei || []).length : (product.stock || 0),
       purchasePrice: product.avgCost || product.lastCost || '',
       images: (product.images || []).join(', '),
       isFeatured: !!product.isFeatured,
@@ -708,8 +710,12 @@ const AdminPhones = () => {
                       </select>
                     </div>
                     <div className="md:col-span-2">
-                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">IMEI Numbers <span className="font-bold text-slate-400 normal-case">(Comma separated for bulk stock)</span></label>
-                      <textarea rows={2} value={form.imei} onChange={(e) => setForm({ ...form, imei: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all resize-none" placeholder="Enter IMEI numbers..." />
+                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">IMEI Numbers <span className="font-bold text-slate-400 normal-case">(Comma separated — one per unit, Stock Quantity auto-updates to match)</span></label>
+                      <textarea rows={2} value={form.imei} onChange={(e) => {
+                        const imeiValue = e.target.value;
+                        const imeiCount = imeiValue.split(',').map((s) => s.trim()).filter(Boolean).length;
+                        setForm((f) => ({ ...f, imei: imeiValue, stock: imeiCount > 0 ? String(imeiCount) : f.stock }));
+                      }} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all resize-none" placeholder="Enter IMEI numbers..." />
                     </div>
                     <div className="md:col-span-2">
                       <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Warranty Details</label>
@@ -737,8 +743,21 @@ const AdminPhones = () => {
                       <input type="number" value={form.purchasePrice} onChange={(e) => setForm({ ...form, purchasePrice: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" placeholder="0.00" />
                     </div>
                     <div>
-                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Stock Quantity *</label>
-                      <input type="number" required value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-extrabold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" placeholder="0" />
+                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">
+                        Stock Quantity *
+                        {form.imei.split(',').map((s) => s.trim()).filter(Boolean).length > 0 && (
+                          <span className="font-bold text-emerald-500 normal-case ml-1">(auto-set from IMEI count)</span>
+                        )}
+                      </label>
+                      <input
+                        type="number"
+                        required
+                        readOnly={form.imei.split(',').map((s) => s.trim()).filter(Boolean).length > 0}
+                        value={form.stock}
+                        onChange={(e) => setForm({ ...form, stock: e.target.value })}
+                        className={`w-full border rounded-xl py-3 px-4 text-sm font-extrabold focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all ${form.imei.split(',').map((s) => s.trim()).filter(Boolean).length > 0 ? 'bg-emerald-50 border-emerald-200 text-emerald-700 cursor-not-allowed' : 'bg-slate-50 border-slate-200 text-slate-800'}`}
+                        placeholder="0"
+                      />
                     </div>
                     <div>
                       <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Supplier</label>

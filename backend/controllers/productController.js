@@ -241,6 +241,11 @@ const createProduct = async (req, res, next) => {
     }
 
 
+    const imeiList = Array.isArray(imei) ? imei.filter(Boolean) : imei ? [imei] : [];
+    // Each IMEI represents exactly one physical unit — stock can never disagree
+    // with the IMEI count when IMEIs are tracked, regardless of what the caller sent.
+    const finalStock = imeiList.length > 0 ? imeiList.length : stock;
+
     const product = await Product.create({
       storeId: req.body.storeId,
       name,
@@ -254,7 +259,7 @@ const createProduct = async (req, res, next) => {
       discount: discount || Math.round(((mrp - price) / mrp) * 100),
       unit,
       variants: variants || [],
-      stock,
+      stock: finalStock,
       images: images || [],
       isFeatured: isFeatured || false,
       isOnSale: isOnSale || false,
@@ -266,7 +271,7 @@ const createProduct = async (req, res, next) => {
       storage,
       color,
       condition,
-      imei: Array.isArray(imei) ? imei : imei ? [imei] : [],
+      imei: imeiList,
       warranty,
       supplierId: supplierId || null,
       sku,
@@ -276,7 +281,7 @@ const createProduct = async (req, res, next) => {
       avgCost: Number(purchasePrice || 0),
       costPrice: Number(purchasePrice || 0),
       minPrice: numericMinPrice,
-      newStock: stock || 0,
+      newStock: finalStock || 0,
       oldStock: 0,
       stockType: 'new',
       productLink,
@@ -364,6 +369,12 @@ const updateProduct = async (req, res, next) => {
         product[field] = req.body[field];
       }
     });
+
+    // Each IMEI represents exactly one physical unit — stock can never disagree
+    // with the IMEI count when IMEIs are tracked, regardless of what the caller sent.
+    if (Array.isArray(product.imei) && product.imei.filter(Boolean).length > 0) {
+      product.stock = product.imei.filter(Boolean).length;
+    }
 
     if (req.body.barcode !== undefined) {
       const trimmedBarcode = String(req.body.barcode).trim();
