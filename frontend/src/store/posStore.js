@@ -15,6 +15,7 @@ const usePosStore = create((set, get) => ({
   sendReceiptEmail: false,
   receiptEmail: '',
   sendWhatsappReceipt: false,
+  sendSmsReceipt: false,
   printReceipt: true,
   loyaltyPointsToRedeem: 0,
   loyaltyDiscount: 0,
@@ -136,6 +137,7 @@ const usePosStore = create((set, get) => ({
   setReceiptOptions: (opts) => {
     set({
       sendWhatsappReceipt: !!opts.sendWhatsappReceipt,
+      sendSmsReceipt: !!opts.sendSmsReceipt,
       sendReceiptEmail: !!opts.sendReceiptEmail,
       receiptEmail: opts.receiptEmail !== undefined ? opts.receiptEmail : get().receiptEmail,
       printReceipt: opts.printReceipt !== false,
@@ -179,6 +181,7 @@ const usePosStore = create((set, get) => ({
       sendReceiptEmail: false,
       receiptEmail: '',
       sendWhatsappReceipt: false,
+      sendSmsReceipt: false,
       printReceipt: true,
       loyaltyPointsToRedeem: 0,
       loyaltyDiscount: 0,

@@ -7,6 +7,7 @@ import { getImageUrl } from '../../utils/imageHelper';
 import useSettingsStore from '../../store/settingsStore';
 import { sendInvoiceReceipt } from '../../services/api';
 import { sendWhatsAppInvoice } from '../../utils/whatsappHelper';
+import { isValidSLPhone } from '../../utils/phone';
 import { toast } from 'react-toastify';
 
 const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = 'invoice' }) => {
@@ -22,6 +23,8 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
   const [whatsappRecipient, setWhatsappRecipient] = useState('');
   const [emailRecipient, setEmailRecipient] = useState('');
   const [sendingEmail, setSendingEmail] = useState(false);
+  const [smsRecipient, setSmsRecipient] = useState('');
+  const [sendingSms, setSendingSms] = useState(false);
 
   useEffect(() => {
     if (isOpen && initialLayoutMode) {
@@ -36,6 +39,7 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
     if (order) {
       setWhatsappRecipient(order.customerPhone || '');
       setEmailRecipient(order.customerEmail || '');
+      setSmsRecipient(order.customerPhone || '');
     }
   }, [order]);
 
@@ -97,6 +101,22 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
       toast.error(err.response?.data?.message || 'Failed to send Email receipt');
     } finally {
       setSendingEmail(false);
+    }
+  };
+
+  const handleSendSms = async () => {
+    if (!isValidSLPhone(smsRecipient)) {
+      toast.error('Please enter a valid Sri Lankan mobile number (e.g. 0771234567)');
+      return;
+    }
+    try {
+      setSendingSms(true);
+      await sendInvoiceReceipt(order._id, { type: 'sms', recipient: smsRecipient });
+      toast.success('SMS receipt sent successfully!');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to send SMS receipt');
+    } finally {
+      setSendingSms(false);
     }
   };
 
@@ -680,6 +700,24 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
               style={{ padding: '8px 14px', fontSize: '12px', fontWeight: 'bold', background: '#10b981', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
             >
               💬 WhatsApp Invoice
+            </button>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px', alignItems: 'center' }}>
+            <input
+              type="text"
+              placeholder="SMS Number (e.g., 0771234567)"
+              value={smsRecipient}
+              onChange={(e) => setSmsRecipient(e.target.value)}
+              style={{ fontSize: '12px', padding: '8px 12px', border: '1px solid #f59e0b', borderRadius: '8px', background: '#fff', color: '#1e293b' }}
+            />
+            <button
+              type="button"
+              onClick={handleSendSms}
+              disabled={sendingSms}
+              style={{ padding: '8px 14px', fontSize: '12px', fontWeight: 'bold', background: '#f59e0b', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+            >
+              {sendingSms ? 'Sending...' : '📱 Send SMS'}
             </button>
           </div>
 

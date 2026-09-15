@@ -1916,6 +1916,8 @@ const sendReceipt = async (req, res, next) => {
       const message = await buildPosReceiptMessage(order.totalAmount, {
         invoiceNo: order.invoiceNumber || order._id.toString().slice(-8).toUpperCase(),
         orderNo: order._id.toString().slice(-8).toUpperCase(),
+        date: new Date(order.createdAt || Date.now()).toLocaleDateString('en-GB'),
+        shopPhone: order.storeId?.phone || '0777 215 235',
       });
       await sendSms(formatSLPhone(recipient), message);
       res.json({ success: true, message: 'SMS receipt sent' });

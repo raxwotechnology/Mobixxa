@@ -1,4 +1,5 @@
 import { toast } from 'react-toastify';
+import { formatSLPhone } from './phone';
 
 export const sendWhatsAppInvoice = (order, brandName = 'Mobixa', storePhone = '+94 11 255 5000') => {
   if (!order) return;
@@ -28,12 +29,7 @@ export const sendWhatsAppInvoice = (order, brandName = 'Mobixa', storePhone = '+
     return;
   }
 
-  let formattedPhone = extractedPhone;
-  if (formattedPhone.startsWith('0')) {
-    formattedPhone = '94' + formattedPhone.slice(1);
-  } else if (!formattedPhone.startsWith('94')) {
-    formattedPhone = '94' + formattedPhone;
-  }
+  const formattedPhone = formatSLPhone(extractedPhone).replace('+', '');
 
   const itemsSummary = order.items?.map(i => `• ${i.name} (x${i.quantity || 1})`).join('\n') || '';
   const imeiList = [];

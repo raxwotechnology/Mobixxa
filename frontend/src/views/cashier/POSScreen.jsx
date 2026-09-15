@@ -46,8 +46,9 @@ import {
   Calendar,
 } from 'lucide-react';
 
-import { getPosProducts, getProductByBarcode, posCheckout, getPosOrders, applyVoucher, getSettings, getActivePosSession, startPosSession, endPosSession, getPosPayHereHash, redeemPoints, getMyLoyaltyPoints, getCreditOrders, getCustomerCreditSummary, getCustomerByPhone, settleCreditOrder, getCategories, createQuotation, createProduct, getAccounts, loginUser, getCashiers, posLogin, getPosOrderByInvoice, createCustomerReturn, getHPRecords, recordHPPayment, createExpense, getExpenses, verifyPassword, getNextHpCode } from '../../services/api';
+import { getPosProducts, getProductByBarcode, posCheckout, getPosOrders, applyVoucher, getSettings, getActivePosSession, startPosSession, endPosSession, getPosPayHereHash, redeemPoints, getMyLoyaltyPoints, getCreditOrders, getCustomerCreditSummary, getCustomerByPhone, settleCreditOrder, getCategories, createQuotation, createProduct, getAccounts, loginUser, getCashiers, posLogin, getPosOrderByInvoice, createCustomerReturn, getHPRecords, recordHPPayment, createExpense, getExpenses, verifyPassword, getNextHpCode, sendInvoiceReceipt } from '../../services/api';
 import { sendWhatsAppInvoice } from '../../utils/whatsappHelper';
+import { isValidSLPhone } from '../../utils/phone';
 
 
 
@@ -2212,6 +2213,12 @@ const POSScreen = () => {
       return;
     }
 
+    if (pos.sendSmsReceipt && !isValidSLPhone(pos.customerPhone)) {
+      toast.error('Enter a valid customer phone number to send an SMS receipt, or untick "Send Receipt via SMS".');
+      setShowCustomerInfo(true);
+      return;
+    }
+
     const isHP = pos.paymentMethod === 'hire_purchase';
 
     // Determine if any item is a mobile device and validate customer info
@@ -2358,6 +2365,12 @@ const POSScreen = () => {
       toast.success(isHP ? 'Installment/HP sale recorded! 📋' : isCredit ? 'Credit sale recorded! 📋' : 'Sale completed! 🎉');
       if (pos.sendWhatsappReceipt) {
         sendWhatsAppInvoice(data);
+      }
+      if (pos.sendSmsReceipt) {
+        const smsRecipient = pos.customerPhone;
+        sendInvoiceReceipt(data._id, { type: 'sms', recipient: smsRecipient })
+          .then(() => toast.success(`SMS receipt sent to ${smsRecipient} 📱`))
+          .catch((err) => toast.error(err.response?.data?.message || 'SMS receipt failed to send — you can resend it from the invoice screen.'));
       }
       pos.clearCart();
       setIsCredit(false);
@@ -4193,15 +4206,23 @@ const POSScreen = () => {
                     <input
                       type="checkbox"
                       checked={pos.sendWhatsappReceipt}
-                      onChange={(e) => pos.setReceiptOptions({ sendWhatsappReceipt: e.target.checked, sendReceiptEmail: pos.sendReceiptEmail, receiptEmail: pos.receiptEmail, printReceipt: pos.printReceipt })}
+                      onChange={(e) => pos.setReceiptOptions({ sendWhatsappReceipt: e.target.checked, sendSmsReceipt: pos.sendSmsReceipt, sendReceiptEmail: pos.sendReceiptEmail, receiptEmail: pos.receiptEmail, printReceipt: pos.printReceipt })}
                     />
                     Send Receipt via WhatsApp
                   </label>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#374151' }}>
                     <input
                       type="checkbox"
+                      checked={pos.sendSmsReceipt}
+                      onChange={(e) => pos.setReceiptOptions({ sendWhatsappReceipt: pos.sendWhatsappReceipt, sendSmsReceipt: e.target.checked, sendReceiptEmail: pos.sendReceiptEmail, receiptEmail: pos.receiptEmail, printReceipt: pos.printReceipt })}
+                    />
+                    Send Receipt via SMS
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#374151' }}>
+                    <input
+                      type="checkbox"
                       checked={pos.sendReceiptEmail}
-                      onChange={(e) => pos.setReceiptOptions({ sendWhatsappReceipt: pos.sendWhatsappReceipt, sendReceiptEmail: e.target.checked, receiptEmail: pos.receiptEmail, printReceipt: pos.printReceipt })}
+                      onChange={(e) => pos.setReceiptOptions({ sendWhatsappReceipt: pos.sendWhatsappReceipt, sendSmsReceipt: pos.sendSmsReceipt, sendReceiptEmail: e.target.checked, receiptEmail: pos.receiptEmail, printReceipt: pos.printReceipt })}
                     />
                     Send Receipt via Email
                   </label>
@@ -4209,7 +4230,7 @@ const POSScreen = () => {
                     <input
                       type="email"
                       value={pos.receiptEmail}
-                      onChange={(e) => pos.setReceiptOptions({ sendWhatsappReceipt: pos.sendWhatsappReceipt, sendReceiptEmail: pos.sendReceiptEmail, receiptEmail: e.target.value, printReceipt: pos.printReceipt })}
+                      onChange={(e) => pos.setReceiptOptions({ sendWhatsappReceipt: pos.sendWhatsappReceipt, sendSmsReceipt: pos.sendSmsReceipt, sendReceiptEmail: pos.sendReceiptEmail, receiptEmail: e.target.value, printReceipt: pos.printReceipt })}
                       placeholder="customer@email.com"
                       className="pos-input"
                       style={{ fontSize: '12px' }}
@@ -4219,7 +4240,7 @@ const POSScreen = () => {
                     <input
                       type="checkbox"
                       checked={pos.printReceipt}
-                      onChange={(e) => pos.setReceiptOptions({ sendWhatsappReceipt: pos.sendWhatsappReceipt, sendReceiptEmail: pos.sendReceiptEmail, receiptEmail: pos.receiptEmail, printReceipt: e.target.checked })}
+                      onChange={(e) => pos.setReceiptOptions({ sendWhatsappReceipt: pos.sendWhatsappReceipt, sendSmsReceipt: pos.sendSmsReceipt, sendReceiptEmail: pos.sendReceiptEmail, receiptEmail: pos.receiptEmail, printReceipt: e.target.checked })}
                     />
                     Print Receipt
                   </label>
@@ -8594,15 +8615,19 @@ const POSScreen = () => {
               {/* 6. Receipt Delivery Channels */}
               <div style={{ display: 'flex', gap: '16px', alignItems: 'center', background: '#f8fafc', padding: '12px 16px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: '700', color: '#334155', cursor: 'pointer' }}>
-                  <input type="checkbox" checked={pos.printReceipt} onChange={(e) => pos.setReceiptOptions({ sendWhatsappReceipt: pos.sendWhatsappReceipt, sendReceiptEmail: pos.sendReceiptEmail, receiptEmail: pos.receiptEmail, printReceipt: e.target.checked })} />
+                  <input type="checkbox" checked={pos.printReceipt} onChange={(e) => pos.setReceiptOptions({ sendWhatsappReceipt: pos.sendWhatsappReceipt, sendSmsReceipt: pos.sendSmsReceipt, sendReceiptEmail: pos.sendReceiptEmail, receiptEmail: pos.receiptEmail, printReceipt: e.target.checked })} />
                   🖨️ Print Thermal Receipt
                 </label>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: '700', color: '#334155', cursor: 'pointer' }}>
-                  <input type="checkbox" checked={pos.sendWhatsappReceipt} onChange={(e) => pos.setReceiptOptions({ sendWhatsappReceipt: e.target.checked, sendReceiptEmail: pos.sendReceiptEmail, receiptEmail: pos.receiptEmail, printReceipt: pos.printReceipt })} />
+                  <input type="checkbox" checked={pos.sendWhatsappReceipt} onChange={(e) => pos.setReceiptOptions({ sendWhatsappReceipt: e.target.checked, sendSmsReceipt: pos.sendSmsReceipt, sendReceiptEmail: pos.sendReceiptEmail, receiptEmail: pos.receiptEmail, printReceipt: pos.printReceipt })} />
                   💬 Send Receipt via WhatsApp
                 </label>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: '700', color: '#334155', cursor: 'pointer' }}>
-                  <input type="checkbox" checked={pos.sendReceiptEmail} onChange={(e) => pos.setReceiptOptions({ sendWhatsappReceipt: pos.sendWhatsappReceipt, sendReceiptEmail: e.target.checked, receiptEmail: pos.receiptEmail, printReceipt: pos.printReceipt })} />
+                  <input type="checkbox" checked={pos.sendSmsReceipt} onChange={(e) => pos.setReceiptOptions({ sendWhatsappReceipt: pos.sendWhatsappReceipt, sendSmsReceipt: e.target.checked, sendReceiptEmail: pos.sendReceiptEmail, receiptEmail: pos.receiptEmail, printReceipt: pos.printReceipt })} />
+                  📱 Send Receipt via SMS
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: '700', color: '#334155', cursor: 'pointer' }}>
+                  <input type="checkbox" checked={pos.sendReceiptEmail} onChange={(e) => pos.setReceiptOptions({ sendWhatsappReceipt: pos.sendWhatsappReceipt, sendSmsReceipt: pos.sendSmsReceipt, sendReceiptEmail: e.target.checked, receiptEmail: pos.receiptEmail, printReceipt: pos.printReceipt })} />
                   📧 Send Email Receipt
                 </label>
                 {pos.customerPhone && (

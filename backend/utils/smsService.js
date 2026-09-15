@@ -104,11 +104,15 @@ const buildPaymentMessage = async (amount, values = {}) => {
 
 const buildPosReceiptMessage = async (amount, values = {}) => {
   const { shopName, templates } = await getSmsTemplates();
-  return applyTemplate(templates.posReceipt || 'Thank you for shopping at {shopName}. Total Rs. {total}.', {
-    shopName,
-    total: Number(amount || 0).toFixed(2),
-    ...values,
-  });
+  return applyTemplate(
+    templates.posReceipt || '{shopName}\nInvoice: {invoiceNo}\nDate: {date}\nTotal: Rs. {total}\nThank you for your purchase!\nTel: {shopPhone}',
+    {
+      shopName,
+      total: Number(amount || 0).toFixed(2),
+      shopPhone: '0777 215 235',
+      ...values,
+    }
+  );
 };
 
 module.exports = {
