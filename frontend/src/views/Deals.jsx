@@ -92,9 +92,9 @@ const Deals = () => {
   };
 
   return (
-    <div className="bg-slate-50/50 min-h-screen">
+    <div className="public-page min-h-screen">
       {/* ===== HERO BANNER (MATCHES SCREENSHOT 2) ===== */}
-      <section className="bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 py-12 px-4 sm:px-6 lg:px-12 text-white relative overflow-hidden mb-10">
+      <section className="catalog-hero base-container py-10 sm:py-12 px-6 lg:px-12 text-white mb-10">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_60%)] pointer-events-none" />
         <div className="base-container flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
           <div>

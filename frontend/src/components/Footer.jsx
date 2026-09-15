@@ -85,7 +85,7 @@ const Footer = () => {
   const staffRole = user?.role && roleFooterLinks[user.role] ? user.role : null;
 
   return (
-    <footer className="bg-gradient-to-b from-slate-950 to-zinc-950 text-white relative overflow-hidden mt-auto border-t border-slate-800/50">
+    <footer className="storefront-footer text-white relative overflow-hidden mt-auto border-t border-slate-800/50">
       {/* Staff Quick Bar if logged in as staff */}
       {staffRole && (
         <div className="bg-white/5 border-b border-white/5 py-3">

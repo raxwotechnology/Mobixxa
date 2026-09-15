@@ -59,7 +59,7 @@ const ProductCard = ({ product }) => {
 
   return (
     <Link to={`/product/${product._id}`} className="block group h-full">
-      <div className="bg-white border border-slate-200/80 rounded-2xl overflow-hidden hover:shadow-[0_12px_30px_rgba(37,99,235,0.12)] transition-all duration-300 hover:-translate-y-1 h-full flex flex-col group-hover:border-blue-400/80">
+      <div className="storefront-card overflow-hidden transition-all duration-300 hover:-translate-y-1 h-full flex flex-col group-hover:border-blue-400/80">
         <div className="relative overflow-hidden bg-slate-50/70 aspect-square flex items-center justify-center p-3 sm:p-6">
           <div className="w-full h-full relative">
             <img 

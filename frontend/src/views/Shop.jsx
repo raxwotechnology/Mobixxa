@@ -95,9 +95,9 @@ const Shop = () => {
   };
 
   return (
-    <div className="bg-slate-50/50 min-h-screen">
+    <div className="public-page min-h-screen">
       {/* ===== HERO BANNER (MATCHES SCREENSHOT 1) ===== */}
-      <section className="bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 py-12 px-4 sm:px-6 lg:px-12 text-white relative overflow-hidden mb-8">
+      <section className="catalog-hero base-container py-10 sm:py-12 px-6 lg:px-12 text-white mb-8">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_60%)] pointer-events-none" />
         <div className="base-container relative z-10">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-900/40 border border-white/20 text-white text-[10px] font-extrabold uppercase tracking-widest mb-3">
@@ -120,8 +120,8 @@ const Shop = () => {
             onClick={() => { setSelectedCategory(''); setPage(1); setSearchParams({}); }}
             className={`px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all flex-shrink-0 cursor-pointer ${
               selectedCategory === ''
-                ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-                : 'bg-white border border-slate-200 text-slate-700 hover:border-blue-300 hover:bg-slate-50'
+                ? 'storefront-pill-active'
+                : 'storefront-pill hover:border-blue-400'
             }`}
           >
             All Products
@@ -136,8 +136,8 @@ const Shop = () => {
               }}
               className={`px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all flex-shrink-0 cursor-pointer ${
                 selectedCategory === cat._id
-                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-                  : 'bg-white border border-slate-200 text-slate-700 hover:border-blue-300 hover:bg-slate-50'
+                  ? 'storefront-pill-active'
+                  : 'storefront-pill hover:border-blue-400'
               }`}
             >
               {cat.name}

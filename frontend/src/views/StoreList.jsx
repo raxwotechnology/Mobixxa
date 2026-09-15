@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Link } from '../utils/navigation';
 import { MapPin, Clock, Phone, ArrowRight, Search, Building2, Navigation, CheckCircle2, Wrench, Shield, ShoppingBag } from 'lucide-react';
 import { getStores } from '../services/api';
+import { getImageUrl } from '../utils/imageHelper';
 
 const STORE_THEMES = [
   { bannerBg: 'bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600', icon: '🏢' },
@@ -44,9 +45,9 @@ const StoreList = () => {
   });
 
   return (
-    <div className="bg-slate-50/50 min-h-screen">
+    <div className="public-page min-h-screen">
       {/* ===== HERO BANNER (MATCHES SCREENSHOT 4) ===== */}
-      <section className="bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 py-12 px-4 sm:px-6 lg:px-12 text-white relative overflow-hidden mb-10">
+      <section className="catalog-hero base-container py-10 sm:py-12 px-6 lg:px-12 text-white mb-10">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_60%)] pointer-events-none" />
         <div className="base-container relative z-10">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-900/40 border border-white/20 text-white text-[10px] font-extrabold uppercase tracking-widest mb-3">
@@ -137,12 +138,19 @@ const StoreList = () => {
               return (
                 <div
                   key={store._id}
-                  className="bg-white rounded-3xl overflow-hidden border border-slate-200/80 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
+                  className="storefront-card overflow-hidden transition-all duration-300 flex flex-col justify-between"
                 >
                   {/* Top Blueprint Banner */}
-                  <div className={`${theme.bannerBg} p-6 text-white relative flex items-center justify-between min-h-[120px]`}>
+                  <div className={`${theme.bannerBg} p-6 text-white relative flex items-center justify-between min-h-[180px]`}>
                     {/* Subtle grid texture */}
                     <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
+                    {store.bannerImage && (
+                      <img
+                        src={getImageUrl(store.bannerImage)}
+                        alt=""
+                        className="absolute inset-0 w-full h-full object-cover opacity-65"
+                      />
+                    )}
 
                     <div className="relative z-10">
                       <span className="inline-flex items-center gap-1.5 bg-emerald-500/90 text-white text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full shadow-sm">

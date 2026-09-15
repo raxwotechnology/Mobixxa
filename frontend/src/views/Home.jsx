@@ -51,10 +51,10 @@ const Home = () => {
   };
 
   return (
-    <div className="bg-slate-50/50 min-h-screen">
+    <div className="public-page min-h-screen">
       {/* ===== HERO SECTION (MATCHES SCREENSHOT) ===== */}
       <section className="base-container pt-4 pb-8 px-4 sm:px-6">
-        <div className="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 rounded-3xl overflow-hidden shadow-2xl shadow-blue-500/20 relative p-8 sm:p-12 lg:p-14 text-white">
+        <div className="catalog-hero w-full overflow-hidden relative p-7 sm:p-10 lg:p-14 text-white">
           {/* Background Ambient Glow Elements */}
           <div className="absolute -top-24 -left-24 w-96 h-96 bg-white/10 rounded-full blur-2xl pointer-events-none" />
           <div className="absolute -bottom-28 right-1/4 w-[450px] h-[450px] bg-sky-400/20 rounded-full blur-3xl pointer-events-none" />
@@ -115,7 +115,7 @@ const Home = () => {
 
             {/* Right Visual Showcase Card */}
             <div className="w-full lg:w-2/5 flex justify-center">
-              <div className="w-full max-w-sm sm:max-w-md lg:max-w-lg bg-gradient-to-tr from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-3 sm:p-4 shadow-2xl border border-white/20 flex items-center justify-center overflow-hidden hover:scale-[1.02] transition-transform duration-300">
+              <div className="w-full max-w-sm sm:max-w-md lg:max-w-lg flex items-center justify-center overflow-hidden hover:scale-[1.02] transition-transform duration-300">
                 <img
                   src="/hero-products.png"
                   alt="Mobixa Flagship Smart Devices"
@@ -143,7 +143,7 @@ const Home = () => {
           ].map((item, i) => (
             <div
               key={i}
-              className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 shadow-xs hover:shadow-md transition-all"
+              className="storefront-card p-4 sm:p-5 flex items-center gap-3.5 transition-all"
             >
               <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 border ${item.bg}`}>
                 {item.icon}
@@ -243,7 +243,7 @@ const Home = () => {
             { name: 'Sarah J.', text: "The range of accessories is unmatched. Found the perfect MagSafe case and wireless charger combo here.", rating: 5, role: 'Tech Enthusiast' },
             { name: 'Kevin D.', text: "Best tech store online. The warranty support is solid and the prices are always competitive.", rating: 5, role: 'Frequent Customer' },
           ].map((item, i) => (
-            <div key={i} className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs hover:shadow-lg transition-all flex flex-col justify-between">
+            <div key={i} className="storefront-card p-6 hover:shadow-lg transition-all flex flex-col justify-between">
               <div>
                 <div className="flex gap-1 mb-3">
                   {[...Array(item.rating)].map((_, j) => (
