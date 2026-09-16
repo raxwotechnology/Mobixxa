@@ -102,7 +102,7 @@ const settingsSchema = new mongoose.Schema({
   smsTemplates: {
     otp: { type: String, default: 'Your {shopName} OTP is {code}.' },
     payment: { type: String, default: 'Payment received for {invoiceNo}. Total: Rs. {total}. Thank you - {shopName}' },
-    posReceipt: { type: String, default: '{shopName}\nInvoice: {invoiceNo}\nDate: {date}\nTotal: Rs. {total}\nThank you for your purchase!\nTel: {shopPhone}' },
+    posReceipt: { type: String, default: '🧾 {shopName} - DIGITAL RECEIPT\n----------------------------------------\nHi {customerName}, thank you for your purchase!\n\n📄 Invoice No: {invoiceNo}\n📅 Date: {date}\n\nPURCHASED ITEMS:\n{items}\n{imei}\n\n💰 Total Paid: Rs. {total}\n💳 Payment Method: {paymentMethod}\n\n🔗 View Official Receipt & Warranty:\n{warrantyLink}\n----------------------------------------\n📞 Store Hotline: {shopPhone}\n🏬 Thank you for shopping with us!' },
     orderStatus: { type: String, default: 'Your order {orderNo} is now {status}. - {shopName}' },
   },
   labelPrinters: [{

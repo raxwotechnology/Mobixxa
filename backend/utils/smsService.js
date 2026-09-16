@@ -102,14 +102,21 @@ const buildPaymentMessage = async (amount, values = {}) => {
   });
 };
 
+const DEFAULT_POS_RECEIPT_TEMPLATE = '🧾 {shopName} - DIGITAL RECEIPT\n----------------------------------------\nHi {customerName}, thank you for your purchase!\n\n📄 Invoice No: {invoiceNo}\n📅 Date: {date}\n\nPURCHASED ITEMS:\n{items}\n{imei}\n\n💰 Total Paid: Rs. {total}\n💳 Payment Method: {paymentMethod}\n\n🔗 View Official Receipt & Warranty:\n{warrantyLink}\n----------------------------------------\n📞 Store Hotline: {shopPhone}\n🏬 Thank you for shopping with us!';
+
 const buildPosReceiptMessage = async (amount, values = {}) => {
   const { shopName, templates } = await getSmsTemplates();
   return applyTemplate(
-    templates.posReceipt || '{shopName}\nInvoice: {invoiceNo}\nDate: {date}\nTotal: Rs. {total}\nThank you for your purchase!\nTel: {shopPhone}',
+    templates.posReceipt || DEFAULT_POS_RECEIPT_TEMPLATE,
     {
       shopName,
       total: Number(amount || 0).toFixed(2),
       shopPhone: '0777 215 235',
+      customerName: 'Valued Customer',
+      items: '',
+      imei: '',
+      paymentMethod: 'CASH',
+      warrantyLink: '',
       ...values,
     }
   );

@@ -1913,11 +1913,26 @@ const sendReceipt = async (req, res, next) => {
         res.status(400);
         return next(new Error('Valid Sri Lankan phone number (+947XXXXXXXX) is required'));
       }
+      const invoiceNo = order.invoiceNumber || order._id.toString().slice(-8).toUpperCase();
+      const itemsList = (order.items || [])
+        .map((item) => `• ${item.name} (x${item.quantity || 1})`)
+        .join('\n');
+      const imeiList = (order.items || [])
+        .filter((item) => Array.isArray(item.imei) && item.imei.length > 0)
+        .map((item) => `📱 IMEI (${item.name}): ${item.imei.join(', ')}`)
+        .join('\n');
+      const baseUrl = (process.env.FRONTEND_URL || 'https://mobixa-official.vercel.app').replace(/\/$/, '');
+      const warrantyImei = order.items?.[0]?.imei?.[0] || invoiceNo;
       const message = await buildPosReceiptMessage(order.totalAmount, {
-        invoiceNo: order.invoiceNumber || order._id.toString().slice(-8).toUpperCase(),
-        orderNo: order._id.toString().slice(-8).toUpperCase(),
-        date: new Date(order.createdAt || Date.now()).toLocaleDateString('en-GB'),
+        customerName: order.customerName || 'Valued Customer',
+        invoiceNo,
+        orderNo: invoiceNo,
+        date: new Date(order.createdAt || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
         shopPhone: order.storeId?.phone || '0777 215 235',
+        items: itemsList,
+        imei: imeiList,
+        paymentMethod: (order.paymentMethod || 'cash').toUpperCase(),
+        warrantyLink: `${baseUrl}/warranty-check?imei=${encodeURIComponent(warrantyImei)}`,
       });
       await sendSms(formatSLPhone(recipient), message);
       res.json({ success: true, message: 'SMS receipt sent' });
