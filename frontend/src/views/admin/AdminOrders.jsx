@@ -441,77 +441,58 @@ const AdminOrders = ({ navItems: propNavItems }) => {
         {/* Orders Table */}
         <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-left text-sm border-separate border-spacing-0">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-100 text-slate-500 font-black uppercase tracking-wider">
-                  <th className="px-6 py-4">Invoice / ID</th>
-                  <th className="px-6 py-4">Customer</th>
-                  <th className="px-6 py-4">Items</th>
-                  <th className="px-6 py-4">Total Amount</th>
-                  <th className="px-6 py-4">Payment</th>
-                  <th className="px-6 py-4">Order Status</th>
-                  <th className="px-6 py-4">Assigned Delivery</th>
-                  <th className="px-6 py-4">Date</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
+                <tr className="bg-slate-100 text-slate-600 font-black uppercase tracking-wider text-[11px]">
+                  <th className="px-6 py-4 border-b-2 border-slate-200">Invoice / ID</th>
+                  <th className="px-6 py-4 border-b-2 border-slate-200">Customer</th>
+                  <th className="px-6 py-4 border-b-2 border-slate-200">Total Amount</th>
+                  <th className="px-6 py-4 border-b-2 border-slate-200">Order Status</th>
+                  <th className="px-6 py-4 border-b-2 border-slate-200">Date</th>
+                  <th className="px-6 py-4 border-b-2 border-slate-200 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
+              <tbody className="font-semibold text-slate-700">
                 {loading ? (
                   <tr>
-                    <td colSpan={9} className="text-center py-12 text-slate-400">Loading orders...</td>
+                    <td colSpan={6} className="text-center py-12 text-slate-400">Loading orders...</td>
                   </tr>
-                ) : filteredOrders.map((order) => (
+                ) : filteredOrders.map((order, idx) => {
+                  const isExpanded = expandedId === order._id;
+                  return (
                   <Fragment key={order._id}>
                     <tr
-                      onClick={() => setExpandedId(expandedId === order._id ? null : order._id)}
-                      className="hover:bg-slate-50/80 transition-colors cursor-pointer"
+                      onClick={() => setExpandedId(isExpanded ? null : order._id)}
+                      className={`${isExpanded ? 'bg-indigo-50/70' : idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/60'} hover:bg-indigo-50/60 transition-colors cursor-pointer ${isExpanded ? '' : 'border-b border-slate-100'}`}
                     >
-                      <td className="px-6 py-4 font-mono font-bold text-brand-indigo">
-                        {order.invoiceNumber || order._id.slice(-8).toUpperCase()}
+                      <td className="px-6 py-5 font-mono font-bold text-brand-indigo whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <ChevronDown size={14} className={`text-slate-400 shrink-0 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                          {order.invoiceNumber || order._id.slice(-8).toUpperCase()}
+                        </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <p className="font-bold text-slate-900 m-0">{order.customerName || order.userId?.name || 'Walk-in'}</p>
-                        <p className="text-[10px] text-slate-400 m-0">{order.customerPhone || order.userId?.phone || 'No phone'}</p>
+                      <td className="px-6 py-5">
+                        <p className="font-bold text-slate-900 text-sm m-0">{order.customerName || order.userId?.name || 'Walk-in'}</p>
+                        <p className="text-xs text-slate-400 m-0 mt-0.5">{order.customerPhone || order.userId?.phone || 'No phone'}</p>
                       </td>
-                      <td className="px-6 py-4">
-                        <span className="font-extrabold text-slate-900">{order.items?.length || 0} Item(s)</span>
-                      </td>
-                      <td className="px-6 py-4 font-extrabold text-slate-900">
+                      <td className="px-6 py-5 font-extrabold text-slate-900 whitespace-nowrap">
                         {formatPrice(convertPrice(order.totalAmount))}
                       </td>
-                      <td className="px-6 py-4">
-                        <span className={`text-[10px] uppercase tracking-wider font-black px-2.5 py-1 rounded-lg ${paymentColors[order.paymentStatus] || 'bg-slate-100 text-slate-600'}`}>
-                          {order.paymentStatus}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-5">
                         <select
                           value={order.orderStatus}
                           onClick={(e) => e.stopPropagation()}
                           onChange={(e) => handleStatusUpdate(order._id, e.target.value)}
-                          className={`text-[10px] uppercase tracking-wider font-black px-3 py-1.5 rounded-lg border-0 appearance-none cursor-pointer ${statusColors[order.orderStatus]}`}
+                          className={`text-[11px] uppercase tracking-wider font-black px-3 py-1.5 rounded-lg border-0 appearance-none cursor-pointer ${statusColors[order.orderStatus]}`}
                         >
                           {statusFlow.map((s) => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
                         </select>
                       </td>
-                      <td className="px-6 py-4">
-                        <select
-                          value={order.deliveryGuyId?._id || ''}
-                          onClick={(e) => e.stopPropagation()}
-                          onChange={(e) => handleAssignDelivery(order._id, e.target.value)}
-                          className="border border-slate-200 bg-slate-50 rounded-xl py-1.5 px-3 text-xs font-semibold text-slate-700 cursor-pointer focus:outline-none"
-                        >
-                          <option value="">Assign delivery</option>
-                          {deliveryGuys.map((g) => (
-                            <option key={g._id} value={g._id}>{g.name}</option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="px-6 py-4 text-slate-500 font-medium text-xs whitespace-nowrap">
+                      <td className="px-6 py-5 text-slate-500 font-medium text-xs whitespace-nowrap">
                         {new Date(order.createdAt).toLocaleDateString()}
                       </td>
 
-                      <td className="px-6 py-3.5 text-right relative" onClick={(e) => e.stopPropagation()}>
+                      <td className="px-6 py-4 text-right relative" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-end gap-1.5">
                           <button
                             onClick={() => sendWhatsAppInvoice(order)}
@@ -606,8 +587,51 @@ const AdminOrders = ({ navItems: propNavItems }) => {
                         )}
                       </td>
                     </tr>
+
+                    {isExpanded && (
+                      <tr className="bg-indigo-50/70 border-b border-slate-100">
+                        <td colSpan={6} className="px-6 pb-6 pt-1">
+                          <div className="bg-white rounded-2xl border border-slate-200/80 p-5 grid grid-cols-1 md:grid-cols-3 gap-5">
+                            <div>
+                              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-2">Items ({order.items?.length || 0})</span>
+                              <div className="space-y-1.5">
+                                {order.items?.map((it, i) => (
+                                  <div key={i} className="flex items-center justify-between text-xs">
+                                    <span className="font-bold text-slate-700">{it.quantity} × {it.name}</span>
+                                    <span className="font-extrabold text-slate-900">Rs. {Number((it.price || 0) * (it.quantity || 1)).toLocaleString()}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div>
+                              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-2">Payment</span>
+                              <p className="text-xs font-bold text-slate-700 uppercase m-0 mb-2">{order.paymentMethod || 'N/A'}</p>
+                              <span className={`text-[11px] uppercase tracking-wider font-black px-2.5 py-1 rounded-lg inline-block ${paymentColors[order.paymentStatus] || 'bg-slate-100 text-slate-600'}`}>
+                                {order.paymentStatus}
+                              </span>
+                            </div>
+
+                            <div onClick={(e) => e.stopPropagation()}>
+                              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-2">Assigned Delivery</span>
+                              <select
+                                value={order.deliveryGuyId?._id || ''}
+                                onChange={(e) => handleAssignDelivery(order._id, e.target.value)}
+                                className="w-full border border-slate-200 bg-slate-50 rounded-xl py-2 px-3 text-xs font-semibold text-slate-700 cursor-pointer focus:outline-none"
+                              >
+                                <option value="">Assign delivery</option>
+                                {deliveryGuys.map((g) => (
+                                  <option key={g._id} value={g._id}>{g.name}</option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
                   </Fragment>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
