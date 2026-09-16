@@ -6,6 +6,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import useAuthStore from '../store/authStore';
 import useThemeStore from '../store/themeStore';
 import useSettingsStore from '../store/settingsStore';
+import { CartProvider } from '../context/CartContext';
+import { SearchProvider } from '../context/SearchContext';
 
 export default function ClientProviders({ children }) {
   const [mounted, setMounted] = useState(false);
@@ -38,9 +40,11 @@ export default function ClientProviders({ children }) {
   }, [mounted, accent, customColor, fontFamily, mode]);
 
   return (
-    <>
-      {children}
-      <ToastContainer position="top-right" autoClose={3000} theme="colored" />
-    </>
+    <CartProvider>
+      <SearchProvider>
+        {children}
+        <ToastContainer position="top-right" autoClose={3000} theme="colored" />
+      </SearchProvider>
+    </CartProvider>
   );
 }

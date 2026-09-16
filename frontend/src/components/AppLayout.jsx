@@ -2,8 +2,11 @@
 
 import React, { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import Navbar from './Navbar';
-import Footer from './Footer';
+import TopBar from './layout/TopBar';
+import CustomerNavbar from './layout/CustomerNavbar';
+import CustomerFooter from './layout/CustomerFooter';
+import CartDrawer from './cart/CartDrawer';
+import SearchDrawer from './search/SearchDrawer';
 import useSettingsStore from '../store/settingsStore';
 import useAuthStore from '../store/authStore';
 import useThemeStore from '../store/themeStore';
@@ -23,7 +26,7 @@ export default function AppLayout({ children }) {
   useEffect(() => {
     const titleName = settings?.shopName || 'Mobixa';
     if (typeof document !== 'undefined') {
-      document.title = `${titleName} - Premium Mobile Devices & Accessories`;
+      document.title = `${titleName} - Next-Gen Technology & Smart Devices`;
     }
   }, [settings?.shopName]);
 
@@ -45,10 +48,13 @@ export default function AppLayout({ children }) {
   }
 
   return (
-    <div className="flex flex-col min-h-screen w-full bg-slate-50">
-      <Navbar />
+    <div className="flex flex-col min-h-screen w-full bg-[#f8fafc] text-slate-900 selection:bg-blue-600 selection:text-white">
+      <TopBar />
+      <CustomerNavbar />
       <main className="flex-1 w-full flex flex-col">{children}</main>
-      <Footer />
+      <CustomerFooter />
+      <CartDrawer />
+      <SearchDrawer />
     </div>
   );
 }
