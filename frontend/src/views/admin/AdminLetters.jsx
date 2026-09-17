@@ -242,10 +242,10 @@ const AdminLetters = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
           <div>
-            <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2 m-0">
+            <h1 className="text-2xl font-semibold text-slate-900 flex items-center gap-2 m-0">
               <FileText size={24} className="text-brand-indigo" /> Official Letters & Documents
             </h1>
-            <p className="text-xs font-semibold text-slate-500 mt-1 m-0">
+            <p className="text-xs font-normal text-slate-500 mt-1 m-0">
               Choose a letter category & template — content is automatically formatted with official company letterhead
             </p>
           </div>
@@ -409,7 +409,7 @@ const AdminLetters = () => {
 
       {/* Template Letter Generator Modal */}
       {selectedTemplate && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-fade-in">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center p-4 z-[100] animate-fade-in">
           <div className="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
               <div>
@@ -504,7 +504,7 @@ const AdminLetters = () => {
 
       {/* View Letterhead Preview Modal */}
       {previewLetter && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-fade-in">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center p-4 z-[100] animate-fade-in">
           <div className="bg-white rounded-3xl max-w-2xl w-full p-8 shadow-2xl border border-slate-100 relative text-left">
             <button
               onClick={() => setPreviewLetter(null)}

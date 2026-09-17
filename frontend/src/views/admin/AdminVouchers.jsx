@@ -261,7 +261,7 @@ const AdminVouchers = () => {
       <div>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-dark-navy">🎟️ Voucher Management</h1>
+            <h1 className="text-2xl font-semibold text-dark-navy">🎟️ Voucher Management</h1>
             <p className="text-muted-text text-sm mt-1">{vouchers.length} vouchers total</p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -375,7 +375,7 @@ const AdminVouchers = () => {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
           <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="px-6 py-4 border-b border-card-border flex items-center justify-between sticky top-0 bg-white rounded-t-2xl z-10">
               <h2 className="text-lg font-bold text-dark-navy">{editing ? 'Edit Voucher' : 'Create Voucher'}</h2>
@@ -450,7 +450,7 @@ const AdminVouchers = () => {
 
       {/* Live Voucher Preview & Export Modal */}
       {showVoucherPreviewModal && selectedVoucherForPreview && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-fade-in">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center p-4 z-[100] animate-fade-in">
           <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100 relative text-center">
             <button
               onClick={() => setShowVoucherPreviewModal(false)}

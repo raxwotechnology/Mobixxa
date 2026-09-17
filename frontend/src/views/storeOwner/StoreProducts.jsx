@@ -234,9 +234,9 @@ const StoreProducts = () => {
                   <div className="w-10 h-10 rounded-2xl bg-brand-indigo/10 flex items-center justify-center text-brand-indigo">
                     <Package size={20} strokeWidth={2.5} />
                   </div>
-                  <h1 className="text-2xl font-black text-slate-900 m-0">Products Catalog</h1>
+                  <h1 className="text-2xl font-semibold text-slate-900 m-0">Products Catalog</h1>
                 </div>
-                <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mt-2 m-0">{products.length} products in your store</p>
+                <p className="text-[10px] font-normal uppercase tracking-wider text-slate-500 mt-2 m-0">{products.length} products in your store</p>
               </div>
               <div className="flex flex-wrap gap-2.5">
                 <button onClick={openCreate} className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
@@ -380,7 +380,7 @@ const StoreProducts = () => {
 
             {/* Modal */}
             {showModal && (
-              <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
+              <div className="fixed inset-0 bg-black/50 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
                 <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
                   <div className="px-6 py-4 border-b border-card-border flex items-center justify-between sticky top-0 bg-white rounded-t-2xl z-10">
                     <h2 className="text-lg font-bold text-dark-navy">{editingId ? 'Edit Product' : 'Add New Product'}</h2>

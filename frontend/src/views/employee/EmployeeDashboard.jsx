@@ -136,10 +136,10 @@ const EmployeeDashboard = () => {
               <span className="inline-flex items-center gap-1.5 bg-sky-500/20 text-sky-300 border border-sky-400/30 px-3 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-widest mb-2 sm:mb-3">
                 <Coffee size={12} /> {roleLabel} Portal
               </span>
-              <h1 className="text-xl sm:text-2xl md:text-4xl font-black tracking-tight text-white m-0 break-words">
+              <h1 className="text-xl sm:text-2xl md:text-4xl font-semibold tracking-tight text-white m-0 break-words">
                 Welcome back, {user?.name?.split(' ')[0]}
               </h1>
-              <p className="text-slate-300 text-xs md:text-sm font-semibold m-0 mt-2 max-w-xl">
+              <p className="text-slate-300 text-xs md:text-sm font-normal m-0 mt-2 max-w-xl">
                 Manage shifts, attendance, break logs, leave applications, and monthly salary history.
               </p>
             </div>

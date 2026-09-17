@@ -289,7 +289,7 @@ const ManagerSupplierPayments = () => {
 
         {/* Payment Modal */}
         {showPayModal && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setShowPayModal(false)}>
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4" onClick={() => setShowPayModal(false)}>
             <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-fade-in" onClick={(e) => e.stopPropagation()}>
               <div className="px-6 py-4 border-b border-slate-205 flex items-center justify-between">
                 <h3 className="text-lg font-bold text-dark-navy flex items-center gap-2"><CreditCard size={20} className="text-brand-indigo" /> Record Payment</h3>
@@ -366,7 +366,7 @@ const ManagerSupplierPayments = () => {
 
         {/* Purchase Modal */}
         {showPurchaseModal && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setShowPurchaseModal(false)}>
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4" onClick={() => setShowPurchaseModal(false)}>
             <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-fade-in" onClick={(e) => e.stopPropagation()}>
               <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
                 <h3 className="text-lg font-bold text-dark-navy flex items-center gap-2"><TrendingUp size={20} className="text-brand-indigo" /> Record Purchase</h3>
@@ -419,9 +419,9 @@ const ManagerSupplierPayments = () => {
               <div className="w-10 h-10 rounded-2xl bg-brand-indigo/10 flex items-center justify-center text-brand-indigo">
                 <Wallet size={20} strokeWidth={2.5} />
               </div>
-              <h1 className="text-2xl font-black text-slate-900 m-0">Supplier Payments</h1>
+              <h1 className="text-2xl font-semibold text-slate-900 m-0">Supplier Payments</h1>
             </div>
-            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mt-2 m-0">Track supplier balances, purchases, and payments</p>
+            <p className="text-[10px] font-normal uppercase tracking-wider text-slate-500 mt-2 m-0">Track supplier balances, purchases, and payments</p>
           </div>
           <div className="flex flex-wrap gap-2.5">
             <button
@@ -518,7 +518,7 @@ const ManagerSupplierPayments = () => {
 
         {/* Payment Modal for Summary View */}
         {showPayModal && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => { setShowPayModal(false); setSupplierToPay(null); }}>
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4" onClick={() => { setShowPayModal(false); setSupplierToPay(null); }}>
             <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-fade-in" onClick={(e) => e.stopPropagation()}>
               <div className="px-6 py-4 border-b border-slate-205 flex items-center justify-between">
                 <h3 className="text-lg font-bold text-dark-navy flex items-center gap-2"><CreditCard size={20} className="text-brand-indigo" /> Record Payment</h3>

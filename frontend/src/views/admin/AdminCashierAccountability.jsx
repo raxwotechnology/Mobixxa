@@ -150,13 +150,13 @@ const AdminCashierAccountability = ({ navItems: propNavItems }) => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm relative overflow-hidden mb-6">
           <div className="relative">
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+            <h1 className="text-2xl font-semibold text-slate-900 tracking-tight flex items-center gap-2">
               <div className="w-8 h-8 rounded-xl bg-rose-100 flex items-center justify-center text-rose-600">
                 <ShieldAlert size={18} />
               </div>
               Cashier Cash Accountability
             </h1>
-            <p className="text-sm font-bold text-slate-500 mt-1">Per-cashier cash shortages, recoveries, and outstanding balances</p>
+            <p className="text-sm font-normal text-slate-500 mt-1">Per-cashier cash shortages, recoveries, and outstanding balances</p>
           </div>
           <div className="flex gap-2 flex-wrap items-center relative z-10">
             <div className="w-48">
@@ -346,7 +346,7 @@ const AdminCashierAccountability = ({ navItems: propNavItems }) => {
 
       {/* Record Deduction Modal */}
       {deductionModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setDeductionModal(null)}>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4" onClick={() => setDeductionModal(null)}>
           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
               <h2 className="text-lg font-black text-slate-900">Record Deduction — {deductionModal.cashier?.name}</h2>
@@ -399,7 +399,7 @@ const AdminCashierAccountability = ({ navItems: propNavItems }) => {
 
       {/* Reassign Modal */}
       {reassignModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setReassignModal(null)}>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4" onClick={() => setReassignModal(null)}>
           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
               <h2 className="text-lg font-black text-slate-900">Reassign Shortage</h2>

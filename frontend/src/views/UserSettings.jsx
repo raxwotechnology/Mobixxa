@@ -144,8 +144,8 @@ const UserSettings = () => {
             {name ? name.charAt(0).toUpperCase() : 'U'}
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-900">{name || 'User Account'}</h1>
-            <p className="text-xs font-semibold text-slate-500 mt-0.5">
+            <h1 className="text-xl sm:text-2xl font-semibold text-slate-900">{name || 'User Account'}</h1>
+            <p className="text-xs font-normal text-slate-500 mt-0.5">
               {email} • <span className="uppercase font-bold" style={{ color: primaryColor }}>{user?.role || 'Customer'}</span>
             </p>
           </div>

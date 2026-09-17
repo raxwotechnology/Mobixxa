@@ -81,7 +81,7 @@ const AdminTradeIn = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
           <div>
-            <h1 className="text-2xl font-black text-slate-800 flex items-center gap-2">
+            <h1 className="text-2xl font-semibold text-slate-800 flex items-center gap-2">
               <Smartphone className="text-sky-600" /> Phone Trade-In & Refurbish Management
             </h1>
             <p className="text-sm font-medium text-slate-500 mt-1">
@@ -214,7 +214,7 @@ const AdminTradeIn = () => {
 
       {/* Convert to Stock Modal */}
       {selectedTradeIn && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
             <h3 className="text-lg font-black text-slate-800">Add Pre-Owned Phone to Refurbished Inventory</h3>
             <p className="text-xs text-slate-500">

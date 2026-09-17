@@ -137,13 +137,13 @@ const AdminSalesTracking = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-brand-indigo/10 to-brand-fuchsia/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
           <div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2 m-0">
+            <h1 className="text-2xl font-semibold text-slate-900 tracking-tight flex items-center gap-2 m-0">
               <div className="w-8 h-8 rounded-xl bg-brand-fuchsia/10 flex items-center justify-center text-brand-fuchsia">
                 <span className="text-lg">📊</span>
               </div>
               Cashier Sales Tracking
             </h1>
-            <p className="text-sm font-bold text-slate-500 mt-1 m-0">Cashier POS performance monitoring and detailed summaries</p>
+            <p className="text-sm font-normal text-slate-500 mt-1 m-0">Cashier POS performance monitoring and detailed summaries</p>
           </div>
           <div className="flex flex-wrap gap-2.5 items-center z-10">
             <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)}
@@ -254,7 +254,7 @@ const AdminSalesTracking = () => {
 
         {/* Detailed Summary Modal */}
         {showSummaryModal && selectedCashier && (
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl border border-card-border shadow-2xl w-full max-w-2xl overflow-hidden animate-fade-in">
               <div className="px-6 py-4 border-b border-card-border flex justify-between items-center bg-gray-50">
                 <div>

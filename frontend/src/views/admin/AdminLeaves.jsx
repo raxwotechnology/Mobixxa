@@ -395,8 +395,8 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
                 USER & EMPLOYEE MANAGEMENT
               </span>
             </div>
-            <h1 className="text-2xl font-black text-slate-900 m-0">Leave Management</h1>
-            <p className="text-slate-400 text-xs font-bold mt-1 m-0">Configure leave policies and track employee leave requests</p>
+            <h1 className="text-2xl font-semibold text-slate-900 m-0">Leave Management</h1>
+            <p className="text-slate-400 text-xs font-normal mt-1 m-0">Configure leave policies and track employee leave requests</p>
           </div>
           <div className="flex gap-2 flex-wrap items-center bg-white border border-slate-200 p-2 rounded-2xl shadow-sm">
             {activeTab === 'requests' && (
@@ -800,7 +800,7 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
 
       {/* Add Leave Record Modal */}
       {showAddLeaveModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
           <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col border border-slate-100">
             <div className="px-6 py-5 border-b border-slate-100 flex flex-col items-center justify-center text-center bg-white/80 backdrop-blur-md relative">
               <button onClick={() => setShowAddLeaveModal(false)} className="absolute right-4 top-4 p-2 rounded-full hover:bg-slate-100 text-slate-400 transition-colors">
@@ -876,7 +876,7 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
 
       {/* Leave Policy Modal */}
       {showLeaveModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
           <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col border border-slate-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div className="px-6 py-5 border-b border-slate-100 flex flex-col items-center justify-center text-center bg-white/80 backdrop-blur-md relative sticky top-0 z-10">
               <button onClick={() => setShowLeaveModal(false)} className="absolute right-4 top-4 p-2 rounded-full hover:bg-slate-100 text-slate-400 transition-colors">
@@ -982,7 +982,7 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
 
       {/* Assign Policies Modal */}
       {showAssignModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
           <div className="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col border border-slate-100 max-h-[90vh]">
             <div className="px-6 py-5 border-b border-slate-100 flex flex-col items-center justify-center text-center bg-white/80 backdrop-blur-md relative flex-shrink-0">
               <button onClick={() => setShowAssignModal(false)} className="absolute right-4 top-4 p-2 rounded-full hover:bg-slate-100 text-slate-400 transition-colors">
@@ -1073,7 +1073,7 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
 
       {/* Bulk Assign Confirmation Modal */}
       {showBulkAssignConfirm && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-100 transform transition-all duration-300 scale-100 p-6" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-3 mb-4">
               <div className="p-3 rounded-2xl bg-amber-50 text-amber-600">
@@ -1111,7 +1111,7 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
 
       {/* Approve-with-excess Warning Modal */}
       {approveWarning && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-100 transform transition-all duration-300 scale-100 p-6" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-3 mb-4">
               <div className="p-3 rounded-2xl bg-amber-50 text-amber-600">
@@ -1155,7 +1155,7 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
 
       {/* Reject Reason Modal */}
       {rejectModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-100 transform transition-all duration-300 scale-100" onClick={(e) => e.stopPropagation()}>
             <div className="bg-rose-50 px-6 py-5 flex items-center gap-3 border-b border-rose-100">
               <div className="p-2 bg-rose-100 text-rose-600 rounded-xl">

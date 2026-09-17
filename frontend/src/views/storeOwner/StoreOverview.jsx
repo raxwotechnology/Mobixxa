@@ -85,8 +85,8 @@ const StoreOverview = () => {
               <span className="inline-flex items-center gap-1.5 bg-amber-500/20 text-amber-300 border border-amber-400/30 px-3.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest mb-3">
                 <Package size={12} /> Store Operations Console
               </span>
-              <h1 className="text-2xl md:text-4xl font-black tracking-tight text-white m-0">Store Manager Hub</h1>
-              <p className="text-blue-100 text-xs md:text-sm font-semibold m-0 mt-2 max-w-xl">
+              <h1 className="text-2xl md:text-4xl font-semibold tracking-tight text-white m-0">Store Manager Hub</h1>
+              <p className="text-blue-100 text-xs md:text-sm font-normal m-0 mt-2 max-w-xl">
                 Monitor live inventory stock levels, store order fulfillments, staff targets, and returns.
               </p>
             </div>

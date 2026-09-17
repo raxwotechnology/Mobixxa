@@ -106,7 +106,7 @@ const SidebarContent = ({ navItems = [], collapsed, location, onNavigate, userRo
         <div key={gi} className="mb-2">
           {!collapsed && (
             <div className="flex items-center justify-between px-3 pt-3 pb-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 select-none">
+              <span className="text-xs font-medium uppercase tracking-wider text-slate-400 select-none">
                 {group.label}
               </span>
             </div>
@@ -294,10 +294,10 @@ const DashboardLayout = ({ children, navItems, title }) => {
                   onError={(e) => { e.target.onerror = null; e.target.src = '/logo.png'; }}
                 />
               ) : (
-                <span className="text-white text-xs font-black">MH</span>
+                <span className="text-white text-xs font-semibold">MH</span>
               )}
             </div>
-            <span className="hidden sm:inline font-black text-xs sm:text-sm tracking-tight text-slate-800 bg-gradient-to-r from-brand-indigo to-brand-violet bg-clip-text text-transparent truncate max-w-[120px] md:max-w-[180px] lg:max-w-none">
+            <span className="hidden sm:inline font-semibold text-xs sm:text-sm tracking-tight text-slate-800 bg-gradient-to-r from-brand-indigo to-brand-violet bg-clip-text text-transparent truncate max-w-[120px] md:max-w-[180px] lg:max-w-none">
               {brandName}
             </span>
           </Link>
@@ -309,7 +309,7 @@ const DashboardLayout = ({ children, navItems, title }) => {
               <select
                 value={selectedStoreId}
                 onChange={(e) => setSelectedStoreId(e.target.value)}
-                className="bg-transparent text-xs font-extrabold text-slate-700 focus:outline-none cursor-pointer border-0 max-w-[160px]"
+                className="bg-transparent text-xs font-medium text-slate-700 focus:outline-none cursor-pointer border-0 max-w-[160px]"
               >
                 <option value="all">Global (All Stores)</option>
                 {stores.map((s) => (
@@ -320,7 +320,7 @@ const DashboardLayout = ({ children, navItems, title }) => {
           )}
 
           {title && (
-            <span className={`hidden xl:inline-flex items-center text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-xl whitespace-nowrap ${user?.role === 'admin'
+            <span className={`hidden xl:inline-flex items-center text-xs font-medium uppercase tracking-wider px-3 py-1.5 rounded-xl whitespace-nowrap ${user?.role === 'admin'
               ? 'role-badge-admin'
               : user?.role === 'manager'
                 ? 'role-badge-manager'
@@ -332,7 +332,7 @@ const DashboardLayout = ({ children, navItems, title }) => {
 
           <Link
             to="/pos"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200/80 border border-slate-200/80 transition-all shadow-xs"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200/80 border border-slate-200/80 transition-all shadow-xs"
             title="Open Cashier POS Terminal"
           >
             <Monitor size={15} className="text-brand-indigo" />
@@ -353,7 +353,7 @@ const DashboardLayout = ({ children, navItems, title }) => {
               {user?.avatar ? (
                 <img src={getImageUrl(user.avatar)} alt="" className="w-full h-full object-cover" />
               ) : (
-                <div style={{ backgroundColor: primaryColor }} className="w-full h-full flex items-center justify-center text-white text-[10px] font-black">
+                <div style={{ backgroundColor: primaryColor }} className="w-full h-full flex items-center justify-center text-white text-xs font-semibold">
                   {user?.name?.charAt(0)?.toUpperCase() || 'A'}
                 </div>
               )}
@@ -367,16 +367,16 @@ const DashboardLayout = ({ children, navItems, title }) => {
               {user?.avatar ? (
                 <img src={getImageUrl(user.avatar)} alt="" className="w-7 h-7 rounded-lg object-cover border border-slate-200" />
               ) : (
-                <div style={{ backgroundColor: primaryColor }} className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-[10px] font-black shadow-xs">
+                <div style={{ backgroundColor: primaryColor }} className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-semibold shadow-xs">
                   {user?.name?.charAt(0)?.toUpperCase() || 'A'}
                 </div>
               )}
               <div className="text-left hidden md:block">
-                <p className="text-[11px] font-extrabold text-slate-800 leading-tight m-0 flex items-center gap-1 max-w-[120px] truncate">
+                <p className="text-xs font-semibold text-slate-800 leading-tight m-0 flex items-center gap-1 max-w-[120px] truncate">
                   {user?.name}
                   <ChevronDown size={11} className="text-slate-400 flex-shrink-0" />
                 </p>
-                <p style={{ color: primaryColor }} className="text-[9px] font-black uppercase tracking-wider leading-tight m-0 mt-0.5">{user?.role}</p>
+                <p style={{ color: primaryColor }} className="text-xs font-medium uppercase tracking-wider leading-tight m-0 mt-0.5">{user?.role}</p>
               </div>
               <ChevronDown size={14} className="text-slate-400 md:hidden" />
             </button>
@@ -384,21 +384,21 @@ const DashboardLayout = ({ children, navItems, title }) => {
             {userMenuOpen && (
               <div className="absolute top-full right-0 mt-2 w-[min(calc(100vw-1.5rem),14rem)] sm:w-56 bg-white border border-slate-200/80 rounded-2xl shadow-2xl z-[100] py-1 overflow-hidden animate-fade-in">
                 <div style={{ backgroundColor: primaryColor }} className="px-4 py-3 text-white">
-                  <p className="text-sm font-black text-white m-0 truncate">{user?.name}</p>
-                  <p className="text-[11px] text-white/80 m-0 truncate">{user?.email}</p>
-                  <span className="inline-block mt-1.5 text-[9px] font-black uppercase tracking-wider bg-white/20 text-white border border-white/30 px-2.5 py-0.5 rounded-full">{user?.role}</span>
+                  <p className="text-sm font-semibold text-white m-0 truncate">{user?.name}</p>
+                  <p className="text-xs text-white/80 m-0 truncate">{user?.email}</p>
+                  <span className="inline-block mt-1.5 text-xs font-medium uppercase tracking-wider bg-white/20 text-white border border-white/30 px-2.5 py-0.5 rounded-full">{user?.role}</span>
                 </div>
                 <Link
                   to="/settings"
                   onClick={() => setUserMenuOpen(false)}
-                  className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors font-extrabold uppercase tracking-wide no-underline"
+                  className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors font-medium uppercase tracking-wide no-underline"
                 >
                   <User size={14} style={{ color: primaryColor }} /> My Profile
                 </Link>
                 <Link
                   to="/settings"
                   onClick={() => setUserMenuOpen(false)}
-                  className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors font-extrabold uppercase tracking-wide no-underline"
+                  className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors font-medium uppercase tracking-wide no-underline"
                 >
                   <Settings size={14} style={{ color: primaryColor }} /> Settings & Customizer
                 </Link>
@@ -409,7 +409,7 @@ const DashboardLayout = ({ children, navItems, title }) => {
                       to={dashLink.path}
                       onClick={() => setUserMenuOpen(false)}
                       style={{ color: primaryColor }}
-                      className="flex items-center gap-2.5 px-4 py-2.5 text-xs hover:bg-slate-50 font-black transition-colors uppercase tracking-wide no-underline"
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-xs hover:bg-slate-50 font-semibold transition-colors uppercase tracking-wide no-underline"
                     >
                       <LayoutDashboard size={14} /> {dashLink.label}
                     </Link>
@@ -419,7 +419,7 @@ const DashboardLayout = ({ children, navItems, title }) => {
                 <button
                   type="button"
                   onClick={() => { setUserMenuOpen(false); handleLogout(); }}
-                  className="w-full text-left px-4 py-2.5 text-xs text-red-500 hover:bg-red-50 transition-colors flex items-center gap-2.5 font-black uppercase tracking-wide border-0 bg-transparent cursor-pointer"
+                  className="w-full text-left px-4 py-2.5 text-xs text-red-500 hover:bg-red-50 transition-colors flex items-center gap-2.5 font-medium uppercase tracking-wide border-0 bg-transparent cursor-pointer"
                 >
                   <LogOut size={14} /> Logout
                 </button>

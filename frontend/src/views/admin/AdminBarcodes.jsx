@@ -84,7 +84,7 @@ const AdminBarcodes = () => {
       <div>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-dark-navy flex items-center gap-2">
+            <h1 className="text-2xl font-semibold text-dark-navy flex items-center gap-2">
               <Barcode size={24} /> Barcode Activity Log
             </h1>
             <p className="text-muted-text text-sm mt-1">Track all barcode generation activity ({total} total records)</p>
@@ -256,7 +256,7 @@ const AdminBarcodes = () => {
 
       {/* Barcode View Detail Modal */}
       {viewingLog && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-fade-in">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center p-4 z-[100] animate-fade-in">
           <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100 relative text-center">
             <button
               onClick={() => setViewingLog(null)}

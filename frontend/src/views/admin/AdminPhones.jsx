@@ -268,8 +268,8 @@ const AdminPhones = () => {
                 <Smartphone size={11} /> Business Management
               </span>
             </div>
-            <h1 className="text-2xl font-black text-slate-900 m-0">Mobile Phones</h1>
-            <p className="text-slate-400 text-xs font-bold mt-1 m-0">{products.length} devices in inventory</p>
+            <h1 className="text-2xl font-semibold text-slate-900 m-0">Mobile Phones</h1>
+            <p className="text-slate-400 text-xs font-normal mt-1 m-0">{products.length} devices in inventory</p>
           </div>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
             <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide max-w-full">
@@ -500,7 +500,7 @@ const AdminPhones = () => {
 
         {/* Specialized Mobile Add/Edit Modal */}
         {showModal && (
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowModal(false)}>
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowModal(false)}>
             <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[92vh] overflow-hidden shadow-2xl flex flex-col border border-slate-100" onClick={(e) => e.stopPropagation()}>
               <div className="px-8 py-5 border-b border-slate-100 flex items-center justify-between bg-white/80 backdrop-blur-md">
                 <div>

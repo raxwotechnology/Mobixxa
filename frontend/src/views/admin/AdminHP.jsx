@@ -229,7 +229,7 @@ const AdminHP = ({ navItems: propNavItems }) => {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-dark-navy flex items-center gap-2">
+            <h1 className="text-2xl font-semibold text-dark-navy flex items-center gap-2">
               <Clock className="text-primary-blue" />
               Credit Sales & Installments (HP)
             </h1>
@@ -424,7 +424,7 @@ const AdminHP = ({ navItems: propNavItems }) => {
 
       {/* Details & History Modal */}
       {showDetailsModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-dark-navy/40 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-dark-navy/40 backdrop-blur-[2px]">
           <div className="bg-white rounded-3xl w-full max-w-4xl overflow-hidden shadow-2xl animate-fade-in max-h-[90vh] flex flex-col">
             <div className="p-6 border-b border-card-border flex justify-between items-center bg-indigo-50/50">
               <div>
@@ -586,7 +586,7 @@ const AdminHP = ({ navItems: propNavItems }) => {
 
       {/* Pay Modal */}
       {showPayModal && selectedHP && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-dark-navy/40 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-dark-navy/40 backdrop-blur-[2px]">
           <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-fade-in">
             <div className="p-6 border-b border-card-border flex justify-between items-center bg-indigo-50/50">
               <h3 className="text-lg font-bold text-dark-navy">Record Payment</h3>
@@ -641,7 +641,7 @@ const AdminHP = ({ navItems: propNavItems }) => {
 
       {/* Edit HP Agreement & Invoice Modal */}
       {showEditModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={() => setShowEditModal(false)}>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={() => setShowEditModal(false)}>
           <div className="bg-white rounded-3xl border border-slate-100 shadow-2xl w-full max-w-2xl p-6 text-left max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
               <h3 className="font-black text-slate-900 text-base flex items-center gap-2 m-0 text-amber-600">
@@ -819,7 +819,7 @@ const AdminHP = ({ navItems: propNavItems }) => {
 
       {/* Passcode Protected HP Deletion Modal */}
       {deleteModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={() => setDeleteModalOpen(false)}>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={() => setDeleteModalOpen(false)}>
           <div className="bg-white rounded-3xl border border-slate-100 shadow-2xl w-full max-w-md p-6 text-left" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
               <h3 className="font-black text-slate-900 text-base flex items-center gap-2 m-0 text-rose-600">

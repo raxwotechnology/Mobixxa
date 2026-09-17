@@ -432,9 +432,9 @@ const BarcodeGenerator = () => {
               <div className="w-10 h-10 rounded-2xl bg-brand-indigo/10 flex items-center justify-center text-brand-indigo">
                 <Barcode size={20} strokeWidth={2.5} />
               </div>
-              <h1 className="text-2xl font-black text-slate-900 m-0">Barcode Generator</h1>
+              <h1 className="text-2xl font-semibold text-slate-900 m-0">Barcode Generator</h1>
             </div>
-            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mt-2 m-0">Generate print-ready barcode labels for products</p>
+            <p className="text-[10px] font-normal uppercase tracking-wider text-slate-500 mt-2 m-0">Generate print-ready barcode labels for products</p>
           </div>
         </div>
 
@@ -784,7 +784,7 @@ const BarcodeGenerator = () => {
 
       {/* Printer Manager Modal */}
       {showPrinterModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-fade-in">
             <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-slate-50">
               <h2 className="text-sm font-black text-slate-800 m-0 uppercase tracking-wider flex items-center gap-2">
@@ -890,7 +890,7 @@ const BarcodeGenerator = () => {
 
       {/* Live Barcode View Preview Modal */}
       {showLivePreviewModal && selectedProduct && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-fade-in">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center p-4 z-[100] animate-fade-in">
           <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100 relative text-center">
             <button
               onClick={() => setShowLivePreviewModal(false)}

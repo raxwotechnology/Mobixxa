@@ -103,10 +103,10 @@ const AdminSalaryAdvances = () => {
         {/* Header Banner */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
           <div>
-            <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2 m-0">
+            <h1 className="text-2xl font-semibold text-slate-900 flex items-center gap-2 m-0">
               <DollarSign size={24} className="text-brand-indigo" /> Advance Payments
             </h1>
-            <p className="text-xs font-semibold text-slate-500 mt-1 m-0">
+            <p className="text-xs font-normal text-slate-500 mt-1 m-0">
               Record employee salary advances with payment mode & automatic payroll deduction
             </p>
           </div>
@@ -245,7 +245,7 @@ const AdminSalaryAdvances = () => {
 
       {/* Raxwo Style New Advance Payment Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-fade-in">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center p-4 z-[100] animate-fade-in">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 relative">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
               <h3 className="text-base font-black text-slate-900 m-0">New Advance Payment</h3>

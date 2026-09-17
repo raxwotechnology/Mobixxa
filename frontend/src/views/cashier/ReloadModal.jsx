@@ -584,7 +584,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                 <Smartphone size={24} />
               </div>
               <div>
-                <h2 className="text-xl font-black text-white flex items-center gap-2.5">
+                <h2 className="text-xl font-semibold text-white flex items-center gap-2.5">
                   Reload &amp; Card Management
                   <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                     ⚡ Auto 4% Comm.
@@ -1312,7 +1312,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
 
       {/* ── POPUP MODAL 1: ADD RELOAD FLOAT FORM ─────────────────────────── */}
       {showAddReloadModal && (
-        <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in zoom-in duration-150">
+        <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/80 backdrop-blur-[2px] p-4 animate-in fade-in zoom-in duration-150">
           <div className="bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-slate-700 p-6 space-y-4 text-white">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2.5">
@@ -1397,7 +1397,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
 
       {/* ── POPUP MODAL 2: ADD CARD STOCK FORM ───────────────────────────── */}
       {showAddCardModal && (
-        <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in zoom-in duration-150">
+        <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/80 backdrop-blur-[2px] p-4 animate-in fade-in zoom-in duration-150">
           <div className="bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-slate-700 p-6 space-y-4 text-white">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2.5">
@@ -1524,7 +1524,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
 
       {/* ── POPUP MODAL 3: ADJUST LOCKED ITEM (Admin/Manager only) ─────────── */}
       {adjustTarget && (
-        <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in zoom-in duration-150">
+        <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/80 backdrop-blur-[2px] p-4 animate-in fade-in zoom-in duration-150">
           <div className="bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-slate-700 p-6 space-y-4 text-white">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2.5">
@@ -1600,7 +1600,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
 
       {/* ── POPUP MODAL 4: SETTLE CREDIT RELOAD CONFIRMATION ────────────────── */}
       {settleTarget && (
-        <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in zoom-in duration-150">
+        <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/80 backdrop-blur-[2px] p-4 animate-in fade-in zoom-in duration-150">
           <div className="bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-slate-700 p-6 space-y-4 text-white">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2.5">

@@ -101,8 +101,8 @@ const AdminCategories = () => {
                 <Tag size={11} /> Business Management
               </span>
             </div>
-            <h1 className="text-2xl font-black text-slate-900 m-0">Product Categories</h1>
-            <p className="text-slate-400 text-xs font-bold mt-1 m-0">{categories.length} categories configured</p>
+            <h1 className="text-2xl font-semibold text-slate-900 m-0">Product Categories</h1>
+            <p className="text-slate-400 text-xs font-normal mt-1 m-0">{categories.length} categories configured</p>
           </div>
           <button
             onClick={openCreate}
@@ -160,7 +160,7 @@ const AdminCategories = () => {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
+        <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-slate-200/80" onClick={(e) => e.stopPropagation()}>
             <div className="px-6 py-4 border-b border-slate-200/80 flex items-center justify-between">
               <h2 className="text-base font-black text-slate-900 m-0">{editingId ? 'Edit Category' : 'New Category'}</h2>

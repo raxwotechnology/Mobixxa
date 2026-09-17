@@ -73,9 +73,9 @@ const AdminPredictions = () => {
               <div className="w-10 h-10 rounded-2xl bg-brand-fuchsia/10 flex items-center justify-center text-brand-fuchsia">
                 <Brain size={20} strokeWidth={2.5} />
               </div>
-              <h1 className="text-2xl font-black text-slate-900 m-0">AI Sales Predictions</h1>
+              <h1 className="text-2xl font-semibold text-slate-900 m-0">AI Sales Predictions</h1>
             </div>
-            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mt-2 m-0">Statistical forecasting — {period} view</p>
+            <p className="text-[10px] font-normal uppercase tracking-wider text-slate-500 mt-2 m-0">Statistical forecasting — {period} view</p>
           </div>
 
           {/* Period Selector */}

@@ -310,7 +310,7 @@ const ManagerAttendance = () => {
 
       {/* Mark Attendance Modal */}
       {showAttModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center p-4 z-50 animate-fade-in">
           <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-slate-100">
             <div className="p-6 bg-slate-900 text-white relative">
               <button onClick={() => setShowAttModal(false)} className="absolute right-4 top-4 p-2 rounded-full hover:bg-white/10 text-white/70 transition-colors border-0 bg-transparent cursor-pointer">

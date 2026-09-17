@@ -364,10 +364,10 @@ const AdminOrders = ({ navItems: propNavItems }) => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
           <div>
-            <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2 m-0">
+            <h1 className="text-2xl font-semibold text-slate-900 flex items-center gap-2 m-0">
               <Package size={24} className="text-brand-indigo" /> Order & Billing Management
             </h1>
-            <p className="text-xs font-semibold text-slate-500 mt-1 m-0">
+            <p className="text-xs font-normal text-slate-500 mt-1 m-0">
               Track customer orders, live bill preview & print, WhatsApp digital receipts, and delivery dispatch
             </p>
           </div>
@@ -640,7 +640,7 @@ const AdminOrders = ({ navItems: propNavItems }) => {
 
       {/* 👁️ View Full Order Details Modal */}
       {viewDetailsOrder && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={() => setViewDetailsOrder(null)}>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={() => setViewDetailsOrder(null)}>
           <div className="bg-white rounded-3xl border border-slate-100 shadow-2xl w-full max-w-2xl overflow-hidden p-6 max-h-[90vh] overflow-y-auto text-left" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
               <div>
@@ -802,7 +802,7 @@ const AdminOrders = ({ navItems: propNavItems }) => {
 
       {/* 🖨️ View / Print Live Bill Modal */}
       {viewBillOrder && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={() => setViewBillOrder(null)}>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={() => setViewBillOrder(null)}>
           <div className="bg-white rounded-3xl border border-slate-100 shadow-2xl w-full max-w-xl p-8 max-h-[90vh] overflow-y-auto text-left relative" onClick={e => e.stopPropagation()}>
             <button onClick={() => setViewBillOrder(null)} className="no-print absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 bg-slate-100 rounded-full border-0 cursor-pointer">
               <X size={16} />
@@ -885,7 +885,7 @@ const AdminOrders = ({ navItems: propNavItems }) => {
 
       {/* Live Edit Modal */}
       {showEditModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={() => setShowEditModal(false)}>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={() => setShowEditModal(false)}>
           <div className="bg-white rounded-3xl border border-slate-100 shadow-2xl w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
               <h3 className="font-black text-slate-900 text-base flex items-center gap-2 m-0"><Edit size={18} className="text-brand-indigo" /> Live Edit Order</h3>
@@ -975,7 +975,7 @@ const AdminOrders = ({ navItems: propNavItems }) => {
 
       {/* Passcode Protected Order Deletion Modal */}
       {deleteModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={() => setDeleteModalOpen(false)}>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={() => setDeleteModalOpen(false)}>
           <div className="bg-white rounded-3xl border border-slate-100 shadow-2xl w-full max-w-md p-6 text-left" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
               <h3 className="font-black text-slate-900 text-base flex items-center gap-2 m-0 text-rose-600">
@@ -1022,7 +1022,7 @@ const AdminOrders = ({ navItems: propNavItems }) => {
       )}
       {/* Custom Cancel Order Confirmation Modal */}
       {cancelOrderId && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[1000] flex items-center justify-center p-4" onClick={() => setCancelOrderId(null)}>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-[1000] flex items-center justify-center p-4" onClick={() => setCancelOrderId(null)}>
           <div className="bg-white rounded-3xl p-6 max-w-sm w-full border border-slate-200 shadow-2xl space-y-4 animate-fade-in text-center" onClick={(e) => e.stopPropagation()}>
             <div className="w-12 h-12 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto">
               <XCircle size={24} />

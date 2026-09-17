@@ -143,13 +143,13 @@ const AdminSuppliers = () => {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-brand-indigo/5 rounded-full blur-3xl pointer-events-none -z-10"></div>
           <div>
-            <h1 className="text-2xl font-black text-slate-900 flex items-center gap-3">
+            <h1 className="text-2xl font-semibold text-slate-900 flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-brand-indigo/10 flex items-center justify-center text-brand-indigo">
                 <Users size={20} strokeWidth={2.5} />
               </div>
               Suppliers
             </h1>
-            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mt-2">{suppliers.length} active supply partners</p>
+            <p className="text-[10px] font-normal uppercase tracking-wider text-slate-500 mt-2">{suppliers.length} active supply partners</p>
           </div>
           <button onClick={openCreate} className="flex items-center gap-2 bg-slate-900 text-white px-5 py-3 rounded-2xl font-black uppercase tracking-wider text-[11px] hover:bg-brand-indigo transition-all shadow-md hover:shadow-brand-indigo/20">
             <Plus size={16} strokeWidth={3} /> Add Supplier
@@ -292,7 +292,7 @@ const AdminSuppliers = () => {
         </div>
 
         {showModal && (
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={() => setShowModal(false)}>
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={() => setShowModal(false)}>
             <div className="bg-white rounded-[2rem] w-full max-w-2xl max-h-[92vh] overflow-hidden shadow-2xl flex flex-col border border-white/20" onClick={(e) => e.stopPropagation()}>
               <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-white/50 backdrop-blur-md relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand-indigo to-purple-500"></div>

@@ -64,25 +64,13 @@ const THEME_ACCENTS = {
   },
 };
 
+// Only fonts actually <link>-loaded in app/layout.jsx are offered here — every
+// other Google Font previously listed silently fell back to the browser default.
 const FONT_OPTIONS = {
   poppins: { name: 'Poppins (Modern Clean)', font: "'Poppins', sans-serif", category: 'Geometric Sans' },
   inter: { name: 'Inter (Sleek Tech)', font: "'Inter', sans-serif", category: 'Modern Neo-Grotesque' },
   outfit: { name: 'Outfit (Luxury Modern)', font: "'Outfit', sans-serif", category: 'Display Tech' },
   jakarta: { name: 'Plus Jakarta Sans (Corporate)', font: "'Plus Jakarta Sans', sans-serif", category: 'Humanist' },
-  space: { name: 'Space Grotesk (Futuristic Tech)', font: "'Space Grotesk', sans-serif", category: 'Futuristic Tech' },
-  montserrat: { name: 'Montserrat (Bold & Elegant)', font: "'Montserrat', sans-serif", category: 'Geometric Display' },
-  roboto: { name: 'Roboto (Universal Clean)', font: "'Roboto', sans-serif", category: 'Neo-Grotesque' },
-  lexend: { name: 'Lexend (Enhanced Readability)', font: "'Lexend', sans-serif", category: 'Readability' },
-  dmsans: { name: 'DM Sans (Minimalist Modern)', font: "'DM Sans', sans-serif", category: 'Minimalist' },
-  syne: { name: 'Syne (Avant-Garde Display)', font: "'Syne', sans-serif", category: 'Creative Display' },
-  playfair: { name: 'Playfair Display (Editorial Luxury)', font: "'Playfair Display', serif", category: 'Editorial Serif' },
-  cinzel: { name: 'Cinzel (Classic Royal)', font: "'Cinzel', serif", category: 'Classic Display' },
-  raleway: { name: 'Raleway (Sophisticated Clean)', font: "'Raleway', sans-serif", category: 'Elegant Sans' },
-  oswald: { name: 'Oswald (Condensed Impact)', font: "'Oswald', sans-serif", category: 'Condensed Display' },
-  lato: { name: 'Lato (Warm & Friendly)', font: "'Lato', sans-serif", category: 'Humanist Sans' },
-  nunito: { name: 'Nunito (Soft Rounded)', font: "'Nunito', sans-serif", category: 'Rounded Sans' },
-  cabin: { name: 'Cabin (Modern Humanist)', font: "'Cabin', sans-serif", category: 'Humanist Sans' },
-  firacode: { name: 'Fira Code (Monospace Tech)', font: "'Fira Code', monospace", category: 'Monospace Code' },
 };
 
 // Full spectrum color palette grid (vibrant brand accent shades)

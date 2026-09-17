@@ -215,8 +215,8 @@ const AdminReturns = () => {
                 Sales & Operations
               </span>
             </div>
-            <h1 className="text-2xl font-black text-slate-900 m-0">Customer Returns</h1>
-            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mt-2 m-0">Pending / Approved / Rejected return requests</p>
+            <h1 className="text-2xl font-semibold text-slate-900 m-0">Customer Returns</h1>
+            <p className="text-[10px] font-normal uppercase tracking-wider text-slate-500 mt-2 m-0">Pending / Approved / Rejected return requests</p>
           </div>
           <div className="flex items-center gap-3 bg-white/40 backdrop-blur-sm border border-white/40 p-2 rounded-2xl shadow-sm">
             <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="bg-white/80 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm" />
@@ -370,7 +370,7 @@ const AdminReturns = () => {
 
       {/* Approve Resolution Modal */}
       {modalType === 'approve' && activeReturn && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => { setActiveReturn(null); setModalType(''); }}>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => { setActiveReturn(null); setModalType(''); }}>
           <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col border border-slate-100" onClick={(e) => e.stopPropagation()}>
             <div className="px-6 py-6 border-b border-slate-100 flex flex-col items-center justify-center text-center bg-white/80 backdrop-blur-md">
               <div className="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-4 text-xl border border-emerald-100 shadow-sm">
@@ -425,7 +425,7 @@ const AdminReturns = () => {
 
       {/* Reject Reason Modal */}
       {modalType === 'reject' && activeReturn && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => { setActiveReturn(null); setModalType(''); }}>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => { setActiveReturn(null); setModalType(''); }}>
           <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col border border-slate-100" onClick={(e) => e.stopPropagation()}>
             <div className="px-6 py-6 border-b border-slate-100 flex flex-col items-center justify-center text-center bg-white/80 backdrop-blur-md">
               <div className="w-12 h-12 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mb-4 text-xl border border-rose-100 shadow-sm">

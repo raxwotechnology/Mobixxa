@@ -318,7 +318,7 @@ const AdminCheques = ({ navItems: propNavItems }) => {
 
         {/* Record Cheque Modal */}
         {showModal && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
             <div className="bg-white rounded-3xl w-full max-w-xl shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
               <div className="px-8 py-5 border-b border-gray-100 flex items-center justify-between bg-slate-50">
                 <h2 className="text-xl font-bold text-dark-navy flex items-center gap-2">

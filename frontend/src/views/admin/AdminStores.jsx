@@ -112,8 +112,8 @@ const AdminStores = () => {
                 <Store size={11} /> Business Management
               </span>
             </div>
-            <h1 className="text-2xl font-black text-slate-900 m-0">Store Management</h1>
-            <p className="text-slate-400 text-xs font-bold mt-1 m-0">{stores.length} registered boutiques</p>
+            <h1 className="text-2xl font-semibold text-slate-900 m-0">Store Management</h1>
+            <p className="text-slate-400 text-xs font-normal mt-1 m-0">{stores.length} registered boutiques</p>
           </div>
           <div className="flex items-center gap-3">
             <button onClick={() => setShowTransferModal(true)} className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider hover:bg-slate-50 shadow-sm transition-all cursor-pointer">
@@ -175,7 +175,7 @@ const AdminStores = () => {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
+        <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
           <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200/80" onClick={e => e.stopPropagation()}>
             <div className="px-6 py-4 border-b border-slate-200/80 flex items-center justify-between sticky top-0 bg-white/90 backdrop-blur-md rounded-t-2xl z-10">
               <h2 className="text-base font-black text-slate-900 m-0">{editingId ? 'Edit Store' : 'Add New Store'}</h2>
@@ -253,7 +253,7 @@ const AdminStores = () => {
 
       {/* Toggle Status Confirmation Modal */}
       {toggleModalOpen && storeToToggle && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4 animate-fade-in">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-[110] flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-100 transform transition-all duration-300 scale-100 p-6" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-3 mb-4">
               <div className={`p-3 rounded-2xl ${storeToToggle.action === 'deactivate' ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'}`}>

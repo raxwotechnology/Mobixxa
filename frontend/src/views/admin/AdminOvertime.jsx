@@ -417,7 +417,7 @@ const AdminOvertime = () => {
 
       {/* Create OT Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="px-6 py-4 border-b border-card-border flex items-center justify-between">
               <h2 className="text-lg font-bold text-dark-navy">Add Overtime Record</h2>

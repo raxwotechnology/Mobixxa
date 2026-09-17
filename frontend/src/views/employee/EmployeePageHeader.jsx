@@ -14,9 +14,9 @@ const EmployeePageHeader = ({ badge = 'EMPLOYEE PORTAL', title, subtitle, icon: 
           <span className="truncate">{badge}</span>
         </span>
       </div>
-      <h1 className="text-xl sm:text-2xl font-black text-slate-900 m-0 leading-tight">{title}</h1>
+      <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 m-0 leading-tight">{title}</h1>
       {subtitle && (
-        <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-slate-500 mt-1.5 sm:mt-2 m-0 leading-relaxed">
+        <p className="text-[9px] sm:text-[10px] font-normal uppercase tracking-wider text-slate-500 mt-1.5 sm:mt-2 m-0 leading-relaxed">
           {subtitle}
         </p>
       )}

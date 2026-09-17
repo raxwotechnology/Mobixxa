@@ -149,8 +149,8 @@ const ManagerEmployees = ({ navItems = managerNavGroups, title = 'Manager Dashbo
                 Staff & Roles
               </span>
             </div>
-            <h1 className="text-2xl font-black text-slate-900 m-0">Employees Registry</h1>
-            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mt-2 m-0">{employees.length} registered staff members</p>
+            <h1 className="text-2xl font-semibold text-slate-900 m-0">Employees Registry</h1>
+            <p className="text-[10px] font-normal uppercase tracking-wider text-slate-500 mt-2 m-0">{employees.length} registered staff members</p>
           </div>
           <div className="flex gap-2 flex-wrap">
             <button onClick={openCreate}

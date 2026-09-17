@@ -297,8 +297,8 @@ const AdminUsers = () => {
                 <Users size={11} /> User & Employee Management
               </span>
             </div>
-            <h1 className="text-2xl font-black text-slate-900 m-0">Team Directory</h1>
-            <p className="text-slate-400 text-xs font-bold mt-1 m-0">{users.length} total accounts · {activeCount} active members</p>
+            <h1 className="text-2xl font-semibold text-slate-900 m-0">Team Directory</h1>
+            <p className="text-slate-400 text-xs font-normal mt-1 m-0">{users.length} total accounts · {activeCount} active members</p>
           </div>
           <button onClick={() => handleOpenModal()} className="bg-gradient-to-r from-brand-indigo to-brand-violet hover:opacity-95 text-white font-black text-xs uppercase tracking-wider py-3 px-6 rounded-xl flex items-center gap-2 shadow-lg shadow-brand-indigo/20 transition-all cursor-pointer">
             <Plus size={16} /> Add Employee
@@ -423,7 +423,7 @@ const AdminUsers = () => {
 
         {/* Modal for Add/Edit Employee */}
         {isModalOpen && (
-          <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-[2px] z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200/80">
               <div className="sticky top-0 bg-white/90 backdrop-blur-md border-b border-slate-200/80 px-8 py-5 flex items-center justify-between z-10">
                 <h2 className="text-xl font-black text-slate-900 m-0">{editingUser ? 'Edit Employee' : 'Add New Employee'}</h2>
@@ -649,7 +649,7 @@ const AdminUsers = () => {
 
       {/* Toggle Status Confirmation Modal */}
       {toggleModalOpen && userToToggle && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-50 flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-100 transform transition-all duration-300 scale-100 p-6" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-3 mb-4">
               <div className={`p-3 rounded-2xl ${userToToggle.action === 'deactivate' ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'}`}>

@@ -101,9 +101,9 @@ const EmployeeReturns = () => {
               <div className="w-10 h-10 rounded-2xl bg-brand-indigo/10 flex items-center justify-center text-brand-indigo">
                 <ArrowLeftRight size={20} strokeWidth={2.5} />
               </div>
-              <h1 className="text-2xl font-black text-slate-900 m-0">Customer Returns</h1>
+              <h1 className="text-2xl font-semibold text-slate-900 m-0">Customer Returns</h1>
             </div>
-            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mt-2 m-0">Initiate and document return claims for client purchases</p>
+            <p className="text-[10px] font-normal uppercase tracking-wider text-slate-500 mt-2 m-0">Initiate and document return claims for client purchases</p>
           </div>
         </div>
 

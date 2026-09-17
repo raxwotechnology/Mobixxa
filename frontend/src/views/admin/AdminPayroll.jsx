@@ -158,10 +158,10 @@ const AdminPayroll = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
           <div>
-            <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2 m-0">
+            <h1 className="text-2xl font-semibold text-slate-900 flex items-center gap-2 m-0">
               <Landmark size={24} className="text-brand-indigo" /> Monthly Payroll Engine
             </h1>
-            <p className="text-xs font-semibold text-slate-500 mt-1 m-0">
+            <p className="text-xs font-normal text-slate-500 mt-1 m-0">
               Generate for Employee • Target bonuses & attendance OTs are auto-included in live payroll calculation
             </p>
           </div>
@@ -497,7 +497,7 @@ const AdminPayroll = () => {
       </div>
 
       {adjustmentRow && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-100 flex items-center justify-center p-4" onClick={() => setAdjustmentRow(null)}>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-100 flex items-center justify-center p-4" onClick={() => setAdjustmentRow(null)}>
           <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-100" onClick={(e) => e.stopPropagation()}>
             <div className="px-6 py-5 border-b border-slate-100">
               <h3 className="font-black text-slate-900 text-lg m-0">Log Adjustment</h3>

@@ -204,13 +204,13 @@ const AdminExpenses = ({ navItems: propNavItems }) => {
           <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-brand-indigo/10 to-brand-violet/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
           
           <div className="relative">
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+            <h1 className="text-2xl font-semibold text-slate-900 tracking-tight flex items-center gap-2">
               <div className="w-8 h-8 rounded-xl bg-brand-indigo/10 flex items-center justify-center text-brand-indigo">
                 <span className="text-lg">💰</span>
               </div>
               Ledger Management
             </h1>
-            <p className="text-sm font-bold text-slate-500 mt-1">{transactions.length} total transactions tracked</p>
+            <p className="text-sm font-normal text-slate-500 mt-1">{transactions.length} total transactions tracked</p>
           </div>
           
           <div className="relative flex gap-3">
@@ -344,7 +344,7 @@ const AdminExpenses = ({ navItems: propNavItems }) => {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowModal(false)}>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowModal(false)}>
           <div className="bg-white rounded-3xl w-full max-w-xl shadow-2xl my-8 overflow-hidden flex flex-col border border-slate-100 max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
             <div className="px-6 py-5 border-b border-slate-100 flex flex-col items-center justify-center text-center bg-white/80 backdrop-blur-md relative shrink-0">
               <button onClick={() => setShowModal(false)} className="absolute right-4 top-4 p-2 rounded-full hover:bg-slate-100 text-slate-400 transition-colors">

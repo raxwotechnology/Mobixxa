@@ -453,9 +453,9 @@ const ManagerRepairs = ({ isAdmin = false, isEmployee = false, navItems: propNav
               <div className="w-10 h-10 rounded-2xl bg-brand-indigo/10 flex items-center justify-center text-brand-indigo">
                 <Wrench size={20} strokeWidth={2.5} />
               </div>
-              <h1 className="text-2xl font-black text-slate-900 m-0">Device Repairs</h1>
+              <h1 className="text-2xl font-semibold text-slate-900 m-0">Device Repairs</h1>
             </div>
-            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mt-2 m-0">Log customer devices, manage technician tasks, parts replacements, and track ledger synchronization</p>
+            <p className="text-[10px] font-normal uppercase tracking-wider text-slate-500 mt-2 m-0">Log customer devices, manage technician tasks, parts replacements, and track ledger synchronization</p>
           </div>
           <div className="flex flex-wrap gap-2.5">
             <button

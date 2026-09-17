@@ -129,9 +129,9 @@ const ManagerTargets = () => {
               <div className="w-10 h-10 rounded-2xl bg-brand-indigo/10 flex items-center justify-center text-brand-indigo">
                 <Target size={20} strokeWidth={2.5} />
               </div>
-              <h1 className="text-2xl font-black text-slate-900 m-0">Employee Targets</h1>
+              <h1 className="text-2xl font-semibold text-slate-900 m-0">Employee Targets</h1>
             </div>
-            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mt-2 m-0">Current period: {targets.length} targets assigned, {completedCount} completed</p>
+            <p className="text-[10px] font-normal uppercase tracking-wider text-slate-500 mt-2 m-0">Current period: {targets.length} targets assigned, {completedCount} completed</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <select value={filterMonth} onChange={(e) => setFilterMonth(Number(e.target.value))}
@@ -208,7 +208,7 @@ const ManagerTargets = () => {
 
       {/* Create Target Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="px-6 py-4 border-b border-card-border flex items-center justify-between">
               <h2 className="text-lg font-bold text-dark-navy">Assign Target</h2>

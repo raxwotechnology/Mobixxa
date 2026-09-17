@@ -125,21 +125,21 @@ body {
   background: rgba(15, 23, 42, 0.9);
   color: #34d399;
   border: 1px solid rgba(52, 211, 153, 0.3);
-  font-weight: 800;
+  font-weight: 500;
 }
 
 .role-badge-manager {
   background: rgba(30, 58, 138, 0.1);
   color: #2563eb;
   border: 1px solid rgba(37, 99, 235, 0.2);
-  font-weight: 800;
+  font-weight: 500;
 }
 
 .role-badge-employee {
   background: rgba(2, 132, 199, 0.1);
   color: #0284c7;
   border: 1px solid rgba(2, 132, 199, 0.2);
-  font-weight: 800;
+  font-weight: 500;
 }
 
 /* Admin, Manager, and Employee Command Banners */

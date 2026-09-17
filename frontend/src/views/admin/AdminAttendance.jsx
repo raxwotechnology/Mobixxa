@@ -404,8 +404,8 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
                 USER & EMPLOYEE MANAGEMENT
               </span>
             </div>
-            <h1 className="text-2xl font-black text-slate-900 m-0">HR & Attendance</h1>
-            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mt-2 m-0">Configure shift times, leaves, and track employee hours</p>
+            <h1 className="text-2xl font-semibold text-slate-900 m-0">HR & Attendance</h1>
+            <p className="text-[10px] font-normal uppercase tracking-wider text-slate-500 mt-2 m-0">Configure shift times, leaves, and track employee hours</p>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
             {activeTab === 'records' && (
@@ -808,7 +808,7 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
 
       {/* Mark Attendance Modal */}
       {showAttModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
           <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col border border-slate-100">
             <div className="px-6 py-6 border-b border-slate-100 flex flex-col items-center justify-center text-center bg-white/80 backdrop-blur-md relative">
               <button onClick={() => setShowAttModal(false)} className="absolute right-4 top-4 p-2 rounded-full hover:bg-slate-100 text-slate-400 transition-colors">
@@ -883,7 +883,7 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
 
       {/* Attendance Policy Modal */}
       {showAttendanceModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
           <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col border border-slate-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div className="px-6 py-6 border-b border-slate-100 flex flex-col items-center justify-center text-center bg-white/80 backdrop-blur-md relative sticky top-0 z-10">
               <button onClick={() => setShowAttendanceModal(false)} className="absolute right-4 top-4 p-2 rounded-full hover:bg-slate-100 text-slate-400 transition-colors">
@@ -1014,7 +1014,7 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
 
       {/* Assign Policies Modal */}
       {showAssignModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
           <div className="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col border border-slate-100 max-h-[90vh]">
             <div className="px-6 py-6 border-b border-slate-100 flex flex-col items-center justify-center text-center bg-white/80 backdrop-blur-md relative flex-shrink-0">
               <button onClick={() => setShowAssignModal(false)} className="absolute right-4 top-4 p-2 rounded-full hover:bg-slate-100 text-slate-400 transition-colors">
@@ -1090,7 +1090,7 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
 
       {/* Bulk Assign Confirmation Modal */}
       {showBulkAssignConfirm && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-100 transform transition-all duration-300 scale-100 p-6" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-3 mb-4">
               <div className="p-3 rounded-2xl bg-amber-50 text-amber-600">

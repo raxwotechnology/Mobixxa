@@ -199,10 +199,10 @@ const AdminProfitReports = ({ navItems: propNavItems }) => {
         {/* Title and Top Level Controls */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2 m-0">
+            <h1 className="text-2xl font-semibold text-slate-900 flex items-center gap-2 m-0">
               📈 Standalone Profit Analysis
             </h1>
-            <p className="text-slate-500 text-xs font-bold mt-1.5 m-0">
+            <p className="text-slate-500 text-xs font-normal mt-1.5 m-0">
               Analyze margins and gross product profitability by categories, brands, and timelines.
             </p>
           </div>

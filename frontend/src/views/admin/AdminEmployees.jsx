@@ -178,10 +178,10 @@ const AdminEmployees = ({ navItems: propNavItems }) => {
         {/* Header Block */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
           <div>
-            <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2 m-0">
+            <h1 className="text-2xl font-semibold text-slate-900 flex items-center gap-2 m-0">
               <Users size={24} className="text-brand-indigo" /> Employee Directory
             </h1>
-            <p className="text-xs font-semibold text-slate-500 mt-1 m-0">
+            <p className="text-xs font-normal text-slate-500 mt-1 m-0">
               Manage complete staff profiles, salaries, bank details, roles, and emergency contacts
             </p>
           </div>
@@ -316,7 +316,7 @@ const AdminEmployees = ({ navItems: propNavItems }) => {
 
       {/* Add / Edit Employee Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-fade-in">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center p-4 z-[100] animate-fade-in">
           <div className="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
               <h2 className="text-lg font-black text-slate-900 m-0">
@@ -549,7 +549,7 @@ const AdminEmployees = ({ navItems: propNavItems }) => {
 
       {/* View Full Employee Dossier Modal */}
       {viewModalEmployee && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-fade-in">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center p-4 z-[100] animate-fade-in">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 relative text-left">
             <button
               onClick={() => setViewModalEmployee(null)}

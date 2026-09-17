@@ -106,9 +106,9 @@ const AdminInventory = ({ navItems: customNavItems }) => {
               <div className="w-10 h-10 rounded-2xl bg-brand-indigo/10 flex items-center justify-center text-brand-indigo">
                 <Package size={20} strokeWidth={2.5} />
               </div>
-              <h1 className="text-2xl font-black text-slate-900 m-0">Inventory Valuation & Stock</h1>
+              <h1 className="text-2xl font-semibold text-slate-900 m-0">Inventory Valuation & Stock</h1>
             </div>
-            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mt-2 m-0">Track stock counts, safety levels, and valuation reports</p>
+            <p className="text-[10px] font-normal uppercase tracking-wider text-slate-500 mt-2 m-0">Track stock counts, safety levels, and valuation reports</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <button onClick={() => exportToCSV(filtered, exportCols, 'inventory')}

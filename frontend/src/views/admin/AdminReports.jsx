@@ -191,10 +191,10 @@ const AdminReports = () => {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-brand-indigo/5 rounded-full blur-3xl pointer-events-none -z-10"></div>
           <div>
-            <h1 className="text-2xl font-black text-slate-900 flex items-center gap-3">
+            <h1 className="text-2xl font-semibold text-slate-900 flex items-center gap-3">
               <span className="text-2xl">📊</span> Categorized Reports
             </h1>
-            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mt-2">Filter by category/role and export as PDF or Excel</p>
+            <p className="text-[10px] font-normal uppercase tracking-wider text-slate-500 mt-2">Filter by category/role and export as PDF or Excel</p>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => exportCurrent('csv')} className="px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors shadow-sm">CSV</button>

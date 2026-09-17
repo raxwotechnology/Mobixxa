@@ -209,10 +209,10 @@ const AdminReloads = ({ navItems: propNavItems }) => {
         {/* Header Title */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
+            <h1 className="text-2xl font-semibold text-slate-900 flex items-center gap-2">
               📱 Reloads & Card Stock Management
             </h1>
-            <p className="text-slate-500 text-xs font-semibold mt-1">
+            <p className="text-slate-500 text-xs font-normal mt-1">
               Manage physical card stocks, daily e-reload floats, end-of-day balances, and distributor payments.
             </p>
           </div>
@@ -670,7 +670,7 @@ const AdminReloads = ({ navItems: propNavItems }) => {
 
         {/* Modal: Add Card Stock / Float Deposit */}
         {isAddStockOpen && (
-          <div className="fixed inset-0 z-50 bg-slate-950/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 bg-slate-950/50 backdrop-blur-[2px] flex items-center justify-center p-4">
             <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 space-y-4 border border-slate-200">
               <h3 className="text-lg font-black text-slate-900 m-0">📦 Add Card Stock / E-Reload Float</h3>
 
@@ -772,7 +772,7 @@ const AdminReloads = ({ navItems: propNavItems }) => {
 
         {/* Modal: Evening Closing Shop Balance (හවස Balance එක ඇතුළත් කිරීම) */}
         {isCloseStockOpen && selectedStockItem && (
-          <div className="fixed inset-0 z-50 bg-slate-950/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 bg-slate-950/50 backdrop-blur-[2px] flex items-center justify-center p-4">
             <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 space-y-4 border border-slate-200">
               <h3 className="text-lg font-black text-slate-900 m-0">⚙️ Enter Evening In-Hand Balance</h3>
               <p className="text-xs font-semibold text-slate-500">

@@ -207,7 +207,7 @@ const AdminProducts = () => {
               <button
                 key={t.id}
                 onClick={() => setActiveTab(t.id)}
-                className={`px-5 py-2.5 text-xs uppercase tracking-wider font-black rounded-xl transition-all cursor-pointer ${
+                className={`px-5 py-2.5 text-xs uppercase tracking-wider font-medium rounded-xl transition-all cursor-pointer ${
                   activeTab === t.id 
                     ? 'bg-brand-indigo text-white shadow-lg shadow-brand-indigo/20' 
                     : 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700'
@@ -242,50 +242,50 @@ const AdminProducts = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
           <div>
             <div className="flex items-center gap-2.5 mb-1">
-              <span className="inline-flex items-center gap-1.5 bg-brand-indigo/10 text-brand-indigo text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg border border-brand-indigo/15">
+              <span className="inline-flex items-center gap-1.5 bg-brand-indigo/10 text-brand-indigo text-xs font-medium uppercase tracking-widest px-3 py-1 rounded-lg border border-brand-indigo/15">
                 <Package size={11} /> Business Management
               </span>
             </div>
-            <h1 className="text-2xl font-black text-slate-900 m-0">Products Catalog</h1>
-            <p className="text-slate-400 text-xs font-bold mt-1 m-0">{products.length} registered items</p>
+            <h1 className="text-2xl font-semibold text-slate-900 m-0">Products Catalog</h1>
+            <p className="text-slate-400 text-xs font-normal mt-1 m-0">{products.length} registered items</p>
           </div>
-          <button onClick={openCreate} className="flex items-center justify-center gap-2 bg-gradient-to-r from-brand-indigo to-brand-violet hover:opacity-95 text-white px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider shadow-lg shadow-brand-indigo/20 transition-all cursor-pointer">
-            <Plus size={16} /> Add Product
-          </button>
+          <div className="flex items-center gap-3">
+            <div className="relative sm:w-64 md:w-72 flex-shrink-0">
+              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full bg-white border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-sm font-normal focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all placeholder:text-slate-400"
+              />
+            </div>
+            <button onClick={openCreate} className="flex items-center justify-center gap-2 bg-gradient-to-r from-brand-indigo to-brand-violet hover:opacity-95 text-white px-6 py-2.5 rounded-xl font-medium text-xs uppercase tracking-wider shadow-lg shadow-brand-indigo/20 transition-all cursor-pointer whitespace-nowrap">
+              <Plus size={16} /> Add Product
+            </button>
+          </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="relative flex-1">
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search products..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-white border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all placeholder:text-slate-400"
-            />
-          </div>
-          <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-6 scrollbar-hide">
+          <button
+            onClick={() => setCategoryFilter('all')}
+            className={`px-5 py-2.5 text-xs font-medium uppercase tracking-wider rounded-full whitespace-nowrap transition-all duration-150 cursor-pointer border transform hover:-translate-y-0.5 active:scale-95 active:translate-y-0 ${
+              categoryFilter === 'all' ? 'bg-brand-indigo border-brand-indigo text-white shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800 hover:shadow-sm'
+            }`}
+          >
+            All Categories
+          </button>
+          {categories.map((cat) => (
             <button
-              onClick={() => setCategoryFilter('all')}
-              className={`px-5 py-2.5 text-xs font-black uppercase tracking-wider rounded-xl whitespace-nowrap transition-all cursor-pointer ${
-                categoryFilter === 'all' ? 'bg-slate-800 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700'
+              key={cat._id}
+              onClick={() => setCategoryFilter(cat._id)}
+              className={`px-5 py-2.5 text-xs font-medium uppercase tracking-wider rounded-full whitespace-nowrap transition-all duration-150 cursor-pointer border transform hover:-translate-y-0.5 active:scale-95 active:translate-y-0 ${
+                categoryFilter === cat._id ? 'bg-brand-indigo border-brand-indigo text-white shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800 hover:shadow-sm'
               }`}
             >
-              All Categories
+              {cat.name}
             </button>
-            {categories.map((cat) => (
-              <button
-                key={cat._id}
-                onClick={() => setCategoryFilter(cat._id)}
-                className={`px-5 py-2.5 text-xs font-black uppercase tracking-wider rounded-xl whitespace-nowrap transition-all cursor-pointer ${
-                  categoryFilter === cat._id ? 'bg-slate-800 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700'
-                }`}
-              >
-                {cat.name}
-              </button>
-            ))}
-          </div>
+          ))}
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
@@ -293,12 +293,12 @@ const AdminProducts = () => {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-100">
-                  <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Product</th>
-                  <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Store</th>
-                  <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Price</th>
-                  <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Stock</th>
-                  <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Status</th>
-                  <th className="text-right px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Actions</th>
+                  <th className="text-left px-6 py-4 text-xs uppercase font-medium tracking-wider text-slate-500">Product</th>
+                  <th className="text-left px-6 py-4 text-xs uppercase font-medium tracking-wider text-slate-500">Store</th>
+                  <th className="text-left px-6 py-4 text-xs uppercase font-medium tracking-wider text-slate-500">Price</th>
+                  <th className="text-left px-6 py-4 text-xs uppercase font-medium tracking-wider text-slate-500">Stock</th>
+                  <th className="text-left px-6 py-4 text-xs uppercase font-medium tracking-wider text-slate-500">Status</th>
+                  <th className="text-right px-6 py-4 text-xs uppercase font-medium tracking-wider text-slate-500">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -425,7 +425,7 @@ const AdminProducts = () => {
         </div>
 
         {showModal && (
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={() => setShowModal(false)}>
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={() => setShowModal(false)}>
             <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100 transform transition-all duration-300 scale-100" onClick={(e) => e.stopPropagation()}>
               <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white/80 backdrop-blur-md rounded-t-3xl z-10">
                 <h2 className="text-lg font-black text-slate-900">{editingId ? 'Edit Product Details' : 'Add New Product'}</h2>

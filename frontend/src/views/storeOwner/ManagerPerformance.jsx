@@ -63,9 +63,9 @@ const ManagerPerformance = () => {
               <div className="w-10 h-10 rounded-2xl bg-brand-indigo/10 flex items-center justify-center text-brand-indigo">
                 <BarChart3 size={20} strokeWidth={2.5} />
               </div>
-              <h1 className="text-2xl font-black text-slate-900 m-0">Employee Performance</h1>
+              <h1 className="text-2xl font-semibold text-slate-900 m-0">Employee Performance</h1>
             </div>
-            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mt-2 m-0">Current month performance overview</p>
+            <p className="text-[10px] font-normal uppercase tracking-wider text-slate-500 mt-2 m-0">Current month performance overview</p>
           </div>
         </div>
 

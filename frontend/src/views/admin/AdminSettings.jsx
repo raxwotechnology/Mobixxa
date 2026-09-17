@@ -209,13 +209,13 @@ const AdminSettings = () => {
       <div>
         <div className="flex items-center justify-between mb-8 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm">
           <div>
-            <h1 className="text-2xl font-black text-slate-900 flex items-center gap-3">
+            <h1 className="text-2xl font-semibold text-slate-900 flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-brand-indigo/10 flex items-center justify-center text-brand-indigo">
                 <Settings size={20} strokeWidth={2.5} />
               </div>
               Brand Settings
             </h1>
-            <p className="text-[11px] font-black uppercase tracking-wider text-slate-500 mt-2">Manage your tech and smart devices storefront configuration</p>
+            <p className="text-[11px] font-normal uppercase tracking-wider text-slate-500 mt-2">Manage your tech and smart devices storefront configuration</p>
           </div>
           <button onClick={handleSave} disabled={saving}
             className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-black uppercase tracking-wider px-6 py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl disabled:opacity-50">

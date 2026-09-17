@@ -338,13 +338,13 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
           <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-brand-indigo/10 to-brand-fuchsia/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
           
           <div className="relative">
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+            <h1 className="text-2xl font-semibold text-slate-900 tracking-tight flex items-center gap-2">
               <div className="w-8 h-8 rounded-xl bg-brand-fuchsia/10 flex items-center justify-center text-brand-fuchsia">
                 <span className="text-lg">📊</span>
               </div>
               Store Financials & Accounts
             </h1>
-            <p className="text-sm font-bold text-slate-500 mt-1">Manage overview analytics, petty cash flow, and tax reports</p>
+            <p className="text-sm font-normal text-slate-500 mt-1">Manage overview analytics, petty cash flow, and tax reports</p>
           </div>
 
           <div className="relative z-10">

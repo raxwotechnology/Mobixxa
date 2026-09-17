@@ -33,7 +33,7 @@ const CustomerHistoryModal = ({ isOpen, onClose, phone }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-end bg-black/40 backdrop-blur-sm transition-opacity">
+    <div className="fixed inset-0 z-[110] flex items-center justify-end bg-black/40 backdrop-blur-[2px] transition-opacity">
       <div className="bg-white w-full max-w-md h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
         {/* Header */}
         <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
