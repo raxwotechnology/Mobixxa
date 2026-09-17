@@ -231,14 +231,14 @@ const authUser = async (req, res) => {
     }
 
     if (await user.matchPassword(password)) {
-      res.json({ 
-        _id: user._id, 
-        name: user.name, 
-        email: user.email, 
-        role: user.role, 
+      res.json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
         isSuperAdmin: user.isSuperAdmin || user.role === 'admin',
         permissions: user.permissions || {},
-        phone: user.phone, 
+        phone: user.phone,
         assignedStore: user.assignedStore?._id || user.assignedStore,
         assignedStoreName: user.assignedStore?.name || '',
         employeeInfo: user.employeeInfo,

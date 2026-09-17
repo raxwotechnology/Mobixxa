@@ -8,6 +8,7 @@ const withoutToken = (userData) => {
 };
 
 // Safely parse userInfo from localStorage
+// Auth itself now lives in an httpOnly cookie, not localStorage/`.token` — see BUG-08.
 const getSavedUser = () => {
   if (typeof window === 'undefined') return null;
   try {
