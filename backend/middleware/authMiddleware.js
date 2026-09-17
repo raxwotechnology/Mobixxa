@@ -2,16 +2,21 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 const protect = async (req, res, next) => {
-  let token;
+  const token = req.cookies?.jwt_token || (
+    req.headers.authorization?.startsWith('Bearer')
+      ? req.headers.authorization.split(' ')[1]
+      : null
+  );
 
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
+  if (token) {
     try {
-      token = req.headers.authorization.split(' ')[1];
 
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'srmobile_jwt_super_secret_key_2026');
+      // BUG-10 Fix: Fail immediately if JWT_SECRET is missing instead of falling back to a hardcoded string
+      if (!process.env.JWT_SECRET) {
+        throw new Error('FATAL: JWT_SECRET environment variable is missing.');
+      }
+
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
       req.user = await User.findById(decoded.id).select('-password');
 
@@ -28,10 +33,8 @@ const protect = async (req, res, next) => {
     }
   }
 
-  if (!token) {
-    res.status(401);
-    return next(new Error('Not authorized, no token'));
-  }
+  res.status(401);
+  return next(new Error('Not authorized, no token'));
 };
 
 const authorize = (...roles) => {

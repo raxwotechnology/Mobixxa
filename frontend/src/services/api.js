@@ -13,23 +13,22 @@ const getBaseUrl = () => {
 const API = axios.create({
   baseURL: getBaseUrl(),
   timeout: 90000, // 90s timeout
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Request interceptor: attach JWT token
+// Cookies carry authentication; retain the interceptor for malformed-storage cleanup.
 API.interceptors.request.use((config) => {
   if (typeof window === 'undefined') return config;
   try {
     const userInfo = localStorage.getItem('userInfo');
     if (userInfo) {
-      const parsed = JSON.parse(userInfo);
-      if (parsed?.token) {
-        config.headers.Authorization = `Bearer ${parsed.token}`;
-      }
+      JSON.parse(userInfo);
     }
   } catch (e) {
+    // Invalid persisted data is cleared so cookie authentication can continue.
     console.warn('Corrupted auth data in localStorage, clearing...');
     localStorage.removeItem('userInfo');
   }
@@ -40,7 +39,7 @@ API.interceptors.request.use((config) => {
 API.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (typeof window !== 'undefined' && error.response && error.response.status === 401) {
+    if (typeof window !== 'undefined' && error.response?.status === 401) {
       const requestUrl = error.config?.url || '';
       const isAuthCheck = requestUrl.includes('/auth/login') ||
         requestUrl.includes('/auth/pos-login') ||
@@ -62,6 +61,7 @@ API.interceptors.response.use(
 
 // Auth
 export const loginUser = (data) => API.post('/auth/login', data);
+export const logoutUser = () => API.post('/auth/logout');
 export const registerUser = (data) => API.post('/auth/register', data);
 export const requestRegistrationOtp = (data) => API.post('/auth/register/request-otp', data);
 export const verifyRegistrationOtp = (data) => API.post('/auth/register/verify-otp', data);

@@ -26,6 +26,20 @@ const nextConfig = {
       },
     ],
   },
+  // BUG-27 Fix: Enforce X-Content-Type-Options header to prevent MIME sniffing
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+        ],
+      },
+    ];
+  },
   async rewrites() {
     const isDev = process.env.NODE_ENV === 'development';
     const backendTarget =

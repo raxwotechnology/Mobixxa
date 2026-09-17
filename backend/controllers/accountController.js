@@ -1,26 +1,31 @@
-const Account = require('../models/Account');
-const Transaction = require('../models/Transaction');
+const Account = require("../models/Account");
+const Transaction = require("../models/Transaction");
+const Store = require("../models/Store");
 
 // @desc    Get all accounts
 // @route   GET /api/accounts
-// @access  Private/Admin/Manager
+// @access  Private/Admin/Manager (BUG-13: role restriction added)
 const getAccounts = async (req, res, next) => {
   try {
     const { storeId } = req.query;
     const filter = {};
-    if (storeId) filter.storeId = storeId;
-    
-    const accounts = await Account.find(filter).sort({ name: 1 });
-    if (req.user && req.user.role === 'cashier') {
-      const safeAccounts = accounts.map(acc => {
-        const a = acc.toObject ? acc.toObject() : { ...acc };
-        delete a.balance;
-        return a;
-      });
-      return res.json(safeAccounts);
+
+    // BUG-13: For managers, enforce store-level access (ignore client-provided storeId)
+    if (req.user.role === "manager") {
+      const store = await Store.findOne({ managerId: req.user._id });
+      if (store) {
+        filter.storeId = store._id;
+      }
+    } else if (req.user.role === "admin" || req.user.isSuperAdmin) {
+      // Admin can select any store via query parameter
+      if (storeId) filter.storeId = storeId;
     }
+
+    const accounts = await Account.find(filter).sort({ name: 1 });
     res.json(accounts);
-  } catch (error) { next(error); }
+  } catch (error) {
+    next(error);
+  }
 };
 
 // @desc    Create account
@@ -28,8 +33,9 @@ const getAccounts = async (req, res, next) => {
 // @access  Private/Admin
 const createAccount = async (req, res, next) => {
   try {
-    const { storeId, name, type, accountNumber, bankName, balance, isDefault } = req.body;
-    
+    const { storeId, name, type, accountNumber, bankName, balance, isDefault } =
+      req.body;
+
     if (isDefault) {
       await Account.updateMany({ storeId }, { isDefault: false });
     }
@@ -41,11 +47,13 @@ const createAccount = async (req, res, next) => {
       accountNumber,
       bankName,
       balance: balance || 0,
-      isDefault: !!isDefault
+      isDefault: !!isDefault,
     });
 
     res.status(201).json(account);
-  } catch (error) { next(error); }
+  } catch (error) {
+    next(error);
+  }
 };
 
 // @desc    Update account
@@ -54,12 +62,18 @@ const createAccount = async (req, res, next) => {
 const updateAccount = async (req, res, next) => {
   try {
     const account = await Account.findById(req.params.id);
-    if (!account) { res.status(404); return next(new Error('Account not found')); }
+    if (!account) {
+      res.status(404);
+      return next(new Error("Account not found"));
+    }
 
     const { name, type, accountNumber, bankName, status, isDefault } = req.body;
-    
+
     if (isDefault) {
-      await Account.updateMany({ storeId: account.storeId }, { isDefault: false });
+      await Account.updateMany(
+        { storeId: account.storeId },
+        { isDefault: false },
+      );
     }
 
     if (name !== undefined) account.name = name;
@@ -71,19 +85,40 @@ const updateAccount = async (req, res, next) => {
 
     const updated = await account.save();
     res.json(updated);
-  } catch (error) { next(error); }
+  } catch (error) {
+    next(error);
+  }
 };
 
 // @desc    Get account transactions
 // @route   GET /api/accounts/:id/transactions
-// @access  Private/Admin/Manager
+// @access  Private/Admin/Manager (BUG-13: role restriction added)
 const getAccountTransactions = async (req, res, next) => {
   try {
+    const account = await Account.findById(req.params.id);
+
+    if (!account) {
+      res.status(404);
+      return next(new Error("Account not found"));
+    }
+
+    // BUG-13: For managers, enforce store-level access
+    if (req.user.role === "manager") {
+      const store = await Store.findOne({ managerId: req.user._id });
+      if (!store || String(store._id) !== String(account.storeId)) {
+        res.status(403);
+        return next(new Error("Not authorized to access this account"));
+      }
+    }
+    // Admin and super admin can access any account
+
     const transactions = await Transaction.find({ accountId: req.params.id })
       .sort({ date: -1 })
       .limit(100);
     res.json(transactions);
-  } catch (error) { next(error); }
+  } catch (error) {
+    next(error);
+  }
 };
 
 // @desc    Delete account
@@ -92,13 +127,15 @@ const getAccountTransactions = async (req, res, next) => {
 const deleteAccount = async (req, res, next) => {
   try {
     const account = await Account.findById(req.params.id);
-    if (!account) { 
-      res.status(404); 
-      return next(new Error('Account not found')); 
+    if (!account) {
+      res.status(404);
+      return next(new Error("Account not found"));
     }
     await account.deleteOne();
-    res.json({ message: 'Account deleted successfully' });
-  } catch (error) { next(error); }
+    res.json({ message: "Account deleted successfully" });
+  } catch (error) {
+    next(error);
+  }
 };
 
 module.exports = {
@@ -106,5 +143,5 @@ module.exports = {
   createAccount,
   updateAccount,
   deleteAccount,
-  getAccountTransactions
+  getAccountTransactions,
 };

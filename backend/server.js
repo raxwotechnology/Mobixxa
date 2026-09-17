@@ -1,26 +1,28 @@
-const express = require('express');
-const dotenv = require('dotenv');
-const cors = require('cors');
-const path = require('path');
-const fs = require('fs');
-const dns = require('dns');
+const express = require("express");
+const dotenv = require("dotenv");
+const cors = require("cors");
+const cookieParser = require("cookie-parser");
+const path = require("path");
+const fs = require("fs");
+const dns = require("dns");
 
 try {
-  dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
+  dns.setServers(["8.8.8.8", "8.8.4.4", "1.1.1.1"]);
 } catch (e) {}
 
 // ENV_FILE lets a staging/test run point at a different .env (e.g. `.env.staging`)
 // without touching the default production config.
-dotenv.config({ path: path.join(__dirname, process.env.ENV_FILE || '.env') });
-const connectDB = require('./config/db');
+dotenv.config({ path: path.join(__dirname, process.env.ENV_FILE || ".env") });
+const connectDB = require("./config/db");
+const { generalLimiter } = require("./middleware/rateLimitMiddleware");
 
 // Initialize DB connection
 connectDB();
 
 const app = express();
 
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+app.get("/health", (req, res) => {
+  res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
 // Ensure DB connection for incoming requests
@@ -29,78 +31,86 @@ app.use(async (req, res, next) => {
     await connectDB();
     next();
   } catch (err) {
-    console.error('Database connection error:', err);
+    console.error("Database connection error:", err);
     next();
   }
 });
 
 // Ensure uploads directory exists (safely for serverless read-only environments)
 try {
-  const uploadDir = path.join(__dirname, 'uploads');
+  const uploadDir = path.join(__dirname, "uploads");
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
   }
 } catch (err) {
-  console.warn('Upload directory creation skipped:', err.message);
+  console.warn("Upload directory creation skipped:", err.message);
 }
 
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
+app.use(cookieParser());
 
-
-
-// CORS: allow production frontend + any local dev port
+// CORS: allow explicit production frontend + local dev ports
 // Set CORS_ORIGINS in .env for custom domains (comma-separated)
-const envOrigins = (process.env.CORS_ORIGINS || '').split(',').map(o => o.trim()).filter(Boolean);
+const envOrigins = (process.env.CORS_ORIGINS || "")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
 const allowedOrigins = [
-  'https://mobixa-official.vercel.app',
-  'https://www.mobixa-official.vercel.app',
-  'https://max-durakathana.netlify.app',
-  'https://www.max-durakathana.netlify.app',
-  'https://mobilehubtech.netlify.app',
-  'https://www.mobilehubtech.netlify.app',
-  'http://localhost:3000',
+  "https://mobixa-official.vercel.app",
+  "https://www.mobixa-official.vercel.app",
+  "https://max-durakathana.netlify.app",
+  "https://www.max-durakathana.netlify.app",
+  "https://mobilehubtech.netlify.app",
+  "https://www.mobilehubtech.netlify.app",
+  "http://localhost:3000",
   ...envOrigins,
 ];
-app.use(cors({
-  origin: function (origin, callback) {
-    if (process.env.NODE_ENV !== 'production' || !origin) {
-      return callback(null, true);
-    }
-    const isLocalhost =
-      /^http:\/\/localhost:\d+$/.test(origin) ||
-      /^http:\/\/127\.0\.0\.1:\d+$/.test(origin);
-    const isNetlify = /\.netlify\.app$/.test(origin);
-    const isVercel = /\.vercel\.app$/.test(origin);
-    if (allowedOrigins.includes(origin) || isLocalhost || isNetlify || isVercel) {
-      return callback(null, true);
-    }
-    return callback(new Error('Not allowed by CORS'));
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (process.env.NODE_ENV !== "production" || !origin) {
+        return callback(null, true);
+      }
+      const isLocalhost =
+        /^http:\/\/localhost:\d+$/.test(origin) ||
+        /^http:\/\/127\.0\.0\.1:\d+$/.test(origin);
+
+      // BUG-20 FIX: Strict matching against explicit allowedOrigins array and local hosts only
+      if (allowedOrigins.includes(origin) || isLocalhost) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
+
+// BUG-14 FIX: Apply general API rate limiting to all routes
+// Prevents excessive requests and reduces server load
+app.use(generalLimiter);
 
 // Routes
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/categories', require('./routes/categoryRoutes'));
-app.use('/api/products', require('./routes/productRoutes'));
-app.use('/api/stores', require('./routes/storeRoutes'));
-app.use('/api/cart', require('./routes/cartRoutes'));
-app.use('/api/wishlist', require('./routes/wishlistRoutes'));
-app.use('/api/reviews', require('./routes/reviewRoutes'));
-app.use('/api/orders', require('./routes/orderRoutes'));
-app.use('/api/admin', require('./routes/adminRoutes'));
-app.use('/api/pos', require('./routes/posRoutes'));
-app.use('/api/notifications', require('./routes/notificationRoutes'));
-app.use('/api/stock', require('./routes/stockRoutes'));
-app.use('/api/trade-in', require('./routes/tradeInRoutes'));
-app.use('/api/accounts', require('./routes/accountRoutes'));
-app.use('/api/hp', require('./routes/hpRoutes'));
-app.use('/api/loyalty', require('./routes/loyaltyRoutes'));
-app.use('/api/currency', require('./routes/currencyRoutes'));
-
+app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/categories", require("./routes/categoryRoutes"));
+app.use("/api/products", require("./routes/productRoutes"));
+app.use("/api/stores", require("./routes/storeRoutes"));
+app.use("/api/cart", require("./routes/cartRoutes"));
+app.use("/api/wishlist", require("./routes/wishlistRoutes"));
+app.use("/api/reviews", require("./routes/reviewRoutes"));
+app.use("/api/orders", require("./routes/orderRoutes"));
+app.use("/api/admin", require("./routes/adminRoutes"));
+app.use("/api/pos", require("./routes/posRoutes"));
+app.use("/api/notifications", require("./routes/notificationRoutes"));
+app.use("/api/stock", require("./routes/stockRoutes"));
+app.use("/api/trade-in", require("./routes/tradeInRoutes"));
+app.use("/api/accounts", require("./routes/accountRoutes"));
+app.use("/api/hp", require("./routes/hpRoutes"));
+app.use("/api/loyalty", require("./routes/loyaltyRoutes"));
+app.use("/api/currency", require("./routes/currencyRoutes"));
 
 app.use('/api/delivery', require('./routes/deliveryRoutes'));
 app.use('/api/hr', require('./routes/hrRoutes'));
@@ -120,31 +130,31 @@ app.use('/api/upload', require('./routes/uploadRoutes'));
 app.use('/api/reloads', require('./routes/reloadRoutes'));
 app.use('/api/repairs', require('./routes/repairRoutes'));
 
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-app.get('/', (req, res) => {
-  res.send('Mobixa API is running...');
+app.get("/", (req, res) => {
+  res.send("Mobixa API is running...");
 });
 
-app.get('/api', (req, res) => {
-  res.json({ message: 'Mobixa API is active', status: 'online' });
+app.get("/api", (req, res) => {
+  res.json({ message: "Mobixa API is active", status: "online" });
 });
 
 app.use((err, req, res, next) => {
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
   res.status(statusCode).json({
     message: err.message,
-    stack: process.env.NODE_ENV === 'production' ? null : err.stack,
+    stack: process.env.NODE_ENV === "production" ? null : err.stack,
   });
 });
 
 if (!process.env.VERCEL) {
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {
-    console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+    console.log(
+      `Server running in ${process.env.NODE_ENV} mode on port ${PORT}`,
+    );
   });
 }
 
 module.exports = app;
-
-

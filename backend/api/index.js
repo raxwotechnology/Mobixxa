@@ -1,11 +1,5 @@
-const express = require('express');
-const dotenv = require('dotenv');
-const cors = require('cors');
-const path = require('path');
-const fs = require('fs');
-const connectDB = require('../config/db');
 
-dotenv.config({ path: path.join(__dirname, '../.env') });
+module.exports = require("../server");
 
 const app = express();
 

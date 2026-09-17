@@ -1,58 +1,56 @@
-const mongoose = require('mongoose');
-const Reload = require('../models/Reload');
-const ReloadStock = require('../models/ReloadStock');
-const Transaction = require('../models/Transaction');
-const Store = require('../models/Store');
-const Supplier = require('../models/Supplier');
-const SupplierPayment = require('../models/SupplierPayment');
+const mongoose = require("mongoose");
+const Reload = require("../models/Reload");
+const ReloadStock = require("../models/ReloadStock");
+const Transaction = require("../models/Transaction");
+const Store = require("../models/Store");
+const Supplier = require("../models/Supplier");
+const SupplierPayment = require("../models/SupplierPayment");
 
 // @desc    Record a new reload
 // @route   POST /api/reloads
 // @access  Private
 const createReload = async (req, res, next) => {
   try {
-    const { 
-      mobileNumber, 
-      operator, 
-      amount, 
-      type, 
-      paymentMethod, 
-      notes, 
+    const {
+      mobileNumber,
+      operator,
+      amount,
+      type,
+      paymentMethod,
+      notes,
       storeId,
       accountId,
       customerName,
       date,
       isCredit: reqIsCredit,
-      status: reqStatus
+      status: reqStatus,
     } = req.body;
 
-    let assignedStore = storeId;
-    if (!assignedStore) {
-      if (req.user?.role === 'manager') {
-        const store = await Store.findOne({ managerId: req.user._id });
-        if (store) assignedStore = store._id;
-      } else if (req.user?.assignedStore) {
-        assignedStore = req.user.assignedStore;
-      } else if (req.user?.role === 'admin') {
-        const store = await Store.findOne({ isActive: true });
-        if (store) assignedStore = store._id;
-      }
-    }
-
-    if (!assignedStore) {
-      const anyStore = await Store.findOne({ isActive: true });
-      if (anyStore) assignedStore = anyStore._id;
-    }
+    // BUG-12 FIX: Only admins can provide storeId; non-admins use resolveReloadStoreId
+    const isAdmin = req.user?.role === "admin" || req.user?.isSuperAdmin;
+    let assignedStore = await resolveReloadStoreId(
+      req,
+      isAdmin ? storeId : null,
+    );
 
     if (!assignedStore) {
       res.status(400);
-      return next(new Error('No store found for this transaction. Please ensure your account is linked to a store.'));
+      return next(
+        new Error(
+          "No store found for this transaction. Please ensure your account is linked to a store.",
+        ),
+      );
     }
 
-    const isCredit = reqIsCredit === true || reqIsCredit === 'true' || String(paymentMethod).toLowerCase() === 'credit';
-    const targetDate = (date ? String(date).trim().split('T')[0] : new Date().toISOString().split('T')[0]);
-    const finalPaymentMethod = isCredit ? 'Credit' : (paymentMethod || 'Cash');
-    const finalStatus = reqStatus || (isCredit ? 'Pending' : 'Completed');
+    const isCredit =
+      reqIsCredit === true ||
+      reqIsCredit === "true" ||
+      String(paymentMethod).toLowerCase() === "credit";
+    const targetDate = date
+      ? String(date).trim().split("T")[0]
+      : new Date().toISOString().split("T")[0];
+    const finalPaymentMethod = isCredit ? "Credit" : paymentMethod || "Cash";
+    const finalStatus = reqStatus || (isCredit ? "Pending" : "Completed");
     const numericAmount = Math.max(0, Number(amount) || 0);
 
     // 1. Create Transaction for the record
@@ -60,41 +58,41 @@ const createReload = async (req, res, next) => {
     try {
       transaction = await Transaction.create({
         storeId: assignedStore || null,
-        accountId: isCredit ? null : (accountId || null),
-        type: 'income',
-        category: isCredit ? 'Credit Reload' : 'Reload & Bill Payment',
+        accountId: isCredit ? null : accountId || null,
+        type: "income",
+        category: isCredit ? "Credit Reload" : "Reload & Bill Payment",
         amount: numericAmount,
         paymentMethod: finalPaymentMethod,
-        description: `${isCredit ? '[CREDIT] ' : ''}${type || 'Prepaid'} Reload: ${operator || 'Telecom'} - ${mobileNumber}${customerName ? ` (${customerName})` : ''}`,
+        description: `${isCredit ? "[CREDIT] " : ""}${type || "Prepaid"} Reload: ${operator || "Telecom"} - ${mobileNumber}${customerName ? ` (${customerName})` : ""}`,
         date: new Date(),
         createdBy: req.user._id,
       });
     } catch (tErr) {
-      console.error('[Reload Transaction Warning]:', tErr.message);
+      console.error("[Reload Transaction Warning]:", tErr.message);
     }
 
     // 2. Create Reload record
     const reload = await Reload.create({
       storeId: assignedStore || null,
       date: targetDate,
-      mobileNumber: String(mobileNumber || '').trim(),
+      mobileNumber: String(mobileNumber || "").trim(),
       customerName: customerName ? String(customerName).trim() : undefined,
-      operator: String(operator || 'Other').trim(),
+      operator: String(operator || "Other").trim(),
       amount: numericAmount,
-      type: type || 'Prepaid',
+      type: type || "Prepaid",
       paymentMethod: finalPaymentMethod,
       isCredit,
       creditSettled: false,
-      notes: notes ? String(notes).trim() : '',
+      notes: notes ? String(notes).trim() : "",
       transactionId: transaction?._id || null,
       createdBy: req.user._id,
-      status: finalStatus
+      status: finalStatus,
     });
 
     res.status(201).json({
       success: true,
       data: reload,
-      transaction
+      transaction,
     });
   } catch (error) {
     next(error);
@@ -106,36 +104,49 @@ const createReload = async (req, res, next) => {
 // @access  Private
 const getReloads = async (req, res, next) => {
   try {
-    const { startDate, endDate, date, storeId, operator, isCredit, paymentMethod } = req.query;
+    const {
+      startDate,
+      endDate,
+      date,
+      storeId,
+      operator,
+      isCredit,
+      paymentMethod,
+    } = req.query;
     const filter = {};
 
-    let assignedStore = storeId;
-    if (req.user?.role === 'manager') {
+    // BUG-12 FIX: Only admins can use storeId from query; non-admins use their assigned store
+    const isAdmin = req.user?.role === "admin" || req.user?.isSuperAdmin;
+    let assignedStore = null;
+
+    if (isAdmin && storeId && storeId !== "all") {
+      assignedStore = storeId;
+    } else if (req.user?.role === "manager") {
       const store = await Store.findOne({ managerId: req.user._id });
       if (store) assignedStore = store._id;
     } else if (req.user?.assignedStore) {
       assignedStore = req.user.assignedStore;
     }
 
-    if (assignedStore && assignedStore !== 'all') {
+    if (assignedStore && assignedStore !== "all") {
       filter.storeId = assignedStore;
     }
-    
+
     if (operator) filter.operator = operator;
     if (isCredit !== undefined) {
-      filter.isCredit = isCredit === 'true' || isCredit === true;
+      filter.isCredit = isCredit === "true" || isCredit === true;
     }
     if (paymentMethod) {
       filter.paymentMethod = paymentMethod;
     }
 
     if (date) {
-      const targetDateStr = String(date).trim().split('T')[0];
+      const targetDateStr = String(date).trim().split("T")[0];
       const startOfDay = new Date(`${targetDateStr}T00:00:00.000Z`);
       const endOfDay = new Date(`${targetDateStr}T23:59:59.999Z`);
       filter.$or = [
         { date: targetDateStr },
-        { createdAt: { $gte: startOfDay, $lte: endOfDay } }
+        { createdAt: { $gte: startOfDay, $lte: endOfDay } },
       ];
     } else if (startDate || endDate) {
       filter.createdAt = {};
@@ -144,9 +155,9 @@ const getReloads = async (req, res, next) => {
     }
 
     const reloads = await Reload.find(filter)
-      .populate('createdBy', 'name')
-      .populate('settledBy', 'name')
-      .populate('storeId', 'name')
+      .populate("createdBy", "name")
+      .populate("settledBy", "name")
+      .populate("storeId", "name")
       .sort({ createdAt: -1 });
 
     res.json(reloads);
@@ -164,33 +175,33 @@ const settleCreditReload = async (req, res, next) => {
     const reload = await Reload.findById(req.params.id);
     if (!reload) {
       res.status(404);
-      return next(new Error('Credit reload entry not found'));
+      return next(new Error("Credit reload entry not found"));
     }
     if (!reload.isCredit) {
       res.status(400);
-      return next(new Error('This entry is not a credit reload'));
+      return next(new Error("This entry is not a credit reload"));
     }
     if (reload.creditSettled) {
       res.status(400);
-      return next(new Error('This credit reload has already been settled'));
+      return next(new Error("This credit reload has already been settled"));
     }
 
-    const paymentMethod = req.body.paymentMethod || 'Cash';
+    const paymentMethod = req.body.paymentMethod || "Cash";
 
     reload.creditSettled = true;
     reload.creditSettledAt = new Date();
     reload.settledBy = req.user._id;
     await reload.save();
 
-    const desc = `Credit Reload Settled: ${reload.operator} - ${reload.mobileNumber}${reload.customerName ? ` (${reload.customerName})` : ''}`;
+    const desc = `Credit Reload Settled: ${reload.operator} - ${reload.mobileNumber}${reload.customerName ? ` (${reload.customerName})` : ""}`;
 
     // 1. Transaction — general ledger / audit trail, same pattern as the
     //    sibling settleCreditOrder feature for POS sale credit.
     try {
       await Transaction.create({
         storeId: reload.storeId,
-        type: 'income',
-        category: 'Credit Reload Settle',
+        type: "income",
+        category: "Credit Reload Settle",
         amount: reload.amount,
         paymentMethod,
         description: desc,
@@ -198,7 +209,10 @@ const settleCreditReload = async (req, res, next) => {
         createdBy: req.user._id,
       });
     } catch (txErr) {
-      console.error('[Credit Reload Settle] Transaction log notice:', txErr.message);
+      console.error(
+        "[Credit Reload Settle] Transaction log notice:",
+        txErr.message,
+      );
     }
 
     // 2. Expense(type: Income) — the "Other Cash In (Ledger)" mechanism that
@@ -206,27 +220,32 @@ const settleCreditReload = async (req, res, next) => {
     //    Summary. Without this, the settlement would be recorded but invisible
     //    to daily cash reporting.
     try {
-      const Expense = require('../models/Expense');
-      const allowedMethods = ['Cash', 'Bank Transfer', 'Card', 'Cheque'];
+      const Expense = require("../models/Expense");
+      const allowedMethods = ["Cash", "Bank Transfer", "Card", "Cheque"];
       await Expense.create({
         storeId: reload.storeId,
-        type: 'Income',
-        category: 'Credit Reload Collection',
+        type: "Income",
+        category: "Credit Reload Collection",
         title: `Credit Reload Collected - ${reload.mobileNumber}`,
         amount: reload.amount,
-        paymentMethod: allowedMethods.includes(paymentMethod) ? paymentMethod : 'Cash',
-        status: 'Paid',
+        paymentMethod: allowedMethods.includes(paymentMethod)
+          ? paymentMethod
+          : "Cash",
+        status: "Paid",
         date: new Date(),
         notes: desc,
         createdBy: req.user._id,
       });
     } catch (expErr) {
-      console.error('[Credit Reload Settle] Expense(Income) log notice:', expErr.message);
+      console.error(
+        "[Credit Reload Settle] Expense(Income) log notice:",
+        expErr.message,
+      );
     }
 
     const populated = await Reload.findById(reload._id)
-      .populate('createdBy', 'name')
-      .populate('settledBy', 'name');
+      .populate("createdBy", "name")
+      .populate("settledBy", "name");
 
     res.json({ success: true, data: populated });
   } catch (error) {
@@ -234,18 +253,22 @@ const settleCreditReload = async (req, res, next) => {
   }
 };
 
-// Helper: resolve the store to act on, same fallback chain used by every
-// reload endpoint (explicit storeId > manager's store > user's assignedStore
-// > admin's first active store > any active store).
+// Helper: resolve the store to act on. BUG-12 FIX: For non-admin users,
+// ignores client-provided explicitStoreId and always derives from req.user.
+// Only admins can override store selection via explicitStoreId.
 const resolveReloadStoreId = async (req, explicitStoreId) => {
-  let assignedStore = explicitStoreId;
+  const isAdmin = req.user?.role === "admin" || req.user?.isSuperAdmin;
+
+  // BUG-12: Only allow explicit storeId for admins
+  let assignedStore = isAdmin ? explicitStoreId : null;
+
   if (!assignedStore) {
-    if (req.user?.role === 'manager') {
+    if (req.user?.role === "manager") {
       const store = await Store.findOne({ managerId: req.user._id });
       if (store) assignedStore = store._id;
     } else if (req.user?.assignedStore) {
       assignedStore = req.user.assignedStore;
-    } else if (req.user?.role === 'admin') {
+    } else if (req.user?.role === "admin") {
       const store = await Store.findOne({ isActive: true });
       if (store) assignedStore = store._id;
     }
@@ -263,13 +286,18 @@ const resolveReloadStoreId = async (req, explicitStoreId) => {
 // still-open/untouched placeholder days in between: those have no finalized
 // In-Hand count yet, so they must never be treated as a source of truth for
 // a later day's Opening.
-const getCarriedOpeningStock = async (storeId, operator, cardValue, targetDate) => {
+const getCarriedOpeningStock = async (
+  storeId,
+  operator,
+  cardValue,
+  targetDate,
+) => {
   const prevClosed = await ReloadStock.findOne({
     storeId,
     operator,
     cardValue,
     date: { $lt: targetDate },
-    status: 'closed',
+    status: "closed",
   }).sort({ date: -1 });
   if (!prevClosed) return 0;
   return Number(prevClosed.closingStock) || 0;
@@ -280,12 +308,11 @@ const getCarriedOpeningStock = async (storeId, operator, cardValue, targetDate) 
 // added to, closed, or corrected. Only pristine records are safe to
 // silently refresh; anything a cashier has actually touched must never be
 // rewritten here.
-const isPristineStockRecord = (stockItem) => (
-  stockItem.status === 'open'
-  && (stockItem.addedStock || 0) === 0
-  && (!stockItem.addLog || stockItem.addLog.length === 0)
-  && (!stockItem.adjustLog || stockItem.adjustLog.length === 0)
-);
+const isPristineStockRecord = (stockItem) =>
+  stockItem.status === "open" &&
+  (stockItem.addedStock || 0) === 0 &&
+  (!stockItem.addLog || stockItem.addLog.length === 0) &&
+  (!stockItem.adjustLog || stockItem.adjustLog.length === 0);
 
 // Helper: find today's stock record for this item, creating it (with the
 // carried-forward opening) if it doesn't exist yet. If a record already
@@ -295,12 +322,28 @@ const isPristineStockRecord = (stockItem) => (
 // the moment it was first auto-created (e.g. from viewing a future date
 // before an earlier day actually got closed), even after that earlier day's
 // real closing later changes.
-const findOrCreateReloadStockItem = async (req, { storeId, operator, cardValue, date }) => {
-  const stockItem = await ReloadStock.findOne({ storeId, date, operator, cardValue });
-  const carriedOpening = await getCarriedOpeningStock(storeId, operator, cardValue, date);
+const findOrCreateReloadStockItem = async (
+  req,
+  { storeId, operator, cardValue, date },
+) => {
+  const stockItem = await ReloadStock.findOne({
+    storeId,
+    date,
+    operator,
+    cardValue,
+  });
+  const carriedOpening = await getCarriedOpeningStock(
+    storeId,
+    operator,
+    cardValue,
+    date,
+  );
 
   if (stockItem) {
-    if (isPristineStockRecord(stockItem) && stockItem.openingStock !== carriedOpening) {
+    if (
+      isPristineStockRecord(stockItem) &&
+      stockItem.openingStock !== carriedOpening
+    ) {
       stockItem.openingStock = carriedOpening;
       stockItem.totalStock = carriedOpening;
       stockItem.closingStock = carriedOpening;
@@ -320,7 +363,7 @@ const findOrCreateReloadStockItem = async (req, { storeId, operator, cardValue, 
     closingStock: carriedOpening,
     sellOutAmount: 0,
     sellOutValue: 0,
-    status: 'open',
+    status: "open",
     recordedBy: req.user._id,
   });
 };
@@ -331,17 +374,26 @@ const findOrCreateReloadStockItem = async (req, { storeId, operator, cardValue, 
 const getReloadStocks = async (req, res, next) => {
   try {
     const { date, storeId } = req.query;
-    const targetDate = (date ? String(date).trim().split('T')[0] : new Date().toISOString().split('T')[0]);
+    const targetDate = date
+      ? String(date).trim().split("T")[0]
+      : new Date().toISOString().split("T")[0];
     const filter = { date: targetDate };
 
-    let assignedStore = storeId;
-    if (assignedStore && assignedStore !== 'all') {
-      filter.storeId = assignedStore;
-    } else if (req.user?.role === 'manager') {
+    // BUG-12 FIX: Only admins can use storeId from query; non-admins use their assigned store
+    const isAdmin = req.user?.role === "admin" || req.user?.isSuperAdmin;
+    let assignedStore = null;
+
+    if (isAdmin && storeId && storeId !== "all") {
+      assignedStore = storeId;
+    } else if (req.user?.role === "manager") {
       const store = await Store.findOne({ managerId: req.user._id });
-      if (store) filter.storeId = store._id;
+      if (store) assignedStore = store._id;
     } else if (req.user?.assignedStore) {
-      filter.storeId = req.user.assignedStore;
+      assignedStore = req.user.assignedStore;
+    }
+
+    if (assignedStore && assignedStore !== "all") {
+      filter.storeId = assignedStore;
     }
 
     // Ensure every operator/denomination this store has EVER tracked has its
@@ -360,7 +412,7 @@ const getReloadStocks = async (req, res, next) => {
         : filter.storeId;
       const knownPairs = await ReloadStock.aggregate([
         { $match: { storeId: storeObjectId, date: { $lt: targetDate } } },
-        { $group: { _id: { operator: '$operator', cardValue: '$cardValue' } } },
+        { $group: { _id: { operator: "$operator", cardValue: "$cardValue" } } },
       ]);
 
       for (const { _id: pair } of knownPairs) {
@@ -374,7 +426,7 @@ const getReloadStocks = async (req, res, next) => {
     }
 
     const stocks = await ReloadStock.find(filter)
-      .populate('recordedBy', 'name')
+      .populate("recordedBy", "name")
       .sort({ operator: 1, cardValue: 1 });
 
     res.json(stocks);
@@ -394,17 +446,28 @@ const addReloadStock = async (req, res, next) => {
     // is otherwise always system-derived (carried forward) and never
     // settable from the newer Reload & Card Management screen, which never
     // sends it.
-    const { storeId, operator, cardValue, openingStock, addedStock, qty, notes, date } = req.body;
-    const targetDate = (date ? String(date).trim().split('T')[0] : new Date().toISOString().split('T')[0]);
+    const {
+      storeId,
+      operator,
+      cardValue,
+      openingStock,
+      addedStock,
+      qty,
+      notes,
+      date,
+    } = req.body;
+    const targetDate = date
+      ? String(date).trim().split("T")[0]
+      : new Date().toISOString().split("T")[0];
     const addQty = Math.max(0, Number(qty ?? addedStock) || 0);
 
     if (!addQty) {
       res.status(400);
-      return next(new Error('Please enter a valid quantity to add'));
+      return next(new Error("Please enter a valid quantity to add"));
     }
 
     const assignedStore = await resolveReloadStoreId(req, storeId);
-    const cleanOperator = String(operator || 'Other').trim();
+    const cleanOperator = String(operator || "Other").trim();
     const cleanCardVal = Number(cardValue) || 1;
 
     const stockItem = await findOrCreateReloadStockItem(req, {
@@ -414,17 +477,29 @@ const addReloadStock = async (req, res, next) => {
       date: targetDate,
     });
 
-    if (stockItem.status === 'closed') {
+    if (stockItem.status === "closed") {
       res.status(400);
-      return next(new Error(`${cleanOperator} is already closed for ${targetDate}. Use the adjust action if a correction is needed.`));
+      return next(
+        new Error(
+          `${cleanOperator} is already closed for ${targetDate}. Use the adjust action if a correction is needed.`,
+        ),
+      );
     }
 
-    if (openingStock !== undefined && openingStock !== '') {
+    if (openingStock !== undefined && openingStock !== "") {
       stockItem.openingStock = Math.max(0, Number(openingStock) || 0);
     }
 
-    stockItem.addLog.push({ qty: addQty, addedBy: req.user._id, addedAt: new Date(), notes: notes || '' });
-    stockItem.addedStock = stockItem.addLog.reduce((sum, l) => sum + (l.qty || 0), 0);
+    stockItem.addLog.push({
+      qty: addQty,
+      addedBy: req.user._id,
+      addedAt: new Date(),
+      notes: notes || "",
+    });
+    stockItem.addedStock = stockItem.addLog.reduce(
+      (sum, l) => sum + (l.qty || 0),
+      0,
+    );
     stockItem.totalStock = stockItem.openingStock + stockItem.addedStock;
     stockItem.closingStock = stockItem.totalStock; // live preview until actually closed
     if (notes !== undefined) stockItem.notes = notes;
@@ -442,38 +517,49 @@ const addReloadStock = async (req, res, next) => {
 // @access  Private
 const closeReloadStock = async (req, res, next) => {
   try {
-    const { stockId, storeId, operator, cardValue, date, closingStock, notes } = req.body;
+    const { stockId, storeId, operator, cardValue, date, closingStock, notes } =
+      req.body;
 
     let stockItem = null;
     if (stockId) {
       stockItem = await ReloadStock.findById(stockId);
       if (!stockItem) {
         res.status(404);
-        return next(new Error('Reload stock record not found'));
+        return next(new Error("Reload stock record not found"));
       }
     } else {
       // No stockId yet (item never had a stock action today) — find or
       // create it (with carried-forward opening) so closing still works.
-      const targetDate = (date ? String(date).trim().split('T')[0] : new Date().toISOString().split('T')[0]);
+      const targetDate = date
+        ? String(date).trim().split("T")[0]
+        : new Date().toISOString().split("T")[0];
       const assignedStore = await resolveReloadStoreId(req, storeId);
       stockItem = await findOrCreateReloadStockItem(req, {
         storeId: assignedStore,
-        operator: String(operator || 'Other').trim(),
+        operator: String(operator || "Other").trim(),
         cardValue: Number(cardValue) || 1,
         date: targetDate,
       });
     }
 
-    if (stockItem.status === 'closed') {
+    if (stockItem.status === "closed") {
       res.status(400);
-      return next(new Error(`${stockItem.operator} is already closed for ${stockItem.date}. Use the adjust action if a correction is needed.`));
+      return next(
+        new Error(
+          `${stockItem.operator} is already closed for ${stockItem.date}. Use the adjust action if a correction is needed.`,
+        ),
+      );
     }
 
     const safeClosing = Math.max(0, Number(closingStock) || 0);
     stockItem.closingStock = safeClosing;
-    stockItem.sellOutAmount = Math.max(0, stockItem.totalStock - stockItem.closingStock);
-    stockItem.sellOutValue = stockItem.sellOutAmount * (Number(stockItem.cardValue) || 1);
-    stockItem.status = 'closed';
+    stockItem.sellOutAmount = Math.max(
+      0,
+      stockItem.totalStock - stockItem.closingStock,
+    );
+    stockItem.sellOutValue =
+      stockItem.sellOutAmount * (Number(stockItem.cardValue) || 1);
+    stockItem.status = "closed";
     stockItem.closedAt = new Date();
     stockItem.closedBy = req.user._id;
     if (notes !== undefined) stockItem.notes = notes;
@@ -481,24 +567,27 @@ const closeReloadStock = async (req, res, next) => {
 
     // Auto Create / Update Financial Transaction for Income Ledger
     if (stockItem.sellOutValue > 0) {
-      const itemTitle = stockItem.cardValue === 1 ? 'E-Reload Float' : `Rs. ${stockItem.cardValue} Cards`;
+      const itemTitle =
+        stockItem.cardValue === 1
+          ? "E-Reload Float"
+          : `Rs. ${stockItem.cardValue} Cards`;
       const desc = `Daily Reload Sales (${stockItem.operator} - ${itemTitle}): ${stockItem.sellOutAmount} sold`;
 
       if (stockItem.transactionId) {
         await Transaction.findByIdAndUpdate(stockItem.transactionId, {
           amount: stockItem.sellOutValue,
-          description: desc
+          description: desc,
         });
       } else {
         const trans = await Transaction.create({
           storeId: stockItem.storeId,
-          type: 'income',
-          category: 'Reload & Bill Payment',
+          type: "income",
+          category: "Reload & Bill Payment",
           amount: stockItem.sellOutValue,
-          paymentMethod: 'Cash',
+          paymentMethod: "Cash",
           description: desc,
           date: new Date(),
-          createdBy: req.user._id
+          createdBy: req.user._id,
         });
         stockItem.transactionId = trans._id;
       }
@@ -523,17 +612,19 @@ const adjustReloadStock = async (req, res, next) => {
 
     if (!reason || !String(reason).trim()) {
       res.status(400);
-      return next(new Error('A reason is required to adjust a locked stock record'));
+      return next(
+        new Error("A reason is required to adjust a locked stock record"),
+      );
     }
-    if (!['openingStock', 'addedStock', 'closingStock'].includes(field)) {
+    if (!["openingStock", "addedStock", "closingStock"].includes(field)) {
       res.status(400);
-      return next(new Error('Invalid field to adjust'));
+      return next(new Error("Invalid field to adjust"));
     }
 
     const stockItem = await ReloadStock.findById(stockId);
     if (!stockItem) {
       res.status(404);
-      return next(new Error('Reload stock record not found'));
+      return next(new Error("Reload stock record not found"));
     }
 
     const oldValue = Number(stockItem[field] || 0);
@@ -541,8 +632,12 @@ const adjustReloadStock = async (req, res, next) => {
 
     stockItem[field] = updatedValue;
     stockItem.totalStock = stockItem.openingStock + stockItem.addedStock;
-    stockItem.sellOutAmount = Math.max(0, stockItem.totalStock - stockItem.closingStock);
-    stockItem.sellOutValue = stockItem.sellOutAmount * (Number(stockItem.cardValue) || 1);
+    stockItem.sellOutAmount = Math.max(
+      0,
+      stockItem.totalStock - stockItem.closingStock,
+    );
+    stockItem.sellOutValue =
+      stockItem.sellOutAmount * (Number(stockItem.cardValue) || 1);
 
     stockItem.adjustLog.push({
       field,
@@ -563,10 +658,10 @@ const adjustReloadStock = async (req, res, next) => {
     } else if (stockItem.sellOutValue > 0) {
       const trans = await Transaction.create({
         storeId: stockItem.storeId,
-        type: 'income',
-        category: 'Reload & Bill Payment',
+        type: "income",
+        category: "Reload & Bill Payment",
         amount: stockItem.sellOutValue,
-        paymentMethod: 'Cash',
+        paymentMethod: "Cash",
         description: `[ADJUSTED] Daily Reload Sales (${stockItem.operator}): ${reason}`,
         date: new Date(),
         createdBy: req.user._id,
@@ -587,52 +682,45 @@ const adjustReloadStock = async (req, res, next) => {
 // @access  Private
 const addReloadSupplierPayment = async (req, res, next) => {
   try {
-    const { storeId, supplierName, operator, amount, paymentMethod, notes } = req.body;
+    const { storeId, supplierName, operator, amount, paymentMethod, notes } =
+      req.body;
 
-    let assignedStore = storeId;
-    if (!assignedStore) {
-      if (req.user?.role === 'manager') {
-        const store = await Store.findOne({ managerId: req.user._id });
-        if (store) assignedStore = store._id;
-      } else if (req.user?.assignedStore) {
-        assignedStore = req.user.assignedStore;
-      } else if (req.user?.role === 'admin') {
-        const store = await Store.findOne({ isActive: true });
-        if (store) assignedStore = store._id;
-      }
-    }
-
-    if (!assignedStore) {
-      const anyStore = await Store.findOne({ isActive: true });
-      if (anyStore) assignedStore = anyStore._id;
-    }
+    // BUG-12 FIX: Only admins can provide storeId; non-admins use resolveReloadStoreId
+    const isAdmin = req.user?.role === "admin" || req.user?.isSuperAdmin;
+    let assignedStore = await resolveReloadStoreId(
+      req,
+      isAdmin ? storeId : null,
+    );
 
     // 1. Find or create the Supplier record for the Distributor
-    const cleanSupplierName = (supplierName || `${operator || 'Telecom'} Distributor`).trim();
+    const cleanSupplierName = (
+      supplierName || `${operator || "Telecom"} Distributor`
+    ).trim();
     let supplier = await Supplier.findOne({
-      name: { $regex: new RegExp(`^${cleanSupplierName}$`, 'i') }
+      name: { $regex: new RegExp(`^${cleanSupplierName}$`, "i") },
     });
 
     if (!supplier) {
       supplier = await Supplier.create({
         name: cleanSupplierName,
-        companyName: `${operator || 'Telecom'} Reload Distribution`,
-        contactPerson: `${operator || 'Telecom'} Distribution Agent`,
-        phone: '+94770000000',
+        companyName: `${operator || "Telecom"} Reload Distribution`,
+        contactPerson: `${operator || "Telecom"} Distribution Agent`,
+        phone: "+94770000000",
         email: `reload_${Date.now()}@supplier.local`,
-        category: 'Mobile Reloads & SIM Cards',
+        category: "Mobile Reloads & SIM Cards",
         storeId: assignedStore || null,
-        status: 'active'
+        status: "active",
       });
     }
 
     // 2. Map paymentMethod for SupplierPayment enum
-    let mappedMethod = 'cash';
-    const pmLower = (paymentMethod || '').toLowerCase();
-    if (pmLower.includes('bank') || pmLower.includes('transfer')) mappedMethod = 'bank_transfer';
-    else if (pmLower.includes('cheque')) mappedMethod = 'cheque';
-    else if (pmLower.includes('cash')) mappedMethod = 'cash';
-    else mappedMethod = 'other';
+    let mappedMethod = "cash";
+    const pmLower = (paymentMethod || "").toLowerCase();
+    if (pmLower.includes("bank") || pmLower.includes("transfer"))
+      mappedMethod = "bank_transfer";
+    else if (pmLower.includes("cheque")) mappedMethod = "cheque";
+    else if (pmLower.includes("cash")) mappedMethod = "cash";
+    else mappedMethod = "other";
 
     const numericAmount = Math.max(0, Number(amount) || 0);
 
@@ -642,32 +730,32 @@ const addReloadSupplierPayment = async (req, res, next) => {
       supplierPaymentRecord = await SupplierPayment.create({
         supplierId: supplier._id,
         storeId: assignedStore,
-        type: 'payment',
+        type: "payment",
         amount: numericAmount,
         paymentMethod: mappedMethod,
-        description: `Reload Float / Card Payment (${operator || 'Network'}) - ${notes || cleanSupplierName}`,
+        description: `Reload Float / Card Payment (${operator || "Network"}) - ${notes || cleanSupplierName}`,
         date: new Date(),
-        createdBy: req.user._id
+        createdBy: req.user._id,
       });
     }
 
     // 4. Create Ledger Expense Transaction
     const transaction = await Transaction.create({
       storeId: assignedStore || null,
-      type: 'expense',
-      category: 'Reload Supplier Cost',
+      type: "expense",
+      category: "Reload Supplier Cost",
       amount: numericAmount,
-      paymentMethod: paymentMethod || 'Cash',
-      description: `Reload Supplier Purchase (${operator || 'Float'}) - ${cleanSupplierName}`,
+      paymentMethod: paymentMethod || "Cash",
+      description: `Reload Supplier Purchase (${operator || "Float"}) - ${cleanSupplierName}`,
       notes,
       date: new Date(),
-      createdBy: req.user._id
+      createdBy: req.user._id,
     });
 
-    res.status(201).json({ 
-      success: true, 
-      data: transaction, 
-      supplierPayment: supplierPaymentRecord 
+    res.status(201).json({
+      success: true,
+      data: transaction,
+      supplierPayment: supplierPaymentRecord,
     });
   } catch (error) {
     next(error);
@@ -680,44 +768,38 @@ const addReloadSupplierPayment = async (req, res, next) => {
 const saveReloadDailySheet = async (req, res, next) => {
   try {
     const { storeId, date, items } = req.body;
-    const targetDate = (date ? String(date).trim().split('T')[0] : new Date().toISOString().split('T')[0]);
+    const targetDate = date
+      ? String(date).trim().split("T")[0]
+      : new Date().toISOString().split("T")[0];
 
-    let assignedStore = storeId;
-    if (!assignedStore) {
-      if (req.user?.role === 'manager') {
-        const store = await Store.findOne({ managerId: req.user._id });
-        if (store) assignedStore = store._id;
-      } else if (req.user?.assignedStore) {
-        assignedStore = req.user.assignedStore;
-      } else if (req.user?.role === 'admin') {
-        const store = await Store.findOne({ isActive: true });
-        if (store) assignedStore = store._id;
-      }
-    }
-
-    if (!assignedStore) {
-      const anyStore = await Store.findOne({ isActive: true });
-      if (anyStore) assignedStore = anyStore._id;
-    }
+    // BUG-12 FIX: Only admins can provide storeId; non-admins use resolveReloadStoreId
+    const isAdmin = req.user?.role === "admin" || req.user?.isSuperAdmin;
+    let assignedStore = await resolveReloadStoreId(
+      req,
+      isAdmin ? storeId : null,
+    );
 
     if (!Array.isArray(items) || items.length === 0) {
       res.status(400);
-      return next(new Error('No sheet items provided'));
+      return next(new Error("No sheet items provided"));
     }
 
     const updatedRecords = [];
     let totalDailySellOutRevenue = 0;
 
     for (const item of items) {
-      const rawOperator = String(item.operator || item.label || 'Other').trim();
-      const operator = rawOperator || 'Other';
+      const rawOperator = String(item.operator || item.label || "Other").trim();
+      const operator = rawOperator || "Other";
       const cardValue = Number(item.cardValue) || 1;
       const openingStock = Math.max(0, Number(item.openingStock) || 0);
       const addedStock = Math.max(0, Number(item.addedStock) || 0);
       const totalStock = openingStock + addedStock;
-      const closingStock = (item.closingStock !== undefined && item.closingStock !== null && item.closingStock !== '')
-        ? Math.max(0, Number(item.closingStock) || 0)
-        : totalStock;
+      const closingStock =
+        item.closingStock !== undefined &&
+        item.closingStock !== null &&
+        item.closingStock !== ""
+          ? Math.max(0, Number(item.closingStock) || 0)
+          : totalStock;
       const sellOutAmount = Math.max(0, totalStock - closingStock);
       const sellOutValue = sellOutAmount * cardValue;
 
@@ -752,7 +834,7 @@ const saveReloadDailySheet = async (req, res, next) => {
           closingStock,
           sellOutAmount,
           sellOutValue,
-          notes: item.notes || '',
+          notes: item.notes || "",
           recordedBy: req.user._id,
         });
       }
@@ -763,7 +845,7 @@ const saveReloadDailySheet = async (req, res, next) => {
       success: true,
       data: updatedRecords,
       totalSellOutRevenue: totalDailySellOutRevenue,
-      message: 'Daily reload balance sheet saved & synced successfully! 📊✅'
+      message: "Daily reload balance sheet saved & synced successfully! 📊✅",
     });
   } catch (error) {
     next(error);

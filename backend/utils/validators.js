@@ -38,6 +38,19 @@ const isNonEmptyString = (val) => typeof val === 'string' && val.trim().length >
 
 const isPositiveNumber = (val) => typeof val === 'number' && val > 0;
 
+/**
+ * Escapes dynamic strings to prevent HTML Injection / Stored XSS in emails & views (BUG-09)
+ */
+const escapeHtml = (str) => {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+};
+
 module.exports = {
   isValidSLPhone,
   formatSLPhone,
@@ -45,6 +58,7 @@ module.exports = {
   isValidEmail,
   isNonEmptyString,
   isPositiveNumber,
+  escapeHtml,
   SL_PHONE_REGEX,
   EMAIL_REGEX,
 };

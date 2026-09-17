@@ -10,6 +10,27 @@ const { sendSms, buildOtpMessage } = require('../utils/smsService');
 const { sendEmail, passwordResetOtpEmail } = require('../utils/emailService');
 
 const OTP_EXPIRY_MINUTES = 5;
+const AUTH_COOKIE_NAME = 'jwt_token';
+const AUTH_COOKIE_MAX_AGE = 30 * 24 * 60 * 60 * 1000;
+
+const authCookieOptions = () => ({
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  path: '/',
+  maxAge: AUTH_COOKIE_MAX_AGE,
+});
+
+const issueAuthToken = (res, userId) => {
+  const token = generateToken(userId);
+  res.cookie(AUTH_COOKIE_NAME, token, authCookieOptions());
+  return token;
+};
+
+const logoutUser = (req, res) => {
+  res.clearCookie(AUTH_COOKIE_NAME, authCookieOptions());
+  return res.json({ success: true });
+};
 
 const hashOtp = (otp) => crypto.createHash('sha256').update(otp).digest('hex');
 const generateOtp = () => Math.floor(100000 + Math.random() * 900000).toString();
@@ -17,7 +38,7 @@ const fail = (res, status, message) => res.status(status).json({ message });
 
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password, phone, role } = req.body;
+    const { name, email, password, phone } = req.body;
     if (!name || !email || !password || !phone) {
       return fail(res, 400, 'Name, email, password and phone are required');
     }
@@ -30,6 +51,7 @@ const registerUser = async (req, res) => {
       return fail(res, 400, 'Please enter a valid email address');
     }
 
+    // BUG-29 FIX: Ensure email is trimmed and saved in lowercase
     const normalizedEmail = email.trim().toLowerCase();
 
     if (!isValidSLPhone(phone)) {
@@ -48,7 +70,7 @@ const registerUser = async (req, res) => {
       email: normalizedEmail,
       password, // Let pre-save hook in User model handle hashing
       phone: normalizedPhone,
-      role: role || 'customer',
+      role: 'customer',
     });
 
     res.status(201).json({
@@ -57,7 +79,7 @@ const registerUser = async (req, res) => {
       email: user.email,
       role: user.role,
       phone: user.phone,
-      token: generateToken(user._id),
+      token: issueAuthToken(res, user._id),
     });
   } catch (error) {
     return fail(res, 500, error.message || 'Registration failed');
@@ -66,7 +88,7 @@ const registerUser = async (req, res) => {
 
 const requestRegistrationOtp = async (req, res) => {
   try {
-    const { name, email, password, phone, role } = req.body;
+    const { name, email, password, phone } = req.body;
     if (!name || !email || !password || !phone) {
       return fail(res, 400, 'Name, email, password and phone are required');
     }
@@ -89,7 +111,8 @@ const requestRegistrationOtp = async (req, res) => {
     }
 
     const normalizedPhone = formatSLPhone(phone);
-    const normalizedEmail = emailValidation.normalizedEmail;
+    // BUG-29 FIX: Ensure normalized email is lowercased
+    const normalizedEmail = (emailValidation.normalizedEmail || email).trim().toLowerCase();
 
     const userExists = await User.findOne({ email: normalizedEmail });
     if (userExists) {
@@ -107,7 +130,7 @@ const requestRegistrationOtp = async (req, res) => {
         phone: normalizedPhone,
         name: name.trim(),
         passwordHash,
-        role: role || 'customer',
+        role: 'customer',
         otpHash: hashOtp(otp),
         expiresAt,
         attempts: 0,
@@ -134,6 +157,7 @@ const verifyRegistrationOtp = async (req, res) => {
       return fail(res, 400, 'Email and OTP are required');
     }
 
+    // BUG-29 FIX: Ensure email is trimmed and lowercased
     const normalizedEmail = email.trim().toLowerCase();
     const pending = await RegistrationOtp.findOne({ email: normalizedEmail });
     if (!pending) {
@@ -164,10 +188,10 @@ const verifyRegistrationOtp = async (req, res) => {
 
     const user = await User.create({
       name: pending.name,
-      email: pending.email,
+      email: normalizedEmail,
       password: pending.passwordHash,
       phone: pending.phone,
-      role: pending.role || 'customer',
+      role: 'customer',
     });
 
     await RegistrationOtp.deleteOne({ _id: pending._id });
@@ -178,7 +202,7 @@ const verifyRegistrationOtp = async (req, res) => {
       email: user.email,
       role: user.role,
       phone: user.phone,
-      token: generateToken(user._id),
+      token: issueAuthToken(res, user._id),
     });
   } catch (error) {
     return fail(res, 500, error.message || 'Failed to verify registration OTP');
@@ -193,9 +217,9 @@ const authUser = async (req, res) => {
       return fail(res, 400, 'Email and password are required');
     }
 
-    const trimmedEmail = email.trim();
-    const emailRegex = new RegExp('^\\s*' + trimmedEmail.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '\\s*$', 'i');
-    const user = await User.findOne({ email: { $regex: emailRegex } }).populate('assignedStore', 'name');
+    // BUG-29 FIX: Normalize email to lowercase and use exact equality matching instead of regex
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail }).populate('assignedStore', 'name');
 
     if (!user) {
       return fail(res, 401, 'Invalid email or password');
@@ -218,7 +242,7 @@ const authUser = async (req, res) => {
         assignedStore: user.assignedStore?._id || user.assignedStore,
         assignedStoreName: user.assignedStore?.name || '',
         employeeInfo: user.employeeInfo,
-        token: generateToken(user._id) 
+        token: issueAuthToken(res, user._id)
       });
     } else {
       return fail(res, 401, 'Invalid email or password');
@@ -275,7 +299,8 @@ const updateProfile = async (req, res) => {
       user.phone = formatSLPhone(req.body.phone);
     }
 
-    if (req.body.email && req.body.email !== user.email) {
+    // BUG-29 FIX: Ensure email updates are normalized and saved as lowercase
+    if (req.body.email && req.body.email.trim().toLowerCase() !== user.email) {
       if (!isValidEmail(req.body.email)) {
         return fail(res, 400, 'Please enter a valid email address');
       }
@@ -283,20 +308,27 @@ const updateProfile = async (req, res) => {
       if (!emailValidation.valid) {
         return fail(res, 400, emailValidation.reason);
       }
-      const exists = await User.findOne({ email: emailValidation.normalizedEmail });
+      const normalizedEmail = emailValidation.normalizedEmail ? emailValidation.normalizedEmail.trim().toLowerCase() : req.body.email.trim().toLowerCase();
+      
+      const exists = await User.findOne({ email: normalizedEmail });
       if (exists) {
         return fail(res, 400, 'Email already in use');
       }
-      user.email = emailValidation.normalizedEmail;
+      user.email = normalizedEmail;
     }
     if (req.body.newPassword || req.body.password) {
       const newPwd = req.body.newPassword || req.body.password;
-      if (req.body.currentPassword) {
-        const isMatch = await user.matchPassword(req.body.currentPassword);
-        if (!isMatch) {
-          return fail(res, 400, 'Current password is incorrect');
-        }
+
+      // Require currentPassword whenever changing the password
+      if (!req.body.currentPassword) {
+        return fail(res, 400, 'Current password is required to set a new password');
       }
+
+      const isMatch = await user.matchPassword(req.body.currentPassword);
+      if (!isMatch) {
+        return fail(res, 400, 'Current password is incorrect');
+      }
+
       if (newPwd.length < 6) {
         return fail(res, 400, 'New password must be at least 6 characters');
       }
@@ -306,7 +338,7 @@ const updateProfile = async (req, res) => {
     if (req.body.avatar !== undefined) { user.avatar = req.body.avatar; }
 
     const updated = await user.save();
-    res.json({ _id: updated._id, name: updated.name, email: updated.email, role: updated.role, phone: updated.phone, avatar: updated.avatar, addresses: updated.addresses, token: generateToken(updated._id) });
+    res.json({ _id: updated._id, name: updated.name, email: updated.email, role: updated.role, phone: updated.phone, avatar: updated.avatar, addresses: updated.addresses, token: issueAuthToken(res, updated._id) });
   } catch (error) {
     return fail(res, 500, error.message || 'Failed to update profile');
   }
@@ -338,7 +370,9 @@ const posLogin = async (req, res) => {
 
     // If email is provided, verify directly for that user
     if (email) {
-      const user = await User.findOne({ email, isActive: { $ne: false } }).populate('assignedStore', 'name');
+      // BUG-29 FIX: Normalize email before searching for POS user
+      const normalizedEmail = email.trim().toLowerCase();
+      const user = await User.findOne({ email: normalizedEmail, isActive: { $ne: false } }).populate('assignedStore', 'name');
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
@@ -365,7 +399,7 @@ const posLogin = async (req, res) => {
           assignedStore: user.assignedStore?._id || user.assignedStore,
           assignedStoreName: user.assignedStore?.name || '',
           employeeInfo: user.employeeInfo,
-          token: generateToken(user._id)
+          token: issueAuthToken(res, user._id)
         });
       }
 
@@ -381,7 +415,7 @@ const posLogin = async (req, res) => {
           assignedStore: user.assignedStore?._id || user.assignedStore,
           assignedStoreName: user.assignedStore?.name || '',
           employeeInfo: user.employeeInfo,
-          token: generateToken(user._id)
+          token: issueAuthToken(res, user._id)
         });
       }
 
@@ -416,7 +450,7 @@ const posLogin = async (req, res) => {
           assignedStore: user.assignedStore?._id || user.assignedStore,
           assignedStoreName: user.assignedStore?.name || '',
           employeeInfo: user.employeeInfo,
-          token: generateToken(user._id)
+          token: issueAuthToken(res, user._id)
         });
       }
 
@@ -433,7 +467,7 @@ const posLogin = async (req, res) => {
             assignedStore: user.assignedStore?._id || user.assignedStore,
             assignedStoreName: user.assignedStore?.name || '',
             employeeInfo: user.employeeInfo,
-            token: generateToken(user._id)
+            token: issueAuthToken(res, user._id)
           });
         }
       } catch (err) {
@@ -479,6 +513,7 @@ const requestPasswordReset = async (req, res) => {
       return fail(res, 400, 'Please enter a valid email address');
     }
 
+    // BUG-29 FIX: Ensure email is trimmed and lowercased
     const normalizedEmail = email.trim().toLowerCase();
     const user = await User.findOne({ email: normalizedEmail });
 
@@ -525,6 +560,7 @@ const verifyResetOtp = async (req, res) => {
       return fail(res, 400, 'Email and OTP verification code are required');
     }
 
+    // BUG-29 FIX: Ensure email is trimmed and lowercased
     const normalizedEmail = email.trim().toLowerCase();
     const record = await PasswordResetOtp.findOne({ email: normalizedEmail });
 
@@ -537,10 +573,21 @@ const verifyResetOtp = async (req, res) => {
       return fail(res, 400, 'OTP verification code has expired. Please request a new code.');
     }
 
+    if (record.attempts >= 5) {
+      await PasswordResetOtp.deleteOne({ _id: record._id });
+      return fail(res, 429, 'Too many failed OTP attempts. Please request a new verification code.');
+    }
+
     const inputHash = hashOtp(otp.trim());
     if (inputHash !== record.otpHash) {
       record.attempts += 1;
       await record.save();
+
+      if (record.attempts >= 5) {
+        await PasswordResetOtp.deleteOne({ _id: record._id });
+        return fail(res, 429, 'Too many failed OTP attempts. Please request a new verification code.');
+      }
+
       return fail(res, 400, 'Invalid OTP code. Please check your email and try again.');
     }
 
@@ -564,6 +611,7 @@ const resetPassword = async (req, res) => {
       return fail(res, 400, 'New password must be at least 6 characters');
     }
 
+    // BUG-29 FIX: Ensure email is trimmed and lowercased
     const normalizedEmail = email.trim().toLowerCase();
     const record = await PasswordResetOtp.findOne({ email: normalizedEmail });
 
@@ -592,6 +640,51 @@ const resetPassword = async (req, res) => {
   }
 };
 
+// createStaffUser function
+const createStaffUser = async (req, res) => {
+  try {
+    const { name, email, password, phone, role, assignedStore, employeeInfo } = req.body;
+
+    if (!name || !email || !password || !phone || !role) {
+      return res.status(400).json({ success: false, message: 'Name, email, password, phone, and role are required' });
+    }
+
+    const validStaffRoles = ['admin', 'manager', 'cashier', 'deliveryGuy', 'stockEmployee'];
+    if (!validStaffRoles.includes(role)) {
+      return res.status(400).json({ success: false, message: 'Invalid staff role specified' });
+    }
+
+    // BUG-29 FIX: Ensure staff emails are saved in lowercase
+    const normalizedEmail = email.trim().toLowerCase();
+    const userExists = await User.findOne({ email: normalizedEmail });
+    if (userExists) {
+      return res.status(400).json({ success: false, message: 'User already exists with this email' });
+    }
+
+    const user = await User.create({
+      name: name.trim(),
+      email: normalizedEmail,
+      password,
+      phone,
+      role,
+      assignedStore,
+      employeeInfo,
+    });
+
+    return res.status(201).json({
+      success: true,
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      message: `${user.role} account created successfully`,
+    });
+  } catch (error) {
+    console.error('Error in createStaffUser:', error);
+    return res.status(500).json({ success: false, message: error.message || 'Failed to create staff account' });
+  }
+};
+
 module.exports = {
   registerUser,
   requestRegistrationOtp,
@@ -601,8 +694,10 @@ module.exports = {
   updateProfile,
   getCashiersList,
   posLogin,
+  logoutUser,
   verifyPassword,
   requestPasswordReset,
   verifyResetOtp,
   resetPassword,
+  createStaffUser,
 };
