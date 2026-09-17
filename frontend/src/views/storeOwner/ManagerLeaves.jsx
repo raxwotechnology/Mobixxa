@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Calendar, Check, X, Clock, FileText, FileSpreadsheet } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
+import EmployeeSelector from '../../components/EmployeeSelector';
 import { toast } from 'react-toastify';
 import { managerNavGroups } from './managerNavItems';
 import { getEmployees, adminCreateLeave } from '../../services/api';
@@ -346,11 +347,13 @@ const ManagerLeaves = ({ navItems = managerNavGroups, title = 'Manager Dashboard
             <div className="p-5 space-y-4">
               <div>
                 <label className="text-xs text-muted-text block mb-1">Employee *</label>
-                <select value={leaveForm.employeeId} onChange={(e) => setLeaveForm({ ...leaveForm, employeeId: e.target.value })}
-                  className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm bg-white">
-                  <option value="">Select employee</option>
-                  {employees.map(e => <option key={e._id} value={e._id}>{e.name} ({e.role})</option>)}
-                </select>
+                <EmployeeSelector
+                  multiple={false}
+                  employees={employees}
+                  value={leaveForm.employeeId ? [leaveForm.employeeId] : []}
+                  onChange={([id]) => setLeaveForm({ ...leaveForm, employeeId: id || '' })}
+                  placeholder="Search and select employee..."
+                />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>

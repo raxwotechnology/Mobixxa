@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { ShieldAlert, TrendingDown, TrendingUp, Wallet, ArrowRightLeft, X } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
+import EmployeeSelector from '../../components/EmployeeSelector';
 import {
   getCashierShortageSummary,
   getCashierShortageLedger,
@@ -34,10 +35,11 @@ const AdminCashierAccountability = ({ navItems: propNavItems }) => {
   const [loading, setLoading] = useState(true);
 
   const [dateRange, setDateRange] = useState({ startDate: '', endDate: '' });
-  const [cashierFilter, setCashierFilter] = useState('all');
+  const [cashierFilter, setCashierFilter] = useState('');
 
   const [deductionModal, setDeductionModal] = useState(null); // { cashierId, name, outstanding }
-  const [deductionForm, setDeductionForm] = useState({ amount: '', date: new Date().toISOString().split('T')[0], note: '', payrollPeriod: '', overrideReason: '' });
+  const now = new Date();
+  const [deductionForm, setDeductionForm] = useState({ amount: '', date: new Date().toISOString().split('T')[0], note: '', payrollMonth: now.getMonth() + 1, payrollYear: now.getFullYear(), overrideReason: '' });
 
   const [reassignModal, setReassignModal] = useState(null); // shortage row
   const [reassignForm, setReassignForm] = useState({ toCashierId: '', reason: '' });
@@ -46,7 +48,7 @@ const AdminCashierAccountability = ({ navItems: propNavItems }) => {
     ...(dateRange.startDate ? { startDate: dateRange.startDate } : {}),
     ...(dateRange.endDate ? { endDate: dateRange.endDate } : {}),
     ...(selectedStoreId !== 'all' ? { storeId: selectedStoreId } : {}),
-    ...(cashierFilter !== 'all' ? { cashierId: cashierFilter } : {}),
+    ...(cashierFilter ? { cashierId: cashierFilter } : {}),
   });
 
   const fetchAll = async () => {
@@ -81,7 +83,7 @@ const AdminCashierAccountability = ({ navItems: propNavItems }) => {
 
   const openDeductionModal = (row) => {
     setDeductionModal(row);
-    setDeductionForm({ amount: '', date: new Date().toISOString().split('T')[0], note: '', payrollPeriod: '', overrideReason: '' });
+    setDeductionForm({ amount: '', date: new Date().toISOString().split('T')[0], note: '', payrollMonth: now.getMonth() + 1, payrollYear: now.getFullYear(), overrideReason: '' });
   };
 
   const submitDeduction = async (e) => {
@@ -96,7 +98,7 @@ const AdminCashierAccountability = ({ navItems: propNavItems }) => {
         amount: Number(deductionForm.amount),
         date: deductionForm.date,
         note: deductionForm.note,
-        payrollPeriod: deductionForm.payrollPeriod || undefined,
+        payrollPeriod: { month: Number(deductionForm.payrollMonth), year: Number(deductionForm.payrollYear) },
         overrideReason: deductionForm.overrideReason || undefined,
       });
       toast.success('Deduction recorded');
@@ -157,12 +159,15 @@ const AdminCashierAccountability = ({ navItems: propNavItems }) => {
             <p className="text-sm font-bold text-slate-500 mt-1">Per-cashier cash shortages, recoveries, and outstanding balances</p>
           </div>
           <div className="flex gap-2 flex-wrap items-center relative z-10">
-            <select value={cashierFilter} onChange={(e) => setCashierFilter(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 shadow-sm cursor-pointer">
-              <option value="all">All Cashiers</option>
-              {cashiers.map((c) => (
-                <option key={c._id} value={c._id}>{c.name}</option>
-              ))}
-            </select>
+            <div className="w-48">
+              <EmployeeSelector
+                multiple={false}
+                employees={cashiers}
+                value={cashierFilter ? [cashierFilter] : []}
+                onChange={([id]) => setCashierFilter(id || '')}
+                triggerLabel="All Cashiers"
+              />
+            </div>
             <input type="date" value={dateRange.startDate} onChange={(e) => setDateRange((r) => ({ ...r, startDate: e.target.value }))} className="bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 shadow-sm" />
             <input type="date" value={dateRange.endDate} onChange={(e) => setDateRange((r) => ({ ...r, endDate: e.target.value }))} className="bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 shadow-sm" />
           </div>
@@ -325,7 +330,7 @@ const AdminCashierAccountability = ({ navItems: propNavItems }) => {
                       <td className="px-4 py-4 text-xs font-black text-slate-800">{row.cashierId?.name || 'Unknown'}</td>
                       <td className="px-4 py-4 text-right text-xs font-black text-emerald-600">Rs. {row.amount.toLocaleString()}</td>
                       <td className="px-4 py-4 text-xs text-slate-500 max-w-[180px] truncate">{row.note || '—'}</td>
-                      <td className="px-4 py-4 text-xs text-slate-500">{row.payrollPeriod || '—'}</td>
+                      <td className="px-4 py-4 text-xs text-slate-500">{row.payrollPeriod?.month ? `${row.payrollPeriod.month}/${row.payrollPeriod.year}` : '—'}</td>
                       <td className="px-6 py-4 text-xs text-slate-500">{row.recordedBy?.name || 'System'}</td>
                     </tr>
                   ))}
@@ -365,8 +370,17 @@ const AdminCashierAccountability = ({ navItems: propNavItems }) => {
                 <input value={deductionForm.note} onChange={(e) => setDeductionForm({ ...deductionForm, note: e.target.value })} placeholder="e.g. Deducted from September salary" className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-sm font-bold text-slate-700" />
               </div>
               <div>
-                <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Payroll Period (optional)</label>
-                <input value={deductionForm.payrollPeriod} onChange={(e) => setDeductionForm({ ...deductionForm, payrollPeriod: e.target.value })} placeholder="e.g. September 2026" className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-sm font-bold text-slate-700" />
+                <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Payroll Period *</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <select value={deductionForm.payrollMonth} onChange={(e) => setDeductionForm({ ...deductionForm, payrollMonth: Number(e.target.value) })}
+                    className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-sm font-bold text-slate-700 cursor-pointer">
+                    {Array.from({ length: 12 }, (_, i) => <option key={i + 1} value={i + 1}>{new Date(0, i).toLocaleString('default', { month: 'long' })}</option>)}
+                  </select>
+                  <select value={deductionForm.payrollYear} onChange={(e) => setDeductionForm({ ...deductionForm, payrollYear: Number(e.target.value) })}
+                    className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-sm font-bold text-slate-700 cursor-pointer">
+                    {[2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
+                  </select>
+                </div>
               </div>
               {Number(deductionForm.amount || 0) > deductionModal.outstanding && (
                 <div>
@@ -397,12 +411,13 @@ const AdminCashierAccountability = ({ navItems: propNavItems }) => {
               </p>
               <div>
                 <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Reassign To *</label>
-                <select required value={reassignForm.toCashierId} onChange={(e) => setReassignForm({ ...reassignForm, toCashierId: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-sm font-bold text-slate-700">
-                  <option value="">Select cashier</option>
-                  {cashiers.filter((c) => c._id !== reassignModal.cashierId?._id).map((c) => (
-                    <option key={c._id} value={c._id}>{c.name}</option>
-                  ))}
-                </select>
+                <EmployeeSelector
+                  multiple={false}
+                  employees={cashiers.filter((c) => c._id !== reassignModal.cashierId?._id)}
+                  value={reassignForm.toCashierId ? [reassignForm.toCashierId] : []}
+                  onChange={([id]) => setReassignForm({ ...reassignForm, toCashierId: id || '' })}
+                  placeholder="Search and select cashier..."
+                />
               </div>
               <div>
                 <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Reason *</label>

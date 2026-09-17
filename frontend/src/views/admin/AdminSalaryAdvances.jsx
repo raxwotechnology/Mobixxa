@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { DollarSign, Plus, Search, Trash2, CreditCard, Building, CheckCircle, RefreshCw, X } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
+import EmployeeSelector from '../../components/EmployeeSelector';
 import { getSalaryAdvances, recordSalaryAdvance, deleteSalaryAdvance, getAdminUsers, getAccounts } from '../../services/api';
 import { adminNavGroups as navItems } from './adminNavItems';
 import { toast } from 'react-toastify';
@@ -20,7 +21,6 @@ const AdminSalaryAdvances = () => {
   const [search, setSearch] = useState('');
   
   const [showModal, setShowModal] = useState(false);
-  const [empSearch, setEmpSearch] = useState('');
   const [form, setForm] = useState({
     employeeId: '',
     amount: '',
@@ -59,6 +59,7 @@ const AdminSalaryAdvances = () => {
 
   const handleCreate = async (e) => {
     e.preventDefault();
+    if (!form.employeeId) return toast.error('Select an employee');
     try {
       await recordSalaryAdvance(form);
       toast.success('Advance payment recorded successfully');
@@ -256,30 +257,13 @@ const AdminSalaryAdvances = () => {
             <form onSubmit={handleCreate} className="space-y-4 text-xs">
               <div>
                 <label className="text-xs font-bold text-slate-700 block mb-1">Employee *</label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="🔍 Type to search employee name or role..."
-                    value={empSearch}
-                    onChange={e => setEmpSearch(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs mb-2 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo"
-                  />
-                  <select
-                    required
-                    value={form.employeeId}
-                    onChange={e => setForm({ ...form, employeeId: e.target.value })}
-                    className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-800 cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-indigo"
-                  >
-                    <option value="">Select Employee ({employees.length} available)</option>
-                    {employees
-                      .filter(e => e.name?.toLowerCase().includes(empSearch.toLowerCase()) || e.role?.toLowerCase().includes(empSearch.toLowerCase()))
-                      .map(e => (
-                        <option key={e._id} value={e._id}>
-                          {e.name} ({e.role})
-                        </option>
-                      ))}
-                  </select>
-                </div>
+                <EmployeeSelector
+                  multiple={false}
+                  employees={employees}
+                  value={form.employeeId ? [form.employeeId] : []}
+                  onChange={([id]) => setForm({ ...form, employeeId: id || '' })}
+                  placeholder="Search and select employee..."
+                />
               </div>
 
               <div>

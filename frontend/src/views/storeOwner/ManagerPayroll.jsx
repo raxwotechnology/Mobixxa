@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Calculator, Send, FileText, CreditCard, Download, Landmark } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
+import EmployeeSelector from '../../components/EmployeeSelector';
 import { getEmployees, calculateSalary, processSalaryPayment, getPayrollReport, downloadPaysheet } from '../../services/api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { toast } from 'react-toastify';
@@ -24,8 +25,6 @@ const ManagerPayroll = ({ navItems = managerNavGroups, title = 'Manager Dashboar
   const [preview, setPreview] = useState(null);
   const [report, setReport] = useState(null);
   const [tab, setTab] = useState('process');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => { fetchEmployees(); }, []);
 
@@ -74,8 +73,8 @@ const ManagerPayroll = ({ navItems = managerNavGroups, title = 'Manager Dashboar
   const exportCSV = () => {
     if (!report?.payrolls?.length) return toast.error('No data to export');
     const rows = [
-      ['Employee', 'Basic', 'Allowances', 'Bonuses', 'Gross', 'EPF Employee (8%)', 'EPF Employer (12%)', 'ETF Employer (3%)', 'Deductions', 'Net Salary', 'Status'].join(','),
-      ...report.payrolls.map(p => [p.employeeId?.name, p.basicSalary, p.allowances, p.bonuses, p.grossSalary, p.epfEmployee, p.epfEmployer, p.etfEmployer, p.otherDeductions, p.netSalary, p.status].join(','))
+      ['Employee', 'Basic', 'Allowances', 'Bonuses', 'Target Bonus', 'Gross', 'EPF Employee (8%)', 'EPF Employer (12%)', 'ETF Employer (3%)', 'Deductions', 'Cashier Recovery', 'Advance Deduction', 'Net Salary', 'Status'].join(','),
+      ...report.payrolls.map(p => [p.employeeId?.name, p.basicSalary, p.allowances, p.bonuses, p.targetBonus || 0, p.grossSalary, p.epfEmployee, p.epfEmployer, p.etfEmployer, p.otherDeductions, p.cashierRecoveryDeduction || 0, p.advanceDeduction || 0, p.netSalary, p.status].join(','))
     ].join('\n');
     const blob = new Blob([rows], { type: 'text/csv' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `payroll_${month}_${year}.csv`; a.click();
@@ -132,70 +131,13 @@ const ManagerPayroll = ({ navItems = managerNavGroups, title = 'Manager Dashboar
               <div className="space-y-5">
                 <div className="relative text-left">
                   <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Employee</label>
-                  <div
-                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo flex items-center justify-between cursor-pointer shadow-sm hover:border-brand-indigo/50 transition-colors"
-                  >
-                    {(() => {
-                      const selectedEmp = employees.find(e => e._id === selected);
-                      return (
-                        <span className={selectedEmp ? "text-slate-800" : "text-slate-400"}>
-                          {selectedEmp
-                            ? `${selectedEmp.name} (${selectedEmp.role}) — Rs. ${(selectedEmp.employeeInfo?.salary || 0).toLocaleString()}`
-                            : "Select employee"}
-                        </span>
-                      );
-                    })()}
-                    <span className="text-slate-400 text-xs">▼</span>
-                  </div>
-
-                  {isDropdownOpen && (
-                    <>
-                      <div className="fixed inset-0 z-40" onClick={() => setIsDropdownOpen(false)}></div>
-                      <div className="absolute left-0 right-0 mt-2 p-2 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 animate-in fade-in zoom-in-95 duration-200">
-                        <input
-                          type="text"
-                          placeholder="Search by name or role..."
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 mb-2 font-medium"
-                          onClick={(e) => e.stopPropagation()}
-                          autoFocus
-                        />
-                        <div className="max-h-60 overflow-y-auto space-y-1 custom-scrollbar pr-1">
-                          {(() => {
-                            const filteredEmployees = employees.filter(e =>
-                              (e.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                              (e.role || '').toLowerCase().includes(searchTerm.toLowerCase())
-                            );
-                            if (filteredEmployees.length === 0) {
-                              return <div className="text-center py-4 text-xs font-bold text-slate-400">No employees found</div>;
-                            }
-                            return filteredEmployees.map((e) => (
-                              <div
-                                key={e._id}
-                                onClick={() => {
-                                  setSelected(e._id);
-                                  setIsDropdownOpen(false);
-                                  setSearchTerm('');
-                                }}
-                                className={`p-3 rounded-xl cursor-pointer transition-all text-left ${
-                                  selected === e._id
-                                    ? 'bg-brand-indigo text-white font-semibold shadow-md'
-                                    : 'hover:bg-slate-50 text-slate-700'
-                                }`}
-                              >
-                                <div className="text-sm font-bold">{e.name}</div>
-                                <div className={`text-[10px] font-black uppercase tracking-wider mt-1 ${selected === e._id ? 'text-indigo-200' : 'text-slate-500'}`}>
-                                  {e.role} • Rs. {(e.employeeInfo?.salary || 0).toLocaleString()}
-                                </div>
-                              </div>
-                            ));
-                          })()}
-                        </div>
-                      </div>
-                    </>
-                  )}
+                  <EmployeeSelector
+                    multiple={false}
+                    employees={employees}
+                    value={selected ? [selected] : []}
+                    onChange={([id]) => setSelected(id || '')}
+                    placeholder="Search and select employee..."
+                  />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -250,13 +192,17 @@ const ManagerPayroll = ({ navItems = managerNavGroups, title = 'Manager Dashboar
                   <div className="space-y-3 text-sm bg-slate-50/50 rounded-2xl p-5 border border-slate-100">
                     <div className="flex justify-between items-center"><span className="text-[11px] font-black uppercase tracking-wider text-slate-500">Basic Salary</span><span className="font-black text-slate-900 text-base">Rs. {preview.basicSalary.toLocaleString()}</span></div>
                     {preview.allowances > 0 && <div className="flex justify-between items-center"><span className="text-[11px] font-black uppercase tracking-wider text-slate-500">Allowances</span><span className="font-black text-emerald-600">+ Rs. {preview.allowances.toLocaleString()}</span></div>}
-                    {preview.bonuses > 0 && <div className="flex justify-between items-center"><span className="text-[11px] font-black uppercase tracking-wider text-slate-500">Bonuses</span><span className="font-black text-emerald-600">+ Rs. {preview.bonuses.toLocaleString()}</span></div>}
+                    {preview.overtimePay > 0 && <div className="flex justify-between items-center"><span className="text-[11px] font-black uppercase tracking-wider text-slate-500">Overtime</span><span className="font-black text-emerald-600">+ Rs. {preview.overtimePay.toLocaleString()}</span></div>}
+                    {preview.targetBonus > 0 && <div className="flex justify-between items-center"><span className="text-[11px] font-black uppercase tracking-wider text-slate-500">Target Incentive (Auto)</span><span className="font-black text-emerald-600">+ Rs. {preview.targetBonus.toLocaleString()}</span></div>}
+                    {preview.bonuses > 0 && <div className="flex justify-between items-center"><span className="text-[11px] font-black uppercase tracking-wider text-slate-500">Custom Bonuses</span><span className="font-black text-emerald-600">+ Rs. {preview.bonuses.toLocaleString()}</span></div>}
                     <div className="h-px bg-slate-200 w-full my-2"></div>
                     <div className="flex justify-between items-center"><span className="text-[11px] font-black uppercase tracking-wider text-slate-500">Gross Salary</span><span className="font-black text-slate-900 text-base">Rs. {preview.grossSalary.toLocaleString()}</span></div>
                     <div className="h-px bg-slate-200 w-full my-2"></div>
                     <div className="flex justify-between items-center"><span className="text-[11px] font-black uppercase tracking-wider text-slate-500">EPF Employee (8%)</span><span className="font-black text-rose-500">- Rs. {preview.epfEmployee.toLocaleString()}</span></div>
                     {preview.otherDeductions > 0 && <div className="flex justify-between items-center"><span className="text-[11px] font-black uppercase tracking-wider text-slate-500">Other Deductions</span><span className="font-black text-rose-500">- Rs. {preview.otherDeductions.toLocaleString()}</span></div>}
                     {preview.attendanceDeductions > 0 && <div className="flex justify-between items-center"><span className="text-[11px] font-black uppercase tracking-wider text-slate-500">Attendance Deductions</span><span className="font-black text-rose-500">- Rs. {preview.attendanceDeductions.toLocaleString()}</span></div>}
+                    {preview.cashierRecoveryDeduction > 0 && <div className="flex justify-between items-center"><span className="text-[11px] font-black uppercase tracking-wider text-slate-500">Cashier Shortage Recovery</span><span className="font-black text-rose-500">- Rs. {preview.cashierRecoveryDeduction.toLocaleString()}</span></div>}
+                    {preview.advanceDeduction > 0 && <div className="flex justify-between items-center"><span className="text-[11px] font-black uppercase tracking-wider text-slate-500">Salary Advances</span><span className="font-black text-rose-500">- Rs. {preview.advanceDeduction.toLocaleString()}</span></div>}
                     <div className="h-px bg-slate-200 w-full my-2"></div>
                     <div className="flex justify-between items-end mt-4"><span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Net Salary</span><span className="text-3xl font-black tracking-tight text-emerald-600">Rs. {preview.netSalary.toLocaleString()}</span></div>
                     

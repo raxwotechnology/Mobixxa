@@ -8,10 +8,11 @@ import {
   BarChart3, BarChart, ShoppingBag, ShieldCheck, Users, PackageOpen
 } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
+import EmployeeSelector from '../../components/EmployeeSelector';
 import { managerNavGroups } from './managerNavItems';
-import { 
-  getRepairs, createRepair, updateRepair, deliverRepair, deleteRepair, 
-  getEmployees, searchProducts, getAccounts, getStores 
+import {
+  getRepairs, createRepair, updateRepair, deliverRepair, deleteRepair,
+  getEmployees, searchProducts, getAccounts, getStores
 } from '../../services/api';
 import useCurrencyStore from '../../store/currencyStore';
 import useSettingsStore from '../../store/settingsStore';
@@ -1139,30 +1140,17 @@ const ManagerRepairs = ({ isAdmin = false, isEmployee = false, navItems: propNav
                   <div>
                     <label className="block text-xs font-bold text-dark-navy uppercase mb-1">Assign Technicians</label>
                     <p className="text-[10px] text-muted-text mb-1.5">Assign one or more staff to work on this device:</p>
-                    <div className="max-h-48 overflow-y-auto border border-card-border rounded-xl p-3 space-y-2 bg-gray-50">
-                      {technicians.length === 0 ? (
-                        <p className="text-xs text-muted-text italic">No employees found in store system.</p>
-                      ) : (
-                        technicians.map(tech => (
-                          <label key={tech._id} className="flex items-center gap-2 text-sm text-dark-navy cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={updateForm.technicians.includes(tech._id)}
-                              onChange={(e) => {
-                                const current = [...updateForm.technicians];
-                                if (e.target.checked) {
-                                  setUpdateForm({ ...updateForm, technicians: [...current, tech._id] });
-                                } else {
-                                  setUpdateForm({ ...updateForm, technicians: current.filter(id => id !== tech._id) });
-                                }
-                              }}
-                              className="rounded text-primary-blue focus:ring-primary-blue"
-                            />
-                            <span>{tech.name} <span className="text-xs text-muted-text">({tech.role})</span></span>
-                          </label>
-                        ))
-                      )}
-                    </div>
+                    {technicians.length === 0 ? (
+                      <p className="text-xs text-muted-text italic">No employees found in store system.</p>
+                    ) : (
+                      <EmployeeSelector
+                        alwaysOpen
+                        multiple
+                        employees={technicians}
+                        value={updateForm.technicians}
+                        onChange={(ids) => setUpdateForm({ ...updateForm, technicians: ids })}
+                      />
+                    )}
                   </div>
 
                   <div>

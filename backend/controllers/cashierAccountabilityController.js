@@ -194,6 +194,13 @@ const recordDeduction = async (req, res, next) => {
       return next(new Error('cashierId and a positive amount are required'));
     }
 
+    const periodMonth = Number(payrollPeriod?.month);
+    const periodYear = Number(payrollPeriod?.year);
+    if (!periodMonth || periodMonth < 1 || periodMonth > 12 || !periodYear) {
+      res.status(400);
+      return next(new Error('payrollPeriod (month and year) is required'));
+    }
+
     const cashier = await User.findById(cashierId);
     if (!cashier) {
       res.status(404);
@@ -227,7 +234,7 @@ const recordDeduction = async (req, res, next) => {
       amount: amt,
       date: date ? new Date(date) : new Date(),
       note,
-      payrollPeriod,
+      payrollPeriod: { month: periodMonth, year: periodYear },
       overrideReason: amt > outstanding + 0.01 ? overrideReason.trim() : undefined,
       recordedBy: req.user._id,
       recordedAt: new Date(),

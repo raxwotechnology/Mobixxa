@@ -2,12 +2,12 @@ const express = require('express');
 const router = express.Router();
 const {
   checkIn, checkOut, getMyAttendance, getAttendanceReport,
-  requestLeave, getMyLeaves, getStoreLeaves, approveLeave, rejectLeave,
+  requestLeave, getMyLeaves, getStoreLeaves, approveLeave, rejectLeave, cancelDecision,
   getEmployees, addEmployee, updateEmployee, deleteEmployee,
   startBreak, endBreak, getBreakHistory, getActiveBreak,
   createTarget, getTargets, getMyTargets, updateTargetProgress, payTargetBonus,
   getEmployeePerformance,
-  adminMarkAttendance, adminCreateLeave, deleteTarget
+  adminMarkAttendance, adminCreateLeave, deleteTarget, getAttendanceSummary
 } = require('../controllers/hrController');
 const { protect, authorize, requirePermission } = require('../middleware/authMiddleware');
 
@@ -32,7 +32,9 @@ router.get('/leaves', getMyLeaves);
 router.get('/leaves/store', requirePermission('employees'), getStoreLeaves);
 router.put('/leaves/:id/approve', requirePermission('employees'), approveLeave);
 router.put('/leaves/:id/reject', requirePermission('employees'), rejectLeave);
+router.put('/leaves/:id/cancel', authorize('admin'), cancelDecision);
 router.post('/leaves/create-for-employee', requirePermission('employees'), adminCreateLeave);
+router.get('/attendance-summary/:employeeId', getAttendanceSummary);
 
 // Employees
 router.get('/employees', requirePermission('employees'), getEmployees);
@@ -71,16 +73,17 @@ const {
   assignPoliciesToAllEmployees,
 } = require('../controllers/policyController');
 
-// Policies
+// Policies — GET stays open to anyone managing leave (requirePermission), but
+// editing the money-affecting policy itself is Admin only.
 router.get('/policies/leave', requirePermission('employees'), getLeavePolicies);
-router.post('/policies/leave', requirePermission('employees'), createLeavePolicy);
-router.put('/policies/leave/:id', requirePermission('employees'), updateLeavePolicy);
-router.delete('/policies/leave/:id', requirePermission('employees'), deleteLeavePolicy);
+router.post('/policies/leave', authorize('admin'), createLeavePolicy);
+router.put('/policies/leave/:id', authorize('admin'), updateLeavePolicy);
+router.delete('/policies/leave/:id', authorize('admin'), deleteLeavePolicy);
 
 router.get('/policies/attendance', requirePermission('employees'), getAttendancePolicies);
-router.post('/policies/attendance', requirePermission('employees'), createAttendancePolicy);
-router.put('/policies/attendance/:id', requirePermission('employees'), updateAttendancePolicy);
-router.delete('/policies/attendance/:id', requirePermission('employees'), deleteAttendancePolicy);
+router.post('/policies/attendance', authorize('admin'), createAttendancePolicy);
+router.put('/policies/attendance/:id', authorize('admin'), updateAttendancePolicy);
+router.delete('/policies/attendance/:id', authorize('admin'), deleteAttendancePolicy);
 
 router.post('/policies/assign', requirePermission('employees'), assignPoliciesToEmployee);
 router.post('/policies/assign-all', requirePermission('employees'), assignPoliciesToAllEmployees);

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Clock, Plus, DollarSign, User, CheckCircle, Trash2, X, Download, Search, ChevronRight, ArrowLeft } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
+import EmployeeSelector from '../../components/EmployeeSelector';
 import DeleteConfirmationModal from '../../components/DeleteConfirmationModal';
 import { getOvertimeSummary, getOvertimeRecords, createOvertimeRecord, markOvertimePaid, rejectOvertimeRecord, deleteOvertimeRecord, getEmployeeOTReport } from '../../services/api';
 import API from '../../services/api';
@@ -55,6 +56,7 @@ const AdminOvertime = () => {
 
   const handleCreate = async (e) => {
     e.preventDefault();
+    if (!form.employeeId) return toast.error('Select an employee');
     try {
       await createOvertimeRecord({
         ...form,
@@ -424,12 +426,13 @@ const AdminOvertime = () => {
             <form onSubmit={handleCreate} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-dark-navy mb-1">Employee *</label>
-                <select required value={form.employeeId} onChange={e => setForm({ ...form, employeeId: e.target.value })} className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm bg-white">
-                  <option value="">Select Employee</option>
-                  {employees.map(emp => (
-                    <option key={emp._id} value={emp._id}>{emp.name} ({emp.role})</option>
-                  ))}
-                </select>
+                <EmployeeSelector
+                  multiple={false}
+                  employees={employees}
+                  value={form.employeeId ? [form.employeeId] : []}
+                  onChange={([id]) => setForm({ ...form, employeeId: id || '' })}
+                  placeholder="Search and select employee..."
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-dark-navy mb-1">Date *</label>

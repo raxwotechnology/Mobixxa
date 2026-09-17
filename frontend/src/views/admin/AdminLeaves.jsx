@@ -5,10 +5,13 @@ import { Calendar, Check, X, Clock, FileText, FileSpreadsheet, Plus, Edit2, Tras
 
 import DashboardLayout from '../../components/DashboardLayout';
 import { toast } from 'react-toastify';
+import useAuthStore from '../../store/authStore';
 import { adminNavGroups as defaultNavItems } from './adminNavItems';
+import EmployeeSelector from '../../components/EmployeeSelector';
 import {
   getEmployees, getLeavePolicies, createLeavePolicy, updateLeavePolicy, deleteLeavePolicy,
-  assignPoliciesToEmployee, assignPoliciesToAllEmployees, adminCreateLeave, approveLeave, rejectLeave, getStoreLeaves, requestLeave
+  assignPoliciesToEmployee, assignPoliciesToAllEmployees, adminCreateLeave, approveLeave, rejectLeave,
+  cancelLeaveDecision, getAttendanceSummary, getStoreLeaves, requestLeave
 } from '../../services/api';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
@@ -23,6 +26,8 @@ const statusColors = {
 
 const AdminLeaves = ({ navItems: propNavItems }) => {
   const navItems = propNavItems || defaultNavItems;
+  const { user } = useAuthStore();
+  const isAdmin = user?.role === 'admin';
   const [leaves, setLeaves] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -51,9 +56,6 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
     periodType: 'monthly',
     allowedLeaves: 4,
     unusedLeaveBonusPerDay: 1000,
-    annualLeaves: 14,
-    sickLeaves: 7,
-    casualLeaves: 7,
     deductionPerExcessLeave: 1500,
     isDefault: false
   });
@@ -63,10 +65,10 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
   const [showBulkAssignConfirm, setShowBulkAssignConfirm] = useState(false);
 
   const [assignForm, setAssignForm] = useState({
-    employeeId: '',
-    employeeName: '',
+    employeeIds: [],
     leavePolicyId: ''
   });
+  const [policySearchQuery, setPolicySearchQuery] = useState('');
 
   // Delete modal state
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -120,25 +122,78 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
     } catch (err) { toast.error(err.response?.data?.message || 'Failed'); }
   };
 
-  const handleApprove = async (id) => {
+  // When approving would exceed the employee's pooled allowance, we don't
+  // block — we show a warning modal (instead of a native confirm()) and let
+  // the admin decide; excess days still get treated as excess/deducted.
+  const [approveWarning, setApproveWarning] = useState(null); // { leave, remaining }
+  const [approving, setApproving] = useState(false);
+
+  const doApprove = async (leave) => {
+    setApproving(true);
     try {
-      await approveLeave(id);
+      await approveLeave(leave._id);
       toast.success('Leave approved');
+      setApproveWarning(null);
       fetchData();
     } catch (err) {
       toast.error('Failed to approve');
+    } finally {
+      setApproving(false);
     }
   };
 
-  const handleReject = async (id) => {
-    const reason = prompt('Rejection reason:');
-    if (!reason) return;
+  const handleApprove = async (leave) => {
     try {
-      await rejectLeave(id, { reason });
+      // Look up the employee's pooled allowance for the period this leave falls in.
+      const start = new Date(leave.startDate);
+      const { data: balance } = await getAttendanceSummary(leave.employeeId?._id || leave.employeeId, {
+        month: start.getMonth() + 1,
+        year: start.getFullYear(),
+      });
+      const remaining = Math.max(0, (balance.allowedLeaves || 0) - (balance.leaveDaysTaken || 0));
+      if (leave.leaveType !== 'unpaid' && (leave.totalDays || 0) > remaining) {
+        setApproveWarning({ leave, remaining });
+        return;
+      }
+    } catch (err) {
+      // Balance lookup failing shouldn't block approval — fall through.
+    }
+    doApprove(leave);
+  };
+
+  const [rejectModal, setRejectModal] = useState(null); // { id }
+  const [rejectReason, setRejectReason] = useState('');
+  const [rejecting, setRejecting] = useState(false);
+
+  const handleReject = (id) => {
+    setRejectReason('');
+    setRejectModal({ id });
+  };
+
+  const doReject = async () => {
+    if (!rejectReason.trim()) return;
+    setRejecting(true);
+    try {
+      await rejectLeave(rejectModal.id, { reason: rejectReason.trim() });
       toast.success('Leave rejected');
+      setRejectModal(null);
       fetchData();
     } catch (err) {
       toast.error('Failed to reject');
+    } finally {
+      setRejecting(false);
+    }
+  };
+
+  const handleCancelDecision = async (id) => {
+    const reason = prompt('Reason for cancelling this decision:');
+    if (!reason || !reason.trim()) return;
+    try {
+      await cancelLeaveDecision(id, { reason: reason.trim() });
+      toast.success('Decision cancelled — request is pending again');
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to cancel decision');
     }
   };
 
@@ -189,9 +244,9 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
     setEditingLeavePolicyId(policy._id);
     setLeavePolicyForm({
       name: policy.name,
-      annualLeaves: policy.annualLeaves,
-      sickLeaves: policy.sickLeaves,
-      casualLeaves: policy.casualLeaves,
+      periodType: policy.periodType || 'monthly',
+      allowedLeaves: policy.allowedLeaves,
+      unusedLeaveBonusPerDay: policy.unusedLeaveBonusPerDay,
       deductionPerExcessLeave: policy.deductionPerExcessLeave,
       isDefault: !!policy.isDefault
     });
@@ -202,10 +257,10 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
     setEditingLeavePolicyId(null);
     setLeavePolicyForm({
       name: '',
-      annualLeaves: 14,
-      sickLeaves: 7,
-      casualLeaves: 7,
-      deductionPerExcessLeave: 0,
+      periodType: 'monthly',
+      allowedLeaves: 4,
+      unusedLeaveBonusPerDay: 1000,
+      deductionPerExcessLeave: 1500,
       isDefault: false
     });
     setShowLeaveModal(true);
@@ -229,50 +284,41 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
 
   // Policy Assignment logic
   const openAssignModal = (employee = null) => {
+    setPolicySearchQuery('');
     if (employee) {
       setAssignForm({
-        employeeId: employee._id,
-        employeeName: employee.name,
+        employeeIds: [employee._id],
         leavePolicyId: employee.employeeInfo?.leavePolicyId?._id || employee.employeeInfo?.leavePolicyId || ''
       });
     } else {
-      setAssignForm({
-        employeeId: 'all',
-        employeeName: 'All Employees',
-        leavePolicyId: ''
-      });
+      setAssignForm({ employeeIds: [], leavePolicyId: '' });
     }
     setShowAssignModal(true);
   };
 
   const handleSaveAssignment = async (e) => {
     if (e) e.preventDefault();
-    if (assignForm.employeeId === 'all' && !showBulkAssignConfirm) {
+    if (assignForm.employeeIds.length === 0 || !assignForm.leavePolicyId) return;
+    // Extra confirmation only when the selection is effectively everyone —
+    // the same safety net the old "assign to all" sentinel used to provide.
+    const isEffectivelyAll = employees.length > 0 && assignForm.employeeIds.length === employees.length;
+    if (isEffectivelyAll && !showBulkAssignConfirm) {
       setShowBulkAssignConfirm(true);
       return;
     }
     try {
-      if (assignForm.employeeId === 'all') {
-
-        await assignPoliciesToAllEmployees({
-          leavePolicyId: assignForm.leavePolicyId || null
-        });
-        toast.success('Leave policy assigned to all employees successfully');
-        setShowBulkAssignConfirm(false);
-
-      } else {
-        await assignPoliciesToEmployee({
-          employeeId: assignForm.employeeId,
-          leavePolicyId: assignForm.leavePolicyId || null
-        });
-        toast.success('Leave policy assigned successfully');
-      }
+      await assignPoliciesToEmployee({
+        employeeIds: assignForm.employeeIds,
+        leavePolicyId: assignForm.leavePolicyId || null
+      });
+      toast.success(`Policy assigned to ${assignForm.employeeIds.length} employee${assignForm.employeeIds.length === 1 ? '' : 's'}`);
+      setShowBulkAssignConfirm(false);
       setShowAssignModal(false);
       // Refresh employees list
       const empRes = await getEmployees();
       setEmployees(empRes.data);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to assign policies');
+      toast.error(err.response?.data?.message || 'Failed to assign policy');
     }
   };
 
@@ -566,13 +612,18 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
                         </span>
                         {leave.status === 'pending' && (
                           <div className="flex gap-2">
-                            <button onClick={() => handleApprove(leave._id)} className="w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white border border-emerald-100 hover:border-emerald-500 transition-all shadow-sm">
+                            <button onClick={() => handleApprove(leave)} className="w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white border border-emerald-100 hover:border-emerald-500 transition-all shadow-sm">
                               <Check size={16} strokeWidth={3} />
                             </button>
                             <button onClick={() => handleReject(leave._id)} className="w-8 h-8 flex items-center justify-center rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white border border-rose-100 hover:border-rose-500 transition-all shadow-sm">
                               <X size={16} strokeWidth={3} />
                             </button>
                           </div>
+                        )}
+                        {isAdmin && (leave.status === 'approved' || leave.status === 'rejected') && (
+                          <button onClick={() => handleCancelDecision(leave._id)} className="text-[9px] uppercase font-black tracking-wider px-3 py-1.5 rounded-lg bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 border border-slate-200 transition-all">
+                            Cancel Decision
+                          </button>
                         )}
                       </div>
                     </div>
@@ -601,6 +652,20 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
                       <div className="mt-4 bg-rose-50 rounded-xl p-3 border border-rose-100">
                         <p className="text-[10px] uppercase font-black tracking-wider text-rose-400 mb-1">Rejection Reason</p>
                         <p className="text-sm font-semibold text-rose-700">{leave.rejectionReason}</p>
+                      </div>
+                    )}
+                    {leave.decisions?.length > 0 && (
+                      <div className="mt-4 border-t border-slate-100 pt-3">
+                        <p className="text-[10px] uppercase font-black tracking-wider text-slate-400 mb-2">Decision History</p>
+                        <div className="space-y-1.5">
+                          {leave.decisions.map((d, i) => (
+                            <p key={i} className="text-[11px] font-semibold text-slate-500 m-0">
+                              <span className={`uppercase font-black ${d.action === 'approved' ? 'text-emerald-600' : d.action === 'rejected' ? 'text-rose-600' : 'text-slate-600'}`}>{d.action}</span>
+                              {' '}by {d.by?.name || 'unknown'} on {new Date(d.at).toLocaleString()}
+                              {d.note ? ` — ${d.note}` : ''}
+                            </p>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -633,16 +698,16 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
                       <h3 className="font-black text-slate-800 text-lg mb-5 pr-16">{p.name}</h3>
                       <div className="space-y-3 text-sm text-slate-600 mb-6">
                         <div className="flex justify-between items-center border-b border-slate-50 pb-2">
-                          <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">🌴 Annual Leaves</span>
-                          <span className="font-black text-slate-800">{p.annualLeaves} days</span>
+                          <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">🗓️ Cycle</span>
+                          <span className="font-black text-slate-800 capitalize">{(p.periodType || 'monthly').replace('_', ' ')}</span>
                         </div>
                         <div className="flex justify-between items-center border-b border-slate-50 pb-2">
-                          <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">🤒 Sick Leaves</span>
-                          <span className="font-black text-slate-800">{p.sickLeaves} days</span>
+                          <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">🌴 Allowed Leaves</span>
+                          <span className="font-black text-slate-800">{p.allowedLeaves} days</span>
                         </div>
                         <div className="flex justify-between items-center border-b border-slate-50 pb-2">
-                          <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">🏖️ Casual Leaves</span>
-                          <span className="font-black text-slate-800">{p.casualLeaves} days</span>
+                          <span className="text-[10px] uppercase font-black tracking-wider text-emerald-600">💚 Full-Attendance Bonus</span>
+                          <span className="font-black text-emerald-600">Rs. {(p.unusedLeaveBonusPerDay || 0).toLocaleString()} / day</span>
                         </div>
                         <div className="flex justify-between items-center border-b border-slate-50 pb-2">
                           <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">💸 Excess Penalty</span>
@@ -751,11 +816,13 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
             <div className="p-6 bg-slate-50/50 space-y-4">
               <div>
                 <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Employee *</label>
-                <select value={leaveForm.employeeId} onChange={(e) => setLeaveForm({...leaveForm, employeeId: e.target.value})}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm cursor-pointer">
-                  <option value="">Select employee</option>
-                  {employees.map(e => <option key={e._id} value={e._id}>{e.name} ({e.role})</option>)}
-                </select>
+                <EmployeeSelector
+                  multiple={false}
+                  employees={employees}
+                  value={leaveForm.employeeId ? [leaveForm.employeeId] : []}
+                  onChange={([id]) => setLeaveForm({ ...leaveForm, employeeId: id || '' })}
+                  placeholder="Search and select employee..."
+                />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -843,6 +910,7 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
                   >
                     <option value="daily">Daily Basis</option>
                     <option value="monthly">Monthly Basis (Standard)</option>
+                    <option value="quarterly">3-Months Basis</option>
                     <option value="half_yearly">6-Months Basis</option>
                     <option value="annual">Annual / Yearly Basis</option>
                   </select>
@@ -887,38 +955,6 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1">Annual</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={leavePolicyForm.annualLeaves}
-                    onChange={(e) => setLeavePolicyForm({ ...leavePolicyForm, annualLeaves: parseInt(e.target.value) || 0 })}
-                    className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800"
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1">Sick</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={leavePolicyForm.sickLeaves}
-                    onChange={(e) => setLeavePolicyForm({ ...leavePolicyForm, sickLeaves: parseInt(e.target.value) || 0 })}
-                    className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800"
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1">Casual</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={leavePolicyForm.casualLeaves}
-                    onChange={(e) => setLeavePolicyForm({ ...leavePolicyForm, casualLeaves: parseInt(e.target.value) || 0 })}
-                    className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800"
-                  />
-                </div>
-              </div>
               <div className="flex items-center gap-3 pt-2 bg-slate-100 p-3 rounded-xl border border-slate-200">
                 <input
                   type="checkbox"
@@ -947,8 +983,8 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
       {/* Assign Policies Modal */}
       {showAssignModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
-          <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col border border-slate-100">
-            <div className="px-6 py-5 border-b border-slate-100 flex flex-col items-center justify-center text-center bg-white/80 backdrop-blur-md relative">
+          <div className="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col border border-slate-100 max-h-[90vh]">
+            <div className="px-6 py-5 border-b border-slate-100 flex flex-col items-center justify-center text-center bg-white/80 backdrop-blur-md relative flex-shrink-0">
               <button onClick={() => setShowAssignModal(false)} className="absolute right-4 top-4 p-2 rounded-full hover:bg-slate-100 text-slate-400 transition-colors">
                 <X size={16} />
               </button>
@@ -957,32 +993,69 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
               </div>
               <h3 className="font-black text-slate-900 text-xl">Assign Policy</h3>
             </div>
-            
-            <form onSubmit={handleSaveAssignment} className="p-6 bg-slate-50/50 space-y-4">
-              <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
-                <label className="text-[10px] uppercase font-black tracking-wider text-slate-400 block mb-1">Employee</label>
-                <p className="font-black text-slate-900 text-lg">{assignForm.employeeName}</p>
+
+            <form onSubmit={handleSaveAssignment} className="p-6 bg-slate-50/50 space-y-4 overflow-y-auto">
+              <div>
+                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Employees</label>
+                <EmployeeSelector
+                  alwaysOpen
+                  multiple
+                  employees={employees}
+                  value={assignForm.employeeIds}
+                  onChange={(ids) => setAssignForm({ ...assignForm, employeeIds: ids })}
+                />
               </div>
               <div>
-                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Select Leave Policy</label>
-                <select
-                  value={assignForm.leavePolicyId}
-                  onChange={(e) => setAssignForm({ ...assignForm, leavePolicyId: e.target.value })}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm cursor-pointer"
-                >
-                  <option value="">System Default</option>
-                  {leavePolicies.map(p => (
-                    <option key={p._id} value={p._id}>
-                      {p.name} (Annual: {p.annualLeaves}d, Sick: {p.sickLeaves}d, Casual: {p.casualLeaves}d)
-                    </option>
-                  ))}
-                </select>
+                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Select Leave Policy *</label>
+                {leavePolicies.length === 0 ? (
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
+                    <p className="text-xs font-bold text-amber-700 mb-3">No leave policies exist yet — create one first.</p>
+                    <button
+                      type="button"
+                      onClick={() => { setShowAssignModal(false); openCreateLeave(); }}
+                      className="text-[11px] uppercase tracking-wider font-black bg-brand-indigo hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl shadow-sm transition-all"
+                    >
+                      + Create Leave Policy
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    {leavePolicies.length > 6 && (
+                      <input
+                        type="text"
+                        value={policySearchQuery}
+                        onChange={(e) => setPolicySearchQuery(e.target.value)}
+                        placeholder="Search policies..."
+                        className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2 mb-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm"
+                      />
+                    )}
+                    <select
+                      required
+                      value={assignForm.leavePolicyId}
+                      onChange={(e) => setAssignForm({ ...assignForm, leavePolicyId: e.target.value })}
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm cursor-pointer"
+                    >
+                      <option value="">Select a policy...</option>
+                      {leavePolicies
+                        .filter((p) => p.name.toLowerCase().includes(policySearchQuery.toLowerCase()))
+                        .map(p => (
+                          <option key={p._id} value={p._id}>
+                            {p.name} ({p.allowedLeaves}d / {(p.periodType || 'monthly').replace('_', ' ')})
+                          </option>
+                        ))}
+                    </select>
+                  </>
+                )}
               </div>
               <div className="flex gap-3 pt-4">
                 <button type="button" onClick={() => setShowAssignModal(false)} className="flex-1 py-3 rounded-xl bg-slate-100 text-[11px] uppercase tracking-wider font-black hover:bg-slate-200 text-slate-700 transition-all">
                   Cancel
                 </button>
-                <button type="submit" className="flex-1 py-3 rounded-xl bg-brand-indigo hover:bg-indigo-700 text-white text-[11px] uppercase tracking-wider font-black shadow-lg shadow-brand-indigo/20 transition-all">
+                <button
+                  type="submit"
+                  disabled={assignForm.employeeIds.length === 0 || !assignForm.leavePolicyId}
+                  className="flex-1 py-3 rounded-xl bg-brand-indigo hover:bg-indigo-700 text-white text-[11px] uppercase tracking-wider font-black shadow-lg shadow-brand-indigo/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-brand-indigo"
+                >
                   Save Changes
                 </button>
               </div>
@@ -1032,6 +1105,111 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
                 Yes, Overwrite & Assign
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Approve-with-excess Warning Modal */}
+      {approveWarning && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-100 transform transition-all duration-300 scale-100 p-6" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-3 rounded-2xl bg-amber-50 text-amber-600">
+                <AlertCircle size={24} />
+              </div>
+              <div>
+                <h3 className="font-extrabold text-slate-900 text-lg">Exceeds Leave Allowance</h3>
+                <p className="text-xs text-slate-500 font-medium">Please confirm this action</p>
+              </div>
+            </div>
+
+            <p className="text-sm text-slate-600 font-medium mb-6">
+              <span className="font-bold text-slate-800">{approveWarning.leave.employeeId?.name || 'This employee'}</span> only has{' '}
+              <span className="font-bold text-slate-800">{approveWarning.remaining} day{approveWarning.remaining === 1 ? '' : 's'}</span> left in their leave allowance,
+              but this request is for <span className="font-bold text-slate-800">{approveWarning.leave.totalDays} day{approveWarning.leave.totalDays > 1 ? 's' : ''}</span>.
+              Approving will treat the extra day(s) as excess and deduct them from salary.
+            </p>
+
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setApproveWarning(null)}
+                disabled={approving}
+                className="px-5 py-2.5 font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-all text-sm disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => doApprove(approveWarning.leave)}
+                disabled={approving}
+                className="px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl shadow-md shadow-amber-200 transition-all text-sm disabled:opacity-50 flex items-center gap-2"
+              >
+                {approving && <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+                Approve Anyway
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reject Reason Modal */}
+      {rejectModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-100 transform transition-all duration-300 scale-100" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-rose-50 px-6 py-5 flex items-center gap-3 border-b border-rose-100">
+              <div className="p-2 bg-rose-100 text-rose-600 rounded-xl">
+                <X size={20} />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-extrabold text-slate-900 text-base">Reject Leave Request</h3>
+                <p className="text-[11px] text-rose-700 font-medium mt-0.5">A reason is required and will be shown to the employee</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setRejectModal(null)}
+                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-rose-100/50 transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={(e) => { e.preventDefault(); doReject(); }} className="p-6 space-y-4">
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Rejection Reason</label>
+                <textarea
+                  autoFocus
+                  required
+                  rows={3}
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  placeholder="Explain why this request is being rejected..."
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 resize-none placeholder:text-slate-400 transition-all"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setRejectModal(null)}
+                  disabled={rejecting}
+                  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-4 rounded-xl text-xs transition-all disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={rejecting || !rejectReason.trim()}
+                  className="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 px-4 rounded-xl text-xs transition-all shadow-md shadow-rose-100 hover:shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {rejecting ? (
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    'Reject Request'
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

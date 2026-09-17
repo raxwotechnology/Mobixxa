@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Download, FileText, FileSpreadsheet, Filter, Clock, CheckCircle, X, Users, UserCheck } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
+import EmployeeSelector from '../../components/EmployeeSelector';
 import { getAttendanceReport, getEmployees, adminMarkAttendance, checkIn, checkOut, startBreak, endBreak, getMyAttendance, getActiveBreak } from '../../services/api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { toast } from 'react-toastify';
@@ -325,10 +326,13 @@ const ManagerAttendance = () => {
             <div className="p-6 space-y-4">
               <div>
                 <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Employee *</label>
-                <select value={attForm.employeeId} onChange={(e) => setAttForm({ ...attForm, employeeId: e.target.value })} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-800 bg-white cursor-pointer">
-                  <option value="">Select employee</option>
-                  {employees.map(e => <option key={e._id} value={e._id}>{e.name} ({e.role})</option>)}
-                </select>
+                <EmployeeSelector
+                  multiple={false}
+                  employees={employees}
+                  value={attForm.employeeId ? [attForm.employeeId] : []}
+                  onChange={([id]) => setAttForm({ ...attForm, employeeId: id || '' })}
+                  placeholder="Search and select employee..."
+                />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>

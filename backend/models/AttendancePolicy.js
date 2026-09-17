@@ -31,6 +31,10 @@ const attendancePolicySchema = mongoose.Schema(
       type: Number,
       default: 4, // Hours below this count as half-day or absent
     },
+    absentDayDeduction: {
+      type: Number,
+      default: 0, // Fixed Rs. deducted for an unapproved absent day (replaces pro-rata)
+    },
     isDefault: {
       type: Boolean,
       default: false,

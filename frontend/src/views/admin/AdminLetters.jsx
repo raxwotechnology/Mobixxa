@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { FileText, Mail, Search, Plus, Trash2, Download, Printer, Eye, X, CheckCircle, Briefcase, DollarSign, Clock, UserCheck, Shield, FileCheck } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
+import EmployeeSelector from '../../components/EmployeeSelector';
 import { getIssuedLetters, issueLetter, deleteLetter, getAdminUsers, getSettings } from '../../services/api';
 import { adminNavGroups as navItems } from './adminNavItems';
 import { toast } from 'react-toastify';
@@ -37,7 +38,6 @@ const AdminLetters = () => {
 
   // Selected Template / Builder Modal State
   const [selectedTemplate, setSelectedTemplate] = useState(null);
-  const [empSearch, setEmpSearch] = useState('');
   const [selectedEmpId, setSelectedEmpId] = useState('');
   const [form, setForm] = useState({
     recipientName: '',
@@ -425,25 +425,13 @@ const AdminLetters = () => {
               {/* Optional Employee Auto-Fill Selector */}
               <div>
                 <label className="text-xs font-bold text-slate-700 block mb-1">Auto-fill Employee Details (Optional)</label>
-                <input
-                  type="text"
-                  placeholder="🔍 Type employee name to search..."
-                  value={empSearch}
-                  onChange={e => setEmpSearch(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs mb-2 font-semibold text-slate-800"
+                <EmployeeSelector
+                  multiple={false}
+                  employees={employees}
+                  value={selectedEmpId ? [selectedEmpId] : []}
+                  onChange={([id]) => handleSelectEmployeeForTemplate(id || '')}
+                  placeholder="Search and select employee..."
                 />
-                <select
-                  value={selectedEmpId}
-                  onChange={e => handleSelectEmployeeForTemplate(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-800 cursor-pointer"
-                >
-                  <option value="">Select Employee to Auto-fill Template</option>
-                  {employees
-                    .filter(e => e.name?.toLowerCase().includes(empSearch.toLowerCase()))
-                    .map(e => (
-                      <option key={e._id} value={e._id}>{e.name} ({e.role})</option>
-                    ))}
-                </select>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

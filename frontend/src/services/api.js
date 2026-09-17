@@ -203,6 +203,8 @@ export const requestLeave = (data) => API.post('/hr/leaves', data);
 export const getMyLeaves = () => API.get('/hr/leaves');
 export const approveLeave = (id) => API.put(`/hr/leaves/${id}/approve`);
 export const rejectLeave = (id, data) => API.put(`/hr/leaves/${id}/reject`, data);
+export const cancelLeaveDecision = (id, data) => API.put(`/hr/leaves/${id}/cancel`, data);
+export const getAttendanceSummary = (employeeId, params) => API.get(`/hr/attendance-summary/${employeeId}`, { params });
 export const getEmployees = (params) => API.get('/hr/employees', { params });
 export const addEmployee = (data) => API.post('/hr/employees', data);
 export const updateEmployee = (id, data) => API.put(`/hr/employees/${id}`, data);
@@ -253,6 +255,7 @@ export const processSalaryPayment = (data) => API.post('/payroll/pay', data);
 export const getSalaryHistory = (employeeId) => API.get(`/payroll/history/${employeeId}`);
 export const getPayrollReport = (params) => API.get('/payroll/report', { params });
 export const downloadPaysheet = (id) => API.get(`/payroll/paysheet/${id}`, { responseType: 'blob' });
+export const addPayrollAdjustment = (id, data) => API.post(`/payroll/${id}/adjustments`, data);
 export const exportSalaryHistory = (employeeId, params) =>
   API.get(`/payroll/history/${employeeId}/export`, { params, responseType: 'blob' });
 

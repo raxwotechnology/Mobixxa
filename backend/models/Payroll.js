@@ -1,5 +1,25 @@
 const mongoose = require('mongoose');
 
+// Locked snapshot of the attendance/leave figures used to compute this month's
+// payroll — lets the summary be redisplayed later without re-deriving from
+// policy values that may have since changed (see computeMonthlyAttendanceSummary).
+const attendanceBreakdownSchema = mongoose.Schema(
+  {
+    periodType: { type: String },
+    periodStart: { type: Date },
+    periodEnd: { type: Date },
+    allowedLeaves: { type: Number, default: 0 },
+    leaveDaysTaken: { type: Number, default: 0 }, // cumulative within the period, for display
+    extraOffDaysThisMonth: { type: Number, default: 0 }, // what was actually deducted this run
+    unapprovedAbsences: { type: Number, default: 0 },
+    unpaidLeaveDays: { type: Number, default: 0 },
+    allowanceReleased: { type: Boolean, default: false },
+    leaveIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Leave' }],
+    attendanceIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Attendance' }],
+  },
+  { _id: false }
+);
+
 const payrollSchema = mongoose.Schema(
   {
     employeeId: {
@@ -46,15 +66,43 @@ const payrollSchema = mongoose.Schema(
     },
     bonuses: {
       type: Number,
+      default: 0, // manual bonuses only — see targetBonus for auto-computed target incentives
+    },
+    targetBonus: {
+      type: Number,
       default: 0,
     },
     deductions: {
       type: Number,
       default: 0,
     },
-    attendanceDeductions: {
+    cashierRecoveryDeduction: {
       type: Number,
       default: 0,
+    },
+    advanceDeduction: {
+      type: Number,
+      default: 0,
+    },
+    attendanceDeductions: {
+      type: Number,
+      default: 0, // sum of unapprovedAbsenceDeduction + excessOffDayDeduction, kept for paysheet display
+    },
+    unapprovedAbsenceDeduction: {
+      type: Number,
+      default: 0,
+    },
+    excessOffDayDeduction: {
+      type: Number,
+      default: 0,
+    },
+    attendanceAllowance: {
+      type: Number,
+      default: 0,
+    },
+    attendanceBreakdown: {
+      type: attendanceBreakdownSchema,
+      default: () => ({}),
     },
     otherDeductions: {
       type: Number,
@@ -107,6 +155,25 @@ const payrollSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
     },
+    finalizedAt: {
+      type: Date,
+    },
+    finalizedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+    // Append-only corrections layered on top of an already-finalized payslip —
+    // the original netSalary is never edited, only added to. Same idiom as
+    // CashierShortage.correctionHistory.
+    adjustments: [
+      {
+        label: { type: String, required: true, trim: true },
+        amount: { type: Number, required: true },
+        note: { type: String, trim: true },
+        adjustedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+        adjustedAt: { type: Date, default: Date.now },
+      },
+    ],
     notes: {
       type: String,
     },

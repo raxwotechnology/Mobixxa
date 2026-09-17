@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { FileDown } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
+import EmployeeSelector from '../../components/EmployeeSelector';
 import {
   getAdminOrders, getAdminProducts, getAdminUsers, getCustomerReturns, getTransactions,
   getPayrollReport,
@@ -29,7 +30,7 @@ const AdminReports = () => {
   const [salaryMonth, setSalaryMonth] = useState(new Date().getMonth() + 1);
   const [salaryYear, setSalaryYear] = useState(new Date().getFullYear());
   const [salaryRoleFilter, setSalaryRoleFilter] = useState('all');
-  const [salaryEmployeeSearch, setSalaryEmployeeSearch] = useState('');
+  const [salaryEmployeeIds, setSalaryEmployeeIds] = useState([]);
   const [payrollData, setPayrollData] = useState([]);
 
   useEffect(() => {
@@ -70,7 +71,7 @@ const AdminReports = () => {
           month: salaryMonth,
           year: salaryYear,
           role: salaryRoleFilter,
-          employeeName: salaryEmployeeSearch || undefined,
+          employeeIds: salaryEmployeeIds.length > 0 ? salaryEmployeeIds.join(',') : undefined,
         });
         setPayrollData(data?.payrolls || []);
       } catch {
@@ -78,7 +79,7 @@ const AdminReports = () => {
       }
     };
     if (activeTab === 'salary') fetchPayroll();
-  }, [activeTab, salaryMonth, salaryYear, salaryRoleFilter, salaryEmployeeSearch]);
+  }, [activeTab, salaryMonth, salaryYear, salaryRoleFilter, salaryEmployeeIds]);
 
   const filteredUsers = useMemo(
     () => (roleFilter === 'all' ? users : users.filter((u) => u.role === roleFilter)),
@@ -110,7 +111,6 @@ const AdminReports = () => {
   const returnStatuses = [...new Set(returnsData.map((r) => r.status))];
   const expenseCategories = [...new Set(expenses.map((e) => e.category))];
   const incomeSources = [...new Set(incomes.map((i) => i.source))];
-  const payrollNames = [...new Set(payrollData.map((p) => p.employeeId?.name).filter(Boolean))];
 
   const exportCurrent = (type) => {
     const cfg = {
@@ -313,17 +313,16 @@ const AdminReports = () => {
                   </select>
                 </div>
                 <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
-                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">Search Employee</label>
-                  <input
-                    list="salary-employee-list"
-                    value={salaryEmployeeSearch}
-                    onChange={(e) => setSalaryEmployeeSearch(e.target.value)}
-                    placeholder="Type name..."
-                    className="bg-white border border-slate-200 rounded-xl px-4 py-2 text-sm font-bold text-slate-700 shadow-sm w-full sm:w-48"
-                  />
-                  <datalist id="salary-employee-list">
-                    {payrollNames.map((name) => <option key={name} value={name} />)}
-                  </datalist>
+                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 flex-shrink-0">Employees</label>
+                  <div className="w-full sm:w-64">
+                    <EmployeeSelector
+                      multiple
+                      employees={users.filter((u) => u.role !== 'customer')}
+                      value={salaryEmployeeIds}
+                      onChange={setSalaryEmployeeIds}
+                      triggerLabel="All employees"
+                    />
+                  </div>
                 </div>
               </div>
               <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 mt-2">Total Records: <span className="text-slate-700 font-black">{payrollData.length}</span></p>

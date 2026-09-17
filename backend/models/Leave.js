@@ -1,5 +1,17 @@
 const mongoose = require('mongoose');
 
+// Append-only: approve/reject/cancel decisions are logged here rather than
+// silently overwriting status — mirrors CashierShortage.reassignments.
+const leaveDecisionSchema = mongoose.Schema(
+  {
+    action: { type: String, enum: ['approved', 'rejected', 'cancelled'], required: true },
+    by: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    at: { type: Date, default: Date.now },
+    note: { type: String, trim: true },
+  },
+  { _id: false }
+);
+
 const leaveSchema = mongoose.Schema(
   {
     employeeId: {
@@ -44,6 +56,7 @@ const leaveSchema = mongoose.Schema(
     rejectionReason: {
       type: String,
     },
+    decisions: { type: [leaveDecisionSchema], default: [] },
   },
   {
     timestamps: true,

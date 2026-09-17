@@ -17,7 +17,7 @@ const getLeavePolicies = async (req, res, next) => {
 // @access  Private/Admin/Manager
 const createLeavePolicy = async (req, res, next) => {
   try {
-    const { name, periodType, allowedLeaves, unusedLeaveBonusPerDay, annualLeaves, sickLeaves, casualLeaves, deductionPerExcessLeave, isDefault } = req.body;
+    const { name, periodType, allowedLeaves, unusedLeaveBonusPerDay, deductionPerExcessLeave, isDefault } = req.body;
     if (!name) {
       res.status(400);
       return next(new Error('Policy name is required'));
@@ -32,9 +32,6 @@ const createLeavePolicy = async (req, res, next) => {
       periodType: periodType || 'monthly',
       allowedLeaves: Number(allowedLeaves) || 4,
       unusedLeaveBonusPerDay: Number(unusedLeaveBonusPerDay) || 0,
-      annualLeaves: Number(annualLeaves) || 14,
-      sickLeaves: Number(sickLeaves) || 7,
-      casualLeaves: Number(casualLeaves) || 7,
       deductionPerExcessLeave: Number(deductionPerExcessLeave) || 0,
       isDefault: !!isDefault,
     });
@@ -62,9 +59,6 @@ const updateLeavePolicy = async (req, res, next) => {
     if (req.body.periodType) policy.periodType = req.body.periodType;
     if (req.body.allowedLeaves !== undefined) policy.allowedLeaves = Number(req.body.allowedLeaves);
     if (req.body.unusedLeaveBonusPerDay !== undefined) policy.unusedLeaveBonusPerDay = Number(req.body.unusedLeaveBonusPerDay);
-    if (req.body.annualLeaves !== undefined) policy.annualLeaves = Number(req.body.annualLeaves);
-    if (req.body.sickLeaves !== undefined) policy.sickLeaves = Number(req.body.sickLeaves);
-    if (req.body.casualLeaves !== undefined) policy.casualLeaves = Number(req.body.casualLeaves);
     if (req.body.deductionPerExcessLeave !== undefined) policy.deductionPerExcessLeave = Number(req.body.deductionPerExcessLeave);
     if (req.body.isDefault !== undefined) policy.isDefault = !!req.body.isDefault;
 
@@ -103,7 +97,7 @@ const getAttendancePolicies = async (req, res, next) => {
 // @access  Private/Admin/Manager
 const createAttendancePolicy = async (req, res, next) => {
   try {
-    const { name, shiftStartTime, shiftEndTime, graceTimeMinutes, lateArrivalPenalty, earlyCheckoutPenalty, halfDayThresholdHours, isDefault } = req.body;
+    const { name, shiftStartTime, shiftEndTime, graceTimeMinutes, lateArrivalPenalty, earlyCheckoutPenalty, halfDayThresholdHours, absentDayDeduction, isDefault } = req.body;
     if (!name) {
       res.status(400);
       return next(new Error('Policy name is required'));
@@ -121,6 +115,7 @@ const createAttendancePolicy = async (req, res, next) => {
       lateArrivalPenalty: Number(lateArrivalPenalty) || 0,
       earlyCheckoutPenalty: Number(earlyCheckoutPenalty) || 0,
       halfDayThresholdHours: Number(halfDayThresholdHours) || 4,
+      absentDayDeduction: Number(absentDayDeduction) || 0,
       isDefault: !!isDefault,
     });
 
@@ -150,6 +145,7 @@ const updateAttendancePolicy = async (req, res, next) => {
     if (req.body.lateArrivalPenalty !== undefined) policy.lateArrivalPenalty = Number(req.body.lateArrivalPenalty);
     if (req.body.earlyCheckoutPenalty !== undefined) policy.earlyCheckoutPenalty = Number(req.body.earlyCheckoutPenalty);
     if (req.body.halfDayThresholdHours !== undefined) policy.halfDayThresholdHours = Number(req.body.halfDayThresholdHours);
+    if (req.body.absentDayDeduction !== undefined) policy.absentDayDeduction = Number(req.body.absentDayDeduction);
     if (req.body.isDefault !== undefined) policy.isDefault = !!req.body.isDefault;
 
     await policy.save();
@@ -172,36 +168,49 @@ const deleteAttendancePolicy = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Assign policies to an employee
+// @desc    Assign policies to one or more employees
 // @route   POST /api/hr/policies/assign
 // @access  Private/Admin/Manager
 const assignPoliciesToEmployee = async (req, res, next) => {
   try {
-    const { employeeId, leavePolicyId, attendancePolicyId } = req.body;
-    if (!employeeId) {
+    const { employeeId, employeeIds, leavePolicyId, attendancePolicyId } = req.body;
+    const ids = Array.isArray(employeeIds) && employeeIds.length > 0
+      ? employeeIds
+      : (employeeId ? [employeeId] : []);
+
+    if (ids.length === 0) {
       res.status(400);
-      return next(new Error('Employee ID is required'));
+      return next(new Error('At least one employee is required'));
     }
 
-    const employee = await User.findById(employeeId);
-    if (!employee) {
-      res.status(404);
-      return next(new Error('Employee not found'));
-    }
-
-    if (!employee.employeeInfo) {
-      employee.employeeInfo = {};
-    }
-
+    // A blank policy id means "reset to system default" — unset the path
+    // rather than $set-ing it to undefined (Mongoose strips undefined from
+    // update payloads, which would otherwise silently no-op the reset).
+    const setOps = {};
+    const unsetOps = {};
     if (leavePolicyId !== undefined) {
-      employee.employeeInfo.leavePolicyId = leavePolicyId || undefined;
+      if (leavePolicyId) setOps['employeeInfo.leavePolicyId'] = leavePolicyId;
+      else unsetOps['employeeInfo.leavePolicyId'] = '';
     }
     if (attendancePolicyId !== undefined) {
-      employee.employeeInfo.attendancePolicyId = attendancePolicyId || undefined;
+      if (attendancePolicyId) setOps['employeeInfo.attendancePolicyId'] = attendancePolicyId;
+      else unsetOps['employeeInfo.attendancePolicyId'] = '';
     }
 
-    await employee.save();
-    res.json({ success: true, message: 'Policies updated successfully', employee });
+    const updateOps = {};
+    if (Object.keys(setOps).length) updateOps.$set = setOps;
+    if (Object.keys(unsetOps).length) updateOps.$unset = unsetOps;
+    if (Object.keys(updateOps).length === 0) {
+      res.status(400);
+      return next(new Error('Nothing to update'));
+    }
+
+    const result = await User.updateMany({ _id: { $in: ids } }, updateOps);
+    res.json({
+      success: true,
+      message: 'Policies updated successfully',
+      matchedCount: result.matchedCount ?? result.n ?? ids.length,
+    });
   } catch (error) { next(error); }
 };
 

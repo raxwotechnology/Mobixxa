@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Calculator, Send, FileText, Download, Landmark, Search, User, RefreshCw, CheckCircle } from 'lucide-react';
+import { Calculator, Send, FileText, Download, Landmark, Search, User, RefreshCw, CheckCircle, ChevronDown, ChevronUp, Plus } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
-import { getAdminUsers, calculateSalary, processSalaryPayment, getPayrollReport, downloadPaysheet } from '../../services/api';
+import EmployeeSelector from '../../components/EmployeeSelector';
+import { getAdminUsers, calculateSalary, processSalaryPayment, getPayrollReport, downloadPaysheet, getTargets, getCashierRecoveries, addPayrollAdjustment } from '../../services/api';
 import { toast } from 'react-toastify';
 
 const now = new Date();
@@ -12,7 +13,6 @@ const AdminPayroll = () => {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedEmpId, setSelectedEmpId] = useState('');
-  const [empSearch, setEmpSearch] = useState('');
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [year, setYear] = useState(now.getFullYear());
   const [allowances, setAllowances] = useState(0);
@@ -21,6 +21,11 @@ const AdminPayroll = () => {
   const [preview, setPreview] = useState(null);
   const [report, setReport] = useState(null);
   const [tab, setTab] = useState('process'); // 'process' | 'report'
+  const [detailsOpen, setDetailsOpen] = useState(null); // 'targets' | 'recovery' | null
+  const [targetDetails, setTargetDetails] = useState([]);
+  const [recoveryDetails, setRecoveryDetails] = useState([]);
+  const [adjustmentRow, setAdjustmentRow] = useState(null);
+  const [adjustmentForm, setAdjustmentForm] = useState({ label: '', amount: '', note: '' });
 
   useEffect(() => {
     fetchEmployees();
@@ -51,9 +56,54 @@ const AdminPayroll = () => {
         bonuses: Number(bonuses) || 0,
       });
       setPreview(data);
+      setDetailsOpen(null);
+      setTargetDetails([]);
+      setRecoveryDetails([]);
       toast.success('Salary calculated & live preview updated');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Calculation failed');
+    }
+  };
+
+  const toggleDetails = async (section) => {
+    if (detailsOpen === section) {
+      setDetailsOpen(null);
+      return;
+    }
+    setDetailsOpen(section);
+    try {
+      if (section === 'targets' && targetDetails.length === 0) {
+        const { data } = await getTargets({ employeeId: selectedEmpId, month, year });
+        setTargetDetails(data);
+      }
+      if (section === 'recovery' && recoveryDetails.length === 0) {
+        const { data } = await getCashierRecoveries({ cashierId: selectedEmpId });
+        setRecoveryDetails(data.filter(r => r.payrollPeriod?.month === month && r.payrollPeriod?.year === year));
+      }
+    } catch {
+      toast.error('Failed to load details');
+    }
+  };
+
+  const openAdjustmentModal = (row) => {
+    setAdjustmentRow(row);
+    setAdjustmentForm({ label: '', amount: '', note: '' });
+  };
+
+  const submitAdjustment = async (e) => {
+    e.preventDefault();
+    if (!adjustmentForm.label || adjustmentForm.amount === '') return toast.error('Label and amount are required');
+    try {
+      await addPayrollAdjustment(adjustmentRow._id, {
+        label: adjustmentForm.label,
+        amount: Number(adjustmentForm.amount),
+        note: adjustmentForm.note,
+      });
+      toast.success('Adjustment logged');
+      setAdjustmentRow(null);
+      handleFetchReport();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to log adjustment');
     }
   };
 
@@ -143,27 +193,13 @@ const AdminPayroll = () => {
               
               <div>
                 <label className="text-xs font-bold text-slate-700 block mb-1">Search & Choose Employee *</label>
-                <input
-                  type="text"
-                  placeholder="🔍 Type employee name or role to search..."
-                  value={empSearch}
-                  onChange={e => setEmpSearch(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs mb-2 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo"
+                <EmployeeSelector
+                  multiple={false}
+                  employees={employees}
+                  value={selectedEmpId ? [selectedEmpId] : []}
+                  onChange={([id]) => setSelectedEmpId(id || '')}
+                  placeholder="Search and select employee..."
                 />
-                <select
-                  value={selectedEmpId}
-                  onChange={e => setSelectedEmpId(e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-xl py-3 px-3.5 text-xs font-bold text-slate-800 cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-indigo"
-                >
-                  <option value="">Select Employee ({employees.length} available)</option>
-                  {employees
-                    .filter(e => e.name?.toLowerCase().includes(empSearch.toLowerCase()) || e.role?.toLowerCase().includes(empSearch.toLowerCase()))
-                    .map(e => (
-                      <option key={e._id} value={e._id}>
-                        {e.name} ({e.role})
-                      </option>
-                    ))}
-                </select>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -284,8 +320,31 @@ const AdminPayroll = () => {
                       <span className="font-bold">+ LKR {Number(preview.overtimePay || 0).toLocaleString()}</span>
                     </div>
 
+                    <div>
+                      <div className="flex justify-between py-1 text-emerald-700">
+                        <span className="flex items-center gap-1.5">
+                          Target Incentive (Auto from Sales)
+                          <button type="button" onClick={() => toggleDetails('targets')} className="text-slate-400 hover:text-slate-700">
+                            {detailsOpen === 'targets' ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                          </button>
+                        </span>
+                        <span className="font-bold">+ LKR {Number(preview.targetBonus || 0).toLocaleString()}</span>
+                      </div>
+                      {detailsOpen === 'targets' && (
+                        <div className="ml-2 pl-3 border-l-2 border-emerald-100 py-1 space-y-1 text-[11px] text-slate-500">
+                          {targetDetails.length === 0 && <p>No targets assigned for this period.</p>}
+                          {targetDetails.map(t => (
+                            <div key={t._id} className="flex justify-between">
+                              <span>{t.targetType} — {Number(t.achievedValue).toLocaleString()} / {Number(t.targetValue).toLocaleString()}</span>
+                              <span className={t.status === 'completed' ? 'text-emerald-600 font-bold' : ''}>{t.status === 'completed' ? `+Rs.${t.bonusAmount}` : `${t.percent}%`}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
                     <div className="flex justify-between py-1 text-emerald-700">
-                      <span>Target Bonuses & Commissions</span>
+                      <span>Custom Bonuses (Manual)</span>
                       <span className="font-bold">+ LKR {Number(preview.bonuses || 0).toLocaleString()}</span>
                     </div>
 
@@ -296,13 +355,43 @@ const AdminPayroll = () => {
 
                     <div className="flex justify-between py-1 text-rose-600">
                       <span>Salary Advances Deducted</span>
-                      <span className="font-bold">- LKR {Number(preview.advanceDeduction || preview.deductions || 0).toLocaleString()}</span>
+                      <span className="font-bold">- LKR {Number(preview.advanceDeduction || 0).toLocaleString()}</span>
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between py-1 text-rose-600">
+                        <span className="flex items-center gap-1.5">
+                          Cashier Shortage Recovery
+                          <button type="button" onClick={() => toggleDetails('recovery')} className="text-slate-400 hover:text-slate-700">
+                            {detailsOpen === 'recovery' ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                          </button>
+                        </span>
+                        <span className="font-bold">- LKR {Number(preview.cashierRecoveryDeduction || 0).toLocaleString()}</span>
+                      </div>
+                      {detailsOpen === 'recovery' && (
+                        <div className="ml-2 pl-3 border-l-2 border-rose-100 py-1 space-y-1 text-[11px] text-slate-500">
+                          {recoveryDetails.length === 0 && <p>No recoveries logged for this period.</p>}
+                          {recoveryDetails.map(r => (
+                            <div key={r._id} className="flex justify-between">
+                              <span>{new Date(r.date).toLocaleDateString()} — {r.note || 'Recovery'}</span>
+                              <span>Rs.{Number(r.amount).toLocaleString()}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex justify-between py-1 text-rose-600">
-                      <span>Attendance / Late Penalties</span>
+                      <span>Attendance / Leave Deductions</span>
                       <span className="font-bold">- LKR {Number(preview.attendanceDeductions || 0).toLocaleString()}</span>
                     </div>
+                    {preview.attendanceBreakdown && (
+                      <div className="ml-2 pl-3 border-l-2 border-rose-100 py-1 space-y-0.5 text-[11px] text-slate-500">
+                        <div className="flex justify-between"><span>Unapproved absences</span><span>{preview.attendanceBreakdown.unapprovedAbsences || 0} day(s)</span></div>
+                        <div className="flex justify-between"><span>Extra off-days this month</span><span>{preview.attendanceBreakdown.extraOffDaysThisMonth || 0} day(s)</span></div>
+                        <div className="flex justify-between"><span>Unpaid leave days</span><span>{preview.attendanceBreakdown.unpaidLeaveDays || 0} day(s)</span></div>
+                      </div>
+                    )}
 
                     <div className="flex justify-between py-1 text-slate-500">
                       <span>EPF Contribution (Employee 8%)</span>
@@ -320,7 +409,7 @@ const AdminPayroll = () => {
                       onClick={handleProcess}
                       className="bg-emerald-500 hover:bg-emerald-600 text-white font-black px-5 py-3 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer border-0 shadow-sm flex items-center gap-2"
                     >
-                      <Send size={15} /> Process Salary
+                      <Send size={15} /> Finalize & Process Payroll
                     </button>
                   </div>
                 </div>
@@ -345,20 +434,34 @@ const AdminPayroll = () => {
                       <th className="px-5 py-4">Employee</th>
                       <th className="px-5 py-4">Basic Salary</th>
                       <th className="px-5 py-4">OT & Bonuses</th>
+                      <th className="px-5 py-4">Recovery</th>
+                      <th className="px-5 py-4">Advance</th>
                       <th className="px-5 py-4">Deductions</th>
                       <th className="px-5 py-4">Net Salary</th>
                       <th className="px-5 py-4">Status</th>
                       <th className="px-5 py-4 text-center">Paysheet</th>
+                      <th className="px-5 py-4 text-center">Adjust</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
-                    {(report.records || []).map(p => (
-                      <tr key={p._id} className="hover:bg-slate-50/80 transition-colors">
+                    {(report.payrolls || []).map(p => {
+                      const adjustmentsTotal = (p.adjustments || []).reduce((s, a) => s + (a.amount || 0), 0);
+                      return (
+                      <tr key={p._id} className="hover:bg-slate-50/80 transition-colors align-top">
                         <td className="px-5 py-4 font-bold text-slate-900">{p.employeeId?.name}</td>
                         <td className="px-5 py-4">LKR {Number(p.basicSalary || 0).toLocaleString()}</td>
-                        <td className="px-5 py-4 text-emerald-600 font-bold">LKR {Number(p.overtimePay + p.bonuses).toLocaleString()}</td>
+                        <td className="px-5 py-4 text-emerald-600 font-bold">LKR {Number((p.overtimePay || 0) + (p.targetBonus || 0) + (p.bonuses || 0)).toLocaleString()}</td>
+                        <td className="px-5 py-4 text-rose-600">LKR {Number(p.cashierRecoveryDeduction || 0).toLocaleString()}</td>
+                        <td className="px-5 py-4 text-rose-600">LKR {Number(p.advanceDeduction || 0).toLocaleString()}</td>
                         <td className="px-5 py-4 text-rose-600">LKR {Number(p.totalDeductions || 0).toLocaleString()}</td>
-                        <td className="px-5 py-4 font-black text-slate-900">LKR {Number(p.netSalary || 0).toLocaleString()}</td>
+                        <td className="px-5 py-4">
+                          <div className="font-black text-slate-900">LKR {Number(p.netSalary || 0).toLocaleString()}</div>
+                          {adjustmentsTotal !== 0 && (
+                            <div className="text-[10px] font-bold text-amber-600 mt-0.5">
+                              + {adjustmentsTotal.toLocaleString()} adj = {(Number(p.netSalary || 0) + adjustmentsTotal).toLocaleString()}
+                            </div>
+                          )}
+                        </td>
                         <td className="px-5 py-4">
                           <span className={`inline-block text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${p.paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
                             {p.paymentStatus || 'pending'}
@@ -373,8 +476,18 @@ const AdminPayroll = () => {
                             <Download size={14} />
                           </button>
                         </td>
+                        <td className="px-5 py-4 text-center">
+                          <button
+                            onClick={() => openAdjustmentModal(p)}
+                            className="p-2 rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-600 hover:text-white transition-all cursor-pointer border-0"
+                            title="Log a post-finalization adjustment"
+                          >
+                            <Plus size={14} />
+                          </button>
+                        </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -382,6 +495,44 @@ const AdminPayroll = () => {
           </div>
         )}
       </div>
+
+      {adjustmentRow && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-100 flex items-center justify-center p-4" onClick={() => setAdjustmentRow(null)}>
+          <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-100" onClick={(e) => e.stopPropagation()}>
+            <div className="px-6 py-5 border-b border-slate-100">
+              <h3 className="font-black text-slate-900 text-lg m-0">Log Adjustment</h3>
+              <p className="text-xs font-bold text-slate-500 mt-1 m-0">
+                {adjustmentRow.employeeId?.name} — {adjustmentRow.month}/{adjustmentRow.year}. This is layered on top of the finalized net salary, never edits it.
+              </p>
+            </div>
+            <form onSubmit={submitAdjustment} className="p-6 bg-slate-50/50 space-y-4">
+              <div>
+                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Label *</label>
+                <input required value={adjustmentForm.label} onChange={(e) => setAdjustmentForm({ ...adjustmentForm, label: e.target.value })}
+                  placeholder="e.g. Correction for missed OT" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800" />
+              </div>
+              <div>
+                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Amount (LKR, use negative for a deduction) *</label>
+                <input required type="number" value={adjustmentForm.amount} onChange={(e) => setAdjustmentForm({ ...adjustmentForm, amount: e.target.value })}
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800" />
+              </div>
+              <div>
+                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Note (optional)</label>
+                <textarea value={adjustmentForm.note} onChange={(e) => setAdjustmentForm({ ...adjustmentForm, note: e.target.value })}
+                  rows="2" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 resize-none" />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setAdjustmentRow(null)} className="flex-1 py-3 rounded-xl bg-slate-100 text-[11px] uppercase tracking-wider font-black hover:bg-slate-200 text-slate-700">
+                  Cancel
+                </button>
+                <button type="submit" className="flex-1 py-3 rounded-xl bg-brand-indigo hover:bg-indigo-700 text-white text-[11px] uppercase tracking-wider font-black shadow-lg shadow-brand-indigo/20">
+                  Log Adjustment
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 };

@@ -1,9 +1,57 @@
 const Payroll = require('../models/Payroll');
 const User = require('../models/User');
 const Settings = require('../models/Settings');
-const LeavePolicy = require('../models/LeavePolicy');
-const AttendancePolicy = require('../models/AttendancePolicy');
 const SalaryAdvance = require('../models/SalaryAdvance');
+const CashierRecovery = require('../models/CashierRecovery');
+const { computeMonthlyAttendanceSummary } = require('../utils/attendanceSalaryCalc');
+const { computeTargetProgress } = require('../utils/targetAchievementCalc');
+
+// Live-computed target bonus for an employee/month — sums bonusEarned across
+// all of that employee's targets for the period, tracking which target ids
+// actually earned a bonus (for marking bonusPaid on process, and traceability).
+const computeMonthlyTargetBonus = async (employeeId, month, year) => {
+  const EmployeeTarget = require('../models/EmployeeTarget');
+  const targets = await EmployeeTarget.find({ employeeId, month, year, bonusPaid: false });
+  let targetBonus = 0;
+  const earnedTargetIds = [];
+  const allTargetIds = targets.map((t) => t._id);
+  for (const target of targets) {
+    const progress = await computeTargetProgress(target);
+    if (progress.bonusEarned > 0) {
+      targetBonus += progress.bonusEarned;
+      earnedTargetIds.push(target._id);
+    }
+  }
+  return { targetBonus, earnedTargetIds, allTargetIds };
+};
+
+// Live-computed cashier shortage recovery deduction for an employee/month.
+const computeMonthlyCashierRecovery = async (employeeId, month, year) => {
+  const recoveries = await CashierRecovery.find({
+    cashierId: employeeId,
+    'payrollPeriod.month': month,
+    'payrollPeriod.year': year,
+  });
+  return {
+    cashierRecoveryDeduction: recoveries.reduce((sum, r) => sum + r.amount, 0),
+    recoveryIds: recoveries.map((r) => r._id),
+  };
+};
+
+// Live-computed, not-yet-deducted salary advances for an employee/month.
+const computeMonthlyAdvanceDeduction = async (employeeId, month, year) => {
+  const advances = await SalaryAdvance.find({
+    employeeId,
+    month,
+    year,
+    status: 'approved',
+    deductedInPayroll: null,
+  });
+  return {
+    advanceDeduction: advances.reduce((sum, a) => sum + a.amount, 0),
+    advanceIds: advances.map((a) => a._id),
+  };
+};
 const { sendNotification } = require('../utils/notificationService');
 const { salaryPaidEmail, sendEmail } = require('../utils/emailService');
 const { getSriLankaDateBoundaries } = require('../utils/timezone');
@@ -25,138 +73,45 @@ const calculateSalary = async (req, res, next) => {
   try {
     const { employeeId, month, year, allowances = 0, deductions = 0, bonuses = 0 } = req.body;
 
-    const employee = await User.findById(employeeId)
-      .populate('employeeInfo.leavePolicyId')
-      .populate('employeeInfo.attendancePolicyId');
+    const employee = await User.findById(employeeId);
     if (!employee) { res.status(404); return next(new Error('Employee not found')); }
 
-    let leavePolicy = employee.employeeInfo?.leavePolicyId;
-    if (!leavePolicy) {
-      leavePolicy = await LeavePolicy.findOne({ isDefault: true });
-    }
-    let attendancePolicy = employee.employeeInfo?.attendancePolicyId;
-    if (!attendancePolicy) {
-      attendancePolicy = await AttendancePolicy.findOne({ isDefault: true });
-    }
-
-    const Attendance = require('../models/Attendance');
     const OvertimePay = require('../models/OvertimePay');
     const pendingOTs = await OvertimePay.find({ employeeId, status: 'pending' });
     const totalOTAmount = pendingOTs.reduce((sum, ot) => sum + ot.totalAmount, 0);
 
-    const EmployeeTarget = require('../models/EmployeeTarget');
-    const pendingTargets = await EmployeeTarget.find({ employeeId, status: 'completed', bonusPaid: false });
-    const totalTargetBonus = pendingTargets.reduce((sum, t) => sum + (t.bonusAmount || 0), 0);
+    const { targetBonus, allTargetIds } = await computeMonthlyTargetBonus(employeeId, month, year);
+    const { cashierRecoveryDeduction, recoveryIds } = await computeMonthlyCashierRecovery(employeeId, month, year);
+    const { advanceDeduction, advanceIds } = await computeMonthlyAdvanceDeduction(employeeId, month, year);
 
     const payType = employee.employeeInfo?.payType || 'monthly';
     const basePayAmount = employee.employeeInfo?.salary || 0;
-    
+
     if (!basePayAmount) {
       res.status(400);
       return next(new Error('Employee salary not set'));
     }
 
-    const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 0, 23, 59, 59);
-
-    const attendances = await Attendance.find({
-      employeeId,
-      date: { $gte: startDate, $lte: endDate }
-    });
-
-    const presentDays = attendances.filter(a => ['present', 'late'].includes(a.status)).length;
-    const halfDays = attendances.filter(a => a.status === 'half-day').length;
-    const totalWorkingDaysCount = presentDays + (halfDays * 0.5);
+    const summary = await computeMonthlyAttendanceSummary(employeeId, month, year);
 
     let basicSalary = 0;
-    let attendanceDeductions = 0;
-    let excessLeaveDeduction = 0;
-
     if (payType === 'daily') {
-      basicSalary = basePayAmount * totalWorkingDaysCount;
+      basicSalary = basePayAmount * summary.totalWorkingDaysCount;
     } else if (payType === 'weekly') {
-      basicSalary = basePayAmount * 4; 
+      basicSalary = basePayAmount * 4;
     } else {
       basicSalary = basePayAmount;
-      const dailyRate = basicSalary / 30;
-
-      if (attendancePolicy) {
-        const graceTime = attendancePolicy.graceTimeMinutes || 15;
-        const latePenalty = attendancePolicy.lateArrivalPenalty || 0;
-        const earlyPenalty = attendancePolicy.earlyCheckoutPenalty || 0;
-        const halfDayThreshold = attendancePolicy.halfDayThresholdHours || 4;
-
-        const [startH, startM] = (attendancePolicy.shiftStartTime || '09:00').split(':').map(Number);
-        const shiftStartMinutes = startH * 60 + startM;
-
-        const [endH, endM] = (attendancePolicy.shiftEndTime || '17:00').split(':').map(Number);
-        const shiftEndMinutes = endH * 60 + endM;
-
-        attendances.forEach(att => {
-          if (att.status === 'absent') {
-            attendanceDeductions += dailyRate;
-          } else if (att.status === 'half-day' || (att.hoursWorked > 0 && att.hoursWorked < halfDayThreshold)) {
-            attendanceDeductions += (dailyRate / 2);
-          } else {
-            if (att.checkIn) {
-              const { hour: cHour, minute: cMin } = getSriLankaDateBoundaries(att.checkIn);
-              const checkInMinutes = cHour * 60 + cMin;
-              if (checkInMinutes - shiftStartMinutes > graceTime) {
-                attendanceDeductions += latePenalty;
-              }
-            }
-            if (att.checkOut) {
-              const { hour: coHour, minute: coMin } = getSriLankaDateBoundaries(att.checkOut);
-              const checkOutMinutes = coHour * 60 + coMin;
-              if (shiftEndMinutes - checkOutMinutes > 0) {
-                attendanceDeductions += earlyPenalty;
-              }
-            }
-          }
-        });
-      } else {
-        attendances.forEach(att => {
-          if (att.status === 'absent') attendanceDeductions += dailyRate;
-          else if (att.status === 'half-day') attendanceDeductions += (dailyRate / 2);
-          else if (att.status === 'late') attendanceDeductions += 200;
-        });
-      }
-
-      if (leavePolicy) {
-        const Leave = require('../models/Leave');
-        const leavesYear = await Leave.find({
-          employeeId,
-          status: 'approved',
-          startDate: { $gte: new Date(year, 0, 1) },
-          endDate: { $lte: new Date(year, 11, 31, 23, 59, 59) }
-        });
-
-        let totalExcessDays = 0;
-        const leaveTypes = ['annual', 'sick', 'casual'];
-        for (const type of leaveTypes) {
-          const takenBefore = leavesYear
-            .filter(l => l.leaveType === type && l.startDate < startDate)
-            .reduce((sum, l) => sum + l.totalDays, 0);
-
-          const takenCurrent = leavesYear
-            .filter(l => l.leaveType === type && l.startDate >= startDate && l.startDate <= endDate)
-            .reduce((sum, l) => sum + l.totalDays, 0);
-
-          const limit = leavePolicy[type + 'Leaves'] || 0;
-          const excess = Math.max(0, takenBefore + takenCurrent - limit) - Math.max(0, takenBefore - limit);
-          totalExcessDays += excess;
-        }
-        excessLeaveDeduction = totalExcessDays * (leavePolicy.deductionPerExcessLeave || 0);
-      }
     }
+    const attendanceDeductions = payType === 'monthly' ? summary.attendanceDeductions : 0;
+    const attendanceAllowance = payType === 'monthly' ? summary.attendanceAllowance : 0;
 
-    const actualBonuses = Number(bonuses) + totalOTAmount + totalTargetBonus;
-    const grossSalary = basicSalary + Number(allowances) + actualBonuses;
+    const manualBonuses = Number(bonuses);
+    const grossSalary = basicSalary + Number(allowances) + manualBonuses + totalOTAmount + targetBonus + attendanceAllowance;
     const epfEmployee = parseFloat((basicSalary * EPF_EMPLOYEE_RATE).toFixed(2));
     const epfEmployer = parseFloat((basicSalary * EPF_EMPLOYER_RATE).toFixed(2));
     const etfEmployer = parseFloat((basicSalary * ETF_RATE).toFixed(2));
-    
-    const totalDeductions = epfEmployee + Number(deductions) + excessLeaveDeduction + attendanceDeductions;
+
+    const totalDeductions = epfEmployee + Number(deductions) + attendanceDeductions + cashierRecoveryDeduction + advanceDeduction;
     const netSalary = parseFloat((grossSalary - totalDeductions).toFixed(2));
 
     res.json({
@@ -166,17 +121,26 @@ const calculateSalary = async (req, res, next) => {
       year,
       basicSalary,
       allowances: Number(allowances),
-      bonuses: actualBonuses,
+      bonuses: manualBonuses,
+      overtimePay: totalOTAmount,
       otIncluded: totalOTAmount,
-      targetBonusIncluded: totalTargetBonus,
+      targetBonus,
+      targetBonusIncluded: targetBonus,
       grossSalary,
       epfEmployee,
       epfEmployer,
       etfEmployer,
-      otherDeductions: Number(deductions) + excessLeaveDeduction,
+      otherDeductions: Number(deductions),
       attendanceDeductions,
+      unapprovedAbsenceDeduction: summary.unapprovedAbsenceDeduction,
+      excessOffDayDeduction: summary.excessOffDayDeduction,
+      attendanceAllowance,
+      attendanceBreakdown: summary,
+      cashierRecoveryDeduction,
+      advanceDeduction,
       totalDeductions,
       netSalary,
+      sourceRefs: { targetIds: allTargetIds, cashierRecoveryIds: recoveryIds, advanceIds },
     });
   } catch (error) { next(error); }
 };
@@ -195,130 +159,42 @@ const processSalaryPayment = async (req, res, next) => {
       return next(new Error(`Salary already processed for ${month}/${year}`));
     }
 
-    const employee = await User.findById(employeeId)
-      .populate('employeeInfo.leavePolicyId')
-      .populate('employeeInfo.attendancePolicyId');
+    const employee = await User.findById(employeeId);
     if (!employee) { res.status(404); return next(new Error('Employee not found')); }
 
-    let leavePolicy = employee.employeeInfo?.leavePolicyId;
-    if (!leavePolicy) {
-      leavePolicy = await LeavePolicy.findOne({ isDefault: true });
-    }
-    let attendancePolicy = employee.employeeInfo?.attendancePolicyId;
-    if (!attendancePolicy) {
-      attendancePolicy = await AttendancePolicy.findOne({ isDefault: true });
-    }
-
-    const Attendance = require('../models/Attendance');
     const OvertimePay = require('../models/OvertimePay');
     const pendingOTs = await OvertimePay.find({ employeeId, status: 'pending' });
     const totalOTAmount = pendingOTs.reduce((sum, ot) => sum + ot.totalAmount, 0);
 
     const EmployeeTarget = require('../models/EmployeeTarget');
-    const pendingTargets = await EmployeeTarget.find({ employeeId, status: 'completed', bonusPaid: false });
-    const totalTargetBonus = pendingTargets.reduce((sum, t) => sum + (t.bonusAmount || 0), 0);
+    const { targetBonus, earnedTargetIds } = await computeMonthlyTargetBonus(employeeId, month, year);
+    const { cashierRecoveryDeduction, recoveryIds } = await computeMonthlyCashierRecovery(employeeId, month, year);
+    const { advanceDeduction, advanceIds } = await computeMonthlyAdvanceDeduction(employeeId, month, year);
 
     const payType = employee.employeeInfo?.payType || 'monthly';
     const basePayAmount = employee.employeeInfo?.salary || 0;
 
-    const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 0, 23, 59, 59);
-
-    const attendances = await Attendance.find({
-      employeeId,
-      date: { $gte: startDate, $lte: endDate }
-    });
-
-    const presentDaysCount = attendances.filter(a => ['present', 'late'].includes(a.status)).length;
-    const halfDaysCount = attendances.filter(a => a.status === 'half-day').length;
-    const totalDaysWorked = presentDaysCount + (halfDaysCount * 0.5);
+    const summary = await computeMonthlyAttendanceSummary(employeeId, month, year);
 
     let basicSalary = 0;
-    let attendanceDeductions = 0;
-    let excessLeaveDeduction = 0;
-
     if (payType === 'daily') {
-      basicSalary = basePayAmount * totalDaysWorked;
+      basicSalary = basePayAmount * summary.totalWorkingDaysCount;
     } else if (payType === 'weekly') {
       basicSalary = basePayAmount * 4;
     } else {
       basicSalary = basePayAmount;
-      const dailyRate = basicSalary / 30;
-
-      if (attendancePolicy) {
-        const graceTime = attendancePolicy.graceTimeMinutes || 15;
-        const latePenalty = attendancePolicy.lateArrivalPenalty || 0;
-        const earlyPenalty = attendancePolicy.earlyCheckoutPenalty || 0;
-        const halfDayThreshold = attendancePolicy.halfDayThresholdHours || 4;
-
-        const [startH, startM] = (attendancePolicy.shiftStartTime || '09:00').split(':').map(Number);
-        const shiftStartMinutes = startH * 60 + startM;
-
-        const [endH, endM] = (attendancePolicy.shiftEndTime || '17:00').split(':').map(Number);
-        const shiftEndMinutes = endH * 60 + endM;
-
-        attendances.forEach(att => {
-          if (att.status === 'absent') {
-            attendanceDeductions += dailyRate;
-          } else if (att.status === 'half-day' || (att.hoursWorked > 0 && att.hoursWorked < halfDayThreshold)) {
-            attendanceDeductions += (dailyRate / 2);
-          } else {
-            if (att.checkIn) {
-              const checkInMinutes = att.checkIn.getHours() * 60 + att.checkIn.getMinutes();
-              if (checkInMinutes - shiftStartMinutes > graceTime) {
-                attendanceDeductions += latePenalty;
-              }
-            }
-            if (att.checkOut) {
-              const checkOutMinutes = att.checkOut.getHours() * 60 + att.checkOut.getMinutes();
-              if (shiftEndMinutes - checkOutMinutes > 0) {
-                attendanceDeductions += earlyPenalty;
-              }
-            }
-          }
-        });
-      } else {
-        attendances.forEach(att => {
-          if (att.status === 'absent') attendanceDeductions += dailyRate;
-          else if (att.status === 'half-day') attendanceDeductions += (dailyRate / 2);
-          else if (att.status === 'late') attendanceDeductions += 200;
-        });
-      }
-
-      if (leavePolicy) {
-        const Leave = require('../models/Leave');
-        const leavesYear = await Leave.find({
-          employeeId,
-          status: 'approved',
-          startDate: { $gte: new Date(year, 0, 1) },
-          endDate: { $lte: new Date(year, 11, 31, 23, 59, 59) }
-        });
-
-        let totalExcessDays = 0;
-        const leaveTypes = ['annual', 'sick', 'casual'];
-        for (const type of leaveTypes) {
-          const takenBefore = leavesYear
-            .filter(l => l.leaveType === type && l.startDate < startDate)
-            .reduce((sum, l) => sum + l.totalDays, 0);
-
-          const takenCurrent = leavesYear
-            .filter(l => l.leaveType === type && l.startDate >= startDate && l.startDate <= endDate)
-            .reduce((sum, l) => sum + l.totalDays, 0);
-
-          const limit = leavePolicy[type + 'Leaves'] || 0;
-          const excess = Math.max(0, takenBefore + takenCurrent - limit) - Math.max(0, takenBefore - limit);
-          totalExcessDays += excess;
-        }
-        excessLeaveDeduction = totalExcessDays * (leavePolicy.deductionPerExcessLeave || 0);
-      }
     }
+    const attendanceDeductions = payType === 'monthly' ? summary.attendanceDeductions : 0;
+    const attendanceAllowance = payType === 'monthly' ? summary.attendanceAllowance : 0;
+    const unapprovedAbsenceDeduction = payType === 'monthly' ? summary.unapprovedAbsenceDeduction : 0;
+    const excessOffDayDeduction = payType === 'monthly' ? summary.excessOffDayDeduction : 0;
 
-    const actualBonuses = Number(bonuses) + totalOTAmount + totalTargetBonus;
-    const grossSalary = basicSalary + Number(allowances) + actualBonuses;
+    const manualBonuses = Number(bonuses);
+    const grossSalary = basicSalary + Number(allowances) + manualBonuses + totalOTAmount + targetBonus + attendanceAllowance;
     const epfEmployee = parseFloat((basicSalary * EPF_EMPLOYEE_RATE).toFixed(2));
     const epfEmployer = parseFloat((basicSalary * EPF_EMPLOYER_RATE).toFixed(2));
     const etfEmployer = parseFloat((basicSalary * ETF_RATE).toFixed(2));
-    const totalDeductions = epfEmployee + Number(deductions) + excessLeaveDeduction + attendanceDeductions;
+    const totalDeductions = epfEmployee + Number(deductions) + attendanceDeductions + cashierRecoveryDeduction + advanceDeduction;
     const netSalary = parseFloat((grossSalary - totalDeductions).toFixed(2));
 
     const payroll = await Payroll.create({
@@ -327,21 +203,42 @@ const processSalaryPayment = async (req, res, next) => {
       month,
       year,
       basicSalary,
-      daysWorked: totalDaysWorked,
+      daysWorked: summary.totalWorkingDaysCount,
       overtimePay: totalOTAmount,
       allowances: Number(allowances),
-      bonuses: actualBonuses,
+      bonuses: manualBonuses,
+      targetBonus,
       grossSalary,
       epfEmployee,
       epfEmployer,
       etfEmployer,
-      otherDeductions: Number(deductions) + excessLeaveDeduction,
+      otherDeductions: Number(deductions),
       attendanceDeductions,
+      unapprovedAbsenceDeduction,
+      excessOffDayDeduction,
+      attendanceAllowance,
+      attendanceBreakdown: payType === 'monthly' ? {
+        periodType: summary.periodType,
+        periodStart: summary.periodStart,
+        periodEnd: summary.periodEnd,
+        allowedLeaves: summary.allowedLeaves,
+        leaveDaysTaken: summary.leaveDaysTaken,
+        extraOffDaysThisMonth: summary.extraOffDaysThisMonth,
+        unapprovedAbsences: summary.unapprovedAbsences,
+        unpaidLeaveDays: summary.unpaidLeaveDays,
+        allowanceReleased: summary.allowanceReleased,
+        leaveIds: summary.leaveIds,
+        attendanceIds: summary.attendanceIds,
+      } : undefined,
+      cashierRecoveryDeduction,
+      advanceDeduction,
       totalDeductions,
       netSalary,
       status: 'paid',
       paidAt: new Date(),
-      processedBy: req.user._id,
+      paidBy: req.user._id,
+      finalizedAt: new Date(),
+      finalizedBy: req.user._id,
     });
 
 
@@ -351,9 +248,18 @@ const processSalaryPayment = async (req, res, next) => {
       await ot.save();
     }
 
-    for (const t of pendingTargets) {
-      t.bonusPaid = true;
-      await t.save();
+    if (earnedTargetIds.length) {
+      await EmployeeTarget.updateMany(
+        { _id: { $in: earnedTargetIds } },
+        { $set: { bonusPaid: true, status: 'completed' } }
+      );
+    }
+
+    if (advanceIds.length) {
+      await SalaryAdvance.updateMany(
+        { _id: { $in: advanceIds } },
+        { $set: { deductedInPayroll: payroll._id, status: 'deducted' } }
+      );
     }
 
     // Send notification & email
@@ -397,10 +303,14 @@ const getSalaryHistory = async (req, res, next) => {
 // @access  Private/Manager/Admin
 const getPayrollReport = async (req, res, next) => {
   try {
-    const { month, year, role, employeeName } = req.query;
+    const { month, year, role, employeeName, employeeIds } = req.query;
     const filter = {};
     if (month) filter.month = parseInt(month);
     if (year) filter.year = parseInt(year);
+    if (employeeIds) {
+      const ids = String(employeeIds).split(',').map((id) => id.trim()).filter(Boolean);
+      if (ids.length > 0) filter.employeeId = { $in: ids };
+    }
 
     let payrolls = await Payroll.find(filter)
       .populate('employeeId', 'name email role employeeInfo')
@@ -409,7 +319,9 @@ const getPayrollReport = async (req, res, next) => {
     if (role && role !== 'all') {
       payrolls = payrolls.filter((p) => p.employeeId?.role === role);
     }
-    if (employeeName && String(employeeName).trim()) {
+    // Legacy fuzzy name filter, kept for any other caller still using it —
+    // superseded by the exact employeeIds filter above when both are present.
+    if (!employeeIds && employeeName && String(employeeName).trim()) {
       const q = String(employeeName).trim().toLowerCase();
       payrolls = payrolls.filter((p) => String(p.employeeId?.name || '').toLowerCase().includes(q));
     }
@@ -426,6 +338,8 @@ const getPayrollReport = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
+const adjustmentsTotal = (record) => (record.adjustments || []).reduce((sum, a) => sum + (a.amount || 0), 0);
+
 const buildSalaryExportRows = (records = []) => records.map((record) => ({
   employeeName: record.employeeId?.name || 'Unknown',
   role: record.employeeId?.role || 'N/A',
@@ -434,8 +348,13 @@ const buildSalaryExportRows = (records = []) => records.map((record) => ({
   basicSalary: Number(record.basicSalary || 0),
   allowances: Number(record.allowances || 0),
   bonuses: Number(record.bonuses || 0),
+  targetBonus: Number(record.targetBonus || 0),
   deductions: Number(record.otherDeductions || 0),
+  cashierRecoveryDeduction: Number(record.cashierRecoveryDeduction || 0),
+  advanceDeduction: Number(record.advanceDeduction || 0),
+  adjustmentsTotal: adjustmentsTotal(record),
   netSalary: Number(record.netSalary || 0),
+  adjustedNetSalary: Number(record.netSalary || 0) + adjustmentsTotal(record),
   paymentStatus: record.paymentStatus || record.status || 'pending',
 }));
 
@@ -491,7 +410,7 @@ const exportEmployeeSalaryReport = async (req, res, next) => {
       return;
     }
 
-    const headers = ['Employee Name', 'Role', 'Month', 'Year', 'Basic Salary', 'Allowances', 'Bonuses', 'Deductions', 'Net Salary', 'Payment Status'];
+    const headers = ['Employee Name', 'Role', 'Month', 'Year', 'Basic Salary', 'Allowances', 'Bonuses', 'Target Bonus', 'Deductions', 'Cashier Recovery', 'Advance Deduction', 'Adjustments', 'Net Salary', 'Adjusted Net Salary', 'Payment Status'];
     const csvLines = [
       headers.join(','),
       ...rows.map((row) => [
@@ -502,8 +421,13 @@ const exportEmployeeSalaryReport = async (req, res, next) => {
         row.basicSalary,
         row.allowances,
         row.bonuses,
+        row.targetBonus,
         row.deductions,
+        row.cashierRecoveryDeduction,
+        row.advanceDeduction,
+        row.adjustmentsTotal,
         row.netSalary,
+        row.adjustedNetSalary,
         `"${row.paymentStatus}"`,
       ].join(',')),
     ];
@@ -518,7 +442,7 @@ const downloadPaysheet = async (req, res, next) => {
     const payroll = await Payroll.findById(req.params.id)
       .populate('employeeId', 'name email role employeeInfo')
       .populate('storeId', 'name address phone')
-      .populate('processedBy', 'name');
+      .populate('paidBy', 'name');
 
     if (!payroll) {
       res.status(404);
@@ -550,22 +474,29 @@ const downloadPaysheet = async (req, res, next) => {
     doc.text(`Employee: ${payroll.employeeId?.name || 'Unknown'}`);
     if (fields.showEmployeeRole !== false) doc.text(`Role: ${payroll.employeeId?.role || 'N/A'}`);
     if (fields.showStore !== false) doc.text(`Store: ${payroll.storeId?.name || 'N/A'}`);
-    if (fields.showProcessedBy !== false) doc.text(`Processed By: ${payroll.processedBy?.name || 'System'}`);
+    if (fields.showProcessedBy !== false) doc.text(`Processed By: ${payroll.paidBy?.name || 'System'}`);
     doc.moveDown(1);
 
+    const adjustmentsSum = (payroll.adjustments || []).reduce((sum, a) => sum + (a.amount || 0), 0);
     const rows = [
       ['Basic Salary', payroll.basicSalary],
       ['Allowances', payroll.allowances],
-      ['Bonuses / OT / Targets', payroll.bonuses],
+      ['Overtime Pay', payroll.overtimePay || 0],
+      ['Target Incentive', payroll.targetBonus || 0],
+      ['Bonuses (Manual)', payroll.bonuses],
       ['Gross Salary', payroll.grossSalary],
       ['EPF Employee', -payroll.epfEmployee],
       ['Other Deductions', -payroll.otherDeductions],
       ['Attendance Deductions', -payroll.attendanceDeductions],
+      ['Attendance Allowance', payroll.attendanceAllowance || 0],
+      ['Cashier Shortage Recovery', -(payroll.cashierRecoveryDeduction || 0)],
+      ['Salary Advance Deducted', -(payroll.advanceDeduction || 0)],
       ['Net Salary', payroll.netSalary],
+      ...(adjustmentsSum ? [['Adjustments (post-finalization)', adjustmentsSum], ['Adjusted Net Salary', payroll.netSalary + adjustmentsSum]] : []),
     ];
 
     rows.forEach(([label, value], index) => {
-      const isTotal = label === 'Net Salary';
+      const isTotal = label === 'Net Salary' || label === 'Adjusted Net Salary';
       if (isTotal) {
         doc.moveDown(0.3);
         doc.strokeColor(accent).lineWidth(1).moveTo(42, doc.y).lineTo(doc.page.width - 42, doc.y).stroke();
@@ -659,6 +590,40 @@ const deleteSalaryAdvance = async (req, res, next) => {
   }
 };
 
+// @desc    Log a correction against an already-finalized payslip without
+//          editing its original locked figures
+// @route   POST /api/payroll/:id/adjustments
+// @access  Private/Admin
+const addAdjustment = async (req, res, next) => {
+  try {
+    const { label, amount, note } = req.body;
+    if (!label || amount === undefined || amount === null || Number.isNaN(Number(amount))) {
+      res.status(400);
+      return next(new Error('label and a numeric amount are required'));
+    }
+
+    const payroll = await Payroll.findById(req.params.id);
+    if (!payroll) {
+      res.status(404);
+      return next(new Error('Payroll record not found'));
+    }
+
+    payroll.adjustments.push({
+      label: String(label).trim(),
+      amount: Number(amount),
+      note: note ? String(note).trim() : undefined,
+      adjustedBy: req.user._id,
+      adjustedAt: new Date(),
+    });
+    await payroll.save();
+
+    const populated = await Payroll.findById(payroll._id)
+      .populate('employeeId', 'name email role')
+      .populate('adjustments.adjustedBy', 'name');
+    res.status(201).json(populated);
+  } catch (error) { next(error); }
+};
+
 module.exports = {
   calculateSalary,
   processSalaryPayment,
@@ -669,4 +634,5 @@ module.exports = {
   recordSalaryAdvance,
   getSalaryAdvances,
   deleteSalaryAdvance,
+  addAdjustment,
 };

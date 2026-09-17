@@ -10,6 +10,7 @@ const {
   recordSalaryAdvance,
   getSalaryAdvances,
   deleteSalaryAdvance,
+  addAdjustment,
 } = require('../controllers/payrollController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 
@@ -21,6 +22,7 @@ router.get('/history/:employeeId', getSalaryHistory);
 router.get('/history/:employeeId/export', exportEmployeeSalaryReport);
 router.get('/paysheet/:id', downloadPaysheet);
 router.get('/report', authorize('manager', 'admin'), getPayrollReport);
+router.post('/:id/adjustments', authorize('admin'), addAdjustment);
 
 // Salary Advance Endpoints
 router.post('/advances', authorize('manager', 'admin'), recordSalaryAdvance);

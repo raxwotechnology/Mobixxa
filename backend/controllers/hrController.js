@@ -4,6 +4,23 @@ const User = require('../models/User');
 const Store = require('../models/Store');
 const EmployeeTarget = require('../models/EmployeeTarget');
 const { sendNotification } = require('../utils/notificationService');
+const { computeTargetProgress } = require('../utils/targetAchievementCalc');
+
+// Merge live-computed progress into a target's JSON response without
+// mutating the stored document — sales achievement is always recomputed,
+// never trusted from the stored achievedValue/status.
+const withLiveProgress = async (targetDoc) => {
+  const target = targetDoc.toObject ? targetDoc.toObject() : targetDoc;
+  const progress = await computeTargetProgress(target);
+  return {
+    ...target,
+    achievedValue: progress.achievedValue,
+    status: progress.status,
+    percent: progress.percent,
+    remaining: progress.remaining,
+    bonusEarned: progress.bonusEarned,
+  };
+};
 
 const notifyAdmins = async ({ type, title, message, link, metadata }) => {
   const admins = await User.find({ role: 'admin', isActive: true }).select('_id email').lean();
@@ -243,6 +260,7 @@ const getStoreLeaves = async (req, res, next) => {
 
     const leaves = await Leave.find(filter)
       .populate('employeeId', 'name email role employeeInfo')
+      .populate('decisions.by', 'name')
       .sort({ createdAt: -1 });
     res.json(leaves);
   } catch (error) { next(error); }
@@ -258,15 +276,20 @@ const approveLeave = async (req, res, next) => {
 
     leave.status = 'approved';
     leave.approvedBy = req.user._id;
+    leave.decisions.push({ action: 'approved', by: req.user._id, note: req.body?.note });
     await leave.save();
 
-    // Mark attendance as 'leave' for the period
+    // Mark attendance as 'leave' for the period. $set-only so a pre-existing
+    // Attendance row (real check-in/out data from before the leave was
+    // retroactively approved) isn't silently replaced wholesale.
     const start = new Date(leave.startDate);
     const end = new Date(leave.endDate);
     for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      const dayStart = new Date(d); dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(d); dayEnd.setHours(23, 59, 59, 999);
       await Attendance.findOneAndUpdate(
-        { employeeId: leave.employeeId, date: { $gte: new Date(d.setHours(0,0,0,0)), $lt: new Date(d.setHours(23,59,59,999)) } },
-        { employeeId: leave.employeeId, date: new Date(d), status: 'leave', storeId: leave.storeId },
+        { employeeId: leave.employeeId, date: { $gte: dayStart, $lt: dayEnd } },
+        { $set: { status: 'leave', storeId: leave.storeId }, $setOnInsert: { employeeId: leave.employeeId, date: new Date(dayStart) } },
         { upsert: true }
       );
     }
@@ -315,7 +338,7 @@ const rejectLeave = async (req, res, next) => {
 
     leave.status = 'rejected';
     leave.rejectionReason = req.body.reason || 'Request denied';
-    leave.approvedBy = req.user._id;
+    leave.decisions.push({ action: 'rejected', by: req.user._id, note: leave.rejectionReason });
     await leave.save();
 
     await sendNotification({
@@ -346,6 +369,58 @@ const rejectLeave = async (req, res, next) => {
         metadata: meta,
       });
     }
+
+    res.json(leave);
+  } catch (error) { next(error); }
+};
+
+// @desc    Cancel a previous approve/reject decision (admin only — reverses
+//          history via a new logged entry, never a silent status flip-back)
+// @route   PUT /api/hr/leaves/:id/cancel
+// @access  Private/Admin
+const cancelDecision = async (req, res, next) => {
+  try {
+    const { reason } = req.body;
+    if (!reason || !reason.trim()) {
+      res.status(400);
+      return next(new Error('A reason is required to cancel a leave decision'));
+    }
+
+    const leave = await Leave.findById(req.params.id);
+    if (!leave) { res.status(404); return next(new Error('Leave not found')); }
+    if (leave.status === 'pending') {
+      res.status(400);
+      return next(new Error('Only an approved or rejected leave can be cancelled'));
+    }
+
+    const wasApproved = leave.status === 'approved';
+
+    leave.decisions.push({ action: 'cancelled', by: req.user._id, note: reason });
+    leave.status = 'pending';
+    await leave.save();
+
+    if (wasApproved) {
+      // Only revert Attendance rows still marked 'leave' — if a manager already
+      // manually re-marked one since approval, that more recent correction wins.
+      const start = new Date(leave.startDate);
+      const end = new Date(leave.endDate);
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        const dayStart = new Date(d); dayStart.setHours(0, 0, 0, 0);
+        const dayEnd = new Date(d); dayEnd.setHours(23, 59, 59, 999);
+        await Attendance.findOneAndUpdate(
+          { employeeId: leave.employeeId, date: { $gte: dayStart, $lt: dayEnd }, status: 'leave' },
+          { $set: { status: 'absent', notes: `Leave approval cancelled: ${reason}` } }
+        );
+      }
+    }
+
+    await sendNotification({
+      userId: leave.employeeId,
+      type: 'leave_update',
+      title: 'Leave Decision Cancelled',
+      message: `Your ${leave.leaveType} leave decision was cancelled and is pending review again. Reason: ${reason}`,
+      link: '/employee/leaves',
+    });
 
     res.json(leave);
   } catch (error) { next(error); }
@@ -650,7 +725,8 @@ const getTargets = async (req, res, next) => {
       .populate('employeeId', 'name email role')
       .sort({ year: -1, month: -1 });
 
-    res.json(targets);
+    const withProgress = await Promise.all(targets.map(withLiveProgress));
+    res.json(withProgress);
   } catch (error) { next(error); }
 };
 
@@ -667,7 +743,8 @@ const getMyTargets = async (req, res, next) => {
       ],
     }).sort({ year: -1, month: -1 });
 
-    res.json(targets);
+    const withProgress = await Promise.all(targets.map(withLiveProgress));
+    res.json(withProgress);
   } catch (error) { next(error); }
 };
 
@@ -677,6 +754,11 @@ const updateTargetProgress = async (req, res, next) => {
   try {
     const target = await EmployeeTarget.findById(req.params.id);
     if (!target) { res.status(404); return next(new Error('Target not found')); }
+
+    if (target.targetType === 'sales') {
+      res.status(400);
+      return next(new Error('Sales targets are tracked automatically from POS sales'));
+    }
 
     target.achievedValue = req.body.achievedValue || target.achievedValue;
     if (target.achievedValue >= target.targetValue) {
@@ -907,6 +989,8 @@ const adminCreateLeave = async (req, res, next) => {
     const end = new Date(endDate);
     const totalDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
 
+    const finalStatus = status || 'approved'; // Admin-created leaves are auto-approved
+
     const leave = await Leave.create({
       employeeId,
       storeId: employee.assignedStore || null,
@@ -915,8 +999,9 @@ const adminCreateLeave = async (req, res, next) => {
       endDate: end,
       totalDays,
       reason: reason || `Created by ${req.user.name}`,
-      status: status || 'approved', // Admin-created leaves are auto-approved
+      status: finalStatus,
       approvedBy: req.user._id,
+      decisions: finalStatus === 'pending' ? [] : [{ action: finalStatus, by: req.user._id, note: 'Created directly by admin/manager' }],
     });
 
     // Notify the employee
@@ -931,6 +1016,27 @@ const adminCreateLeave = async (req, res, next) => {
     });
 
     res.status(201).json(leave);
+  } catch (error) { next(error); }
+};
+
+// @desc    Monthly attendance/leave summary (deductions, off-day pool, allowance)
+// @route   GET /api/hr/attendance-summary/:employeeId?month&year
+// @access  Private (own data) / Admin/Manager (any employee)
+const getAttendanceSummary = async (req, res, next) => {
+  try {
+    const employeeId = req.params.employeeId === 'me' ? req.user._id : req.params.employeeId;
+    if (String(employeeId) !== String(req.user._id) && !['admin', 'manager'].includes(req.user.role)) {
+      res.status(403);
+      return next(new Error('Not authorized'));
+    }
+
+    const now = new Date();
+    const month = Number(req.query.month) || now.getMonth() + 1;
+    const year = Number(req.query.year) || now.getFullYear();
+
+    const { getAttendanceSummary: computeSummary } = require('../utils/attendanceSalaryCalc');
+    const summary = await computeSummary(employeeId, month, year);
+    res.json(summary);
   } catch (error) { next(error); }
 };
 
@@ -951,10 +1057,10 @@ const deleteEmployee = async (req, res, next) => {
 
 module.exports = {
   checkIn, checkOut, getMyAttendance, getAttendanceReport,
-  requestLeave, getMyLeaves, getStoreLeaves, approveLeave, rejectLeave,
+  requestLeave, getMyLeaves, getStoreLeaves, approveLeave, rejectLeave, cancelDecision,
   getEmployees, addEmployee, updateEmployee, deleteEmployee,
   startBreak, endBreak, getBreakHistory, getActiveBreak,
   createTarget, getTargets, getMyTargets, updateTargetProgress, payTargetBonus,
   getEmployeePerformance,
-  adminMarkAttendance, adminCreateLeave, deleteTarget
+  adminMarkAttendance, adminCreateLeave, deleteTarget, getAttendanceSummary
 };

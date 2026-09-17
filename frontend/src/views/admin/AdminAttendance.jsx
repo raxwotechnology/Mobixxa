@@ -4,12 +4,13 @@ import { useState, useEffect, useMemo } from 'react';
 import { Download, FileText, FileSpreadsheet, Filter, Store as StoreIcon, Clock, CheckCircle, X, Plus, Edit2, Trash2, ShieldAlert, AlertCircle } from 'lucide-react';
 
 import DashboardLayout from '../../components/DashboardLayout';
+import EmployeeSelector from '../../components/EmployeeSelector';
 import {
   getAttendanceReport, getEmployees, getStores, adminMarkAttendance,
   getLeavePolicies, createLeavePolicy, updateLeavePolicy, deleteLeavePolicy,
   getAttendancePolicies, createAttendancePolicy, updateAttendancePolicy, deleteAttendancePolicy,
   assignPoliciesToEmployee, assignPoliciesToAllEmployees,
-  checkIn, checkOut, startBreak, endBreak, getMyAttendance, getActiveBreak
+  checkIn, checkOut, startBreak, endBreak, getMyAttendance, getActiveBreak, getAttendanceSummary
 } from '../../services/api';
 import useAuthStore from '../../store/authStore';
 import AttendanceDashboardView from '../../components/AttendanceDashboardView';
@@ -39,7 +40,6 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
   const [selectedStore, setSelectedStore] = useState('All');
   
   const [showAttModal, setShowAttModal] = useState(false);
-  const [empSearchQuery, setEmpSearchQuery] = useState('');
   const [attForm, setAttForm] = useState({ employeeId: '', date: new Date().toISOString().split('T')[0], checkInTime: '09:00', checkOutTime: '17:00', status: 'present', notes: '' });
 
   // Policy Management States
@@ -58,18 +58,38 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
     lateArrivalPenalty: 0,
     earlyCheckoutPenalty: 0,
     halfDayThresholdHours: 4,
+    absentDayDeduction: 0,
     isDefault: false
   });
+
+  // Leave & Salary Summary tab state
+  const [salaryEmployeeId, setSalaryEmployeeId] = useState('');
+  const [salarySummary, setSalarySummary] = useState(null);
+  const [salarySummaryLoading, setSalarySummaryLoading] = useState(false);
+
+  const fetchSalarySummary = async (employeeId = salaryEmployeeId) => {
+    if (!employeeId) { setSalarySummary(null); return; }
+    setSalarySummaryLoading(true);
+    try {
+      const { data } = await getAttendanceSummary(employeeId, { month, year });
+      setSalarySummary(data);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to load summary');
+      setSalarySummary(null);
+    } finally {
+      setSalarySummaryLoading(false);
+    }
+  };
 
   // Assign Policy Modal State
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [showBulkAssignConfirm, setShowBulkAssignConfirm] = useState(false);
 
   const [assignForm, setAssignForm] = useState({
-    employeeId: '',
-    employeeName: '',
+    employeeIds: [],
     attendancePolicyId: ''
   });
+  const [policySearchQuery, setPolicySearchQuery] = useState('');
 
   // Delete modal state
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -161,6 +181,13 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
     }
   }, [activeTab]);
 
+  useEffect(() => {
+    if (activeTab === 'salary-summary' && salaryEmployeeId) {
+      fetchSalarySummary(salaryEmployeeId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, salaryEmployeeId, month, year]);
+
   const handleMarkAtt = async () => {
     if (!attForm.employeeId) return toast.error('Select employee');
     try {
@@ -208,6 +235,7 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
       lateArrivalPenalty: policy.lateArrivalPenalty,
       earlyCheckoutPenalty: policy.earlyCheckoutPenalty,
       halfDayThresholdHours: policy.halfDayThresholdHours,
+      absentDayDeduction: policy.absentDayDeduction || 0,
       isDefault: !!policy.isDefault
     });
     setShowAttendanceModal(true);
@@ -223,6 +251,7 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
       lateArrivalPenalty: 0,
       earlyCheckoutPenalty: 0,
       halfDayThresholdHours: 4,
+      absentDayDeduction: 0,
       isDefault: false
     });
     setShowAttendanceModal(true);
@@ -247,50 +276,39 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
 
   // Policy Assignment logic
   const openAssignModal = (employee = null) => {
+    setPolicySearchQuery('');
     if (employee) {
       setAssignForm({
-        employeeId: employee._id,
-        employeeName: employee.name,
+        employeeIds: [employee._id],
         attendancePolicyId: employee.employeeInfo?.attendancePolicyId?._id || employee.employeeInfo?.attendancePolicyId || ''
       });
     } else {
-      setAssignForm({
-        employeeId: 'all',
-        employeeName: 'All Employees',
-        attendancePolicyId: ''
-      });
+      setAssignForm({ employeeIds: [], attendancePolicyId: '' });
     }
     setShowAssignModal(true);
   };
 
   const handleSaveAssignment = async (e) => {
     if (e) e.preventDefault();
-    if (assignForm.employeeId === 'all' && !showBulkAssignConfirm) {
+    if (assignForm.employeeIds.length === 0 || !assignForm.attendancePolicyId) return;
+    const isEffectivelyAll = employees.length > 0 && assignForm.employeeIds.length === employees.length;
+    if (isEffectivelyAll && !showBulkAssignConfirm) {
       setShowBulkAssignConfirm(true);
       return;
     }
     try {
-      if (assignForm.employeeId === 'all') {
-
-        await assignPoliciesToAllEmployees({
-          attendancePolicyId: assignForm.attendancePolicyId || null
-        });
-        toast.success('Attendance policy assigned to all employees successfully');
-        setShowBulkAssignConfirm(false);
-
-      } else {
-        await assignPoliciesToEmployee({
-          employeeId: assignForm.employeeId,
-          attendancePolicyId: assignForm.attendancePolicyId || null
-        });
-        toast.success('Attendance policy assigned successfully');
-      }
+      await assignPoliciesToEmployee({
+        employeeIds: assignForm.employeeIds,
+        attendancePolicyId: assignForm.attendancePolicyId || null
+      });
+      toast.success(`Policy assigned to ${assignForm.employeeIds.length} employee${assignForm.employeeIds.length === 1 ? '' : 's'}`);
+      setShowBulkAssignConfirm(false);
       setShowAssignModal(false);
       // Refresh employees list
       const empRes = await getEmployees();
       setEmployees(empRes.data);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to assign policies');
+      toast.error(err.response?.data?.message || 'Failed to assign policy');
     }
   };
 
@@ -438,6 +456,14 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
             }`}
           >
             👤 Assign
+          </button>
+          <button
+            onClick={() => setActiveTab('salary-summary')}
+            className={`px-4 py-2.5 text-[10px] uppercase font-black tracking-wider rounded-xl transition-all flex items-center gap-2 border-0 cursor-pointer ${
+              activeTab === 'salary-summary' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-white hover:text-slate-900'
+            }`}
+          >
+            💰 Leave & Salary Summary
           </button>
         </div>
 
@@ -603,9 +629,13 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
                           <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">🚶 Checkout Fine</span>
                           <span className="font-black text-rose-500">Rs. {p.earlyCheckoutPenalty.toLocaleString()}</span>
                         </div>
-                        <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                        <div className="flex justify-between items-center border-b border-slate-50 pb-2">
                           <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">⚖️ Half-Day</span>
                           <span className="font-black text-slate-800">&lt; {p.halfDayThresholdHours} hrs</span>
+                        </div>
+                        <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                          <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">🚫 Absent Day Deduction</span>
+                          <span className="font-black text-rose-500">Rs. {(p.absentDayDeduction || 0).toLocaleString()}</span>
                         </div>
                       </div>
                     </div>
@@ -691,6 +721,89 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
             </div>
           </div>
         )}
+
+        {activeTab === 'salary-summary' && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm gap-4">
+              <div>
+                <h3 className="font-black text-slate-900 text-lg">Leave & Salary Summary</h3>
+                <p className="text-[10px] uppercase tracking-wider font-black text-slate-500 mt-1">Recomputed live from attendance/leave records — locked once payroll is processed for the month</p>
+              </div>
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="w-56">
+                  <EmployeeSelector
+                    multiple={false}
+                    employees={employees.filter(e => e.role !== 'customer')}
+                    value={salaryEmployeeId ? [salaryEmployeeId] : []}
+                    onChange={([id]) => setSalaryEmployeeId(id || '')}
+                    placeholder="Select employee..."
+                  />
+                </div>
+                <select value={month} onChange={(e) => setMonth(Number(e.target.value))} className="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-800 cursor-pointer">
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map(m => <option key={m} value={m}>{new Date(2000, m - 1, 1).toLocaleString('en-US', { month: 'long' })}</option>)}
+                </select>
+                <select value={year} onChange={(e) => setYear(Number(e.target.value))} className="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-800 cursor-pointer">
+                  {[year - 1, year, year + 1].map(y => <option key={y} value={y}>{y}</option>)}
+                </select>
+              </div>
+            </div>
+
+            {!salaryEmployeeId ? (
+              <div className="bg-white rounded-3xl border border-slate-100 p-16 text-center shadow-sm">
+                <p className="text-sm font-bold text-slate-400">Select an employee to see their monthly attendance &amp; leave breakdown.</p>
+              </div>
+            ) : salarySummaryLoading ? (
+              <div className="bg-white rounded-3xl border border-slate-100 p-16 text-center shadow-sm">
+                <p className="text-sm font-bold text-slate-400">Loading...</p>
+              </div>
+            ) : salarySummary ? (
+              <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 space-y-6">
+                {salarySummary.locked && (
+                  <div className="bg-amber-50 border border-amber-200 text-amber-700 text-[10px] uppercase font-black tracking-wider px-4 py-2.5 rounded-xl">
+                    🔒 Payroll already processed for this month — figures are the locked snapshot, not a live recalculation
+                  </div>
+                )}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                    <p className="text-[9px] uppercase font-black tracking-wider text-slate-400 mb-1">Off-Days Allowed</p>
+                    <p className="text-2xl font-black text-slate-900">{salarySummary.allowedLeaves ?? 0}</p>
+                  </div>
+                  <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                    <p className="text-[9px] uppercase font-black tracking-wider text-slate-400 mb-1">Leave Days Taken</p>
+                    <p className="text-2xl font-black text-slate-900">{salarySummary.leaveDaysTaken ?? 0}</p>
+                  </div>
+                  <div className="bg-rose-50 rounded-2xl p-4 border border-rose-100">
+                    <p className="text-[9px] uppercase font-black tracking-wider text-rose-500 mb-1">Extra Off-Days</p>
+                    <p className="text-2xl font-black text-rose-600">{salarySummary.extraOffDaysThisMonth ?? 0}</p>
+                  </div>
+                  <div className="bg-rose-50 rounded-2xl p-4 border border-rose-100">
+                    <p className="text-[9px] uppercase font-black tracking-wider text-rose-500 mb-1">Unapproved Absences</p>
+                    <p className="text-2xl font-black text-rose-600">{salarySummary.unapprovedAbsences ?? 0}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-slate-100 pt-6">
+                  <div className="bg-rose-50/60 rounded-2xl p-4 border border-rose-100">
+                    <p className="text-[9px] uppercase font-black tracking-wider text-rose-500 mb-1">Total Deduction</p>
+                    <p className="text-xl font-black text-rose-600">Rs. {(salarySummary.attendanceDeductions || 0).toLocaleString()}</p>
+                  </div>
+                  <div className="bg-emerald-50/60 rounded-2xl p-4 border border-emerald-100">
+                    <p className="text-[9px] uppercase font-black tracking-wider text-emerald-600 mb-1">Attendance Allowance</p>
+                    <p className="text-xl font-black text-emerald-600">Rs. {(salarySummary.attendanceAllowance || 0).toLocaleString()}</p>
+                  </div>
+                  <div className="bg-slate-900 rounded-2xl p-4">
+                    <p className="text-[9px] uppercase font-black tracking-wider text-slate-400 mb-1">Net Adjustment</p>
+                    <p className="text-xl font-black text-white">Rs. {((salarySummary.attendanceAllowance || 0) - (salarySummary.attendanceDeductions || 0)).toLocaleString()}</p>
+                  </div>
+                </div>
+                <p className="text-[9px] text-slate-400 m-0">Calculated + displayed only — apply to the employee's salary manually via Financial Management &gt; Overtime/Payroll, same as the Cashier Cash Accountability ledger.</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-3xl border border-slate-100 p-16 text-center shadow-sm">
+                <p className="text-sm font-bold text-slate-400">No data for this employee/period.</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Mark Attendance Modal */}
@@ -711,26 +824,13 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
             <div className="p-6 bg-slate-50/50 space-y-4">
               <div>
                 <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1">Search & Select Employee *</label>
-                <input
-                  type="text"
-                  placeholder="🔍 Type name or role to search..."
-                  value={empSearchQuery}
-                  onChange={(e) => setEmpSearchQuery(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs mb-2 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20"
+                <EmployeeSelector
+                  multiple={false}
+                  employees={employees.filter(e => e.role !== 'customer')}
+                  value={attForm.employeeId ? [attForm.employeeId] : []}
+                  onChange={([id]) => setAttForm({ ...attForm, employeeId: id || '' })}
+                  placeholder="Search and select employee..."
                 />
-                <select
-                  value={attForm.employeeId}
-                  onChange={(e) => setAttForm({...attForm, employeeId: e.target.value})}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm cursor-pointer"
-                >
-                  <option value="">Select employee ({employees.filter(e => e.role !== 'customer').length} available)</option>
-                  {employees
-                    .filter(e => e.role !== 'customer')
-                    .filter(e => e.name?.toLowerCase().includes(empSearchQuery.toLowerCase()) || e.role?.toLowerCase().includes(empSearchQuery.toLowerCase()))
-                    .map(e => (
-                      <option key={e._id} value={e._id}>{e.name} ({e.role})</option>
-                    ))}
-                </select>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -875,6 +975,18 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
                   />
                 </div>
               </div>
+              <div>
+                <label className="text-[10px] uppercase font-black tracking-wider text-rose-600 block mb-2">Absent Day Deduction (Rs.)</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={attendanceForm.absentDayDeduction}
+                  onChange={(e) => setAttendanceForm({ ...attendanceForm, absentDayDeduction: parseFloat(e.target.value) || 0 })}
+                  placeholder="e.g. 1500"
+                  className="w-full bg-white border border-rose-200 rounded-xl px-4 py-3 text-sm font-semibold text-rose-800 focus:outline-none focus:ring-2 focus:ring-rose-300 transition-all shadow-sm"
+                />
+                <p className="text-[9px] text-slate-400 mt-1">Fixed amount deducted for each unapproved absent day (also used for extra off-days if no separate leave-policy fine is set)</p>
+              </div>
               <div className="flex items-center gap-3 pt-2 bg-slate-100 p-3 rounded-xl border border-slate-200">
                 <input
                   type="checkbox"
@@ -903,8 +1015,8 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
       {/* Assign Policies Modal */}
       {showAssignModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
-          <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col border border-slate-100">
-            <div className="px-6 py-6 border-b border-slate-100 flex flex-col items-center justify-center text-center bg-white/80 backdrop-blur-md relative">
+          <div className="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col border border-slate-100 max-h-[90vh]">
+            <div className="px-6 py-6 border-b border-slate-100 flex flex-col items-center justify-center text-center bg-white/80 backdrop-blur-md relative flex-shrink-0">
               <button onClick={() => setShowAssignModal(false)} className="absolute right-4 top-4 p-2 rounded-full hover:bg-slate-100 text-slate-400 transition-colors">
                 <X size={16} />
               </button>
@@ -913,32 +1025,54 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
               </div>
               <h3 className="font-black text-slate-900 text-xl">Assign Policy</h3>
             </div>
-            
-            <form onSubmit={handleSaveAssignment} className="p-6 bg-slate-50/50 space-y-4">
-              <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
-                <label className="text-[10px] uppercase font-black tracking-wider text-slate-400 block mb-1">Employee</label>
-                <p className="font-black text-slate-900 text-lg">{assignForm.employeeName}</p>
+
+            <form onSubmit={handleSaveAssignment} className="p-6 bg-slate-50/50 space-y-4 overflow-y-auto">
+              <div>
+                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Employees</label>
+                <EmployeeSelector
+                  alwaysOpen
+                  multiple
+                  employees={employees}
+                  value={assignForm.employeeIds}
+                  onChange={(ids) => setAssignForm({ ...assignForm, employeeIds: ids })}
+                />
               </div>
               <div>
-                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Select Attendance Policy</label>
+                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Select Attendance Policy *</label>
+                {attendancePolicies.length > 6 && (
+                  <input
+                    type="text"
+                    value={policySearchQuery}
+                    onChange={(e) => setPolicySearchQuery(e.target.value)}
+                    placeholder="Search policies..."
+                    className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2 mb-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm"
+                  />
+                )}
                 <select
+                  required
                   value={assignForm.attendancePolicyId}
                   onChange={(e) => setAssignForm({ ...assignForm, attendancePolicyId: e.target.value })}
                   className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm cursor-pointer"
                 >
-                  <option value="">System Default</option>
-                  {attendancePolicies.map(p => (
-                    <option key={p._id} value={p._id}>
-                      {p.name} ({p.shiftStartTime} - {p.shiftEndTime}, grace: {p.graceTimeMinutes}m)
-                    </option>
-                  ))}
+                  <option value="">Select a policy...</option>
+                  {attendancePolicies
+                    .filter((p) => p.name.toLowerCase().includes(policySearchQuery.toLowerCase()))
+                    .map(p => (
+                      <option key={p._id} value={p._id}>
+                        {p.name} ({p.shiftStartTime} - {p.shiftEndTime}, grace: {p.graceTimeMinutes}m)
+                      </option>
+                    ))}
                 </select>
               </div>
               <div className="flex gap-3 pt-6">
                 <button type="button" onClick={() => setShowAssignModal(false)} className="flex-1 py-3 rounded-xl bg-slate-100 text-[10px] uppercase tracking-wider font-black hover:bg-slate-200 text-slate-700 transition-all">
                   Cancel
                 </button>
-                <button type="submit" className="flex-1 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[10px] uppercase tracking-wider font-black shadow-lg shadow-slate-900/20 transition-all">
+                <button
+                  type="submit"
+                  disabled={assignForm.employeeIds.length === 0 || !assignForm.attendancePolicyId}
+                  className="flex-1 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[10px] uppercase tracking-wider font-black shadow-lg shadow-slate-900/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-slate-900"
+                >
                   Save Changes
                 </button>
               </div>

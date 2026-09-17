@@ -9,8 +9,12 @@ const cashierRecoverySchema = mongoose.Schema(
     amount: { type: Number, required: true, min: 0.01 },
     date: { type: Date, required: true, default: Date.now },
     note: { type: String, trim: true },
-    // Unused today — a hook for a later Overtime/Payroll integration.
-    payrollPeriod: { type: String, trim: true },
+    // Which payroll month/year this recovery is deducted against — read by
+    // payrollController to sum recoveries into that period's payslip.
+    payrollPeriod: {
+      month: { type: Number, required: true, min: 1, max: 12 },
+      year: { type: Number, required: true },
+    },
     // Only set when the amount was allowed to exceed the outstanding balance.
     overrideReason: { type: String, trim: true },
     recordedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },

@@ -9,7 +9,7 @@ const leavePolicySchema = mongoose.Schema(
     },
     periodType: {
       type: String,
-      enum: ['daily', 'monthly', 'half_yearly', 'annual'],
+      enum: ['daily', 'monthly', 'quarterly', 'half_yearly', 'annual'],
       default: 'monthly',
     },
     allowedLeaves: {

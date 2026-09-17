@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, Target, Award, X, CheckCircle, Trash2 } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
+import EmployeeSelector from '../../components/EmployeeSelector';
 import DeleteConfirmationModal from '../../components/DeleteConfirmationModal';
 import { getTargets, getEmployees, createTarget, updateTargetProgress, payTargetBonus, deleteTarget } from '../../services/api';
 import { toast } from 'react-toastify';
@@ -52,6 +53,7 @@ const ManagerTargets = () => {
 
   const handleCreate = async (e) => {
     e.preventDefault();
+    if (!form.employeeId) return toast.error('Select an employee');
     try {
       await createTarget({
         ...form,
@@ -181,7 +183,10 @@ const ManagerTargets = () => {
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-muted-text">{progress}%</span>
                   <div className="flex gap-1">
-                    {!isCompleted && (
+                    {!isCompleted && t.targetType === 'sales' && (
+                      <span className="text-[10px] uppercase font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-lg">Live · from POS sales</span>
+                    )}
+                    {!isCompleted && t.targetType !== 'sales' && (
                       <button onClick={() => handleUpdateProgress(t._id, t.achievedValue)} className="text-xs bg-blue-50 text-blue-600 px-3 py-1 rounded-lg hover:bg-blue-100 font-medium">Update</button>
                     )}
                     {isCompleted && t.bonusAmount > 0 && !t.bonusPaid && (
@@ -212,11 +217,13 @@ const ManagerTargets = () => {
             <form onSubmit={handleCreate} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-dark-navy mb-1">Employee *</label>
-                <select required value={form.employeeId} onChange={(e) => setForm({ ...form, employeeId: e.target.value })}
-                  className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm">
-                  <option value="">Select employee</option>
-                  {employees.map(e => <option key={e._id} value={e._id}>{e.name} ({e.role})</option>)}
-                </select>
+                <EmployeeSelector
+                  multiple={false}
+                  employees={employees}
+                  value={form.employeeId ? [form.employeeId] : []}
+                  onChange={([id]) => setForm({ ...form, employeeId: id || '' })}
+                  placeholder="Search and select employee..."
+                />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
