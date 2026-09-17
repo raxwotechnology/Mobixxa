@@ -7,6 +7,14 @@ import { Search, ShoppingBag, Menu, X, User, LogOut } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useSearch } from "@/context/SearchContext";
 
+const STAFF_DASHBOARD_MAP = {
+  admin: "/admin",
+  manager: "/manager",
+  cashier: "/employee",
+  deliveryGuy: "/delivery",
+  stockEmployee: "/employee",
+};
+
 export default function CustomerNavbar() {
   const pathname = usePathname() || "/";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -138,8 +146,12 @@ export default function CustomerNavbar() {
             {user ? (
               <div className="flex items-center gap-2">
                 <Link
-                  href="/dashboard"
-                  title="View Customer Dashboard"
+                  href={STAFF_DASHBOARD_MAP[user.role] || "/dashboard"}
+                  title={
+                    STAFF_DASHBOARD_MAP[user.role]
+                      ? "Go to Dashboard"
+                      : "View Customer Dashboard"
+                  }
                   className="flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100/80 border border-blue-200 text-blue-700 px-3 py-1.5 rounded-full text-xs font-bold shadow-2xs transition-colors cursor-pointer"
                 >
                   <User className="w-3.5 h-3.5 text-blue-600" />

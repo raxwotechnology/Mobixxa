@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Smartphone,
   Eye,
@@ -11,6 +12,16 @@ import {
   ArrowRight,
   Mail,
 } from "lucide-react";
+import { loginUser } from "../../services/api";
+import useAuthStore from "../../store/authStore";
+
+const STAFF_REDIRECT_MAP = {
+  admin: "/admin",
+  manager: "/manager",
+  cashier: "/employee",
+  deliveryGuy: "/delivery",
+  stockEmployee: "/employee",
+};
 
 export default function LoginPage() {
   const [view, setView] = useState("login"); // 'login' | 'forgot' | 'forgot-success'
@@ -21,8 +32,10 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+  const router = useRouter();
+  const { login } = useAuthStore();
 
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
 
@@ -38,28 +51,32 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const namePart = email.split("@")[0] || "Customer";
-      const formattedName =
-        namePart.charAt(0).toUpperCase() + namePart.slice(1);
+      const { data } = await loginUser({ email: email.trim(), password });
+      login(data);
 
-      const user = {
-        name: formattedName,
-        email: email.trim(),
-        role: "customer",
-        loggedInAt: new Date().toISOString(),
-      };
-
-      localStorage.setItem("mobixa_user", JSON.stringify(user));
+      // Keep the customer storefront (cart/dashboard) aware of the session too.
+      localStorage.setItem(
+        "mobixa_user",
+        JSON.stringify({
+          name: data.name,
+          email: data.email,
+          role: data.role,
+          loggedInAt: new Date().toISOString(),
+        })
+      );
       sessionStorage.setItem("just_logged_in", "true");
       window.dispatchEvent(new Event("authChange"));
 
-      setSuccessMsg("Signed in successfully! Redirecting...");
+      setSuccessMsg(`Welcome back, ${data.name}! Redirecting...`);
 
+      const destination = STAFF_REDIRECT_MAP[data.role] || "/";
       setTimeout(() => {
-        window.location.href = "/";
-      }, 700);
+        router.push(destination);
+      }, 500);
     } catch (err) {
-      setErrorMsg("Failed to store session. Please try again.");
+      setErrorMsg(
+        err.response?.data?.message || "Invalid email or password."
+      );
       setLoading(false);
     }
   };
