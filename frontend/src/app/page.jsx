@@ -145,7 +145,7 @@ export default function HomePage() {
               </p>
             </div>
             <Link
-              href="#categories"
+              href="/categories"
               className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-blue-600 hover:text-blue-700 group flex-shrink-0"
             >
               <span>View All</span>
@@ -160,7 +160,7 @@ export default function HomePage() {
               return (
                 <Link
                   key={category.id}
-                  href={`#category-${category.id}`}
+                  href={`/categories?category=${category.id}`}
                   className="group relative bg-slate-50/80 hover:bg-white rounded-2xl p-4 border border-slate-200/70 hover:border-blue-500/40 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-200 flex flex-col items-center text-center text-slate-800"
                 >
                   {category.badge && (

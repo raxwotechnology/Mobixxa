@@ -11,19 +11,19 @@ import {
 
 export default function CustomerFooter() {
   const quickLinks = [
-    { label: "New Arrivals", href: "#new-arrivals" },
-    { label: "Tech Deals", href: "#deals" },
-    { label: "Our Boutiques", href: "#boutiques" },
-    { label: "Categories", href: "#categories" },
+    { label: "New Arrivals", href: "/shop?sort=newest" },
+    { label: "Tech Deals", href: "/deals" },
+    { label: "Our Boutiques", href: "/stores" },
+    { label: "Categories", href: "/categories" },
   ];
 
   const customerServiceLinks = [
-    { label: "Help Center", href: "#help" },
-    { label: "Warranty Check", href: "#warranty" },
-    { label: "Track Order", href: "#track" },
-    { label: "Shipping Info", href: "#shipping" },
-    { label: "Returns & Exchange", href: "#returns" },
-    { label: "Privacy Policy", href: "#privacy" },
+    { label: "Help Center", href: "/help-center" },
+    { label: "Warranty Check", href: "/warranty-check" },
+    { label: "Track Order", href: "/orders" },
+    { label: "Shipping Info", href: "/shipping-info" },
+    { label: "Returns & Exchange", href: "/returns-policy" },
+    { label: "Privacy Policy", href: "/privacy-policy" },
   ];
 
   return (
