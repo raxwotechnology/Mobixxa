@@ -568,14 +568,8 @@ const AdminGRN = () => {
 
         {/* View Modal */}
         {viewGrn && (
-          <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in"
-            onClick={() => setViewGrn(null)}
-          >
-            <div
-              className="bg-white rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col"
-              onClick={(e) => e.stopPropagation()}
-            >
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-[2px] z-[200] flex items-center justify-center p-4 animate-in fade-in" onClick={() => setViewGrn(null)}>
+            <div className="bg-white rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col" onClick={(e) => e.stopPropagation()}>
               <div className="px-8 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/30">
                 <div>
                   <h2 className="text-lg font-bold text-dark-navy">

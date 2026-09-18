@@ -33,6 +33,8 @@ export default function AppLayout({ children }) {
   const isStaff = user && ['admin', 'manager', 'cashier', 'deliveryGuy', 'stockEmployee'].includes(user.role);
 
   // Pages that should have NO shared Navbar/Footer
+  const isAuthPage = pathname === '/login' || pathname === '/register';
+
   const isNoLayout =
     pathname === '/pos' ||
     pathname === '/cashier-login' ||
@@ -52,7 +54,7 @@ export default function AppLayout({ children }) {
       <TopBar />
       <CustomerNavbar />
       <main className="flex-1 w-full flex flex-col">{children}</main>
-      <CustomerFooter />
+      {!isAuthPage && <CustomerFooter />}
       <CartDrawer />
       <SearchDrawer />
     </div>

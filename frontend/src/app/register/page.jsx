@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { requestRegistrationOtp, verifyRegistrationOtp } from "../../services/api";
 import useAuthStore from "../../store/authStore";
+import AuthLayout from "../../components/AuthLayout";
 
 export default function RegisterPage() {
   const [step, setStep] = useState("form"); // 'form' | 'otp'
@@ -142,18 +143,15 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-140px)] flex items-center justify-center py-12 px-4 bg-[#f8fafc]">
+    <AuthLayout>
       {/* ======================================================================= */}
-      {/* FIGMA PIXEL-PERFECT REGISTER CARD */}
+      {/* REGISTER CARD */}
       {/* ======================================================================= */}
-      <div className="bg-gradient-to-b from-[#1864d9] via-[#1557bf] to-[#0f46a0] text-white rounded-[40px] p-8 sm:p-12 w-full max-w-[460px] shadow-2xl shadow-blue-600/30 relative border border-white/10">
-        {/* Subtle Background Glow Accent */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none -mr-16 -mt-16" />
-
-        {/* 1. TOP BRAND BADGE */}
-        <div className="flex justify-center">
-          <div className="bg-white px-5 py-2 rounded-2xl shadow-md inline-flex items-center gap-2.5 mx-auto">
-            <div className="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-xs">
+      <div className="bg-white text-slate-900 rounded-[32px] p-8 sm:p-12 w-full max-w-[460px] shadow-xl shadow-slate-200/70 border border-slate-100 relative">
+        {/* Brand badge — shown only where the side brand panel is hidden */}
+        <div className="flex justify-center lg:hidden">
+          <div className="bg-blue-50 px-5 py-2 rounded-2xl inline-flex items-center gap-2.5 mx-auto">
+            <div className="w-6 h-6 rounded-lg bg-[#1557bf] flex items-center justify-center text-white shadow-xs">
               <Smartphone className="w-3.5 h-3.5 text-white" />
             </div>
             <div className="flex flex-col">
@@ -171,24 +169,24 @@ export default function RegisterPage() {
           <>
             {/* 2. HEADER TYPOGRAPHY */}
             <div className="text-center mt-5 mb-6">
-              <h1 className="text-2xl sm:text-[28px] font-extrabold tracking-tight text-white">
+              <h1 className="text-2xl sm:text-[28px] font-extrabold tracking-tight text-slate-900">
                 Create Account
               </h1>
-              <p className="text-blue-100/90 text-xs mt-2 leading-relaxed">
+              <p className="text-slate-500 text-xs mt-2 leading-relaxed">
                 Join Mobixa for tech and smart devices shopping
               </p>
             </div>
 
             {/* ERROR / SUCCESS ALERTS */}
             {errorMsg && (
-              <div className="mb-4 bg-rose-500/20 border border-rose-400/40 rounded-xl p-3 text-xs text-rose-100 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-rose-300 flex-shrink-0" />
+              <div className="mb-4 bg-rose-50 border border-rose-200 rounded-xl p-3 text-xs text-rose-600 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-500 flex-shrink-0" />
                 <span>{errorMsg}</span>
               </div>
             )}
             {successMsg && (
-              <div className="mb-4 bg-emerald-500/20 border border-emerald-400/40 rounded-xl p-3 text-xs text-emerald-100 flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-300 flex-shrink-0" />
+              <div className="mb-4 bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-700 flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
                 <span>{successMsg}</span>
               </div>
             )}
@@ -199,7 +197,7 @@ export default function RegisterPage() {
               <div>
                 <label
                   htmlFor="fullName"
-                  className="text-[11px] font-bold text-white/90 uppercase tracking-wider block mb-2"
+                  className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-2"
                 >
                   FULL NAME
                 </label>
@@ -210,7 +208,7 @@ export default function RegisterPage() {
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="John Doe"
                   required
-                  className="w-full bg-white/10 hover:bg-white/15 focus:bg-white/20 border border-white/20 focus:border-white/60 rounded-xl px-4 py-3.5 text-sm text-white placeholder:text-blue-200/50 focus:outline-none transition-all"
+                  className="w-full bg-slate-50 hover:bg-slate-100/70 focus:bg-white border border-slate-200 focus:border-[#1557bf] focus:ring-4 focus:ring-blue-100 rounded-xl px-4 py-3.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all"
                 />
               </div>
 
@@ -218,7 +216,7 @@ export default function RegisterPage() {
               <div>
                 <label
                   htmlFor="email"
-                  className="text-[11px] font-bold text-white/90 uppercase tracking-wider block mb-2 mt-4"
+                  className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-2 mt-4"
                 >
                   EMAIL ADDRESS
                 </label>
@@ -229,7 +227,7 @@ export default function RegisterPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="john@example.com"
                   required
-                  className="w-full bg-white/10 hover:bg-white/15 focus:bg-white/20 border border-white/20 focus:border-white/60 rounded-xl px-4 py-3.5 text-sm text-white placeholder:text-blue-200/50 focus:outline-none transition-all"
+                  className="w-full bg-slate-50 hover:bg-slate-100/70 focus:bg-white border border-slate-200 focus:border-[#1557bf] focus:ring-4 focus:ring-blue-100 rounded-xl px-4 py-3.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all"
                 />
               </div>
 
@@ -237,7 +235,7 @@ export default function RegisterPage() {
               <div>
                 <label
                   htmlFor="phone"
-                  className="text-[11px] font-bold text-white/90 uppercase tracking-wider block mb-2 mt-4"
+                  className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-2 mt-4"
                 >
                   PHONE NUMBER(SRI LANKA)
                 </label>
@@ -248,7 +246,7 @@ export default function RegisterPage() {
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+94 77 123 4567"
                   required
-                  className="w-full bg-white/10 hover:bg-white/15 focus:bg-white/20 border border-white/20 focus:border-white/60 rounded-xl px-4 py-3.5 text-sm text-white placeholder:text-blue-200/50 focus:outline-none transition-all"
+                  className="w-full bg-slate-50 hover:bg-slate-100/70 focus:bg-white border border-slate-200 focus:border-[#1557bf] focus:ring-4 focus:ring-blue-100 rounded-xl px-4 py-3.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all"
                 />
               </div>
 
@@ -256,7 +254,7 @@ export default function RegisterPage() {
               <div>
                 <label
                   htmlFor="password"
-                  className="text-[11px] font-bold text-white/90 uppercase tracking-wider block mb-2 mt-4"
+                  className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-2 mt-4"
                 >
                   PASSWORD
                 </label>
@@ -268,12 +266,12 @@ export default function RegisterPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Min.6 Characters"
                     required
-                    className="w-full bg-white/10 hover:bg-white/15 focus:bg-white/20 border border-white/20 focus:border-white/60 rounded-xl pl-4 pr-12 py-3.5 text-sm text-white placeholder:text-blue-200/50 focus:outline-none transition-all"
+                    className="w-full bg-slate-50 hover:bg-slate-100/70 focus:bg-white border border-slate-200 focus:border-[#1557bf] focus:ring-4 focus:ring-blue-100 rounded-xl pl-4 pr-12 py-3.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-blue-200/70 hover:text-white transition-colors"
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
                     aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? (
@@ -289,10 +287,10 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-white hover:bg-slate-100 text-[#1557bf] font-extrabold py-4 rounded-full text-base tracking-wider shadow-lg shadow-black/10 transition-all transform active:scale-[0.99] mt-8 uppercase cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full bg-[#1557bf] hover:bg-[#123e91] text-white font-extrabold py-4 rounded-full text-base tracking-wider shadow-lg shadow-blue-600/25 transition-all transform active:scale-[0.99] mt-8 uppercase cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading ? (
-                  <span className="inline-block w-5 h-5 border-2 border-[#1557bf] border-t-transparent rounded-full animate-spin" />
+                  <span className="inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <>
                     <span>CREATE ACCOUNT</span>
@@ -303,12 +301,12 @@ export default function RegisterPage() {
             </form>
 
             {/* 5. BOTTOM NAVIGATION */}
-            <div className="mt-8 text-center border-t border-white/15 pt-5">
-              <p className="text-xs text-blue-100/90">
+            <div className="mt-8 text-center border-t border-slate-100 pt-5">
+              <p className="text-xs text-slate-500">
                 Already have an account?{" "}
                 <Link
                   href="/login"
-                  className="text-white font-bold underline underline-offset-4 hover:text-blue-200 transition-colors ml-1"
+                  className="text-[#1557bf] font-bold underline underline-offset-4 hover:text-[#123e91] transition-colors ml-1"
                 >
                   Sign In
                 </Link>
@@ -320,23 +318,23 @@ export default function RegisterPage() {
         {step === "otp" && (
           <>
             <div className="text-center mt-5 mb-6">
-              <h1 className="text-2xl sm:text-[26px] font-extrabold tracking-tight text-white uppercase">
+              <h1 className="text-2xl sm:text-[26px] font-extrabold tracking-tight text-slate-900 uppercase">
                 VERIFY YOUR EMAIL
               </h1>
-              <p className="text-blue-100/90 text-xs mt-2 leading-relaxed">
+              <p className="text-slate-500 text-xs mt-2 leading-relaxed">
                 Enter the 6-digit code sent to {email}
               </p>
             </div>
 
             {errorMsg && (
-              <div className="mb-4 bg-rose-500/20 border border-rose-400/40 rounded-xl p-3 text-xs text-rose-100 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-rose-300 flex-shrink-0" />
+              <div className="mb-4 bg-rose-50 border border-rose-200 rounded-xl p-3 text-xs text-rose-600 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-500 flex-shrink-0" />
                 <span>{errorMsg}</span>
               </div>
             )}
             {successMsg && (
-              <div className="mb-4 bg-emerald-500/20 border border-emerald-400/40 rounded-xl p-3 text-xs text-emerald-100 flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-300 flex-shrink-0" />
+              <div className="mb-4 bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-700 flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
                 <span>{successMsg}</span>
               </div>
             )}
@@ -345,7 +343,7 @@ export default function RegisterPage() {
               <div>
                 <label
                   htmlFor="otp"
-                  className="text-[11px] font-bold text-white/90 uppercase tracking-wider block mb-2 text-center"
+                  className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-2 text-center"
                 >
                   VERIFICATION CODE
                 </label>
@@ -359,17 +357,17 @@ export default function RegisterPage() {
                   placeholder="123456"
                   required
                   autoFocus
-                  className="w-full bg-white/10 hover:bg-white/15 focus:bg-white/20 border border-white/20 focus:border-white/60 rounded-xl px-4 py-3.5 text-center text-lg tracking-[0.5em] font-mono text-white placeholder:text-blue-200/50 focus:outline-none transition-all"
+                  className="w-full bg-slate-50 hover:bg-slate-100/70 focus:bg-white border border-slate-200 focus:border-[#1557bf] focus:ring-4 focus:ring-blue-100 rounded-xl px-4 py-3.5 text-center text-lg tracking-[0.5em] font-mono text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-white hover:bg-slate-100 text-[#1557bf] font-extrabold py-4 rounded-full text-base shadow-lg shadow-black/10 transition-all transform active:scale-[0.99] mt-6 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed"
+                className="w-full bg-[#1557bf] hover:bg-[#123e91] text-white font-extrabold py-4 rounded-full text-base shadow-lg shadow-blue-600/25 transition-all transform active:scale-[0.99] mt-6 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed"
               >
                 {loading ? (
-                  <span className="inline-block w-5 h-5 border-2 border-[#1557bf] border-t-transparent rounded-full animate-spin" />
+                  <span className="inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <>
                     <span>Verify & Create Account</span>
@@ -379,7 +377,7 @@ export default function RegisterPage() {
               </button>
             </form>
 
-            <div className="mt-6 flex items-center justify-between text-xs border-t border-white/15 pt-5">
+            <div className="mt-6 flex items-center justify-between text-xs border-t border-slate-100 pt-5">
               <button
                 type="button"
                 onClick={() => {
@@ -387,7 +385,7 @@ export default function RegisterPage() {
                   setSuccessMsg("");
                   setStep("form");
                 }}
-                className="font-bold text-sky-300 hover:underline cursor-pointer"
+                className="font-bold text-[#1557bf] hover:underline cursor-pointer"
               >
                 Change Details
               </button>
@@ -397,8 +395,8 @@ export default function RegisterPage() {
                 onClick={handleResendOtp}
                 className={`flex items-center gap-1.5 font-bold ${
                   resendTimer > 0
-                    ? "text-blue-200/50 cursor-not-allowed"
-                    : "text-sky-300 hover:underline cursor-pointer"
+                    ? "text-slate-300 cursor-not-allowed"
+                    : "text-[#1557bf] hover:underline cursor-pointer"
                 }`}
               >
                 <RefreshCw className={`w-3 h-3 ${loading ? "animate-spin" : ""}`} />
@@ -408,6 +406,6 @@ export default function RegisterPage() {
           </>
         )}
       </div>
-    </div>
+    </AuthLayout>
   );
 }

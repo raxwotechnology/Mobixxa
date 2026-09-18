@@ -43,8 +43,8 @@ const sendEmail = async (to, subject, html) => {
     const fromEmail = process.env.EMAIL_FROM || process.env.SMTP_USER || process.env.GMAIL_USER;
     const appPassword = process.env.EMAIL_APP_PASSWORD || process.env.SMTP_PASS || process.env.GMAIL_PASS;
 
-    if (!fromEmail || !appPassword) {
-      console.error(`[Email Error] Cannot send email to "${to}". EMAIL_FROM or EMAIL_APP_PASSWORD environment variable is missing.`);
+        if (!fromEmail || !appPassword) {
+      console.warn(`[Email Notice] EMAIL_FROM/EMAIL_APP_PASSWORD not configured. Skipped sending to "${to}".`);
       return null;
     }
 

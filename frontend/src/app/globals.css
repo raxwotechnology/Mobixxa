@@ -69,6 +69,12 @@ a {
   font-family: var(--font-user, 'Poppins'), system-ui, -apple-system, sans-serif !important;
 }
 
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
 body {
   font-family: var(--font-sans) !important;
   background-color: var(--color-light-bg);
@@ -118,6 +124,23 @@ body {
 
 .pulse-live-dot {
   animation: livePulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Auth card entrance (Login / Create Account / Forgot Password) */
+@keyframes authCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth-card-enter {
+  animation: authCardIn 0.3s ease-out;
 }
 
 /* Role Badges */

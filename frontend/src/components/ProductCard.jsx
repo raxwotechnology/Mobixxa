@@ -102,7 +102,7 @@ const ProductCard = ({ product }) => {
         
         <div className="p-3 sm:p-5 flex flex-col flex-1">
           <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-            <p className="text-[10px] sm:text-xs font-semibold text-brand-indigo m-0 uppercase tracking-wider">{product.category?.name || 'Device'}</p>
+            <p className="text-[10px] sm:text-xs font-semibold text-brand-indigo m-0 uppercase tracking-wider">{product.categoryId?.name || 'Device'}</p>
             <div className="flex items-center gap-1 bg-amber-50 border border-amber-200/60 px-2 py-0.5 rounded-full">
               <Star size={11} className="fill-amber-400 text-amber-400" />
               <span className="text-[10px] sm:text-[11px] font-bold text-amber-700">{product.averageRating || '4.8'}</span>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import Link from "next/link";
 import {
   Truck,
@@ -7,18 +7,13 @@ import {
   Cpu,
   Star,
   ArrowRight,
-  Smartphone,
-  Laptop,
-  Watch,
-  Headphones,
-  Cable,
-  Gamepad2,
   Sparkles,
   CheckCircle2,
   Quote,
 } from "lucide-react";
-import { featureBadges, testimonials, categories } from "@/data/mockHomeData";
+import { featureBadges, testimonials } from "@/data/mockHomeData";
 import TechShowcase from "@/components/home/TechShowcase";
+import CategoryExplorer from "@/components/home/CategoryExplorer";
 
 // Helper map to dynamically render Lucide icons
 const iconMap = {
@@ -26,12 +21,6 @@ const iconMap = {
   Clock,
   ShieldCheck,
   Cpu,
-  Smartphone,
-  Laptop,
-  Watch,
-  Headphones,
-  Cable,
-  Gamepad2,
 };
 
 export default function HomePage() {
@@ -130,69 +119,11 @@ export default function HomePage() {
       </section>
 
       {/* ========================================================================= */}
-      {/* 3. EXPLORE CATEGORIES STRIP */}
+      {/* 3. EXPLORE CATEGORIES + FILTERED PRODUCTS */}
       {/* ========================================================================= */}
-      <section className="mx-4 md:mx-8">
-        <div className="bg-white rounded-[32px] p-6 sm:p-8 lg:p-10 border border-slate-200/80 shadow-sm space-y-6">
-          {/* Header Row */}
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-slate-100">
-            <div className="space-y-1">
-              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                Explore Categories
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-500">
-                Discover curated smart devices and premium accessories
-              </p>
-            </div>
-            <Link
-              href="/categories"
-              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-blue-600 hover:text-blue-700 group flex-shrink-0"
-            >
-              <span>View All</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
-            </Link>
-          </div>
-
-          {/* Categories Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-            {categories.map((category) => {
-              const IconComponent = iconMap[category.icon] || Smartphone;
-              return (
-                <Link
-                  key={category.id}
-                  href={`/categories?category=${category.id}`}
-                  className="group relative bg-slate-50/80 hover:bg-white rounded-2xl p-4 border border-slate-200/70 hover:border-blue-500/40 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-200 flex flex-col items-center text-center text-slate-800"
-                >
-                  {category.badge && (
-                    <span
-                      className={`absolute top-2 right-2 text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider ${
-                        category.badge === "Hot"
-                          ? "bg-rose-500 text-white"
-                          : category.badge === "Sale"
-                          ? "bg-amber-500 text-white"
-                          : "bg-blue-600 text-white"
-                      }`}
-                    >
-                      {category.badge}
-                    </span>
-                  )}
-
-                  <div className="w-12 h-12 rounded-xl bg-white border border-slate-200/80 shadow-sm flex items-center justify-center text-slate-700 group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 transition-all duration-200 mb-3">
-                    <IconComponent className="w-5 h-5" />
-                  </div>
-
-                  <h3 className="text-xs font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
-                    {category.name}
-                  </h3>
-                  <span className="text-[11px] text-slate-500 mt-1">
-                    {category.count}
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+      <Suspense fallback={null}>
+        <CategoryExplorer />
+      </Suspense>
 
       {/* ========================================================================= */}
       {/* 4. WHAT OUR CUSTOMERS SAY SECTION */}
