@@ -520,4 +520,5 @@ module.exports = {
   posReceiptEmail,
   customerReturnUpdateEmail,
   passwordResetOtpEmail,
+  registrationOtpEmail,
 };
