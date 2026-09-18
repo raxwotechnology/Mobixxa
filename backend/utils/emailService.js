@@ -499,6 +499,17 @@ const passwordResetOtpEmail = (name, otp) => {
   };
 };
 
+const registrationOtpEmail = (name, otp) => {
+  const tpl = passwordResetOtpEmail(name, otp);
+  return {
+    subject: `🔐 Mobixa — Registration Verification Code: ${otp}`,
+    html: tpl.html
+      .replace('Password Reset Verification Request', 'Registration Verification Request')
+      .replace('We received a request to reset the password for your Mobixa account. Use the 6-digit verification code below to authorize your password reset:', 'Use the 6-digit verification code below to complete your Mobixa registration:')
+      .replace('If you did not request a password reset, please ignore this email or contact our support team immediately if you suspect unauthorized activity.', 'If you did not request this, please ignore this email.'),
+  };
+};
+
 module.exports = {
   sendEmail,
   orderConfirmationEmail,

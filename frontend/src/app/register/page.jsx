@@ -70,7 +70,7 @@ export default function RegisterPage() {
       setStep("otp");
       setOtp("");
       setResendTimer(60);
-      setSuccessMsg("Verification code sent to your phone number.");
+      setSuccessMsg("Verification code sent to your email address.");
     } catch (err) {
       setErrorMsg(err.response?.data?.message || "Failed to send verification code.");
     } finally {
@@ -321,10 +321,10 @@ export default function RegisterPage() {
           <>
             <div className="text-center mt-5 mb-6">
               <h1 className="text-2xl sm:text-[26px] font-extrabold tracking-tight text-white uppercase">
-                VERIFY YOUR PHONE
+                VERIFY YOUR EMAIL
               </h1>
               <p className="text-blue-100/90 text-xs mt-2 leading-relaxed">
-                Enter the 6-digit code sent by SMS to {phone}
+                Enter the 6-digit code sent to {email}
               </p>
             </div>
 

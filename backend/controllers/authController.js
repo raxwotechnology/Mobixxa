@@ -6,8 +6,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const { isValidEmail, isValidSLPhone, formatSLPhone } = require('../utils/validators');
 const { isRealEmailAddress } = require('../utils/emailValidationService');
-const { sendSms, buildOtpMessage } = require('../utils/smsService');
-const { sendEmail, passwordResetOtpEmail } = require('../utils/emailService');
+const { sendEmail, passwordResetOtpEmail, registrationOtpEmail } = require('../utils/emailService');
 
 const OTP_EXPIRY_MINUTES = 5;
 const AUTH_COOKIE_NAME = 'jwt_token';
@@ -138,7 +137,8 @@ const requestRegistrationOtp = async (req, res) => {
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
 
-    await sendSms(normalizedPhone, await buildOtpMessage(otp));
+    const { subject, html } = registrationOtpEmail(name.trim(), otp);
+    await sendEmail(normalizedEmail, subject, html);
 
     res.json({
       message: 'OTP sent successfully',
