@@ -112,7 +112,7 @@ const getAccountTransactions = async (req, res, next) => {
     }
     // Admin and super admin can access any account
 
-    const transactions = await Transaction.find({ accountId: req.params.id })
+    const transactions = await Transaction.find({ accountId: req.params.id, voided: { $ne: true } })
       .sort({ date: -1 })
       .limit(100);
     res.json(transactions);

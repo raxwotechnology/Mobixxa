@@ -57,13 +57,14 @@ const AdminPhones = () => {
         getSuppliers()
       ]);
       
-      // Filter only phones (where category is 'Phones' or has phone specs)
+      // Filter only phones: real device specs (imei/ram/storage — accessories
+      // never have these) or a category that IS a phone category, not one
+      // that merely mentions "phone" (e.g. "Phone Cases" shouldn't match).
       const allProds = prodRes.data || [];
-      const phones = allProds.filter(p => 
-        p.categoryId?.name?.toLowerCase().includes('phone') || 
-        p.brand || 
-        p.modelNumber ||
-        p.ram
+      const phoneCategoryPattern = /^(smart ?phones?|mobile phones?)$/i;
+      const phones = allProds.filter(p =>
+        !!(p.imei?.length || p.ram || p.storage) ||
+        phoneCategoryPattern.test(p.categoryId?.name?.trim() || '')
       );
 
       setProducts(phones);

@@ -5,7 +5,7 @@ import { Wallet, Search, ArrowLeft, CreditCard, TrendingUp, TrendingDown, Dollar
 import DashboardLayout from '../../components/DashboardLayout';
 import DeleteConfirmationModal from '../../components/DeleteConfirmationModal';
 import { adminNavGroups as navItems } from './adminNavItems';
-import { getSupplierPaymentSummary, getSupplierLedger, recordSupplierPayment, recordSupplierPurchase, getSupplierPayments, updateSupplierTransaction, deleteSupplierTransaction, updateSupplierChequeStatus } from '../../services/api';
+import { getSupplierPaymentSummary, getSupplierLedger, recordSupplierPayment, recordSupplierPurchase, getSupplierPayments, updateSupplierTransaction, deleteSupplierTransaction, updateSupplierChequeStatus, getAccounts } from '../../services/api';
 
 import { toast } from 'react-toastify';
 import * as XLSX from 'xlsx';
@@ -22,6 +22,8 @@ const AdminSupplierPayments = () => {
   const [showPayModal, setShowPayModal] = useState(false);
   const [payAmount, setPayAmount] = useState('');
   const [payMethod, setPayMethod] = useState('cash');
+  const [payAccountId, setPayAccountId] = useState('');
+  const [accounts, setAccounts] = useState([]);
   const [payDescription, setPayDescription] = useState('');
   const [chequeDetails, setChequeDetails] = useState({ chequeNumber: '', bankName: '', chequeDate: '', accountNumber: '' });
   const [paying, setPaying] = useState(false);
@@ -47,6 +49,7 @@ const AdminSupplierPayments = () => {
 
   // Fetch on mount
   useEffect(() => { fetchSummary(); }, [fetchSummary]);
+  useEffect(() => { getAccounts().then(res => setAccounts(res.data || [])).catch(() => setAccounts([])); }, []);
 
   // Auto-refresh when user switches back to this tab
   useEffect(() => {
@@ -83,11 +86,15 @@ const AdminSupplierPayments = () => {
     if (payMethod === 'cheque' && (!chequeDetails.chequeNumber || !chequeDetails.bankName || !chequeDetails.chequeDate)) {
       return toast.error('Please fill in all required cheque details');
     }
+    if ((payMethod === 'bank_transfer' || payMethod === 'cheque') && !payAccountId) {
+      return toast.error('Select which bank account this payment is for');
+    }
     setPaying(true);
     try {
       await recordSupplierPayment(targetSupplier._id, {
         amount: Number(payAmount),
         paymentMethod: payMethod,
+        accountId: (payMethod === 'bank_transfer' || payMethod === 'cheque') ? payAccountId : undefined,
         description: payDescription || undefined,
         ...(payMethod === 'cheque' ? chequeDetails : {})
       });
@@ -95,6 +102,7 @@ const AdminSupplierPayments = () => {
       setShowPayModal(false);
       setPayAmount('');
       setPayDescription('');
+      setPayAccountId('');
       setChequeDetails({ chequeNumber: '', bankName: '', chequeDate: '', accountNumber: '' });
       setSupplierToPay(null);
       if (selectedSupplier) {
@@ -440,7 +448,22 @@ const AdminSupplierPayments = () => {
                   ))}
                 </div>
               </div>
-              
+
+              {(payMethod === 'bank_transfer' || payMethod === 'cheque') && (
+                <div style={{ marginBottom: '1rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#7b6f69', marginBottom: '0.35rem', textTransform: 'uppercase' }}>
+                    {payMethod === 'cheque' ? 'Deposit To Account' : 'Bank Account'}
+                  </label>
+                  <select value={payAccountId} onChange={(e) => setPayAccountId(e.target.value)}
+                    style={{ width: '100%', padding: '0.6rem 1rem', borderRadius: '10px', border: '1px solid #eaded6', fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' }}>
+                    <option value="">Select account...</option>
+                    {accounts.filter(a => a.type === 'Bank').map(a => (
+                      <option key={a._id} value={a._id}>{a.name} — {a.bankName} ({a.accountNumber})</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               {payMethod === 'cheque' && (
                 <div style={{ background: '#fdf2f8', padding: '1rem', borderRadius: '12px', marginBottom: '1rem', border: '1px solid #fbcfe8' }}>
                   <h4 style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: '#d946a0' }}>Cheque Details</h4>
@@ -655,7 +678,22 @@ const AdminSupplierPayments = () => {
                   ))}
                 </div>
               </div>
-              
+
+              {(payMethod === 'bank_transfer' || payMethod === 'cheque') && (
+                <div style={{ marginBottom: '1rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#7b6f69', marginBottom: '0.35rem', textTransform: 'uppercase' }}>
+                    {payMethod === 'cheque' ? 'Deposit To Account' : 'Bank Account'}
+                  </label>
+                  <select value={payAccountId} onChange={(e) => setPayAccountId(e.target.value)}
+                    style={{ width: '100%', padding: '0.6rem 1rem', borderRadius: '10px', border: '1px solid #eaded6', fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' }}>
+                    <option value="">Select account...</option>
+                    {accounts.filter(a => a.type === 'Bank').map(a => (
+                      <option key={a._id} value={a._id}>{a.name} — {a.bankName} ({a.accountNumber})</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               {payMethod === 'cheque' && (
                 <div style={{ background: '#fdf2f8', padding: '1rem', borderRadius: '12px', marginBottom: '1rem', border: '1px solid #fbcfe8' }}>
                   <h4 style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: '#d946a0' }}>Cheque Details</h4>

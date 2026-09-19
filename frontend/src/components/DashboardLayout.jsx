@@ -28,7 +28,7 @@ const NavLink = ({ item, location, collapsed, onNavigate, userRole }) => {
     <Link
       to={item.path}
       onClick={onNavigate}
-      title={collapsed ? item.label : undefined}
+      title={item.label}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={
@@ -63,7 +63,7 @@ const NavLink = ({ item, location, collapsed, onNavigate, userRole }) => {
       />
       {!collapsed && (
         <>
-          <span className="flex-1 truncate tracking-tight">{item.label}</span>
+          <span className="flex-1 leading-snug tracking-tight">{item.label}</span>
           {isActive && <ChevronRight size={13} className="opacity-90 flex-shrink-0 text-white" />}
         </>
       )}
@@ -371,14 +371,13 @@ const DashboardLayout = ({ children, navItems, title }) => {
                   {user?.name?.charAt(0)?.toUpperCase() || 'A'}
                 </div>
               )}
-              <div className="text-left hidden md:block">
+              <div className="text-left">
                 <p className="text-xs font-semibold text-slate-800 leading-tight m-0 flex items-center gap-1 max-w-[120px] truncate">
                   {user?.name}
                   <ChevronDown size={11} className="text-slate-400 flex-shrink-0" />
                 </p>
                 <p style={{ color: primaryColor }} className="text-xs font-medium uppercase tracking-wider leading-tight m-0 mt-0.5">{user?.role}</p>
               </div>
-              <ChevronDown size={14} className="text-slate-400 md:hidden" />
             </button>
 
             {userMenuOpen && (

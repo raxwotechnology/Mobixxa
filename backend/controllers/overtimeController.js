@@ -1,5 +1,7 @@
 const OvertimePay = require('../models/OvertimePay');
 const User = require('../models/User');
+const Account = require('../models/Account');
+const { recordTransaction } = require('../services/ledgerService');
 
 // @desc    Get all OT records (with optional employee filter)
 // @route   GET /api/overtime
@@ -141,8 +143,30 @@ const markOvertimePaid = async (req, res, next) => {
       return next(new Error('OT record not found'));
     }
 
+    const employee = await User.findById(record.employeeId).select('name assignedStore');
+
+    const defaultAccount =
+      (await Account.findOne({ isDefault: true })) ||
+      (await Account.findOne());
+    if (!defaultAccount) {
+      res.status(400);
+      return next(new Error('No account exists to post the overtime payment against. Create one in Manage Accounts first.'));
+    }
+
+    const transaction = await recordTransaction({
+      storeId: employee?.assignedStore || defaultAccount.storeId,
+      accountId: defaultAccount._id,
+      type: 'expense',
+      category: 'Overtime Pay',
+      amount: record.totalAmount,
+      paymentMethod: 'Cash',
+      description: `Overtime pay for ${employee?.name || 'employee'} — ${record.hours} hrs on ${new Date(record.date).toLocaleDateString()}`,
+      createdBy: req.user._id,
+    });
+
     record.status = 'paid';
     record.paidAt = new Date();
+    record.ledgerTransactionId = transaction._id;
     await record.save();
 
     const populated = await OvertimePay.findById(record._id)
@@ -204,6 +228,13 @@ const deleteOvertimeRecord = async (req, res, next) => {
     if (!record) {
       res.status(404);
       return next(new Error('OT record not found'));
+    }
+    if (record.ledgerTransactionId) {
+      const { reverseTransaction } = require('../services/ledgerService');
+      await reverseTransaction(record.ledgerTransactionId, {
+        reason: 'Overtime record deleted',
+        createdBy: req.user._id,
+      });
     }
     await record.deleteOne();
     res.json({ message: 'OT record deleted' });

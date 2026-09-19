@@ -295,7 +295,11 @@ const recordHPPayment = async (req, res, next) => {
 
     await record.save();
 
-    // Record in ledger
+    // Record in ledger — use the same normalizedMethod already computed
+    // above (and stored on payment.paymentMethod) rather than the raw
+    // request value, so the HP record and the ledger transaction can never
+    // disagree on what method this payment actually used.
+    let ledgerWarning;
     try {
       await recordTransaction({
         storeId: record.storeId,
@@ -303,16 +307,21 @@ const recordHPPayment = async (req, res, next) => {
         type: "income",
         category: "Hire Purchase Payment",
         amount: Number(amount),
-        paymentMethod: paymentMethod || "Cash",
+        paymentMethod: normalizedMethod,
         referenceNo: payment.receiptNo,
         description: `HP Payment from ${record.customer?.name || "Customer"} (Inv: ${record.invoiceNo || record._id})`,
         createdBy: req.user._id,
       });
     } catch (txErr) {
-      console.error("[HP] Ledger income recording notice:", txErr.message);
+      // The HP payment itself is already saved and must not be lost — but a
+      // failed ledger write means the account balance did NOT move for this
+      // payment, so that has to be visible, not just logged to a server
+      // console no one is watching.
+      console.error("[HP] Ledger income recording FAILED:", txErr.message);
+      ledgerWarning = `Payment saved, but the account balance was not updated: ${txErr.message}`;
     }
 
-    res.json(record);
+    res.json(ledgerWarning ? { ...record.toObject(), ledgerWarning } : record);
   } catch (error) {
     next(error);
   }

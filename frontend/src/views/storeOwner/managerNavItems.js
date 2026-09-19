@@ -50,6 +50,7 @@ const managerNavGroups = [
     items: [
       { path: '/admin/payroll',  label: 'Payroll',       icon: Coins },
       { path: '/admin/overtime', label: 'Overtime Pay',  icon: Clock },
+      { path: '/admin/late-deductions', label: 'Late Deductions', icon: ShieldAlert },
     ],
   },
   {

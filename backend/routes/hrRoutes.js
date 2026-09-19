@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const {
-  checkIn, checkOut, getMyAttendance, getAttendanceReport,
+  checkIn, checkOut, getMyAttendance, getAttendanceReport, getLateDeductions,
   requestLeave, getMyLeaves, getStoreLeaves, approveLeave, rejectLeave, cancelDecision,
   getEmployees, addEmployee, updateEmployee, deleteEmployee,
   startBreak, endBreak, getBreakHistory, getActiveBreak,
@@ -18,6 +18,7 @@ router.post('/attendance/check-in', authorize('admin', 'cashier', 'deliveryGuy',
 router.post('/attendance/check-out', authorize('admin', 'cashier', 'deliveryGuy', 'stockEmployee', 'manager'), checkOut);
 router.get('/attendance', getMyAttendance);
 router.get('/attendance/report', requirePermission('employees'), getAttendanceReport);
+router.get('/attendance/late-deductions', requirePermission('employees'), getLateDeductions);
 // Admin/manager can mark any employee; cashier/delivery/stock can mark themselves only
 router.post('/attendance/mark', (req, res, next) => {
   if (['cashier', 'deliveryGuy', 'stockEmployee'].includes(req.user?.role)) {

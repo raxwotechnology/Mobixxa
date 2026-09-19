@@ -120,8 +120,12 @@ const AdminHP = ({ navItems: propNavItems }) => {
   const handlePay = async (e) => {
     e.preventDefault();
     try {
-      await recordHPPayment(selectedHP._id, payForm);
-      toast.success('Payment recorded successfully!');
+      const { data } = await recordHPPayment(selectedHP._id, payForm);
+      if (data?.ledgerWarning) {
+        toast.warning(data.ledgerWarning);
+      } else {
+        toast.success('Payment recorded successfully!');
+      }
       setShowPayModal(false);
       fetchData();
       if (showDetailsModal && selectedHPDetails?._id === selectedHP._id) {

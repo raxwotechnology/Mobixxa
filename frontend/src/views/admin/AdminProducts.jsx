@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Plus, Edit2, Trash2, Search, X, ChevronDown, ChevronUp, Package, Eye } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, X, ChevronDown, ChevronUp, Package, Eye, AlertCircle } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
 import { getAdminProducts, getCategories, getStores, createProduct, updateProduct, deleteProduct, getSuppliers } from '../../services/api';
 import { toast } from 'react-toastify';

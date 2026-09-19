@@ -28,11 +28,15 @@ const customerReturnSchema = mongoose.Schema(
 
     resolution: {
       type: String,
-      enum: ['store_credit', 'exchange', 'upgrade'],
+      enum: ['store_credit', 'exchange', 'upgrade', 'refund'],
     },
     storeCreditPoints: { type: Number, default: 0 },
     upgradeAdditionalAmount: { type: Number, default: 0 },
     upgradePaymentMethod: { type: String },
+    refundAmount: { type: Number, default: 0 },
+    refundMethod: { type: String, enum: ['Cash', 'Bank Transfer', 'Cheque', 'Card'] },
+    refundAccountId: { type: mongoose.Schema.Types.ObjectId, ref: 'Account' },
+    refundLedgerTransactionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Transaction' },
 
     holdBillNo: { type: String },
     holdStatus: { type: String, enum: ['none', 'open', 'closed'], default: 'none' },

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import DashboardLayout from '../../components/DashboardLayout';
 import { adminNavGroups as navItems } from './adminNavItems';
 import { toast } from 'react-toastify';
-import { approveCustomerReturn, createCustomerReturn, deleteCustomerReturn, exportCustomerReturnsReport, getCustomerReturns, getReturnOrder, rejectCustomerReturn } from '../../services/api';
+import { approveCustomerReturn, createCustomerReturn, deleteCustomerReturn, exportCustomerReturnsReport, getCustomerReturns, getReturnOrder, rejectCustomerReturn, getAccounts } from '../../services/api';
 import DeleteConfirmationModal from '../../components/DeleteConfirmationModal';
 import useAuthStore from '../../store/authStore';
 import { managerNavGroups } from '../storeOwner/managerNavItems';
@@ -42,6 +42,10 @@ const AdminReturns = () => {
   const [resolution, setResolution] = useState('exchange');
   const [rejectReason, setRejectReason] = useState('Rejected by admin');
   const [submitting, setSubmitting] = useState(false);
+  const [accounts, setAccounts] = useState([]);
+  const [refundAmount, setRefundAmount] = useState('');
+  const [refundMethod, setRefundMethod] = useState('Cash');
+  const [refundAccountId, setRefundAccountId] = useState('');
 
   // Delete States
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -60,6 +64,7 @@ const AdminReturns = () => {
   };
 
   useEffect(() => { fetchReturns(); }, []);
+  useEffect(() => { getAccounts().then(res => setAccounts(res.data || [])).catch(() => setAccounts([])); }, []);
 
   const lookupOrder = async () => {
     if (!orderId.trim()) return;
@@ -123,6 +128,10 @@ const AdminReturns = () => {
     setActiveReturn(ret);
     setModalType('approve');
     setResolution('exchange');
+    const totalReturnValue = (ret.items || []).reduce((sum, it) => sum + (it.unitPrice * it.qty), 0);
+    setRefundAmount(totalReturnValue ? String(totalReturnValue) : '');
+    setRefundMethod('Cash');
+    setRefundAccountId('');
   };
 
   const openRejectModal = (ret) => {
@@ -133,9 +142,21 @@ const AdminReturns = () => {
 
   const submitApprove = async () => {
     if (!activeReturn) return;
+    if (resolution === 'refund' && (!refundAmount || Number(refundAmount) <= 0 || !refundAccountId)) {
+      toast.error('Enter a refund amount and select which account it comes from');
+      return;
+    }
     setSubmitting(true);
     try {
-      await approveCustomerReturn(activeReturn._id, { resolution, markResolved: true });
+      await approveCustomerReturn(activeReturn._id, {
+        resolution,
+        markResolved: true,
+        ...(resolution === 'refund' ? {
+          refundAmount: Number(refundAmount),
+          refundMethod,
+          refundAccountId,
+        } : {}),
+      });
       toast.success('Return approved by admin');
       setActiveReturn(null);
       setModalType('');
@@ -396,8 +417,53 @@ const AdminReturns = () => {
                     <option value="exchange">Exchange Product (Default)</option>
                     <option value="store_credit">Store Credit</option>
                     <option value="upgrade">Upgrade Product</option>
+                    <option value="refund">Refund Money Back</option>
                   </select>
                 </div>
+
+                {resolution === 'refund' && (
+                  <div className="space-y-3 bg-white border border-slate-200 rounded-2xl p-4">
+                    <div>
+                      <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2">
+                        Refund Amount (Rs.)
+                      </label>
+                      <input
+                        type="number" min="0" step="0.01"
+                        value={refundAmount}
+                        onChange={(e) => setRefundAmount(e.target.value)}
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2">
+                        Refund Method
+                      </label>
+                      <select
+                        value={refundMethod}
+                        onChange={(e) => setRefundMethod(e.target.value)}
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 cursor-pointer focus:outline-none"
+                      >
+                        <option value="Cash">Cash</option>
+                        <option value="Bank Transfer">Bank Transfer</option>
+                        <option value="Cheque">Cheque</option>
+                        <option value="Card">Card</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2">
+                        Refund From Account
+                      </label>
+                      <select
+                        value={refundAccountId}
+                        onChange={(e) => setRefundAccountId(e.target.value)}
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 cursor-pointer focus:outline-none"
+                      >
+                        <option value="">Select account...</option>
+                        {accounts.map(a => <option key={a._id} value={a._id}>{a.name} ({a.type})</option>)}
+                      </select>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-3 justify-center pt-8">

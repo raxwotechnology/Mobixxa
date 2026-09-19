@@ -37,6 +37,23 @@ const salaryAdvanceSchema = mongoose.Schema(
     year: {
       type: Number,
     },
+    paymentMethod: {
+      type: String,
+      enum: ['cash', 'bank_transfer', 'cheque'],
+      default: 'cash',
+    },
+    accountId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Account',
+    },
+    storeId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Store',
+    },
+    ledgerTransactionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Transaction',
+    },
   },
   {
     timestamps: true,

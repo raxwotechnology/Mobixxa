@@ -35,8 +35,24 @@ const overtimePaySchema = mongoose.Schema(
       enum: ['pending', 'paid', 'rejected'],
       default: 'pending',
     },
+    // 'auto' records are created/refreshed by checkOut from that day's
+    // Attendance OT figure; 'manual' ones are hand-entered by an admin and
+    // are never touched by the automatic recompute. See hrController.checkOut.
+    source: {
+      type: String,
+      enum: ['auto', 'manual'],
+      default: 'manual',
+    },
+    attendanceId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Attendance',
+    },
     paidAt: {
       type: Date,
+    },
+    ledgerTransactionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Transaction',
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,

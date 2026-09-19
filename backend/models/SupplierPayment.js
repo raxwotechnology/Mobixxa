@@ -39,6 +39,14 @@ const supplierPaymentSchema = mongoose.Schema(
       enum: ['cash', 'bank_transfer', 'cheque', 'other'],
       default: 'cash',
     },
+    accountId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Account',
+    },
+    ledgerTransactionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Transaction',
+    },
     // Single cheque fields (kept for backward compatibility)
     chequeNumber: { type: String, trim: true },
     bankName: { type: String, trim: true },

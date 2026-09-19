@@ -315,9 +315,9 @@ const AdminSalaryAdvances = () => {
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-800 cursor-pointer focus:outline-none"
                   >
                     <option value="">Select Account</option>
-                    {accounts.map(acc => (
+                    {accounts.filter(acc => acc.type === 'Bank').map(acc => (
                       <option key={acc._id} value={acc._id}>
-                        {acc.bankName} - {acc.accountNumber} ({acc.accountName})
+                        {acc.name} — {acc.bankName} ({acc.accountNumber})
                       </option>
                     ))}
                   </select>

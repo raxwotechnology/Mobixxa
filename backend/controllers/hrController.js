@@ -72,6 +72,56 @@ const deleteTarget = async (req, res, next) => {
 // =================== ATTENDANCE ===================
 
 const { getSriLankaDateBoundaries } = require('../utils/timezone');
+const { computeDayPayrollAdjustment, getEffectiveAttendancePolicy } = require('../utils/attendanceSalaryCalc');
+
+// Stores that day's late/OT figures on the Attendance record and, if OT was
+// earned, upserts the matching auto-generated OvertimePay record so it flows
+// into payroll without an admin having to type in hours/rate by hand. Called
+// whenever a day gets both a checkIn and checkOut, including corrections.
+const applyDayPayrollAdjustment = async (attendance, employee) => {
+  if (!attendance.checkIn || !attendance.checkOut) return;
+
+  const policy = await getEffectiveAttendancePolicy(employee, attendance.date);
+  const adj = computeDayPayrollAdjustment(policy, attendance.checkIn, attendance.checkOut);
+  attendance.lateMinutes = adj.lateMinutes;
+  attendance.lateDeduction = adj.lateDeduction;
+  attendance.otMinutes = adj.otMinutes;
+  attendance.otAddition = adj.otAddition;
+  attendance.netAdjustment = adj.netAdjustment;
+
+  const OvertimePay = require('../models/OvertimePay');
+  const existingAutoOT = await OvertimePay.findOne({
+    employeeId: attendance.employeeId,
+    date: attendance.date,
+    source: 'auto',
+  });
+
+  if (adj.otMinutes > 0) {
+    if (existingAutoOT && existingAutoOT.status !== 'paid') {
+      existingAutoOT.hours = parseFloat((adj.otMinutes / 60).toFixed(2));
+      existingAutoOT.ratePerHour = (policy.otRatePerBlock || 0) * (60 / (policy.otBlockMinutes || 30));
+      existingAutoOT.totalAmount = adj.otAddition;
+      await existingAutoOT.save();
+    } else if (!existingAutoOT) {
+      await OvertimePay.create({
+        employeeId: attendance.employeeId,
+        date: attendance.date,
+        hours: parseFloat((adj.otMinutes / 60).toFixed(2)),
+        ratePerHour: (policy.otRatePerBlock || 0) * (60 / (policy.otBlockMinutes || 30)),
+        totalAmount: adj.otAddition,
+        description: 'Auto-computed from attendance check-out',
+        status: 'pending',
+        source: 'auto',
+        attendanceId: attendance._id,
+        createdBy: attendance.markedBy || attendance.employeeId,
+      });
+    }
+    // else: already paid — a correction after payment doesn't rewrite a paid
+    // record; admin reconciles any difference with a manual OT entry.
+  } else if (existingAutoOT && existingAutoOT.status === 'pending') {
+    await existingAutoOT.deleteOne();
+  }
+};
 
 // @desc    Check in
 // @route   POST /api/hr/attendance/check-in
@@ -126,6 +176,9 @@ const checkOut = async (req, res, next) => {
     attendance.hoursWorked = parseFloat((diff / (1000 * 60 * 60)).toFixed(2));
     if (attendance.hoursWorked >= 8) attendance.overtime = parseFloat((attendance.hoursWorked - 8).toFixed(2));
 
+    const employee = await User.findById(req.user._id).select('employeeInfo');
+    await applyDayPayrollAdjustment(attendance, employee);
+
     await attendance.save();
     res.json(attendance);
   } catch (error) { next(error); }
@@ -171,6 +224,33 @@ const getAttendanceReport = async (req, res, next) => {
 
     const records = await Attendance.find(filter)
       .populate('employeeId', 'name email role phone')
+      .sort({ date: -1 });
+
+    res.json(records);
+  } catch (error) { next(error); }
+};
+
+// @desc    Late-deduction records (days with a billed late deduction),
+//          for the dedicated Late Deductions view — reads the stored,
+//          already-computed day figures rather than recomputing.
+// @route   GET /api/hr/attendance/late-deductions
+// @access  Private/Admin/Manager
+const getLateDeductions = async (req, res, next) => {
+  try {
+    const { employeeId, startDate, endDate, month, year } = req.query;
+    const filter = { lateDeduction: { $gt: 0 } };
+    if (employeeId) filter.employeeId = employeeId;
+
+    if (month && year) {
+      filter.date = { $gte: new Date(year, month - 1, 1), $lte: new Date(year, month, 0, 23, 59, 59) };
+    } else if (startDate || endDate) {
+      filter.date = {};
+      if (startDate) filter.date.$gte = new Date(startDate);
+      if (endDate) filter.date.$lte = new Date(endDate);
+    }
+
+    const records = await Attendance.find(filter)
+      .populate('employeeId', 'name email role')
       .sort({ date: -1 });
 
     res.json(records);
@@ -902,10 +982,25 @@ const adminMarkAttendance = async (req, res, next) => {
     });
 
     if (attendance) {
-      // Update existing
-      if (checkInTime) attendance.checkIn = new Date(checkInTime);
+      // Update existing — a changed checkIn/checkOut is logged as a
+      // correction (old -> new, who, when) rather than silently overwritten.
+      if (checkInTime) {
+        const newCheckIn = new Date(checkInTime);
+        if (attendance.checkIn && attendance.checkIn.getTime() !== newCheckIn.getTime()) {
+          attendance.corrections.push({
+            field: 'checkIn', oldValue: attendance.checkIn, newValue: newCheckIn, correctedBy: req.user._id,
+          });
+        }
+        attendance.checkIn = newCheckIn;
+      }
       if (checkOutTime) {
-        attendance.checkOut = new Date(checkOutTime);
+        const newCheckOut = new Date(checkOutTime);
+        if (attendance.checkOut && attendance.checkOut.getTime() !== newCheckOut.getTime()) {
+          attendance.corrections.push({
+            field: 'checkOut', oldValue: attendance.checkOut, newValue: newCheckOut, correctedBy: req.user._id,
+          });
+        }
+        attendance.checkOut = newCheckOut;
         const diffMs = attendance.checkOut - attendance.checkIn;
         attendance.hoursWorked = parseFloat((diffMs / (1000 * 60 * 60)).toFixed(2));
         if (attendance.hoursWorked >= 8) attendance.overtime = parseFloat((attendance.hoursWorked - 8).toFixed(2));
@@ -913,6 +1008,8 @@ const adminMarkAttendance = async (req, res, next) => {
       if (status) attendance.status = status;
       if (notes) attendance.notes = notes;
       attendance.markedBy = req.user._id;
+
+      await applyDayPayrollAdjustment(attendance, employee);
       await attendance.save();
 
       // Notify only when admin/manager marks someone else
@@ -944,7 +1041,7 @@ const adminMarkAttendance = async (req, res, next) => {
       if (hoursWorked >= 8) overtime = parseFloat((hoursWorked - 8).toFixed(2));
     }
 
-    attendance = await Attendance.create({
+    attendance = new Attendance({
       employeeId,
       storeId: employee.assignedStore || null,
       date: targetDate,
@@ -956,6 +1053,8 @@ const adminMarkAttendance = async (req, res, next) => {
       notes: notes || (isSelfMark ? 'Self marked' : `Marked by ${req.user.name}`),
       markedBy: req.user._id,
     });
+    await applyDayPayrollAdjustment(attendance, employee);
+    await attendance.save();
 
     if (!isSelfMark) {
       const { sendNotification } = require('../utils/notificationService');
@@ -1056,7 +1155,7 @@ const deleteEmployee = async (req, res, next) => {
 };
 
 module.exports = {
-  checkIn, checkOut, getMyAttendance, getAttendanceReport,
+  checkIn, checkOut, getMyAttendance, getAttendanceReport, getLateDeductions,
   requestLeave, getMyLeaves, getStoreLeaves, approveLeave, rejectLeave, cancelDecision,
   getEmployees, addEmployee, updateEmployee, deleteEmployee,
   startBreak, endBreak, getBreakHistory, getActiveBreak,

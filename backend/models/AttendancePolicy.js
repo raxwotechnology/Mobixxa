@@ -5,7 +5,9 @@ const attendancePolicySchema = mongoose.Schema(
     name: {
       type: String,
       required: true,
-      unique: true,
+      // Not unique: a rate change creates a new version with the same name
+      // (see policyController.updateAttendancePolicy) rather than mutating
+      // history, so recalculating a past month uses the rate in effect then.
     },
     shiftStartTime: {
       type: String,
@@ -21,11 +23,23 @@ const attendancePolicySchema = mongoose.Schema(
     },
     lateArrivalPenalty: {
       type: Number,
-      default: 0, // Deduction per late check-in
+      default: 0, // Rs. deducted per lateBlockMinutes block of lateness
+    },
+    lateBlockMinutes: {
+      type: Number,
+      default: 30, // Late minutes round up to this block size before billing
     },
     earlyCheckoutPenalty: {
       type: Number,
       default: 0, // Deduction per early check-out
+    },
+    otRatePerBlock: {
+      type: Number,
+      default: 100, // Rs. earned per otBlockMinutes block worked past shiftEndTime
+    },
+    otBlockMinutes: {
+      type: Number,
+      default: 30, // OT minutes round up to this block size before billing
     },
     halfDayThresholdHours: {
       type: Number,
@@ -39,11 +53,23 @@ const attendancePolicySchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // Effective-date versioning: effectiveTo is null on the currently active
+    // version of a given `name`. See policyController.updateAttendancePolicy.
+    effectiveFrom: {
+      type: Date,
+      default: Date.now,
+    },
+    effectiveTo: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
   }
 );
+
+attendancePolicySchema.index({ name: 1, effectiveFrom: -1 });
 
 const AttendancePolicy = mongoose.model('AttendancePolicy', attendancePolicySchema);
 

@@ -234,11 +234,16 @@ const getSupplierLedger = async (req, res, next) => {
 const recordPayment = async (req, res, next) => {
   try {
     const { supplierId } = req.params;
-    const { amount, description, paymentMethod, date, chequeNumber, bankName, chequeDate, accountNumber, cheques } = req.body;
+    const { amount, description, paymentMethod, date, chequeNumber, bankName, chequeDate, accountNumber, cheques, accountId } = req.body;
 
     if (!amount || amount <= 0) {
       res.status(400);
       return next(new Error('Valid payment amount is required'));
+    }
+
+    if ((paymentMethod === 'bank_transfer' || paymentMethod === 'cheque') && !accountId) {
+      res.status(400);
+      return next(new Error('A bank account is required for a bank transfer or cheque payment'));
     }
 
     const supplier = await Supplier.findById(supplierId);
@@ -255,6 +260,7 @@ const recordPayment = async (req, res, next) => {
       amount,
       description: description || `Payment to ${supplier.name}`,
       paymentMethod: paymentMethod || 'cash',
+      accountId: accountId || undefined,
       date: date || new Date(),
       createdBy: req.user._id,
     };
@@ -277,6 +283,32 @@ const recordPayment = async (req, res, next) => {
       if (chequeDate) paymentData.chequeDate = new Date(chequeDate);
       if (accountNumber) paymentData.accountNumber = accountNumber;
       paymentData.chequeStatus = 'pending';
+    }
+
+    // Bank transfers move money out immediately; cheques post to the ledger
+    // as Pending (no balance change yet — see ledgerService.setChequeStatus,
+    // triggered when the cheque is later marked Paid via updateChequeStatus).
+    if ((paymentMethod === 'bank_transfer' || paymentMethod === 'cheque') && accountId) {
+      const { recordTransaction } = require('../services/ledgerService');
+      const transaction = await recordTransaction({
+        storeId,
+        accountId,
+        type: 'expense',
+        category: 'Supplier Payment',
+        amount: Number(amount),
+        paymentMethod: paymentMethod === 'cheque' ? 'Cheque' : 'Bank Transfer',
+        chequeDetails: paymentMethod === 'cheque' ? {
+          number: chequeNumber || (cheques && cheques[0]?.chequeNumber) || '',
+          bank: bankName || (cheques && cheques[0]?.bankName) || '',
+          dueDate: chequeDate ? new Date(chequeDate) : (cheques && cheques[0]?.chequeDate ? new Date(cheques[0].chequeDate) : undefined),
+          status: 'Pending',
+        } : undefined,
+        referenceNo: description,
+        description: description || `Payment to ${supplier.name}`,
+        createdBy: req.user._id,
+        date: date || new Date(),
+      });
+      paymentData.ledgerTransactionId = transaction._id;
     }
 
     const payment = await SupplierPayment.create(paymentData);
@@ -365,6 +397,17 @@ const deleteTransaction = async (req, res, next) => {
     const { id } = req.params;
     const transaction = await SupplierPayment.findById(id);
     if (!transaction) { res.status(404); return next(new Error('Transaction not found')); }
+
+    // A payment that moved real money (bank/cheque) must be reversed with a
+    // logged counter-entry, not silently erased from the ledger.
+    if (transaction.ledgerTransactionId) {
+      const { reverseTransaction } = require('../services/ledgerService');
+      await reverseTransaction(transaction.ledgerTransactionId, {
+        reason: 'Supplier payment deleted',
+        createdBy: req.user._id,
+      });
+    }
+
     await SupplierPayment.findByIdAndDelete(id);
     res.json({ message: 'Transaction deleted' });
   } catch (error) { next(error); }
@@ -383,12 +426,25 @@ const updateChequeStatus = async (req, res, next) => {
     // Update specific cheque in multi-cheque array
     if (chequeIndex !== undefined && transaction.cheques && transaction.cheques[chequeIndex]) {
       transaction.cheques[chequeIndex].status = status || chequeStatus || 'pending';
+      await transaction.save();
     } else {
-      // Update top-level cheque status
-      transaction.chequeStatus = chequeStatus || status || 'pending';
+      // Top-level single-cheque status — this is the one linked to a ledger
+      // transaction, so moving it to/from 'paid' must move the account
+      // balance on the date it actually clears (see ledgerService.setChequeStatus).
+      const newStatus = chequeStatus || status || 'pending';
+      if (transaction.ledgerTransactionId) {
+        const { setChequeStatus } = require('../services/ledgerService');
+        const statusMap = { paid: 'Cleared', bounced: 'Bounced', pending: 'Pending' };
+        await setChequeStatus(transaction.ledgerTransactionId, {
+          status: statusMap[newStatus] || 'Pending',
+          clearedDate: new Date(),
+          createdBy: req.user._id,
+        });
+      }
+      transaction.chequeStatus = newStatus;
+      await transaction.save();
     }
 
-    await transaction.save();
     const populated = await SupplierPayment.findById(id).populate('createdBy', 'name');
     res.json(populated);
   } catch (error) { next(error); }

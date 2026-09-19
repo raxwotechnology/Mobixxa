@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Store, ToggleLeft, ToggleRight, ExternalLink, Plus, X, Edit2, Trash2, AlertCircle, AlertTriangle } from 'lucide-react';
+import { Store, ToggleLeft, ToggleRight, ExternalLink, Plus, X, Edit2, Trash2, AlertCircle, AlertTriangle, Upload, Trash } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
-import { getAdminStoreSummaries, toggleStoreStatus, createStore, updateStore, deleteStore } from '../../services/api';
+import { getAdminStoreSummaries, toggleStoreStatus, createStore, updateStore, deleteStore, uploadImage } from '../../services/api';
 
 import API from '../../services/api';
 import { toast } from 'react-toastify';
@@ -24,6 +24,7 @@ const AdminStores = () => {
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [uploadingField, setUploadingField] = useState(null);
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [toggleModalOpen, setToggleModalOpen] = useState(false);
   const [storeToToggle, setStoreToToggle] = useState(null);
@@ -88,6 +89,24 @@ const AdminStores = () => {
     setEditingId(s._id);
     setForm({ name: s.name||'', description: s.description||'', address: s.address||'', city: s.city||'', phone: s.phone||'', email: s.email||'', bannerImage: s.bannerImage||'', logo: s.logo||'', managerId: s.managerId?._id||'' });
     setShowModal(true);
+  };
+
+  const handleImageUpload = async (field, e) => {
+    const file = e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    setUploadingField(field);
+    try {
+      const fd = new FormData();
+      fd.append('image', file);
+      const { data } = await uploadImage(fd);
+      setForm(prev => ({ ...prev, [field]: data.url }));
+      toast.success('Image uploaded');
+    } catch {
+      toast.error('Failed to upload image');
+    } finally {
+      setUploadingField(null);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -224,18 +243,38 @@ const AdminStores = () => {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-dark-navy mb-1">Logo URL</label>
-                  <input value={form.logo} onChange={e => setForm({...form, logo: e.target.value})} placeholder="https://..."
-                    className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" />
+                  <label className="block text-sm font-medium text-dark-navy mb-1">Logo</label>
+                  <div className="flex items-center gap-2">
+                    <div className="w-12 h-12 rounded-xl border border-dashed border-card-border flex items-center justify-center overflow-hidden bg-slate-50 shrink-0">
+                      {form.logo ? <img src={getImageUrl(form.logo)} alt="Logo" className="w-full h-full object-cover" /> : <Store size={16} className="text-slate-300" />}
+                    </div>
+                    <label className="flex-1 flex items-center justify-center gap-1.5 border border-card-border rounded-xl py-2.5 px-2 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer">
+                      <Upload size={13} /> {uploadingField === 'logo' ? 'Uploading...' : form.logo ? 'Change' : 'Upload'}
+                      <input type="file" accept="image/*" className="hidden" disabled={uploadingField === 'logo'} onChange={e => handleImageUpload('logo', e)} />
+                    </label>
+                    {form.logo && (
+                      <button type="button" onClick={() => setForm({...form, logo: ''})} className="p-2 rounded-xl border border-card-border text-rose-500 hover:bg-rose-50 cursor-pointer" title="Remove logo"><Trash size={13} /></button>
+                    )}
+                  </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-dark-navy mb-1">Banner URL</label>
-                  <input value={form.bannerImage} onChange={e => setForm({...form, bannerImage: e.target.value})} placeholder="https://..."
-                    className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" />
+                  <label className="block text-sm font-medium text-dark-navy mb-1">Banner</label>
+                  <div className="flex items-center gap-2">
+                    <div className="w-12 h-12 rounded-xl border border-dashed border-card-border flex items-center justify-center overflow-hidden bg-slate-50 shrink-0">
+                      {form.bannerImage ? <img src={getImageUrl(form.bannerImage)} alt="Banner" className="w-full h-full object-cover" /> : <Store size={16} className="text-slate-300" />}
+                    </div>
+                    <label className="flex-1 flex items-center justify-center gap-1.5 border border-card-border rounded-xl py-2.5 px-2 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer">
+                      <Upload size={13} /> {uploadingField === 'bannerImage' ? 'Uploading...' : form.bannerImage ? 'Change' : 'Upload'}
+                      <input type="file" accept="image/*" className="hidden" disabled={uploadingField === 'bannerImage'} onChange={e => handleImageUpload('bannerImage', e)} />
+                    </label>
+                    {form.bannerImage && (
+                      <button type="button" onClick={() => setForm({...form, bannerImage: ''})} className="p-2 rounded-xl border border-card-border text-rose-500 hover:bg-rose-50 cursor-pointer" title="Remove banner"><Trash size={13} /></button>
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="flex gap-3 pt-2">
-                <button type="submit" disabled={saving} className="flex-1 bg-primary-blue text-white py-2.5 rounded-xl font-semibold hover:bg-emerald-600 disabled:opacity-50 text-sm">
+                <button type="submit" disabled={saving || !!uploadingField} className="flex-1 bg-primary-blue text-white py-2.5 rounded-xl font-semibold hover:bg-emerald-600 disabled:opacity-50 text-sm">
                   {saving ? 'Saving...' : editingId ? 'Update Store' : 'Create Store'}
                 </button>
                 <button type="button" onClick={() => setShowModal(false)} className="flex-1 border border-card-border py-2.5 rounded-xl text-muted-text hover:bg-gray-50 text-sm">Cancel</button>

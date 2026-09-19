@@ -28,6 +28,79 @@ const monthRange = (year, month) => ({
   end: new Date(year, month, 0, 23, 59, 59, 999),
 });
 
+// Minutes owed round up to the next full block — 0 minutes owes nothing,
+// 1 minute into a block owes the whole block. Late and OT share this so the
+// two can't drift into different rounding rules for the same lateness/overage.
+const roundUpToBlock = (minutes, blockSize) => {
+  if (minutes <= 0 || !blockSize) return 0;
+  return Math.ceil(minutes / blockSize) * blockSize;
+};
+
+/**
+ * One day's late-arrival deduction and overtime addition from a policy and
+ * that day's actual check-in/check-out. This is the single formula behind
+ * the stored Attendance day record, the Late Deductions and Overtime views,
+ * and payroll — never reimplemented per screen.
+ *
+ * Grace applies only to lateness (arriving up to graceTimeMinutes late is
+ * free); there is no symmetric grace on the OT side since the shop pays for
+ * any full block worked past shiftEndTime.
+ */
+const computeDayPayrollAdjustment = (policy, checkIn, checkOut) => {
+  if (!policy || !checkIn || !checkOut) {
+    return { lateMinutes: 0, lateDeduction: 0, otMinutes: 0, otAddition: 0, netAdjustment: 0 };
+  }
+
+  const graceMinutes = policy.graceTimeMinutes || 0;
+  const lateBlock = policy.lateBlockMinutes || 30;
+  const lateRate = policy.lateArrivalPenalty || 0;
+  const otBlock = policy.otBlockMinutes || 30;
+  const otRate = policy.otRatePerBlock || 0;
+
+  const [startH, startM] = (policy.shiftStartTime || '09:00').split(':').map(Number);
+  const shiftStartMinutes = startH * 60 + startM;
+  const [endH, endM] = (policy.shiftEndTime || '17:00').split(':').map(Number);
+  const shiftEndMinutes = endH * 60 + endM;
+
+  const ci = getSriLankaDateBoundaries(checkIn);
+  const co = getSriLankaDateBoundaries(checkOut);
+  const checkInMinutes = ci.hour * 60 + ci.minute;
+  const checkOutMinutes = co.hour * 60 + co.minute;
+
+  const rawLateMinutes = Math.max(0, checkInMinutes - shiftStartMinutes - graceMinutes);
+  const lateMinutes = roundUpToBlock(rawLateMinutes, lateBlock);
+  const lateDeduction = (lateMinutes / lateBlock) * lateRate;
+
+  const rawOtMinutes = Math.max(0, checkOutMinutes - shiftEndMinutes);
+  const otMinutes = roundUpToBlock(rawOtMinutes, otBlock);
+  const otAddition = (otMinutes / otBlock) * otRate;
+
+  return {
+    lateMinutes,
+    lateDeduction,
+    otMinutes,
+    otAddition,
+    netAdjustment: parseFloat((otAddition - lateDeduction).toFixed(2)),
+  };
+};
+
+/**
+ * The AttendancePolicy version actually in effect for a given date — a rate
+ * edit creates a new version rather than mutating the old one (see
+ * policyController.updateAttendancePolicy), so recalculating a past month
+ * always uses the rate that applied then, even after rates change later.
+ */
+const getEffectiveAttendancePolicy = async (employee, forDate) => {
+  const assigned = employee?.employeeInfo?.attendancePolicyId
+    ? await AttendancePolicy.findById(employee.employeeInfo.attendancePolicyId)
+    : await AttendancePolicy.findOne({ isDefault: true });
+  if (!assigned) return null;
+
+  const versions = await AttendancePolicy.find({ name: assigned.name }).sort({ effectiveFrom: -1 });
+  const effective = versions.find((v) => !v.effectiveFrom || v.effectiveFrom <= forDate);
+  return effective || assigned;
+};
+
 // Calendar period containing (month, year) for a given policy periodType.
 // 'daily' has no meaningful multi-day reset cycle for a monthly payroll run,
 // so it falls back to the calendar month like an unset/unknown periodType.
@@ -92,19 +165,17 @@ const computeMonthlyAttendanceSummary = async (employeeId, month, year) => {
   const unapprovedAbsences = unapprovedAbsenceRows.length;
   const unapprovedAbsenceDeduction = unapprovedAbsences * absentDayDeduction;
 
-  // Late/early/half-day penalties — same rules as before, just deduped and
-  // consistently using Sri Lanka local time (calculateSalary used to do this
-  // correctly, processSalaryPayment used raw server-local getHours()).
+  // Late/early/half-day penalties. Late itself is read from each day's
+  // stored, block-rounded lateDeduction (computed once at checkOut by
+  // computeDayPayrollAdjustment) rather than recomputed here — the two must
+  // never drift. Early-checkout and half-day penalties stay live-computed.
   let lateEarlyHalfDayDeduction = 0;
+  let lateDeductionTotal = 0;
   const basicSalary = employee.employeeInfo?.salary || 0;
   const dailyRate = basicSalary / 30;
   if (attendancePolicy) {
-    const graceTime = attendancePolicy.graceTimeMinutes || 15;
-    const latePenalty = attendancePolicy.lateArrivalPenalty || 0;
     const earlyPenalty = attendancePolicy.earlyCheckoutPenalty || 0;
     const halfDayThreshold = attendancePolicy.halfDayThresholdHours || 4;
-    const [startH, startM] = (attendancePolicy.shiftStartTime || '09:00').split(':').map(Number);
-    const shiftStartMinutes = startH * 60 + startM;
     const [endH, endM] = (attendancePolicy.shiftEndTime || '17:00').split(':').map(Number);
     const shiftEndMinutes = endH * 60 + endM;
 
@@ -114,10 +185,8 @@ const computeMonthlyAttendanceSummary = async (employeeId, month, year) => {
         lateEarlyHalfDayDeduction += dailyRate / 2;
         return;
       }
-      if (att.checkIn) {
-        const { hour, minute } = getSriLankaDateBoundaries(att.checkIn);
-        if (hour * 60 + minute - shiftStartMinutes > graceTime) lateEarlyHalfDayDeduction += latePenalty;
-      }
+      lateDeductionTotal += att.lateDeduction || 0;
+      lateEarlyHalfDayDeduction += att.lateDeduction || 0;
       if (att.checkOut) {
         const { hour, minute } = getSriLankaDateBoundaries(att.checkOut);
         if (shiftEndMinutes - (hour * 60 + minute) > 0) lateEarlyHalfDayDeduction += earlyPenalty;
@@ -126,6 +195,8 @@ const computeMonthlyAttendanceSummary = async (employeeId, month, year) => {
   } else {
     attendances.forEach((att) => {
       if (att.status === 'half-day') lateEarlyHalfDayDeduction += dailyRate / 2;
+      lateDeductionTotal += att.lateDeduction || 0;
+      lateEarlyHalfDayDeduction += att.lateDeduction || 0;
     });
   }
 
@@ -199,6 +270,8 @@ const computeMonthlyAttendanceSummary = async (employeeId, month, year) => {
     excessOffDayDeduction,
     unpaidLeaveDeduction,
     lateEarlyHalfDayDeduction,
+    lateDeductionTotal,
+    otEarnedTotal: attendances.reduce((sum, a) => sum + (a.otAddition || 0), 0),
     attendanceDeductions,
     qualifiesForAllowance,
     allowanceReleased,
@@ -234,6 +307,8 @@ const getAttendanceSummary = async (employeeId, month, year) => {
       excessOffDayDeduction: existing.excessOffDayDeduction || 0,
       attendanceDeductions: existing.attendanceDeductions || 0,
       attendanceAllowance: existing.attendanceAllowance || 0,
+      lateDeductionTotal: b.lateDeductionTotal || 0,
+      otEarnedTotal: existing.overtimePay || 0,
       allowanceReleased: !!b.allowanceReleased,
       leaveIds: b.leaveIds || [],
       attendanceIds: b.attendanceIds || [],
@@ -243,4 +318,11 @@ const getAttendanceSummary = async (employeeId, month, year) => {
   return computeMonthlyAttendanceSummary(employeeId, month, year);
 };
 
-module.exports = { computeMonthlyAttendanceSummary, getAttendanceSummary, monthRange, periodRange };
+module.exports = {
+  computeMonthlyAttendanceSummary,
+  getAttendanceSummary,
+  monthRange,
+  periodRange,
+  computeDayPayrollAdjustment,
+  getEffectiveAttendancePolicy,
+};

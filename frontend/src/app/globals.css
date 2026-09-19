@@ -2349,7 +2349,14 @@ body {
   }
 
   #pos-receipt-content {
-    position: fixed !important;
+    /* `absolute`, not `fixed`: fixed-position content is anchored to each
+       page's viewport in paged media and never contributes to @page auto
+       height/pagination, so anything past the first page's worth silently
+       never prints — this is why multi-item receipts used to show only the
+       header and first item. `absolute` still pulls it out of the invisible
+       modal's flow (avoiding the old blank-page bug) while remaining part
+       of the normal content box the print engine paginates against. */
+    position: absolute !important;
     left: 0 !important;
     top: 0 !important;
     width: 100% !important;

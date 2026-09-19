@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const CustomerReturn = require('../models/CustomerReturn');
 const Order = require('../models/Order');
 const Product = require('../models/Product');
@@ -150,7 +151,13 @@ const createCustomerReturn = async (req, res, next) => {
       });
     }
 
+    // RMA must be unique per return, not per order — an order with more than
+    // one return (partial, or re-filed after rejection) would otherwise share
+    // the same RMA number across records. Pre-generate the return's own _id
+    // so the number can be derived from it in this same create call.
+    const returnId = new mongoose.Types.ObjectId();
     const ret = await CustomerReturn.create({
+      _id: returnId,
       storeId: order.storeId,
       orderId: order._id,
       customerId: order.userId?._id,
@@ -159,7 +166,7 @@ const createCustomerReturn = async (req, res, next) => {
       notes: notes || '',
       createdBy: req.user._id,
       holdStatus: 'open',
-      holdBillNo: `RMA-${String(order._id).slice(-8).toUpperCase()}`,
+      holdBillNo: `RMA-${String(returnId).slice(-8).toUpperCase()}`,
     });
 
     await Order.findByIdAndUpdate(order._id, {
@@ -223,10 +230,14 @@ const approveCustomerReturn = async (req, res, next) => {
       return next(new Error('Return cannot be approved in current status'));
     }
 
-    const { resolution, storeCreditPoints, upgradeAdditionalAmount, upgradePaymentMethod, markResolved = false, notes } = req.body;
-    if (!resolution || !['store_credit', 'exchange', 'upgrade'].includes(resolution)) {
+    const { resolution, storeCreditPoints, upgradeAdditionalAmount, upgradePaymentMethod, refundAmount, refundMethod, refundAccountId, markResolved = false, notes } = req.body;
+    if (!resolution || !['store_credit', 'exchange', 'upgrade', 'refund'].includes(resolution)) {
       res.status(400);
       return next(new Error('resolution is required'));
+    }
+    if (resolution === 'refund' && (!refundAmount || Number(refundAmount) <= 0 || !refundAccountId)) {
+      res.status(400);
+      return next(new Error('A refund amount and account are required for a refund resolution'));
     }
 
     // Stock adjustment
@@ -264,34 +275,57 @@ const approveCustomerReturn = async (req, res, next) => {
       ret.upgradePaymentMethod = upgradePaymentMethod || ret.upgradePaymentMethod;
     }
 
-    // Record ledger income for remainder difference
     const totalReturnValue = ret.items.reduce((sum, item) => sum + (item.unitPrice * item.qty), 0);
-    let creditedOrRefundedAmount = totalReturnValue;
 
-    if (resolution === 'store_credit') {
-      const settings = await Settings.findOne().lean();
-      const pointValue = settings?.loyaltyPointValue || 1;
-      creditedOrRefundedAmount = Number(storeCreditPoints || 0) * pointValue;
-    } else if (req.body.refundAmount !== undefined) {
-      creditedOrRefundedAmount = Number(req.body.refundAmount);
-    }
-
-    const remainder = totalReturnValue - creditedOrRefundedAmount;
-    if (remainder > 0) {
+    if (resolution === 'refund') {
+      // Actual money leaving the shop — this is the part that never existed
+      // before: record it as an outbound transaction against the account it
+      // was paid from, so the balance actually moves.
       const { recordTransaction } = require('../services/ledgerService');
-      const Account = require('../models/Account');
-      const defaultAccount = await Account.findOne({ isDefault: true }).lean() || await Account.findOne().lean();
-
-      await recordTransaction({
+      const refundTx = await recordTransaction({
         storeId: ret.storeId || null,
-        accountId: defaultAccount?._id || undefined,
-        type: 'income',
-        category: 'Returns & Exchange',
-        amount: remainder,
-        paymentMethod: 'Cash',
-        description: `Unpaid remainder from return approval ${ret.holdBillNo || ret._id.toString().slice(-8)}. Return Value: Rs. ${totalReturnValue.toFixed(2)}, Refunded/Credited: Rs. ${creditedOrRefundedAmount.toFixed(2)}`,
+        accountId: refundAccountId,
+        type: 'expense',
+        category: 'Returns & Exchange Refund',
+        amount: Number(refundAmount),
+        paymentMethod: refundMethod || 'Cash',
+        description: `Refund for return ${ret.holdBillNo || ret._id.toString().slice(-8)}`,
         createdBy: req.user._id,
       });
+      ret.refundAmount = Number(refundAmount);
+      ret.refundMethod = refundMethod || 'Cash';
+      ret.refundAccountId = refundAccountId;
+      ret.refundLedgerTransactionId = refundTx._id;
+    } else {
+      // Record ledger income for the remainder difference — the part of the
+      // return's value that was neither refunded nor credited to the
+      // customer in any form (store credit / exchange / upgrade never pay
+      // cash out, so any leftover value is a gain to the shop).
+      let creditedOrRefundedAmount = totalReturnValue;
+
+      if (resolution === 'store_credit') {
+        const settings = await Settings.findOne().lean();
+        const pointValue = settings?.loyaltyPointValue || 1;
+        creditedOrRefundedAmount = Number(storeCreditPoints || 0) * pointValue;
+      }
+
+      const remainder = totalReturnValue - creditedOrRefundedAmount;
+      if (remainder > 0) {
+        const { recordTransaction } = require('../services/ledgerService');
+        const Account = require('../models/Account');
+        const defaultAccount = await Account.findOne({ isDefault: true }).lean() || await Account.findOne().lean();
+
+        await recordTransaction({
+          storeId: ret.storeId || null,
+          accountId: defaultAccount?._id || undefined,
+          type: 'income',
+          category: 'Returns & Exchange',
+          amount: remainder,
+          paymentMethod: 'Cash',
+          description: `Unpaid remainder from return approval ${ret.holdBillNo || ret._id.toString().slice(-8)}. Return Value: Rs. ${totalReturnValue.toFixed(2)}, Refunded/Credited: Rs. ${creditedOrRefundedAmount.toFixed(2)}`,
+          createdBy: req.user._id,
+        });
+      }
     }
 
     ret.resolution = resolution;

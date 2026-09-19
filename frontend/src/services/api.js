@@ -199,6 +199,7 @@ export const checkIn = () => API.post('/hr/attendance/check-in');
 export const checkOut = () => API.post('/hr/attendance/check-out');
 export const getMyAttendance = (params) => API.get('/hr/attendance', { params });
 export const getAttendanceReport = (params) => API.get('/hr/attendance/report', { params });
+export const getLateDeductions = (params) => API.get('/hr/attendance/late-deductions', { params });
 export const requestLeave = (data) => API.post('/hr/leaves', data);
 export const getMyLeaves = () => API.get('/hr/leaves');
 export const approveLeave = (id) => API.put(`/hr/leaves/${id}/approve`);

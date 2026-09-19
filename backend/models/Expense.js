@@ -67,6 +67,10 @@ const expenseSchema = new mongoose.Schema(
       type: String, // URL to receipt image
       default: '',
     },
+    ledgerTransactionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Transaction',
+    },
   },
   {
     timestamps: true,

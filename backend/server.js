@@ -129,6 +129,7 @@ app.use('/api/cashier-accountability', require('./routes/cashierAccountabilityRo
 app.use('/api/upload', require('./routes/uploadRoutes'));
 app.use('/api/reloads', require('./routes/reloadRoutes'));
 app.use('/api/repairs', require('./routes/repairRoutes'));
+app.use('/api/letters', require('./routes/letterRoutes'));
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 

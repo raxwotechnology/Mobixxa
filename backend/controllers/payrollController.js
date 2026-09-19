@@ -134,6 +134,8 @@ const calculateSalary = async (req, res, next) => {
       attendanceDeductions,
       unapprovedAbsenceDeduction: summary.unapprovedAbsenceDeduction,
       excessOffDayDeduction: summary.excessOffDayDeduction,
+      lateDeductionTotal: summary.lateDeductionTotal,
+      otEarnedTotal: summary.otEarnedTotal,
       attendanceAllowance,
       attendanceBreakdown: summary,
       cashierRecoveryDeduction,
@@ -226,6 +228,7 @@ const processSalaryPayment = async (req, res, next) => {
         extraOffDaysThisMonth: summary.extraOffDaysThisMonth,
         unapprovedAbsences: summary.unapprovedAbsences,
         unpaidLeaveDays: summary.unpaidLeaveDays,
+        lateDeductionTotal: summary.lateDeductionTotal,
         allowanceReleased: summary.allowanceReleased,
         leaveIds: summary.leaveIds,
         attendanceIds: summary.attendanceIds,
@@ -528,12 +531,51 @@ const downloadPaysheet = async (req, res, next) => {
 // @access  Private/Manager/Admin
 const recordSalaryAdvance = async (req, res, next) => {
   try {
-    const { employeeId, amount, reason, date } = req.body;
+    const { employeeId, amount, reason, date, paymentMethod, bankAccountId } = req.body;
     if (!employeeId || !amount) {
       res.status(400);
       return next(new Error('Employee and Amount are required'));
     }
+
+    const normalizedMethod = ['cash', 'bank_transfer', 'cheque'].includes(paymentMethod) ? paymentMethod : 'cash';
+    if (normalizedMethod === 'bank_transfer' && !bankAccountId) {
+      res.status(400);
+      return next(new Error('A bank account is required for a bank transfer advance'));
+    }
+
     const advanceDate = date ? new Date(date) : new Date();
+    let storeId;
+    let ledgerTransactionId;
+
+    // Bank-transfer advances move money out of a real account — route through
+    // the shared ledger so Manage Accounts / Financials reflect it. Cash and
+    // cheque advances keep prior behavior (no account picker exists for them
+    // in the UI yet, so there's no accountId to post against).
+    if (normalizedMethod === 'bank_transfer' && bankAccountId) {
+      const Account = require('../models/Account');
+      const account = await Account.findById(bankAccountId);
+      if (!account) {
+        res.status(400);
+        return next(new Error('Selected bank account was not found'));
+      }
+      storeId = account.storeId;
+
+      const { recordTransaction } = require('../services/ledgerService');
+      const employee = await User.findById(employeeId).select('name');
+      const transaction = await recordTransaction({
+        storeId,
+        accountId: bankAccountId,
+        type: 'expense',
+        category: 'Salary Advance',
+        amount: Number(amount),
+        paymentMethod: 'Bank Transfer',
+        description: `Salary advance to ${employee?.name || 'employee'}${reason ? ' — ' + reason : ''}`,
+        createdBy: req.user._id,
+        date: advanceDate,
+      });
+      ledgerTransactionId = transaction._id;
+    }
+
     const advance = await SalaryAdvance.create({
       employeeId,
       amount: Number(amount),
@@ -543,6 +585,10 @@ const recordSalaryAdvance = async (req, res, next) => {
       year: advanceDate.getFullYear(),
       approvedBy: req.user._id,
       status: 'approved',
+      paymentMethod: normalizedMethod,
+      accountId: normalizedMethod === 'bank_transfer' ? bankAccountId : undefined,
+      storeId,
+      ledgerTransactionId,
     });
     const populated = await SalaryAdvance.findById(advance._id).populate('employeeId', 'name email role employeeInfo');
     res.status(201).json(populated);
@@ -583,6 +629,17 @@ const deleteSalaryAdvance = async (req, res, next) => {
       res.status(404);
       return next(new Error('Salary advance not found'));
     }
+
+    // Money-affecting advances (bank transfer) must be reversed with a
+    // logged counter-entry, never silently erased from the ledger.
+    if (advance.ledgerTransactionId) {
+      const { reverseTransaction } = require('../services/ledgerService');
+      await reverseTransaction(advance.ledgerTransactionId, {
+        reason: 'Salary advance deleted',
+        createdBy: req.user._id,
+      });
+    }
+
     await advance.deleteOne();
     res.json({ message: 'Salary advance removed' });
   } catch (error) {

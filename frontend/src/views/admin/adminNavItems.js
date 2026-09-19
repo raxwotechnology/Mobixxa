@@ -92,6 +92,7 @@ const adminNavGroups = [
       { path: '/admin/financials', label: 'Financials',        icon: DollarSign },
       { path: '/admin/profit-reports', label: 'Profit Reports', icon: TrendingUp },
       { path: '/admin/overtime',   label: 'Overtime Pay',      icon: Clock },
+      { path: '/admin/late-deductions', label: 'Late Deductions', icon: ShieldAlert },
       { path: '/admin/cash-accountability', label: 'Cashier Cash Accountability', icon: ShieldAlert },
     ],
   },

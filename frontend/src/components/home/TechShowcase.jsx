@@ -22,7 +22,7 @@ export default function TechShowcase() {
       {/* Multi-Device Showcase Container */}
       <div className="relative z-10 w-full flex items-center justify-center">
         {/* Device 1: MacBook Pro (Center Background) */}
-        <div className="w-[85%] sm:w-[88%] bg-slate-900 rounded-t-2xl p-2.5 pb-0 shadow-2xl border-t border-x border-slate-700/80 transform hover:scale-[1.02] transition-transform duration-300">
+        <div className="w-[76%] sm:w-[78%] bg-slate-900 rounded-t-2xl p-2.5 pb-0 shadow-2xl border-t border-x border-slate-700/80 transform hover:scale-[1.02] transition-transform duration-300">
           {/* MacBook Screen Bezel */}
           <div className="rounded-t-xl bg-slate-950 p-2 border border-slate-800">
             {/* Screen Header Bar */}
@@ -72,7 +72,7 @@ export default function TechShowcase() {
         </div>
 
         {/* Device 2: iPhone Flagship (Overlapping Right Foreground) */}
-        <div className="absolute -right-1 sm:right-2 bottom-1 w-32 sm:w-40 bg-slate-950 rounded-[28px] p-2 shadow-2xl border-2 border-slate-700/80 transform translate-y-3 sm:translate-y-4 hover:scale-105 transition-transform duration-300 z-20">
+        <div className="absolute -right-4 sm:-right-6 bottom-1 w-32 sm:w-40 bg-slate-950 rounded-[28px] p-2 shadow-2xl border-2 border-slate-700/80 transform translate-y-3 sm:translate-y-4 hover:scale-105 transition-transform duration-300 z-20">
           {/* Dynamic Island */}
           <div className="w-10 sm:w-12 h-2.5 bg-black rounded-full mx-auto mb-1 flex items-center justify-end px-1">
             <span className="w-1 h-1 rounded-full bg-blue-500/80" />
@@ -98,7 +98,7 @@ export default function TechShowcase() {
         </div>
 
         {/* Device 3: Smartwatch (Overlapping Left Foreground) */}
-        <div className="absolute -left-2 sm:left-2 bottom-4 w-24 sm:w-28 bg-slate-900 rounded-[22px] p-2 shadow-2xl border-2 border-slate-700 transform -translate-y-2 hover:scale-105 transition-transform duration-300 z-20">
+        <div className="absolute -left-4 sm:-left-6 bottom-4 w-24 sm:w-28 bg-slate-900 rounded-[22px] p-2 shadow-2xl border-2 border-slate-700 transform -translate-y-2 hover:scale-105 transition-transform duration-300 z-20">
           <div className="h-28 sm:h-32 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 rounded-[16px] p-2 flex flex-col items-center justify-between border border-slate-800">
             <div className="flex items-center justify-between w-full text-[8px] text-amber-400 font-bold">
               <span>ULTRA</span>

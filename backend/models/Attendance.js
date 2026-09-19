@@ -40,6 +40,29 @@ const attendanceSchema = mongoose.Schema(
       type: Number,
       default: 0,
     },
+    // Policy-driven late/OT figures, computed once (checkOut, or a correction)
+    // and stored — not recomputed ad hoc by each view. See
+    // utils/attendanceSalaryCalc.computeDayPayrollAdjustment for the formula.
+    lateMinutes: {
+      type: Number,
+      default: 0,
+    },
+    lateDeduction: {
+      type: Number,
+      default: 0,
+    },
+    otMinutes: {
+      type: Number,
+      default: 0,
+    },
+    otAddition: {
+      type: Number,
+      default: 0,
+    },
+    netAdjustment: {
+      type: Number,
+      default: 0, // otAddition - lateDeduction
+    },
     status: {
       type: String,
       enum: ['present', 'absent', 'half-day', 'leave', 'late'],
@@ -52,6 +75,18 @@ const attendanceSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
     },
+    // Append-only log of check-in/check-out corrections (same idiom as
+    // Payroll.adjustments / CashierShortage.correctionHistory) — a fixed
+    // time never silently overwrites the previous one without a trail.
+    corrections: [
+      {
+        field: { type: String, enum: ['checkIn', 'checkOut'], required: true },
+        oldValue: { type: Date },
+        newValue: { type: Date },
+        correctedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        correctedAt: { type: Date, default: Date.now },
+      },
+    ],
   },
   {
     timestamps: true,

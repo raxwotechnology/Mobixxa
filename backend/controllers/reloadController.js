@@ -2,9 +2,11 @@ const mongoose = require("mongoose");
 const Reload = require("../models/Reload");
 const ReloadStock = require("../models/ReloadStock");
 const Transaction = require("../models/Transaction");
+const Account = require("../models/Account");
 const Store = require("../models/Store");
 const Supplier = require("../models/Supplier");
 const SupplierPayment = require("../models/SupplierPayment");
+const { recordTransaction, reverseTransaction } = require("../services/ledgerService");
 
 // @desc    Record a new reload
 // @route   POST /api/reloads
@@ -565,7 +567,9 @@ const closeReloadStock = async (req, res, next) => {
     if (notes !== undefined) stockItem.notes = notes;
     stockItem.recordedBy = req.user._id;
 
-    // Auto Create / Update Financial Transaction for Income Ledger
+    // Auto Create / Update Financial Transaction for Income Ledger — routed
+    // through ledgerService so the sale actually credits an Account, not just
+    // a standalone Transaction row.
     if (stockItem.sellOutValue > 0) {
       const itemTitle =
         stockItem.cardValue === 1
@@ -574,23 +578,31 @@ const closeReloadStock = async (req, res, next) => {
       const desc = `Daily Reload Sales (${stockItem.operator} - ${itemTitle}): ${stockItem.sellOutAmount} sold`;
 
       if (stockItem.transactionId) {
-        await Transaction.findByIdAndUpdate(stockItem.transactionId, {
-          amount: stockItem.sellOutValue,
-          description: desc,
-        });
-      } else {
-        const trans = await Transaction.create({
-          storeId: stockItem.storeId,
-          type: "income",
-          category: "Reload & Bill Payment",
-          amount: stockItem.sellOutValue,
-          paymentMethod: "Cash",
-          description: desc,
-          date: new Date(),
+        // Closing value changed (re-close/correction) — reverse the prior
+        // posting before recording the corrected one, so the account balance
+        // never drifts from what's actually on the books.
+        await reverseTransaction(stockItem.transactionId, {
+          reason: "Reload stock closing value corrected",
           createdBy: req.user._id,
         });
-        stockItem.transactionId = trans._id;
       }
+
+      const defaultAccount =
+        (await Account.findOne({ isDefault: true }).lean()) ||
+        (await Account.findOne().lean());
+
+      const trans = await recordTransaction({
+        storeId: stockItem.storeId,
+        accountId: defaultAccount?._id || undefined,
+        type: "income",
+        category: "Reload & Bill Payment",
+        amount: stockItem.sellOutValue,
+        paymentMethod: "Cash",
+        description: desc,
+        date: new Date(),
+        createdBy: req.user._id,
+      });
+      stockItem.transactionId = trans._id;
     }
 
     await stockItem.save();

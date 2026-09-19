@@ -33,8 +33,12 @@ export default function CustomerFooter() {
           {/* Column 1: Brand & Bio */}
           <div className="lg:col-span-4 space-y-5">
             <Link href="/" className="flex items-center gap-3 group inline-flex">
-              <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black text-xl shadow-md shadow-blue-500/30">
-                M
+              <div className="bg-white rounded-xl p-1.5 shrink-0 shadow-md shadow-blue-500/20">
+                <img
+                  src="/mobixa-icon.png"
+                  alt="Mobixa"
+                  className="h-8 w-auto"
+                />
               </div>
               <div className="flex flex-col">
                 <span className="font-extrabold text-xl tracking-tight text-white leading-none">
@@ -173,7 +177,16 @@ export default function CustomerFooter() {
         {/* Bottom Copyright & Accepted Payments */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
           <p className="text-center sm:text-left">
-            &copy; 2026 Raxwo (Pvt) LTD. Mobixa. All rights reserved.
+            &copy; 2026{" "}
+            <a
+              href="https://raxwo.net/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white transition-colors underline underline-offset-2"
+            >
+              Raxwo (Pvt) LTD
+            </a>
+            . Mobixa. All rights reserved.
           </p>
           <div className="flex items-center gap-4 text-slate-400">
             <span className="text-slate-400 font-medium">Accepted Payments:</span>

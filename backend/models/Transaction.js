@@ -23,7 +23,13 @@ const transactionSchema = mongoose.Schema(
     description: { type: String },
     date: { type: Date, default: Date.now },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    attachments: [{ name: String, url: String }]
+    attachments: [{ name: String, url: String }],
+    // Money is append-only: a "deleted" or "corrected" transaction is never
+    // edited or hard-deleted, only reversed (see ledgerService.reverseTransaction).
+    // `voided` hides the superseded original from ledger lists/totals while
+    // keeping it in the database for audit — the reversal row stays visible.
+    voided: { type: Boolean, default: false },
+    voidedAt: { type: Date }
 
   },
   { timestamps: true }

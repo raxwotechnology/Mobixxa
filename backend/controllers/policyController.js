@@ -97,7 +97,7 @@ const getAttendancePolicies = async (req, res, next) => {
 // @access  Private/Admin/Manager
 const createAttendancePolicy = async (req, res, next) => {
   try {
-    const { name, shiftStartTime, shiftEndTime, graceTimeMinutes, lateArrivalPenalty, earlyCheckoutPenalty, halfDayThresholdHours, absentDayDeduction, isDefault } = req.body;
+    const { name, shiftStartTime, shiftEndTime, graceTimeMinutes, lateArrivalPenalty, lateBlockMinutes, earlyCheckoutPenalty, otRatePerBlock, otBlockMinutes, halfDayThresholdHours, absentDayDeduction, isDefault } = req.body;
     if (!name) {
       res.status(400);
       return next(new Error('Policy name is required'));
@@ -113,19 +113,39 @@ const createAttendancePolicy = async (req, res, next) => {
       shiftEndTime: shiftEndTime || '17:00',
       graceTimeMinutes: Number(graceTimeMinutes) || 15,
       lateArrivalPenalty: Number(lateArrivalPenalty) || 0,
+      lateBlockMinutes: Number(lateBlockMinutes) || 30,
       earlyCheckoutPenalty: Number(earlyCheckoutPenalty) || 0,
+      otRatePerBlock: Number(otRatePerBlock) || 0,
+      otBlockMinutes: Number(otBlockMinutes) || 30,
       halfDayThresholdHours: Number(halfDayThresholdHours) || 4,
       absentDayDeduction: Number(absentDayDeduction) || 0,
       isDefault: !!isDefault,
+      effectiveFrom: new Date(),
     });
 
     res.status(201).json(policy);
   } catch (error) { next(error); }
 };
 
+// Fields that change what a day's pay actually comes out to — editing any of
+// these must version the policy rather than mutate it in place.
+const RATE_AFFECTING_FIELDS = [
+  'shiftStartTime', 'shiftEndTime', 'graceTimeMinutes',
+  'lateArrivalPenalty', 'lateBlockMinutes', 'earlyCheckoutPenalty',
+  'otRatePerBlock', 'otBlockMinutes', 'halfDayThresholdHours', 'absentDayDeduction',
+];
+
 // @desc    Update an attendance policy
 // @route   PUT /api/hr/policies/attendance/:id
 // @access  Private/Admin/Manager
+//
+// A rate/shift-hours edit doesn't mutate the existing document — it closes
+// it (effectiveTo = now) and creates a new version with the same name,
+// effective from now, then repoints any employee assigned to the old
+// version onto the new one. getEffectiveAttendancePolicy resolves the
+// version in effect for a given date, so recalculating a past month keeps
+// using the rate that actually applied then. A pure name/isDefault change
+// carries no history risk and is edited in place.
 const updateAttendancePolicy = async (req, res, next) => {
   try {
     const policy = await AttendancePolicy.findById(req.params.id);
@@ -138,18 +158,46 @@ const updateAttendancePolicy = async (req, res, next) => {
       await AttendancePolicy.updateMany({}, { isDefault: false });
     }
 
-    policy.name = req.body.name || policy.name;
-    policy.shiftStartTime = req.body.shiftStartTime || policy.shiftStartTime;
-    policy.shiftEndTime = req.body.shiftEndTime || policy.shiftEndTime;
-    if (req.body.graceTimeMinutes !== undefined) policy.graceTimeMinutes = Number(req.body.graceTimeMinutes);
-    if (req.body.lateArrivalPenalty !== undefined) policy.lateArrivalPenalty = Number(req.body.lateArrivalPenalty);
-    if (req.body.earlyCheckoutPenalty !== undefined) policy.earlyCheckoutPenalty = Number(req.body.earlyCheckoutPenalty);
-    if (req.body.halfDayThresholdHours !== undefined) policy.halfDayThresholdHours = Number(req.body.halfDayThresholdHours);
-    if (req.body.absentDayDeduction !== undefined) policy.absentDayDeduction = Number(req.body.absentDayDeduction);
-    if (req.body.isDefault !== undefined) policy.isDefault = !!req.body.isDefault;
+    const changesRates = RATE_AFFECTING_FIELDS.some(
+      (f) => req.body[f] !== undefined && String(req.body[f]) !== String(policy[f])
+    );
 
+    if (!changesRates) {
+      policy.name = req.body.name || policy.name;
+      if (req.body.isDefault !== undefined) policy.isDefault = !!req.body.isDefault;
+      await policy.save();
+      return res.json(policy);
+    }
+
+    const now = new Date();
+    policy.effectiveTo = now;
     await policy.save();
-    res.json(policy);
+
+    const pick = (field, fallback) =>
+      req.body[field] !== undefined ? req.body[field] : fallback;
+
+    const newVersion = await AttendancePolicy.create({
+      name: req.body.name || policy.name,
+      shiftStartTime: pick('shiftStartTime', policy.shiftStartTime),
+      shiftEndTime: pick('shiftEndTime', policy.shiftEndTime),
+      graceTimeMinutes: Number(pick('graceTimeMinutes', policy.graceTimeMinutes)),
+      lateArrivalPenalty: Number(pick('lateArrivalPenalty', policy.lateArrivalPenalty)),
+      lateBlockMinutes: Number(pick('lateBlockMinutes', policy.lateBlockMinutes)),
+      earlyCheckoutPenalty: Number(pick('earlyCheckoutPenalty', policy.earlyCheckoutPenalty)),
+      otRatePerBlock: Number(pick('otRatePerBlock', policy.otRatePerBlock)),
+      otBlockMinutes: Number(pick('otBlockMinutes', policy.otBlockMinutes)),
+      halfDayThresholdHours: Number(pick('halfDayThresholdHours', policy.halfDayThresholdHours)),
+      absentDayDeduction: Number(pick('absentDayDeduction', policy.absentDayDeduction)),
+      isDefault: req.body.isDefault !== undefined ? !!req.body.isDefault : policy.isDefault,
+      effectiveFrom: now,
+    });
+
+    await User.updateMany(
+      { 'employeeInfo.attendancePolicyId': policy._id },
+      { $set: { 'employeeInfo.attendancePolicyId': newVersion._id } }
+    );
+
+    res.json(newVersion);
   } catch (error) { next(error); }
 };
 

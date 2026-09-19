@@ -13,6 +13,7 @@ const attendanceBreakdownSchema = mongoose.Schema(
     extraOffDaysThisMonth: { type: Number, default: 0 }, // what was actually deducted this run
     unapprovedAbsences: { type: Number, default: 0 },
     unpaidLeaveDays: { type: Number, default: 0 },
+    lateDeductionTotal: { type: Number, default: 0 },
     allowanceReleased: { type: Boolean, default: false },
     leaveIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Leave' }],
     attendanceIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Attendance' }],

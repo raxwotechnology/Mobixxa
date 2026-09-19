@@ -397,6 +397,13 @@ const AdminPayroll = () => {
                       <span>EPF Contribution (Employee 8%)</span>
                       <span className="font-bold">- LKR {Number(preview.epfEmployee || 0).toLocaleString()}</span>
                     </div>
+
+                    {Number(preview.otherDeductions || 0) > 0 && (
+                      <div className="flex justify-between py-1 text-rose-600">
+                        <span>Other Deductions (Manual)</span>
+                        <span className="font-bold">- LKR {Number(preview.otherDeductions || 0).toLocaleString()}</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Total Net Payable */}

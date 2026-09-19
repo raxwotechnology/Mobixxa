@@ -41,10 +41,32 @@ const createExpense = async (req, res, next) => {
     const expenseTitle = title || description || category || 'Counter Entry';
     const expenseStatus = status || 'Paid'; // POS petty cash defaults to Paid
 
+    const resolvedType = type === 'Income' ? 'Income' : 'Expense';
+
+    let ledgerTransactionId;
+    // Record in Transaction Ledger if status is Paid — direction must match
+    // the entry's own type (Income adds to the balance, Expense subtracts),
+    // not be assumed to always be an outflow.
+    if (expenseStatus === 'Paid' && resolvedAccountId) {
+      const { recordTransaction } = require('../services/ledgerService');
+      const ledgerTx = await recordTransaction({
+        storeId: assignedStore,
+        accountId: resolvedAccountId,
+        type: resolvedType === 'Income' ? 'income' : 'expense',
+        category: `${resolvedType}: ${category || 'Petty Cash'}`,
+        amount: Number(amount),
+        paymentMethod: paymentMethod || 'Cash',
+        description: `${resolvedType}: ${expenseTitle}`,
+        createdBy: req.user._id,
+        date: date ? new Date(date) : new Date(),
+      });
+      ledgerTransactionId = ledgerTx._id;
+    }
+
     const expense = await Expense.create({
       title: expenseTitle,
       category: category || 'General',
-      type: type || 'Expense',
+      type: resolvedType,
       amount: Number(amount),
       date: date ? new Date(date) : new Date(),
       paymentMethod: paymentMethod || 'Cash',
@@ -55,23 +77,8 @@ const createExpense = async (req, res, next) => {
       storeId: assignedStore || null,
       createdBy: req.user._id,
       receipt: receipt || '',
+      ledgerTransactionId,
     });
-
-    // Record in Transaction Ledger if status is Paid
-    if (expenseStatus === 'Paid' && resolvedAccountId) {
-      const { recordTransaction } = require('../services/ledgerService');
-      await recordTransaction({
-        storeId: assignedStore,
-        accountId: resolvedAccountId,
-        type: 'expense',
-        category: `Expense: ${category || 'Petty Cash'}`,
-        amount: Number(amount),
-        paymentMethod: paymentMethod || 'Cash',
-        description: `Expense: ${expenseTitle}`,
-        createdBy: req.user._id,
-        date: date ? new Date(date) : new Date(),
-      });
-    }
 
     res.status(201).json(expense);
   } catch (error) {
@@ -155,6 +162,15 @@ const deleteExpense = async (req, res, next) => {
   try {
     const expense = await Expense.findById(req.params.id);
     if (!expense) { res.status(404); return next(new Error('Expense not found')); }
+
+    if (expense.ledgerTransactionId) {
+      const { reverseTransaction } = require('../services/ledgerService');
+      await reverseTransaction(expense.ledgerTransactionId, {
+        reason: 'Expense/income entry deleted',
+        createdBy: req.user._id,
+      });
+    }
+
     await expense.deleteOne();
     res.json({ message: 'Expense deleted' });
   } catch (error) { next(error); }

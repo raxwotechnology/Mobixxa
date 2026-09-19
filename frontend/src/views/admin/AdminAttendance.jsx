@@ -56,7 +56,10 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
     shiftEndTime: '17:00',
     graceTimeMinutes: 15,
     lateArrivalPenalty: 0,
+    lateBlockMinutes: 30,
     earlyCheckoutPenalty: 0,
+    otRatePerBlock: 100,
+    otBlockMinutes: 30,
     halfDayThresholdHours: 4,
     absentDayDeduction: 0,
     isDefault: false
@@ -233,7 +236,10 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
       shiftEndTime: policy.shiftEndTime,
       graceTimeMinutes: policy.graceTimeMinutes,
       lateArrivalPenalty: policy.lateArrivalPenalty,
+      lateBlockMinutes: policy.lateBlockMinutes || 30,
       earlyCheckoutPenalty: policy.earlyCheckoutPenalty,
+      otRatePerBlock: policy.otRatePerBlock || 0,
+      otBlockMinutes: policy.otBlockMinutes || 30,
       halfDayThresholdHours: policy.halfDayThresholdHours,
       absentDayDeduction: policy.absentDayDeduction || 0,
       isDefault: !!policy.isDefault
@@ -249,7 +255,10 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
       shiftEndTime: '17:00',
       graceTimeMinutes: 15,
       lateArrivalPenalty: 0,
+      lateBlockMinutes: 30,
       earlyCheckoutPenalty: 0,
+      otRatePerBlock: 100,
+      otBlockMinutes: 30,
       halfDayThresholdHours: 4,
       absentDayDeduction: 0,
       isDefault: false
@@ -340,10 +349,14 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
       if (!byEmployee[id]) {
         byEmployee[id] = { name: r.employeeId?.name || 'Unknown', role: r.employeeId?.role || '', department: '', present: 0, absent: 0, leave: 0, late: 0, totalHours: 0, overtime: 0 };
       }
-      if (r.status === 'present') { byEmployee[id].present++; byEmployee[id].totalHours += r.hoursWorked || 0; byEmployee[id].overtime += r.overtime || 0; }
+      if (r.status === 'present' || r.status === 'late') {
+        byEmployee[id].totalHours += r.hoursWorked || 0;
+        byEmployee[id].overtime += r.overtime || 0;
+      }
+      if (r.status === 'present') byEmployee[id].present++;
+      else if (r.status === 'late') byEmployee[id].late++;
       else if (r.status === 'leave') byEmployee[id].leave++;
       else if (r.status === 'absent') byEmployee[id].absent++;
-      if (r.checkIn) { const h = new Date(r.checkIn).getHours(); if (h >= 9) byEmployee[id].late++; }
     });
 
     return Object.entries(byEmployee)
@@ -622,12 +635,16 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
                           <span className="font-black text-slate-800">{p.graceTimeMinutes} mins</span>
                         </div>
                         <div className="flex justify-between items-center border-b border-slate-50 pb-2">
-                          <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">⚠️ Check-in Fine</span>
-                          <span className="font-black text-rose-500">Rs. {p.lateArrivalPenalty.toLocaleString()}</span>
+                          <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">⚠️ Late Fine</span>
+                          <span className="font-black text-rose-500">Rs. {p.lateArrivalPenalty.toLocaleString()} / {p.lateBlockMinutes || 30}m</span>
                         </div>
                         <div className="flex justify-between items-center border-b border-slate-50 pb-2">
                           <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">🚶 Checkout Fine</span>
                           <span className="font-black text-rose-500">Rs. {p.earlyCheckoutPenalty.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between items-center border-b border-slate-50 pb-2">
+                          <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">⏳ OT Rate</span>
+                          <span className="font-black text-emerald-600">Rs. {(p.otRatePerBlock || 0).toLocaleString()} / {p.otBlockMinutes || 30}m</span>
                         </div>
                         <div className="flex justify-between items-center border-b border-slate-50 pb-2">
                           <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">⚖️ Half-Day</span>
@@ -781,21 +798,25 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
                     <p className="text-2xl font-black text-rose-600">{salarySummary.unapprovedAbsences ?? 0}</p>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-slate-100 pt-6">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 border-t border-slate-100 pt-6">
+                  <div className="bg-rose-50/60 rounded-2xl p-4 border border-rose-100">
+                    <p className="text-[9px] uppercase font-black tracking-wider text-rose-500 mb-1">Late Deduction</p>
+                    <p className="text-xl font-black text-rose-600">− Rs. {(salarySummary.lateDeductionTotal || 0).toLocaleString()}</p>
+                  </div>
+                  <div className="bg-emerald-50/60 rounded-2xl p-4 border border-emerald-100">
+                    <p className="text-[9px] uppercase font-black tracking-wider text-emerald-600 mb-1">Overtime Earned</p>
+                    <p className="text-xl font-black text-emerald-600">+ Rs. {(salarySummary.otEarnedTotal || 0).toLocaleString()}</p>
+                  </div>
                   <div className="bg-rose-50/60 rounded-2xl p-4 border border-rose-100">
                     <p className="text-[9px] uppercase font-black tracking-wider text-rose-500 mb-1">Total Deduction</p>
                     <p className="text-xl font-black text-rose-600">Rs. {(salarySummary.attendanceDeductions || 0).toLocaleString()}</p>
-                  </div>
-                  <div className="bg-emerald-50/60 rounded-2xl p-4 border border-emerald-100">
-                    <p className="text-[9px] uppercase font-black tracking-wider text-emerald-600 mb-1">Attendance Allowance</p>
-                    <p className="text-xl font-black text-emerald-600">Rs. {(salarySummary.attendanceAllowance || 0).toLocaleString()}</p>
                   </div>
                   <div className="bg-slate-900 rounded-2xl p-4">
                     <p className="text-[9px] uppercase font-black tracking-wider text-slate-400 mb-1">Net Adjustment</p>
                     <p className="text-xl font-black text-white">Rs. {((salarySummary.attendanceAllowance || 0) - (salarySummary.attendanceDeductions || 0)).toLocaleString()}</p>
                   </div>
                 </div>
-                <p className="text-[9px] text-slate-400 m-0">Calculated + displayed only — apply to the employee's salary manually via Financial Management &gt; Overtime/Payroll, same as the Cashier Cash Accountability ledger.</p>
+                <p className="text-[9px] text-slate-400 m-0">Late deduction and OT are computed automatically from check-in/check-out and flow into Payroll on their own — see Financial Management &gt; Late Deductions / Overtime Pay for the day-by-day breakdown.</p>
               </div>
             ) : (
               <div className="bg-white rounded-3xl border border-slate-100 p-16 text-center shadow-sm">
@@ -955,7 +976,7 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Check-in Fine (Rs.)</label>
+                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Late Fine (Rs. per block)</label>
                   <input
                     type="number"
                     min="0"
@@ -964,6 +985,40 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
                     className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm"
                   />
                 </div>
+                <div>
+                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Late Block Size (Mins)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={attendanceForm.lateBlockMinutes}
+                    onChange={(e) => setAttendanceForm({ ...attendanceForm, lateBlockMinutes: parseInt(e.target.value) || 30 })}
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">OT Rate (Rs. per block)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={attendanceForm.otRatePerBlock}
+                    onChange={(e) => setAttendanceForm({ ...attendanceForm, otRatePerBlock: parseFloat(e.target.value) || 0 })}
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">OT Block Size (Mins)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={attendanceForm.otBlockMinutes}
+                    onChange={(e) => setAttendanceForm({ ...attendanceForm, otBlockMinutes: parseInt(e.target.value) || 30 })}
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Early Out Fine (Rs.)</label>
                   <input

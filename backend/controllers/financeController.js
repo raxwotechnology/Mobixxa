@@ -29,7 +29,7 @@ const getFinancialDashboard = async (req, res, next) => {
       storeFilter.date = dateFilter;
     }
 
-    const transactions = await Transaction.find(storeFilter).sort({ date: 1 });
+    const transactions = await Transaction.find({ ...storeFilter, voided: { $ne: true } }).sort({ date: 1 });
 
     // Orders for Revenue
     const orderFilter = { ...storeFilter, orderStatus: { $nin: ['cancelled'] } };
@@ -246,14 +246,26 @@ const createTransaction = async (req, res, next) => {
     const { storeId, accountId, type, category, amount, paymentMethod, referenceNo, description, date, chequeDetails } = req.body;
 
     let assignedStore = storeId;
-    if (!assignedStore && req.user.role === 'manager') {
-      const store = await Store.findOne({ managerId: req.user._id });
-      if (store) assignedStore = store._id;
+    if (!assignedStore) {
+      if (req.user.role === 'manager') {
+        const store = await Store.findOne({ managerId: req.user._id });
+        if (store) assignedStore = store._id;
+      } else if (req.user.assignedStore) {
+        assignedStore = req.user.assignedStore;
+      } else if (req.user.role === 'admin') {
+        const store = await Store.findOne({ isActive: true });
+        if (store) assignedStore = store._id;
+      }
+    }
+
+    if (!assignedStore) {
+      res.status(400);
+      return next(new Error('Target store is required for financial records.'));
     }
 
     const { recordTransaction } = require('../services/ledgerService');
     const transaction = await recordTransaction({
-      storeId: assignedStore || null,
+      storeId: assignedStore,
       accountId,
       type,
       category,
@@ -287,7 +299,7 @@ const getTransactions = async (req, res, next) => {
     if (assignedStore && assignedStore !== 'all') {
       filter.storeId = assignedStore;
     }
-    
+
     if (type) filter.type = type;
 
     if (startDate || endDate) {
@@ -295,6 +307,8 @@ const getTransactions = async (req, res, next) => {
       if (startDate) filter.date.$gte = new Date(startDate);
       if (endDate) filter.date.$lte = new Date(endDate);
     }
+
+    filter.voided = { $ne: true };
 
     const transactions = await Transaction.find(filter)
       .populate('createdBy', 'name')
@@ -313,8 +327,45 @@ const updateTransaction = async (req, res, next) => {
     const transaction = await Transaction.findById(req.params.id);
     if (!transaction) { res.status(404); return next(new Error('Transaction not found')); }
 
-    const fields = ['type', 'category', 'amount', 'paymentMethod', 'referenceNo', 'description', 'date', 'attachments'];
-    fields.forEach((f) => {
+    // Money-affecting fields are corrected append-only: reverse the
+    // original's balance effect and record a fresh, correct entry, instead
+    // of mutating the amount/type/account of a row money already moved
+    // against. Non-money fields (category, note, date, attachments) are
+    // safe to edit in place since they never affected a balance.
+    const moneyFields = ['type', 'amount', 'paymentMethod', 'accountId'];
+    const moneyChanged = moneyFields.some((f) => {
+      if (req.body[f] === undefined) return false;
+      const current = transaction[f] === undefined || transaction[f] === null ? '' : String(transaction[f]);
+      return String(req.body[f]) !== current;
+    });
+
+    if (moneyChanged) {
+      const { reverseTransaction, recordTransaction } = require('../services/ledgerService');
+      await reverseTransaction(transaction._id, {
+        reason: 'Corrected — see replacement entry',
+        createdBy: req.user._id,
+      });
+
+      const corrected = await recordTransaction({
+        storeId: transaction.storeId,
+        accountId: req.body.accountId !== undefined ? req.body.accountId : transaction.accountId,
+        type: req.body.type !== undefined ? req.body.type : transaction.type,
+        category: req.body.category !== undefined ? req.body.category : transaction.category,
+        amount: req.body.amount !== undefined ? Number(req.body.amount) : transaction.amount,
+        paymentMethod: req.body.paymentMethod !== undefined ? req.body.paymentMethod : transaction.paymentMethod,
+        chequeDetails: req.body.chequeDetails !== undefined ? req.body.chequeDetails : transaction.chequeDetails,
+        referenceNo: req.body.referenceNo !== undefined ? req.body.referenceNo : transaction.referenceNo,
+        description: `${req.body.description !== undefined ? req.body.description : (transaction.description || '')} (correction of ${transaction._id})`,
+        createdBy: req.user._id,
+        date: req.body.date !== undefined ? new Date(req.body.date) : transaction.date,
+      });
+
+      res.json(corrected);
+      return;
+    }
+
+    const safeFields = ['category', 'referenceNo', 'description', 'date', 'attachments'];
+    safeFields.forEach((f) => {
       if (req.body[f] !== undefined) transaction[f] = req.body[f];
     });
 
@@ -330,8 +381,15 @@ const deleteTransaction = async (req, res, next) => {
   try {
     const transaction = await Transaction.findById(req.params.id);
     if (!transaction) { res.status(404); return next(new Error('Transaction not found')); }
-    
-    await transaction.deleteOne();
+
+    // Append-only: reverse the balance effect (if any) and hide the original
+    // from ledger lists — never hard-delete a financial record.
+    const { reverseTransaction } = require('../services/ledgerService');
+    await reverseTransaction(transaction._id, {
+      reason: 'Transaction deleted',
+      createdBy: req.user._id,
+    });
+
     res.json({ message: 'Transaction deleted' });
   } catch (error) { next(error); }
 };
@@ -342,7 +400,7 @@ const deleteTransaction = async (req, res, next) => {
 const getCheques = async (req, res, next) => {
   try {
     const { storeId, status } = req.query;
-    const filter = { paymentMethod: 'Cheque' };
+    const filter = { paymentMethod: 'Cheque', voided: { $ne: true } };
 
     if (storeId && storeId !== 'all') filter.storeId = storeId;
     if (status) filter['chequeDetails.status'] = status;
@@ -361,7 +419,7 @@ const getCheques = async (req, res, next) => {
 // @access  Private
 const updateChequeStatus = async (req, res, next) => {
   try {
-    const { status } = req.body;
+    const { status, clearedDate } = req.body;
     const transaction = await Transaction.findById(req.params.id);
     if (!transaction) { res.status(404); return next(new Error('Transaction not found')); }
 
@@ -370,30 +428,18 @@ const updateChequeStatus = async (req, res, next) => {
       return next(new Error('This transaction does not have a cheque'));
     }
 
-    const oldStatus = transaction.chequeDetails.status;
-    transaction.chequeDetails.status = status;
-    await transaction.save();
+    // Shared with Supplier Payments' cheque tracking — applies/reverses the
+    // balance change AND stamps the transaction's date to when it actually
+    // cleared, so date-filtered reports (Financials, balance-report)
+    // attribute the movement to the right day instead of the entry date.
+    const { setChequeStatus } = require('../services/ledgerService');
+    const updated = await setChequeStatus(transaction._id, {
+      status,
+      clearedDate: clearedDate || new Date(),
+      createdBy: req.user._id,
+    });
 
-    // Update account balance if status changed to/from 'Cleared'
-    if (transaction.accountId && oldStatus !== status) {
-      const Account = require('../models/Account');
-      const account = await Account.findById(transaction.accountId);
-      
-      if (account) {
-        if (status === 'Cleared') {
-          // Add to balance if it's income, subtract if it's expense
-          if (transaction.type === 'income') account.balance += transaction.amount;
-          else if (transaction.type === 'expense') account.balance -= transaction.amount;
-        } else if (oldStatus === 'Cleared') {
-          // Reverse the balance update if moving away from 'Cleared'
-          if (transaction.type === 'income') account.balance -= transaction.amount;
-          else if (transaction.type === 'expense') account.balance += transaction.amount;
-        }
-        await account.save();
-      }
-    }
-
-    res.json(transaction);
+    res.json(updated);
   } catch (error) { next(error); }
 };
 
@@ -873,7 +919,7 @@ const getBalanceReport = async (req, res, next) => {
     } catch (e) {}
 
     // Fetch Transactions & Expenses (Service Costs & Supplier Costs)
-    const transactions = await Transaction.find({ ...storeFilter, ...txDateQuery }).lean();
+    const transactions = await Transaction.find({ ...storeFilter, ...txDateQuery, voided: { $ne: true } }).lean();
     let serviceCost = 0;
     let supplierCost = 0;
 
