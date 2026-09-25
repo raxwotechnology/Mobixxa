@@ -25,17 +25,6 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-// Ensure DB connection for incoming requests
-app.use(async (req, res, next) => {
-  try {
-    await connectDB();
-    next();
-  } catch (err) {
-    console.error("Database connection error:", err);
-    next();
-  }
-});
-
 // Ensure uploads directory exists (safely for serverless read-only environments)
 try {
   const uploadDir = path.join(__dirname, "uploads");
@@ -57,6 +46,7 @@ const envOrigins = (process.env.CORS_ORIGINS || "")
   .map((o) => o.trim())
   .filter(Boolean);
 const allowedOrigins = [
+  "https://maxmobile-shop.vercel.app",
   "https://mobixa-official.vercel.app",
   "https://www.mobixa-official.vercel.app",
   "https://max-durakathana.netlify.app",
@@ -88,6 +78,18 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
+
+// Run CORS before database work so browser preflight responses remain valid
+// even when a database-backed request is unavailable.
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error("Database connection error:", err);
+    next();
+  }
+});
 
 // BUG-14 FIX: Apply general API rate limiting to all routes
 // Prevents excessive requests and reduces server load
