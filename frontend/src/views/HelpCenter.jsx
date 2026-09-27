@@ -55,10 +55,10 @@ const HelpCenter = () => {
         <div className="bg-slate-900 text-white rounded-3xl p-8 sm:p-12 relative overflow-hidden shadow-lg text-center space-y-6">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(2,132,199,0.2),transparent_70%)] pointer-events-none" />
           <div className="relative z-10 max-w-xl mx-auto space-y-3">
-            <span className="inline-flex items-center gap-1.5 bg-sky-500/20 text-sky-400 border border-sky-500/30 px-3.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest">
+            <span className="inline-flex items-center gap-1.5 bg-sky-500/20 text-sky-400 border border-sky-500/30 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-widest">
               <HelpCircle size={12} /> Customer Service & Support
             </span>
-            <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight m-0">How can we help you today?</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight m-0">How can we help you today?</h1>
             <p className="text-slate-300 text-xs sm:text-sm font-semibold m-0">
               Search our knowledge base or browse help topics for instant answers to your questions.
             </p>
@@ -88,8 +88,8 @@ const HelpCenter = () => {
                 <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-100 text-sky-600 flex items-center justify-center mb-3">
                   <Icon size={20} />
                 </div>
-                <h3 className="text-sm font-black text-slate-900 m-0">{cat.title}</h3>
-                <p className="text-slate-500 text-[11px] font-semibold m-0 mt-1">{cat.desc}</p>
+                <h3 className="text-sm font-bold text-slate-900 m-0">{cat.title}</h3>
+                <p className="text-slate-500 text-xs font-semibold m-0 mt-1">{cat.desc}</p>
               </div>
             );
           })}
@@ -98,7 +98,7 @@ const HelpCenter = () => {
         {/* FAQs */}
         <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
           <div>
-            <h2 className="text-xl font-black text-slate-900 m-0">Frequently Asked Questions</h2>
+            <h2 className="text-xl font-bold text-slate-900 m-0">Frequently Asked Questions</h2>
             <p className="text-xs text-slate-500 font-semibold m-0 mt-1">Quick solutions to common customer queries</p>
           </div>
 
@@ -110,7 +110,7 @@ const HelpCenter = () => {
                   onClick={() => setOpenFaq(openFaq === index ? null : index)}
                   className="w-full text-left px-5 py-4 flex items-center justify-between gap-4 bg-slate-50/50 hover:bg-slate-50 cursor-pointer border-0"
                 >
-                  <span className="font-extrabold text-xs sm:text-sm text-slate-900">{faq.q}</span>
+                  <span className="font-bold text-xs sm:text-sm text-slate-900">{faq.q}</span>
                   <ChevronDown size={16} className={`text-slate-400 transition-transform ${openFaq === index ? 'rotate-180 text-sky-600' : ''}`} />
                 </button>
                 {openFaq === index && (
@@ -126,14 +126,14 @@ const HelpCenter = () => {
         {/* Support Callout */}
         <div className="bg-slate-900 text-white rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-md">
           <div className="space-y-1 text-center md:text-left">
-            <h3 className="text-lg font-black text-white m-0">Still need assistance?</h3>
+            <h3 className="text-lg font-bold text-white m-0">Still need assistance?</h3>
             <p className="text-xs text-slate-300 font-semibold m-0">Our customer care representatives are available 9:00 AM – 8:00 PM daily.</p>
           </div>
           <div className="flex flex-wrap gap-3 w-full md:w-auto justify-center">
-            <a href={`tel:${brandPhone}`} className="bg-sky-500 hover:bg-sky-600 text-white font-extrabold text-xs px-5 py-3 rounded-xl flex items-center gap-2 no-underline shadow-xs">
+            <a href={`tel:${brandPhone}`} className="bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs px-5 py-3 rounded-xl flex items-center gap-2 no-underline shadow-xs">
               <Phone size={14} /> {brandPhone}
             </a>
-            <a href={`mailto:${brandEmail}`} className="bg-white/10 hover:bg-white/20 text-white font-extrabold text-xs px-5 py-3 rounded-xl flex items-center gap-2 no-underline border border-white/20">
+            <a href={`mailto:${brandEmail}`} className="bg-white/10 hover:bg-white/20 text-white font-bold text-xs px-5 py-3 rounded-xl flex items-center gap-2 no-underline border border-white/20">
               <Mail size={14} /> Email Support
             </a>
           </div>

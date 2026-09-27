@@ -164,65 +164,60 @@ const AdminOvertime = () => {
 
   return (
     <DashboardLayout title="Overtime">
-      <div>
+      <div className="ds-page">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
+        <div className="ds-page-header">
           <div>
-            <h1 className="text-2xl font-bold text-dark-navy">⏰ Overtime Pay Management</h1>
-            <p className="text-muted-text text-sm mt-1">Track and pay employee overtime</p>
+            <h1 className="ds-page-title">Overtime Pay Management</h1>
+            <p className="ds-page-subtitle">Track, approve, and disburse employee overtime earnings</p>
           </div>
-          <div className="flex gap-2 flex-wrap">
-            <input type="date" value={dateRange.startDate} onChange={e => setDateRange(r => ({ ...r, startDate: e.target.value }))} className="border border-card-border rounded-xl py-2 px-3 text-sm bg-white" />
-            <input type="date" value={dateRange.endDate} onChange={e => setDateRange(r => ({ ...r, endDate: e.target.value }))} className="border border-card-border rounded-xl py-2 px-3 text-sm bg-white" />
-            <button onClick={exportCSV} className="flex items-center gap-2 border border-card-border text-dark-navy px-4 py-2 rounded-xl text-sm font-semibold hover:bg-gray-50">
-              <Download size={16} /> Export
+          <div className="flex gap-2 flex-wrap items-center">
+            <input type="date" value={dateRange.startDate} onChange={e => setDateRange(r => ({ ...r, startDate: e.target.value }))} className="ds-input text-xs py-2 w-auto" />
+            <input type="date" value={dateRange.endDate} onChange={e => setDateRange(r => ({ ...r, endDate: e.target.value }))} className="ds-input text-xs py-2 w-auto" />
+            <button onClick={exportCSV} className="ds-btn ds-btn-secondary text-xs uppercase py-2">
+              <Download size={14} /> Export CSV
             </button>
-            <button onClick={() => setShowModal(true)} className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-blue-600 shadow-lg shadow-blue-200">
-              <Plus size={16} /> Add OT
+            <button onClick={() => setShowModal(true)} className="ds-btn ds-btn-primary text-xs uppercase py-2">
+              <Plus size={14} /> Add OT
             </button>
           </div>
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center mb-2">
-              <Clock size={16} className="text-white" />
-            </div>
-            <p className="text-2xl font-bold text-dark-navy">{totalHours.toFixed(1)}h</p>
-            <p className="text-xs text-muted-text mt-1">Total OT Hours</p>
+        <div className="ds-stats grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="ds-stat">
+            <div className="ds-stat-label">Total OT Hours</div>
+            <div className="ds-stat-value text-blue-600">{totalHours.toFixed(1)}h</div>
+            <div className="ds-stat-sub">Accumulated hours logged</div>
           </div>
-          <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center mb-2">
-              <DollarSign size={16} className="text-white" />
-            </div>
-            <p className="text-2xl font-bold text-dark-navy">Rs. {totalOT.toLocaleString()}</p>
-            <p className="text-xs text-muted-text mt-1">Total OT Amount</p>
+          <div className="ds-stat">
+            <div className="ds-stat-label">Total OT Amount</div>
+            <div className="ds-stat-value">Rs. {totalOT.toLocaleString()}</div>
+            <div className="ds-stat-sub">Gross overtime liability</div>
           </div>
-          <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center mb-2">
-              <CheckCircle size={16} className="text-white" />
-            </div>
-            <p className="text-2xl font-bold text-green-600">Rs. {totalPaid.toLocaleString()}</p>
-            <p className="text-xs text-muted-text mt-1">Paid</p>
+          <div className="ds-stat">
+            <div className="ds-stat-label">Paid Overtime</div>
+            <div className="ds-stat-value text-emerald-600">Rs. {totalPaid.toLocaleString()}</div>
+            <div className="ds-stat-sub">Disbursed successfully</div>
           </div>
-          <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mb-2">
-              <DollarSign size={16} className="text-white" />
-            </div>
-            <p className="text-2xl font-bold text-amber-600">Rs. {totalPending.toLocaleString()}</p>
-            <p className="text-xs text-muted-text mt-1">Pending</p>
+          <div className="ds-stat">
+            <div className="ds-stat-label">Pending Approval/Pay</div>
+            <div className="ds-stat-value text-amber-600">Rs. {totalPending.toLocaleString()}</div>
+            <div className="ds-stat-sub">Awaiting settlement</div>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6">
+        <div className="ds-tab-bar mb-6">
           {[
             { key: 'summary', label: 'Employee Summary' },
             { key: 'records', label: 'All Records' },
           ].map(t => (
-            <button key={t.key} onClick={() => { setTab(t.key); setSelectedEmployee(null); }}
-              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${tab === t.key ? 'bg-blue-500 text-white' : 'bg-white border border-card-border text-muted-text hover:bg-blue-50'}`}>
+            <button
+              key={t.key}
+              onClick={() => { setTab(t.key); setSelectedEmployee(null); }}
+              className={`ds-tab-btn ${tab === t.key && !selectedEmployee ? 'active' : ''}`}
+            >
               {t.label}
             </button>
           ))}
@@ -230,67 +225,69 @@ const AdminOvertime = () => {
 
         {/* Employee Report View */}
         {selectedEmployee && empReport && (
-          <div className="bg-white rounded-2xl border border-card-border p-6 shadow-sm mb-6">
-            <div className="flex items-center gap-3 mb-4">
-              <button onClick={() => { setSelectedEmployee(null); setEmpReport(null); }} className="p-2 rounded-xl hover:bg-gray-100">
-                <ArrowLeft size={18} />
+          <div className="ds-card mb-6">
+            <div className="flex items-center gap-3 mb-5 border-b border-slate-100 pb-3">
+              <button onClick={() => { setSelectedEmployee(null); setEmpReport(null); }} className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors cursor-pointer border-0 bg-transparent">
+                <ArrowLeft size={16} />
               </button>
               <div>
-                <h2 className="text-lg font-bold text-dark-navy">{empReport.employee?.name}'s OT Report</h2>
-                <p className="text-xs text-muted-text">{empReport.employee?.email} · {empReport.employee?.role}</p>
+                <h2 className="text-base font-semibold text-slate-900 m-0">{empReport.employee?.name}'s OT Report</h2>
+                <p className="text-xs text-slate-400 font-medium m-0 mt-0.5">{empReport.employee?.email} · {empReport.employee?.role}</p>
               </div>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-              <div className="bg-blue-50 rounded-xl p-3 text-center">
-                <p className="text-xl font-bold text-blue-600">{empReport.summary.totalHours.toFixed(1)}h</p>
-                <p className="text-xs text-muted-text">Total Hours</p>
+            
+            <div className="ds-stats grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+              <div className="ds-stat p-3">
+                <div className="ds-stat-label">Total Hours</div>
+                <div className="ds-stat-value text-blue-600">{empReport.summary.totalHours.toFixed(1)}h</div>
               </div>
-              <div className="bg-blue-50 rounded-xl p-3 text-center">
-                <p className="text-xl font-bold text-blue-600">Rs. {empReport.summary.totalAmount.toLocaleString()}</p>
-                <p className="text-xs text-muted-text">Total Amount</p>
+              <div className="ds-stat p-3">
+                <div className="ds-stat-label">Total Amount</div>
+                <div className="ds-stat-value">Rs. {empReport.summary.totalAmount.toLocaleString()}</div>
               </div>
-              <div className="bg-green-50 rounded-xl p-3 text-center">
-                <p className="text-xl font-bold text-green-600">Rs. {empReport.summary.paidAmount.toLocaleString()}</p>
-                <p className="text-xs text-muted-text">Paid</p>
+              <div className="ds-stat p-3">
+                <div className="ds-stat-label">Paid</div>
+                <div className="ds-stat-value text-emerald-600">Rs. {empReport.summary.paidAmount.toLocaleString()}</div>
               </div>
-              <div className="bg-amber-50 rounded-xl p-3 text-center">
-                <p className="text-xl font-bold text-amber-600">Rs. {empReport.summary.pendingAmount.toLocaleString()}</p>
-                <p className="text-xs text-muted-text">Pending</p>
+              <div className="ds-stat p-3">
+                <div className="ds-stat-label">Pending</div>
+                <div className="ds-stat-value text-amber-600">Rs. {empReport.summary.pendingAmount.toLocaleString()}</div>
               </div>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+
+            <div className="ds-table-wrap">
+              <table className="ds-table">
                 <thead>
-                  <tr className="border-b border-card-border">
-                    <th className="text-left py-2 px-3 text-muted-text text-xs uppercase font-semibold">Date</th>
-                    <th className="text-right py-2 px-3 text-muted-text text-xs uppercase font-semibold">Hours</th>
-                    <th className="text-right py-2 px-3 text-muted-text text-xs uppercase font-semibold">Rate/Hr</th>
-                    <th className="text-right py-2 px-3 text-muted-text text-xs uppercase font-semibold">Amount</th>
-                    <th className="text-center py-2 px-3 text-muted-text text-xs uppercase font-semibold">Status</th>
-                    <th className="text-right py-2 px-3 text-muted-text text-xs uppercase font-semibold">Actions</th>
+                  <tr>
+                    <th className="text-left">Date</th>
+                    <th className="text-right">Hours</th>
+                    <th className="text-right">Rate/Hr</th>
+                    <th className="text-right">Amount</th>
+                    <th className="text-center">Status</th>
+                    <th className="text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {(empReport.records || []).map(r => (
-                    <tr key={r._id} className="border-b border-gray-50 hover:bg-gray-50/50">
-                      <td className="py-2.5 px-3 font-medium">{new Date(r.date).toLocaleDateString()}</td>
-                      <td className="py-2.5 px-3 text-right">{r.hours}h</td>
-                      <td className="py-2.5 px-3 text-right">Rs. {r.ratePerHour}</td>
-                      <td className="py-2.5 px-3 text-right font-bold">Rs. {r.totalAmount.toLocaleString()}</td>
-                      <td className="py-2.5 px-3 text-center">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${r.status === 'paid' ? 'bg-green-100 text-green-700' : r.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                    <tr key={r._id}>
+                      <td className="font-semibold text-slate-800">{new Date(r.date).toLocaleDateString()}</td>
+                      <td className="text-right font-medium">{r.hours}h</td>
+                      <td className="text-right">Rs. {r.ratePerHour}</td>
+                      <td className="text-right font-bold text-slate-900 tabular-nums">Rs. {r.totalAmount.toLocaleString()}</td>
+                      <td className="text-center">
+                        <span className={r.status === 'paid' ? 'ds-badge-green' : r.status === 'rejected' ? 'ds-badge-red' : 'ds-badge-amber'}>
                           {r.status}
                         </span>
                       </td>
-                      <td className="py-2.5 px-3 text-right">
-                        <div className="flex justify-end gap-1">
+                      <td className="text-right">
+                        <div className="flex justify-end gap-1.5">
                           {r.status === 'pending' && (
                             <>
-                              <button onClick={() => handlePay(r._id)} className="px-2 py-1 rounded-lg bg-green-50 text-green-600 text-xs font-semibold hover:bg-green-100">Pay</button>
-                              <button onClick={() => handleReject(r._id)} className="px-2 py-1 rounded-lg bg-red-50 text-red-600 text-xs font-semibold hover:bg-red-100">Reject</button>
+                              <button onClick={() => handlePay(r._id)} className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-semibold cursor-pointer border border-emerald-200">Pay</button>
+                              <button onClick={() => handleReject(r._id)} className="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-700 hover:bg-rose-100 text-xs font-semibold cursor-pointer border border-rose-200">Reject</button>
                             </>
                           )}
-                          <button onClick={() => handleDeleteClick(r)} className="p-1 rounded-lg hover:bg-red-50 text-red-400"><Trash2 size={14} /></button>
+                          <button onClick={() => handleDeleteClick(r)} className="p-1 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors border-0 bg-transparent cursor-pointer"><Trash2 size={14} /></button>
                         </div>
                       </td>
                     </tr>
@@ -303,51 +300,52 @@ const AdminOvertime = () => {
 
         {/* Summary Tab */}
         {tab === 'summary' && !selectedEmployee && (
-          <div className="bg-white rounded-2xl border border-card-border shadow-sm overflow-hidden">
-            <div className="p-4 border-b border-card-border">
-              <h2 className="font-semibold text-dark-navy">Employee OT Summary</h2>
+          <div className="ds-card p-0 overflow-hidden">
+            <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+              <h2 className="font-semibold text-slate-900 text-sm m-0">Employee OT Summary</h2>
+              <span className="text-xs text-slate-400 font-medium">{summary.length} active employees</span>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+            <div className="ds-table-wrap">
+              <table className="ds-table">
                 <thead>
-                  <tr className="border-b border-card-border bg-gray-50/50">
-                    <th className="text-left py-3 px-4 text-muted-text text-xs uppercase font-semibold">Employee</th>
-                    <th className="text-right py-3 px-4 text-muted-text text-xs uppercase font-semibold">Total Hours</th>
-                    <th className="text-right py-3 px-4 text-muted-text text-xs uppercase font-semibold">Total OT</th>
-                    <th className="text-right py-3 px-4 text-muted-text text-xs uppercase font-semibold">Paid</th>
-                    <th className="text-right py-3 px-4 text-muted-text text-xs uppercase font-semibold">Pending</th>
-                    <th className="text-right py-3 px-4 text-muted-text text-xs uppercase font-semibold">Records</th>
-                    <th className="text-right py-3 px-4 text-muted-text text-xs uppercase font-semibold">Actions</th>
+                  <tr>
+                    <th className="text-left">Employee</th>
+                    <th className="text-right">Total Hours</th>
+                    <th className="text-right">Total OT</th>
+                    <th className="text-right">Paid</th>
+                    <th className="text-right">Pending</th>
+                    <th className="text-right">Records</th>
+                    <th className="text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {summary.map((s, i) => (
-                    <tr key={i} className="border-b border-gray-50 hover:bg-gray-50/50">
-                      <td className="py-3 px-4">
+                    <tr key={i}>
+                      <td>
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 text-xs font-bold">
+                          <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 font-bold text-xs flex items-center justify-center border border-blue-200/60">
                             {s.employee?.name?.charAt(0)?.toUpperCase() || '?'}
                           </div>
                           <div>
-                            <p className="font-semibold text-dark-navy text-sm">{s.employee?.name}</p>
-                            <p className="text-xs text-muted-text capitalize">{s.employee?.role}</p>
+                            <p className="font-semibold text-slate-800 text-sm m-0">{s.employee?.name}</p>
+                            <p className="text-xs text-slate-400 capitalize m-0">{s.employee?.role}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-right font-medium">{s.totalHours.toFixed(1)}h</td>
-                      <td className="py-3 px-4 text-right font-bold text-dark-navy">Rs. {s.totalAmount.toLocaleString()}</td>
-                      <td className="py-3 px-4 text-right text-green-600 font-semibold">Rs. {s.paidAmount.toLocaleString()}</td>
-                      <td className="py-3 px-4 text-right text-amber-600 font-semibold">Rs. {s.pendingAmount.toLocaleString()}</td>
-                      <td className="py-3 px-4 text-right">{s.recordCount}</td>
-                      <td className="py-3 px-4 text-right">
-                        <button onClick={() => viewEmployeeReport(s.employeeId)} className="text-blue-500 hover:text-blue-700 flex items-center gap-1 ml-auto text-xs font-semibold">
-                          View <ChevronRight size={14} />
+                      <td className="text-right font-medium">{s.totalHours.toFixed(1)}h</td>
+                      <td className="text-right font-bold text-slate-900 tabular-nums">Rs. {s.totalAmount.toLocaleString()}</td>
+                      <td className="text-right text-emerald-600 font-semibold tabular-nums">Rs. {s.paidAmount.toLocaleString()}</td>
+                      <td className="text-right text-amber-600 font-semibold tabular-nums">Rs. {s.pendingAmount.toLocaleString()}</td>
+                      <td className="text-right font-medium text-slate-600">{s.recordCount}</td>
+                      <td className="text-right">
+                        <button onClick={() => viewEmployeeReport(s.employeeId)} className="text-blue-600 hover:text-blue-700 inline-flex items-center gap-1 text-xs font-semibold bg-transparent border-0 cursor-pointer">
+                          View Report <ChevronRight size={13} />
                         </button>
                       </td>
                     </tr>
                   ))}
                   {summary.length === 0 && (
-                    <tr><td colSpan={7} className="py-12 text-center text-muted-text">No OT records found</td></tr>
+                    <tr><td colSpan={7} className="py-12 text-center text-slate-400 font-medium">No OT records found</td></tr>
                   )}
                 </tbody>
               </table>
@@ -359,53 +357,53 @@ const AdminOvertime = () => {
         {tab === 'records' && (
           <div>
             <div className="relative mb-4">
-              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input placeholder="Search by employee name..." value={search} onChange={e => setSearch(e.target.value)} className="w-full sm:w-96 border border-card-border rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input placeholder="Search by employee name..." value={search} onChange={e => setSearch(e.target.value)} className="ds-input pl-9 w-full sm:w-80 text-sm" />
             </div>
-            <div className="bg-white rounded-2xl border border-card-border shadow-sm overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+            <div className="ds-card p-0 overflow-hidden">
+              <div className="ds-table-wrap">
+                <table className="ds-table">
                   <thead>
-                    <tr className="border-b border-card-border bg-gray-50/50">
-                      <th className="text-left py-3 px-4 text-muted-text text-xs uppercase font-semibold">Employee</th>
-                      <th className="text-left py-3 px-4 text-muted-text text-xs uppercase font-semibold">Date</th>
-                      <th className="text-right py-3 px-4 text-muted-text text-xs uppercase font-semibold">Hours</th>
-                      <th className="text-right py-3 px-4 text-muted-text text-xs uppercase font-semibold">Rate</th>
-                      <th className="text-right py-3 px-4 text-muted-text text-xs uppercase font-semibold">Amount</th>
-                      <th className="text-center py-3 px-4 text-muted-text text-xs uppercase font-semibold">Status</th>
-                      <th className="text-left py-3 px-4 text-muted-text text-xs uppercase font-semibold">Note</th>
-                      <th className="text-right py-3 px-4 text-muted-text text-xs uppercase font-semibold">Actions</th>
+                    <tr>
+                      <th className="text-left">Employee</th>
+                      <th className="text-left">Date</th>
+                      <th className="text-right">Hours</th>
+                      <th className="text-right">Rate</th>
+                      <th className="text-right">Amount</th>
+                      <th className="text-center">Status</th>
+                      <th className="text-left">Note</th>
+                      <th className="text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredRecords.map(r => (
-                      <tr key={r._id} className="border-b border-gray-50 hover:bg-gray-50/50">
-                        <td className="py-3 px-4 font-semibold text-dark-navy">{r.employeeId?.name || 'Unknown'}</td>
-                        <td className="py-3 px-4 text-muted-text">{new Date(r.date).toLocaleDateString()}</td>
-                        <td className="py-3 px-4 text-right">{r.hours}h</td>
-                        <td className="py-3 px-4 text-right">Rs. {r.ratePerHour}</td>
-                        <td className="py-3 px-4 text-right font-bold">Rs. {r.totalAmount.toLocaleString()}</td>
-                        <td className="py-3 px-4 text-center">
-                          <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${r.status === 'paid' ? 'bg-green-100 text-green-700' : r.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                      <tr key={r._id}>
+                        <td className="font-semibold text-slate-900">{r.employeeId?.name || 'Unknown'}</td>
+                        <td className="text-slate-500 font-medium">{new Date(r.date).toLocaleDateString()}</td>
+                        <td className="text-right font-medium">{r.hours}h</td>
+                        <td className="text-right">Rs. {r.ratePerHour}</td>
+                        <td className="text-right font-bold text-slate-900 tabular-nums">Rs. {r.totalAmount.toLocaleString()}</td>
+                        <td className="text-center">
+                          <span className={r.status === 'paid' ? 'ds-badge-green' : r.status === 'rejected' ? 'ds-badge-red' : 'ds-badge-amber'}>
                             {r.status}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-xs text-muted-text max-w-[150px] truncate">{r.description || '—'}</td>
-                        <td className="py-3 px-4 text-right">
-                          <div className="flex justify-end gap-1">
+                        <td className="text-xs text-slate-400 max-w-[150px] truncate">{r.description || '—'}</td>
+                        <td className="text-right">
+                          <div className="flex justify-end gap-1.5">
                             {r.status === 'pending' && (
                               <>
-                                <button onClick={() => handlePay(r._id)} className="px-2.5 py-1 rounded-lg bg-green-50 text-green-600 text-xs font-semibold hover:bg-green-100">Pay</button>
-                                <button onClick={() => handleReject(r._id)} className="px-2.5 py-1 rounded-lg bg-red-50 text-red-600 text-xs font-semibold hover:bg-red-100">Reject</button>
+                                <button onClick={() => handlePay(r._id)} className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-semibold cursor-pointer border border-emerald-200">Pay</button>
+                                <button onClick={() => handleReject(r._id)} className="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-700 hover:bg-rose-100 text-xs font-semibold cursor-pointer border border-rose-200">Reject</button>
                               </>
                             )}
-                            <button onClick={() => handleDeleteClick(r)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-400"><Trash2 size={14} /></button>
+                            <button onClick={() => handleDeleteClick(r)} className="p-1 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors border-0 bg-transparent cursor-pointer"><Trash2 size={14} /></button>
                           </div>
                         </td>
                       </tr>
                     ))}
                     {filteredRecords.length === 0 && (
-                      <tr><td colSpan={8} className="py-12 text-center text-muted-text">No OT records found</td></tr>
+                      <tr><td colSpan={8} className="py-12 text-center text-slate-400 font-medium">No OT records found</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -417,15 +415,15 @@ const AdminOvertime = () => {
 
       {/* Create OT Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-card-border flex items-center justify-between">
-              <h2 className="text-lg font-bold text-dark-navy">Add Overtime Record</h2>
-              <button onClick={() => setShowModal(false)} className="p-1.5 rounded-lg hover:bg-gray-100"><X size={20} /></button>
+        <div className="ds-modal-backdrop" onClick={() => setShowModal(false)}>
+          <div className="ds-modal" onClick={e => e.stopPropagation()}>
+            <div className="ds-modal-header">
+              <h2 className="ds-modal-title">Add Overtime Record</h2>
+              <button onClick={() => setShowModal(false)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 cursor-pointer border-0 bg-transparent"><X size={18} /></button>
             </div>
             <form onSubmit={handleCreate} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-dark-navy mb-1">Employee *</label>
+              <div className="ds-form-group">
+                <label className="ds-label">Employee *</label>
                 <EmployeeSelector
                   multiple={false}
                   employees={employees}
@@ -434,33 +432,33 @@ const AdminOvertime = () => {
                   placeholder="Search and select employee..."
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-dark-navy mb-1">Date *</label>
-                <input type="date" required value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm" />
+              <div className="ds-form-group">
+                <label className="ds-label">Date *</label>
+                <input type="date" required value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} className="ds-input" />
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-dark-navy mb-1">OT Hours *</label>
-                  <input type="number" step="0.5" min="0.5" required value={form.hours} onChange={e => setForm({ ...form, hours: e.target.value })} placeholder="e.g. 2.5" className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm" />
+                <div className="ds-form-group">
+                  <label className="ds-label">OT Hours *</label>
+                  <input type="number" step="0.5" min="0.5" required value={form.hours} onChange={e => setForm({ ...form, hours: e.target.value })} placeholder="e.g. 2.5" className="ds-input" />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-dark-navy mb-1">Rate Per Hour (Rs.) *</label>
-                  <input type="number" min="1" required value={form.ratePerHour} onChange={e => setForm({ ...form, ratePerHour: e.target.value })} placeholder="e.g. 250" className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm" />
+                <div className="ds-form-group">
+                  <label className="ds-label">Rate Per Hour (Rs.) *</label>
+                  <input type="number" min="1" required value={form.ratePerHour} onChange={e => setForm({ ...form, ratePerHour: e.target.value })} placeholder="e.g. 250" className="ds-input" />
                 </div>
               </div>
               {form.hours && form.ratePerHour && (
-                <div className="bg-blue-50 rounded-xl p-3 text-center">
-                  <p className="text-xs text-muted-text">Total OT Pay</p>
-                  <p className="text-xl font-bold text-blue-600">Rs. {(Number(form.hours) * Number(form.ratePerHour)).toLocaleString()}</p>
+                <div className="bg-blue-50 border border-blue-200/80 rounded-xl p-3 text-center">
+                  <p className="text-xs text-slate-500 font-medium m-0">Total Calculated OT Pay</p>
+                  <p className="text-lg font-bold text-blue-600 m-0 mt-0.5 tabular-nums">Rs. {(Number(form.hours) * Number(form.ratePerHour)).toLocaleString()}</p>
                 </div>
               )}
-              <div>
-                <label className="block text-sm font-medium text-dark-navy mb-1">Description</label>
-                <input value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="e.g. Weekend shift, Holiday work" className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm" />
+              <div className="ds-form-group">
+                <label className="ds-label">Description</label>
+                <input value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="e.g. Weekend shift, Holiday work" className="ds-input" />
               </div>
               <div className="flex gap-3 pt-2">
-                <button type="submit" className="flex-1 bg-blue-500 text-white py-2.5 rounded-xl font-semibold hover:bg-blue-600 text-sm">Create OT Record</button>
-                <button type="button" onClick={() => setShowModal(false)} className="flex-1 border border-card-border py-2.5 rounded-xl font-semibold text-muted-text hover:bg-gray-50 text-sm">Cancel</button>
+                <button type="submit" className="ds-btn ds-btn-primary flex-1 justify-center">Create OT Record</button>
+                <button type="button" onClick={() => setShowModal(false)} className="ds-btn ds-btn-secondary flex-1 justify-center">Cancel</button>
               </div>
             </form>
           </div>

@@ -278,9 +278,9 @@ const getMe = async (req, res) => {
   }
 };
 
-// @desc    Update user profile
-// @route   PUT /api/auth/profile
-// @access  Private
+// @desc Update user profile
+// @route PUT /api/auth/profile
+// @access Private
 const updateProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
@@ -534,8 +534,8 @@ const requestPasswordReset = async (req, res) => {
     const emailTemplate = passwordResetOtpEmail(user.name, otp);
     
     console.log(`\n==================================================`);
-    console.log(`🔐 [PASSWORD RESET OTP] For: ${user.email}`);
-    console.log(`👉 VERIFICATION CODE (OTP): ${otp}`);
+    console.log(`[PASSWORD RESET OTP] For: ${user.email}`);
+    console.log(`VERIFICATION CODE (OTP): ${otp}`);
     console.log(`==================================================\n`);
 
     try {

@@ -43,7 +43,7 @@ const CustomerHistoryModal = ({ isOpen, onClose, phone }) => {
             </div>
             <div>
               <h3 className="font-bold text-slate-800">Customer History</h3>
-              <p className="text-[10px] text-slate-500 font-bold uppercase">{phone}</p>
+              <p className="text-xs text-slate-500 font-bold uppercase">{phone}</p>
             </div>
           </div>
           <button 
@@ -71,11 +71,11 @@ const CustomerHistoryModal = ({ isOpen, onClose, phone }) => {
               {/* Summary Stats */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-indigo-50 p-4 rounded-2xl border border-indigo-100">
-                  <p className="text-[10px] font-bold text-indigo-400 uppercase">Orders</p>
+                  <p className="text-xs font-bold text-indigo-400 uppercase">Orders</p>
                   <p className="text-xl font-bold text-indigo-700">{history.orders.length}</p>
                 </div>
                 <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
-                  <p className="text-[10px] font-bold text-emerald-400 uppercase">Spent</p>
+                  <p className="text-xs font-bold text-emerald-400 uppercase">Spent</p>
                   <p className="text-lg font-bold text-emerald-700">
                     Rs.{history.orders.reduce((s, o) => s + o.totalAmount, 0).toLocaleString()}
                   </p>
@@ -91,7 +91,7 @@ const CustomerHistoryModal = ({ isOpen, onClose, phone }) => {
                   {history.orders.map((order) => (
                     <div key={order._id} className="p-4 bg-slate-50 rounded-xl border border-slate-100">
                       <div className="flex justify-between items-start mb-2">
-                        <span className="text-[10px] font-bold text-slate-400">#{order.invoiceNumber || order._id.slice(-6).toUpperCase()}</span>
+                        <span className="text-xs font-bold text-slate-400">#{order.invoiceNumber || order._id.slice(-6).toUpperCase()}</span>
                         <span className="text-xs font-bold text-indigo-600">Rs. {order.totalAmount.toLocaleString()}</span>
                       </div>
                       <div className="space-y-0.5 mb-1">
@@ -103,18 +103,18 @@ const CustomerHistoryModal = ({ isOpen, onClose, phone }) => {
                         ))}
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] text-slate-400 font-medium">
+                        <span className="text-xs text-slate-400 font-medium">
                           {new Date(order.createdAt).toLocaleDateString()}
                         </span>
                         <div className="flex items-center gap-2">
-                          <span className={`text-[9px] font-bold uppercase ${
+                          <span className={`text-xs font-bold uppercase ${
                             order.paymentStatus === 'Paid' || order.paymentStatus === 'completed' ? 'text-emerald-600' : 'text-amber-600'
                           }`}>
                             {order.paymentStatus}
                           </span>
                           <button
                             onClick={() => setViewingOrder(order)}
-                            className="flex items-center gap-1 text-[10px] font-bold text-indigo-600 hover:text-indigo-800"
+                            className="flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-800"
                           >
                             View Invoice <ExternalLink size={10} />
                           </button>
@@ -135,8 +135,8 @@ const CustomerHistoryModal = ({ isOpen, onClose, phone }) => {
                     {history.hpAgreements.map((hp) => (
                       <div key={hp._id} className="p-4 bg-amber-50 rounded-xl border border-amber-100">
                         <div className="flex justify-between items-start mb-2">
-                          <span className="text-[10px] font-bold text-amber-600">HP AGREEMENT</span>
-                          <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
+                          <span className="text-xs font-bold text-amber-600">HP AGREEMENT</span>
+                          <span className={`text-xs font-bold uppercase px-2 py-0.5 rounded-full ${
                             hp.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-200 text-amber-800'
                           }`}>
                             {hp.status}

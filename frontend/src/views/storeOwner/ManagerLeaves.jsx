@@ -166,54 +166,54 @@ const ManagerLeaves = ({ navItems = managerNavGroups, title = 'Manager Dashboard
 
   return (
     <DashboardLayout navItems={navItems} title={title}>
-      <div>
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+      <div className="ds-page">
+        <div className="ds-page-header">
           <div>
-            <h1 className="text-2xl font-bold text-dark-navy mb-2">📅 Leave Management</h1>
-            <p className="text-muted-text text-sm">{leaves.filter((l) => l.status === 'pending').length} pending requests</p>
+            <h1 className="ds-page-title">Store Leave Management</h1>
+            <p className="ds-page-subtitle">{leaves.filter((l) => l.status === 'pending').length} pending requests awaiting review</p>
           </div>
-          <div className="flex gap-2 flex-wrap">
-            <button onClick={() => setShowLeaveModal(true)} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors">
-              <Calendar size={16} /> Add Leave
+          <div className="flex gap-2 flex-wrap items-center">
+            <button onClick={() => setShowLeaveModal(true)} className="ds-btn ds-btn-primary text-xs uppercase py-2">
+              <Calendar size={14} /> Add Leave
             </button>
-            <button onClick={exportExcel} className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors">
-              <FileSpreadsheet size={16} /> Export Excel
+            <button onClick={exportExcel} className="ds-btn ds-btn-secondary text-xs uppercase py-2">
+              <FileSpreadsheet size={14} /> Excel
             </button>
-            <button onClick={exportPDF} className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors">
-              <FileText size={16} /> Export PDF
+            <button onClick={exportPDF} className="ds-btn ds-btn-secondary text-xs uppercase py-2">
+              <FileText size={14} /> PDF
             </button>
           </div>
         </div>
 
-        {/* ... form code ... */}
-        <form onSubmit={handleCreateLeaveRequest} className="bg-white rounded-2xl border border-card-border p-4 shadow-sm mb-6">
-          <h2 className="text-sm font-semibold text-dark-navy mb-3">Request My Leave (to Admin)</h2>
+        {/* Request Leave Form */}
+        <form onSubmit={handleCreateLeaveRequest} className="ds-card mb-6">
+          <h2 className="text-sm font-semibold text-slate-900 mb-3 m-0">Request My Leave (to Admin)</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <select
               value={requestForm.leaveType}
               onChange={(e) => setRequestForm((prev) => ({ ...prev, leaveType: e.target.value }))}
-              className="px-3 py-2.5 rounded-xl border border-card-border text-sm"
+              className="ds-input text-xs cursor-pointer capitalize"
             >
               {['annual', 'sick', 'casual', 'maternity', 'paternity', 'unpaid'].map((t) => (
-                <option key={t} value={t}>{t}</option>
+                <option key={t} value={t}>{t} Leave</option>
               ))}
             </select>
             <input
               type="date"
               value={requestForm.startDate}
               onChange={(e) => setRequestForm((prev) => ({ ...prev, startDate: e.target.value }))}
-              className="px-3 py-2.5 rounded-xl border border-card-border text-sm"
+              className="ds-input text-xs"
             />
             <input
               type="date"
               value={requestForm.endDate}
               onChange={(e) => setRequestForm((prev) => ({ ...prev, endDate: e.target.value }))}
-              className="px-3 py-2.5 rounded-xl border border-card-border text-sm"
+              className="ds-input text-xs"
             />
             <button
               type="submit"
               disabled={requesting}
-              className="px-4 py-2.5 rounded-xl bg-primary-blue text-white text-sm font-semibold disabled:opacity-60"
+              className="ds-btn ds-btn-primary text-xs uppercase justify-center disabled:opacity-60 cursor-pointer"
             >
               {requesting ? 'Submitting...' : 'Submit Leave'}
             </button>
@@ -222,51 +222,54 @@ const ManagerLeaves = ({ navItems = managerNavGroups, title = 'Manager Dashboard
             value={requestForm.reason}
             onChange={(e) => setRequestForm((prev) => ({ ...prev, reason: e.target.value }))}
             rows={2}
-            placeholder="Reason"
-            className="mt-3 w-full px-3 py-2.5 rounded-xl border border-card-border text-sm"
+            placeholder="Reason for leave..."
+            className="ds-input text-xs mt-3 w-full"
           />
         </form>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-2xl border border-card-border p-4 shadow-sm text-center">
-            <p className="text-2xl font-bold text-amber-600">{leaves.filter(l => l.status === 'pending').length}</p>
-            <p className="text-xs text-muted-text">Pending</p>
+        <div className="ds-stats grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+          <div className="ds-stat">
+            <div className="ds-stat-label">Pending Requests</div>
+            <div className="ds-stat-value text-amber-600">{leaves.filter(l => l.status === 'pending').length}</div>
+            <div className="ds-stat-sub">Awaiting approval</div>
           </div>
-          <div className="bg-white rounded-2xl border border-card-border p-4 shadow-sm text-center">
-            <p className="text-2xl font-bold text-emerald-600">{leaves.filter(l => l.status === 'approved').length}</p>
-            <p className="text-xs text-muted-text">Approved</p>
+          <div className="ds-stat">
+            <div className="ds-stat-label">Approved</div>
+            <div className="ds-stat-value text-emerald-600">{leaves.filter(l => l.status === 'approved').length}</div>
+            <div className="ds-stat-sub">Authorized absences</div>
           </div>
-          <div className="bg-white rounded-2xl border border-card-border p-4 shadow-sm text-center">
-            <p className="text-2xl font-bold text-red-500">{leaves.filter(l => l.status === 'rejected').length}</p>
-            <p className="text-xs text-muted-text">Rejected</p>
+          <div className="ds-stat">
+            <div className="ds-stat-label">Rejected</div>
+            <div className="ds-stat-value text-rose-600">{leaves.filter(l => l.status === 'rejected').length}</div>
+            <div className="ds-stat-sub">Declined requests</div>
           </div>
-          <div className="bg-white rounded-2xl border border-card-border p-4 shadow-sm text-center">
-            <p className="text-2xl font-bold text-dark-navy">{leaves.filter(l => l.status === 'approved').reduce((s, l) => s + (l.totalDays || 0), 0)}</p>
-            <p className="text-xs text-muted-text">Total Days Used</p>
+          <div className="ds-stat">
+            <div className="ds-stat-label">Total Days Used</div>
+            <div className="ds-stat-value">{leaves.filter(l => l.status === 'approved').reduce((s, l) => s + (l.totalDays || 0), 0)}</div>
+            <div className="ds-stat-sub">Calendar days consumed</div>
           </div>
         </div>
 
         {/* Filter Tabs & Selects */}
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <div className="flex flex-wrap gap-2">
+        <div className="ds-card p-3.5 flex flex-wrap items-center justify-between gap-3 mb-6">
+          <div className="ds-tab-bar">
             {['all', 'pending', 'approved', 'rejected'].map((s) => (
               <button
                 key={s}
                 onClick={() => setFilter(s)}
-                className={`px-4 py-2 text-sm font-medium rounded-xl transition-colors ${filter === s ? 'bg-primary-blue text-white' : 'bg-gray-100 text-muted-text hover:bg-gray-200'
-                  }`}
+                className={`ds-tab-btn ${filter === s ? 'active' : ''}`}
               >
                 {s.charAt(0).toUpperCase() + s.slice(1)} ({s === 'all' ? leaves.length : leaves.filter(l => l.status === s).length})
               </button>
             ))}
           </div>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2.5">
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
-              className="px-3 py-2 bg-white border border-card-border rounded-xl text-sm outline-none"
+              className="ds-input text-xs w-auto cursor-pointer"
             >
               <option value="all">All Roles</option>
               <option value="cashier">Cashier</option>
@@ -277,7 +280,7 @@ const ManagerLeaves = ({ navItems = managerNavGroups, title = 'Manager Dashboard
             <select
               value={deptFilter}
               onChange={(e) => setDeptFilter(e.target.value)}
-              className="px-3 py-2 bg-white border border-card-border rounded-xl text-sm outline-none"
+              className="ds-input text-xs w-auto cursor-pointer"
             >
               <option value="all">All Departments</option>
               {Array.from(new Set(leaves.map(l => l.employeeId?.employeeInfo?.department || 'Unassigned'))).filter(Boolean).map(dept => (
@@ -288,45 +291,50 @@ const ManagerLeaves = ({ navItems = managerNavGroups, title = 'Manager Dashboard
         </div>
 
         {filtered.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-card-border p-12 text-center text-muted-text">
-            <Calendar size={40} className="mx-auto mb-3 text-gray-300" />
-            <p>No leave requests found</p>
+          <div className="ds-card p-12 text-center text-slate-400 font-medium text-xs">
+            <Calendar size={36} className="mx-auto mb-2 text-slate-300" />
+            <p className="m-0">No leave requests found</p>
           </div>
         ) : (
           <div className="space-y-3">
             {filtered.map((leave) => (
-              <div key={leave._id} className="bg-white rounded-2xl border border-card-border p-5 shadow-sm">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div key={leave._id} className="ds-card p-4 hover:border-slate-300 transition-colors">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center text-white font-bold text-sm">
+                    <div className="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 border border-blue-200/60 flex items-center justify-center font-bold text-xs">
                       {leave.employeeId?.name?.charAt(0)?.toUpperCase() || '?'}
                     </div>
                     <div>
-                      <h3 className="font-semibold text-dark-navy text-sm">{leave.employeeId?.name}</h3>
-                      <p className="text-xs text-muted-text">{leave.employeeId?.role} • {leave.leaveType} leave</p>
+                      <h3 className="font-semibold text-slate-900 text-sm m-0">{leave.employeeId?.name}</h3>
+                      <p className="text-xs text-slate-400 capitalize m-0 mt-0.5">{leave.employeeId?.role} • {leave.leaveType} leave</p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${statusColors[leave.status]}`}>
+                    <span className={
+                      leave.status === 'approved' ? 'ds-badge-green' :
+                      leave.status === 'rejected' ? 'ds-badge-red' :
+                      'ds-badge-amber'
+                    }>
                       {leave.status}
                     </span>
                     {leave.status === 'pending' && (
-                      <>
-                        <button onClick={() => handleApprove(leave._id)} className="p-2 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors">
-                          <Check size={16} />
+                      <div className="flex items-center gap-1.5 ml-2">
+                        <button onClick={() => handleApprove(leave._id)} className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors border border-emerald-200 cursor-pointer" title="Approve">
+                          <Check size={14} />
                         </button>
-                        <button onClick={() => handleReject(leave._id)} className="p-2 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-colors">
-                          <X size={16} />
+                        <button onClick={() => handleReject(leave._id)} className="p-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors border border-rose-200 cursor-pointer" title="Reject">
+                          <X size={14} />
                         </button>
-                      </>
+                      </div>
                     )}
                   </div>
                 </div>
 
-                <div className="mt-3 flex flex-wrap gap-4 text-xs text-muted-text">
-                  <span className="flex items-center gap-1"><Calendar size={12} /> {new Date(leave.startDate).toLocaleDateString()} — {new Date(leave.endDate).toLocaleDateString()}</span>
-                  <span className="flex items-center gap-1"><Clock size={12} /> {leave.totalDays} day{leave.totalDays > 1 ? 's' : ''}</span>
+                <div className="mt-3 pt-2.5 border-t border-slate-100 flex flex-wrap gap-4 text-xs text-slate-500 font-medium">
+                  <span className="flex items-center gap-1"><Calendar size={13} className="text-blue-600" /> {new Date(leave.startDate).toLocaleDateString()} — {new Date(leave.endDate).toLocaleDateString()}</span>
+                  <span className="flex items-center gap-1"><Clock size={13} className="text-amber-600" /> {leave.totalDays} day{leave.totalDays > 1 ? 's' : ''}</span>
+                  {leave.reason && <span className="text-slate-400 truncate max-w-md">Reason: {leave.reason}</span>}
                 </div>
                 {leave.reason && <p className="text-xs text-muted-text mt-2 bg-gray-50 rounded-lg p-2">{leave.reason}</p>}
                 {leave.rejectionReason && <p className="text-xs text-red-500 mt-2 bg-red-50 rounded-lg p-2">Rejected: {leave.rejectionReason}</p>}

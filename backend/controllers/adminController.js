@@ -5,8 +5,8 @@ const Product = require('../models/Product');
 const Account = require('../models/Account');
 const { sendNotification } = require('../utils/notificationService');
 
-// @desc    Get all users
-// @route   GET /api/admin/users
+// @desc Get all users
+// @route GET /api/admin/users
 const getUsers = async (req, res, next) => {
   try {
     const { storeId } = req.query;
@@ -18,8 +18,8 @@ const getUsers = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Update user role (legacy)
-// @route   PUT /api/admin/users/:id/role
+// @desc Update user role (legacy)
+// @route PUT /api/admin/users/:id/role
 const updateUserRole = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id);
@@ -30,8 +30,8 @@ const updateUserRole = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Create new user (employee/admin)
-// @route   POST /api/admin/users
+// @desc Create new user (employee/admin)
+// @route POST /api/admin/users
 const createUser = async (req, res, next) => {
   try {
     const { name, email, password, phone, role, assignedStore, avatar, employeeInfo, permissions, addresses } = req.body;
@@ -47,8 +47,8 @@ const createUser = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Update user details (employee/admin)
-// @route   PUT /api/admin/users/:id
+// @desc Update user details (employee/admin)
+// @route PUT /api/admin/users/:id
 const updateUser = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id);
@@ -70,8 +70,8 @@ const updateUser = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Toggle user active status (activate/deactivate)
-// @route   PUT /api/admin/users/:id/toggle-status
+// @desc Toggle user active status (activate/deactivate)
+// @route PUT /api/admin/users/:id/toggle-status
 const toggleUserStatus = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id);
@@ -90,7 +90,7 @@ const toggleUserStatus = async (req, res, next) => {
     await sendNotification({
       userId: user._id,
       type: 'account_update',
-      title: user.isActive ? 'Account Activated ✅' : 'Account Deactivated ⛔',
+      title: user.isActive ? 'Account Activated' : 'Account Deactivated',
       message: user.isActive
         ? 'Your account has been reactivated. You can now log in again.'
         : 'Your account has been deactivated by an administrator.',
@@ -107,8 +107,8 @@ const toggleUserStatus = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Delete user
-// @route   DELETE /api/admin/users/:id
+// @desc Delete user
+// @route DELETE /api/admin/users/:id
 const deleteUser = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id);
@@ -118,8 +118,8 @@ const deleteUser = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Get all stores (including inactive)
-// @route   GET /api/admin/stores
+// @desc Get all stores (including inactive)
+// @route GET /api/admin/stores
 const getAllStores = async (req, res, next) => {
   try {
     const stores = await Store.find({}).populate('managerId', 'name email').sort({ createdAt: -1 });
@@ -127,8 +127,8 @@ const getAllStores = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Get store summaries with stats
-// @route   GET /api/admin/stores/summaries
+// @desc Get store summaries with stats
+// @route GET /api/admin/stores/summaries
 const getStoreSummaries = async (req, res, next) => {
   try {
     const stores = await Store.find({}).populate('managerId', 'name email').sort({ createdAt: -1 });
@@ -181,8 +181,8 @@ const getStoreSummaries = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Toggle store active status
-// @route   PUT /api/admin/stores/:id/toggle
+// @desc Toggle store active status
+// @route PUT /api/admin/stores/:id/toggle
 const toggleStore = async (req, res, next) => {
   try {
     const store = await Store.findById(req.params.id);
@@ -246,8 +246,8 @@ const getAllOrders = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Get all products for admin
-// @route   GET /api/admin/products
+// @desc Get all products for admin
+// @route GET /api/admin/products
 const getAllProducts = async (req, res, next) => {
   try {
     const { storeId } = req.query;
@@ -263,8 +263,8 @@ const getAllProducts = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Approve order
-// @route   PUT /api/admin/orders/:id/approve
+// @desc Approve order
+// @route PUT /api/admin/orders/:id/approve
 const approveOrder = async (req, res, next) => {
   try {
     const order = await Order.findById(req.params.id);
@@ -282,7 +282,7 @@ const approveOrder = async (req, res, next) => {
     await sendNotification({
       userId: order.userId,
       type: 'order_update',
-      title: 'Order Confirmed ✅',
+      title: 'Order Confirmed',
       message: `Your order #${order._id.toString().slice(-8).toUpperCase()} has been approved and confirmed.`,
       link: '/orders',
     });
@@ -291,8 +291,8 @@ const approveOrder = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Cancel order
-// @route   PUT /api/admin/orders/:id/cancel
+// @desc Cancel order
+// @route PUT /api/admin/orders/:id/cancel
 const cancelOrder = async (req, res, next) => {
   try {
     const order = await Order.findById(req.params.id);
@@ -318,7 +318,7 @@ const cancelOrder = async (req, res, next) => {
     await sendNotification({
       userId: order.userId,
       type: 'order_update',
-      title: 'Order Cancelled ❌',
+      title: 'Order Cancelled',
       message: `Your order #${order._id.toString().slice(-8).toUpperCase()} has been cancelled.${req.body.reason ? ' Reason: ' + req.body.reason : ''}`,
       link: '/orders',
     });
@@ -327,8 +327,8 @@ const cancelOrder = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Delete order
-// @route   DELETE /api/admin/orders/:id
+// @desc Delete order
+// @route DELETE /api/admin/orders/:id
 const deleteOrder = async (req, res, next) => {
   try {
     const order = await Order.findById(req.params.id);
@@ -347,8 +347,8 @@ const deleteOrder = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Get platform stats
-// @route   GET /api/admin/stats
+// @desc Get platform stats
+// @route GET /api/admin/stats
 const getStats = async (req, res, next) => {
   try {
     const { storeId } = req.query;

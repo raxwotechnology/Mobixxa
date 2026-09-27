@@ -44,6 +44,7 @@ import {
   EyeOff,
   Download,
   Calendar,
+  Delete,
 } from "lucide-react";
 
 import { getPosProducts, getProductByBarcode, posCheckout, getPosOrders, applyVoucher, getSettings, getActivePosSession, startPosSession, endPosSession, getPosPayHereHash, redeemPoints, getMyLoyaltyPoints, getCreditOrders, getCustomerCreditSummary, getCustomerByPhone, settleCreditOrder, getCategories, createQuotation, createProduct, getAccounts, loginUser, getCashiers, posLogin, getPosOrderByInvoice, createCustomerReturn, getHPRecords, recordHPPayment, createExpense, getExpenses, verifyPassword, getNextHpCode, sendInvoiceReceipt } from '../../services/api';
@@ -125,7 +126,7 @@ const POSScreen = () => {
 
   const [accounts, setAccounts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-
+  const [posMobileTab, setPosMobileTab] = useState("products");
   const [loading, setLoading] = useState(false);
   const [checkingOut, setCheckingOut] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
@@ -349,7 +350,7 @@ const POSScreen = () => {
             data.customerNic || "",
             data.customerAddress || "",
           );
-          toast.info(`Returning customer: ${data.customerName || "found"} 👋`);
+          toast.info(`Returning customer: ${data.customerName || "found"}`);
         }
       } catch {
         // No match or lookup failed - leave fields as-is for new customer entry
@@ -729,7 +730,7 @@ const POSScreen = () => {
       setShowStartSession(false);
       setDirectOpeningAmount("");
       toast.success(
-        `New shift started 🟢 Opening float: Rs. ${openingCashAmount.toLocaleString("en-LK", { minimumFractionDigits: 2 })}`,
+        `New shift started Opening float: Rs. ${openingCashAmount.toLocaleString("en-LK", { minimumFractionDigits: 2 })}`,
       );
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to start new shift");
@@ -768,7 +769,7 @@ const POSScreen = () => {
       );
       if (Math.abs(variance) <= 0.01) {
         toast.success(
-          "Shop session settled & closed! ✅ Exact match (No variance)",
+          "Shop session settled & closed!  Exact match (No variance)",
         );
       } else if (variance < 0) {
         toast.warning(
@@ -1019,7 +1020,7 @@ const POSScreen = () => {
 
       if (exactMatch) {
         if (exactMatch.stock <= 0) {
-          toast.warning(`⚠️ "${exactMatch.name}" is OUT OF STOCK!`, {
+          toast.warning(`"${exactMatch.name}" is OUT OF STOCK!`, {
             autoClose: 2000,
           });
         }
@@ -1038,8 +1039,8 @@ const POSScreen = () => {
         playScanBeep();
         toast.success(
           matchedImei
-            ? `📱 Scanned Phone: ${exactMatch.name} (IMEI: ${matchedImei})`
-            : `🏷️ Added: ${exactMatch.name} — Rs. ${Number(exactMatch.price || 0).toLocaleString()}`,
+            ? `Scanned Phone: ${exactMatch.name} (IMEI: ${matchedImei})`
+            : `Added: ${exactMatch.name} — Rs. ${Number(exactMatch.price || 0).toLocaleString()}`,
           { autoClose: 1500 },
         );
         setSearchQuery("");
@@ -1055,7 +1056,7 @@ const POSScreen = () => {
         const { data } = await getProductByBarcode(raw.trim());
         if (data && data._id) {
           if (data.stock <= 0) {
-            toast.warning(`⚠️ "${data.name}" is OUT OF STOCK!`, {
+            toast.warning(`"${data.name}" is OUT OF STOCK!`, {
               autoClose: 2000,
             });
           }
@@ -1073,8 +1074,8 @@ const POSScreen = () => {
           playScanBeep();
           toast.success(
             matchedImei
-              ? `📱 Scanned Phone: ${data.name} (IMEI: ${matchedImei})`
-              : `🏷️ Added: ${data.name} — Rs. ${Number(data.price || 0).toLocaleString()}`,
+              ? `Scanned Phone: ${data.name} (IMEI: ${matchedImei})`
+              : `Added: ${data.name} — Rs. ${Number(data.price || 0).toLocaleString()}`,
             { autoClose: 1500 },
           );
           setSearchQuery("");
@@ -1143,7 +1144,7 @@ const POSScreen = () => {
 
     if (exactMatch) {
       if (exactMatch.stock <= 0) {
-        toast.warning(`⚠️ "${exactMatch.name}" is OUT OF STOCK!`, {
+        toast.warning(`"${exactMatch.name}" is OUT OF STOCK!`, {
           autoClose: 2000,
         });
       }
@@ -1159,8 +1160,8 @@ const POSScreen = () => {
       playScanBeep();
       toast.success(
         matchedImei
-          ? `📱 Added: ${exactMatch.name} (IMEI: ${matchedImei})`
-          : `🏷️ Added: ${exactMatch.name} — Rs. ${Number(exactMatch.price || 0).toLocaleString()}`,
+          ? `Added: ${exactMatch.name} (IMEI: ${matchedImei})`
+          : `Added: ${exactMatch.name} — Rs. ${Number(exactMatch.price || 0).toLocaleString()}`,
         { autoClose: 1500 },
       );
       setCartScanInput("");
@@ -1175,7 +1176,7 @@ const POSScreen = () => {
       const { data } = await getProductByBarcode(raw);
       if (data && data._id) {
         if (data.stock <= 0) {
-          toast.warning(`⚠️ "${data.name}" is OUT OF STOCK!`, {
+          toast.warning(`"${data.name}" is OUT OF STOCK!`, {
             autoClose: 2000,
           });
         }
@@ -1193,8 +1194,8 @@ const POSScreen = () => {
         playScanBeep();
         toast.success(
           matchedImei
-            ? `📱 Added: ${data.name} (IMEI: ${matchedImei})`
-            : `🏷️ Added: ${data.name} — Rs. ${Number(data.price || 0).toLocaleString()}`,
+            ? `Added: ${data.name} (IMEI: ${matchedImei})`
+            : `Added: ${data.name} — Rs. ${Number(data.price || 0).toLocaleString()}`,
           { autoClose: 1500 },
         );
         setCartScanInput("");
@@ -1319,7 +1320,7 @@ const POSScreen = () => {
         notes: hpPayForm.notes || "",
       });
 
-      toast.success("Installment payment recorded successfully! 💳");
+      toast.success("Installment payment recorded successfully!");
 
       // The API response is the fully updated HP record (totalPaid, balanceAmount,
       // payments[] all recalculated server-side) — apply it immediately so the
@@ -1494,7 +1495,7 @@ const POSScreen = () => {
           <div class="row" style="font-size: 12px; margin-top: 4px;"><span class="bold">REMAINING DUE BALANCE:</span><span class="bold">Rs. ${Number(Math.max(0, newBal)).toLocaleString("en-LK", { minimumFractionDigits: 2 })}</span></div>
 
           <div class="text-center">
-            <span class="status-badge">${newBal <= 0 ? "✓ DEBT FULLY SETTLED & CLEARED" : "PARTIAL SETTLEMENT - ACTIVE"}</span>
+            <span class="status-badge">${newBal <= 0 ? "DEBT FULLY SETTLED & CLEARED" : "PARTIAL SETTLEMENT - ACTIVE"}</span>
           </div>
 
           <div class="footer">
@@ -1538,7 +1539,7 @@ const POSScreen = () => {
         updatedOrder?.creditBalance !== undefined
           ? updatedOrder.creditBalance
           : Math.max(0, (selectedCreditOrder.creditBalance || 0) - payAmt);
-      toast.success("Debt settlement recorded successfully! 🏷️✅");
+      toast.success("Debt settlement recorded successfully!");
 
       // Auto-trigger thermal receipt print window
       setTimeout(() => {
@@ -1590,7 +1591,7 @@ const POSScreen = () => {
           posSession?.storeId,
         date: new Date().toISOString(),
       });
-      toast.success("Petty cash expense recorded! ☕💰");
+      toast.success("Petty cash expense recorded!");
       setShowPettyCashModal(false);
       setPettyCashForm({
         amount: "",
@@ -1661,7 +1662,7 @@ const POSScreen = () => {
         date: new Date().toISOString(),
       });
       toast.success(
-        `${isIncome ? "Money IN (Income)" : "Money OUT (Expense)"} recorded successfully! 💰`,
+        `${isIncome ? "Money IN (Income)" : "Money OUT (Expense)"} recorded successfully!`,
       );
       setBillsForm({
         type: "Expense",
@@ -1768,7 +1769,7 @@ const POSScreen = () => {
             <div style="font-size:11px; font-weight:bold; margin-top:4px; text-transform:uppercase;">OFFICIAL ${isIncome ? "INCOME VOUCHER" : "EXPENSE VOUCHER"}</div>
             <div style="font-size:9px;">Date: ${dateStr}</div>
           </div>
-          <div class="row"><span>Type:</span><span class="bold">${isIncome ? "🟢 Money IN" : "🔴 Money OUT"}</span></div>
+          <div class="row"><span>Type:</span><span class="bold">${isIncome ? "Money IN" : "Money OUT"}</span></div>
           <div class="row"><span>Category:</span><span class="bold">${billItem.category || "General"}</span></div>
           <div class="row"><span>Description:</span><span class="bold">${billItem.title || "N/A"}</span></div>
           <div class="row"><span>${isIncome ? "From Client:" : "Paid To:"}</span><span class="bold">${billItem.payee || "N/A"}</span></div>
@@ -1812,7 +1813,7 @@ const POSScreen = () => {
           <title>Counter Cash Ledger Report - ${dateStr}</title>
           <style>
             @page { size: A4 portrait; margin: 12mm; }
-            body { font-family: 'Segoe UI', Arial, sans-serif; color: #0f172a; margin: 0; padding: 0; }
+            body { font-family: 'Poppins', sans-serif; color: #0f172a; margin: 0; padding: 0; }
             .header { border-bottom: 2px solid #2563eb; padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-end; }
             .title { font-size: 20px; font-weight: 800; color: #1e3a8a; }
             .meta { font-size: 12px; color: #475569; text-align: right; }
@@ -1875,7 +1876,7 @@ const POSScreen = () => {
                     <tr>
                       <td>${i + 1}</td>
                       <td>${new Date(b.date || b.createdAt).toLocaleDateString("en-GB")} ${new Date(b.date || b.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</td>
-                      <td><span style="font-weight: 800; color: ${isIn ? "#166534" : "#991b1b"};">${isIn ? "🟢 Money IN" : "🔴 Money OUT"}</span></td>
+                      <td><span style="font-weight: 800; color: ${isIn ? "#166534" : "#991b1b"};">${isIn ? "Money IN" : "Money OUT"}</span></td>
                       <td><strong>${b.category || "General"}</strong></td>
                       <td>${b.title || "N/A"}</td>
                       <td>${b.payee || "-"}</td>
@@ -1918,7 +1919,7 @@ const POSScreen = () => {
       // Authorization successful!
       setShowReturnAuthModal(false);
       setReturnAuthPassword("");
-      toast.success("Return authorized successfully! 🔓");
+      toast.success("Return authorized successfully!");
 
       // Close invoice history modal if open and open Return modal
       setShowInvoiceSearchModal(false);
@@ -2259,7 +2260,7 @@ const POSScreen = () => {
           <div class="row" style="font-size: 12px; margin-top: 4px;"><span class="bold">REMAINING DUE BALANCE:</span><span class="bold">Rs. ${currentRemaining.toLocaleString("en-LK", { minimumFractionDigits: 2 })}</span></div>
 
           <div class="text-center">
-            <span class="status-badge">${isCompleted ? "✓ AGREEMENT FULLY SETTLED" : "PARTIAL SETTLEMENT - ACTIVE"}</span>
+            <span class="status-badge">${isCompleted ? "AGREEMENT FULLY SETTLED" : "PARTIAL SETTLEMENT - ACTIVE"}</span>
           </div>
 
           <div class="footer">
@@ -2325,7 +2326,7 @@ const POSScreen = () => {
 
     if (matchedProduct) {
       if (matchedProduct.stock <= 0) {
-        toast.warning(`⚠️ "${matchedProduct.name}" is OUT OF STOCK!`, {
+        toast.warning(`"${matchedProduct.name}" is OUT OF STOCK!`, {
           autoClose: 2000,
         });
       }
@@ -2344,8 +2345,8 @@ const POSScreen = () => {
       playScanBeep();
       toast.success(
         matchedImei
-          ? `📱 Scanned Phone: ${matchedProduct.name} (IMEI: ${matchedImei})`
-          : `🏷️ Added: ${matchedProduct.name} — Rs. ${Number(matchedProduct.price || 0).toLocaleString()}`,
+          ? `Scanned Phone: ${matchedProduct.name} (IMEI: ${matchedImei})`
+          : `Added: ${matchedProduct.name} — Rs. ${Number(matchedProduct.price || 0).toLocaleString()}`,
         { autoClose: 1500 },
       );
       return;
@@ -2356,7 +2357,7 @@ const POSScreen = () => {
       const { data } = await getProductByBarcode(raw);
       if (data && data._id) {
         if (data.stock <= 0) {
-          toast.warning(`⚠️ "${data.name}" is OUT OF STOCK!`, {
+          toast.warning(`"${data.name}" is OUT OF STOCK!`, {
             autoClose: 2000,
           });
         }
@@ -2374,8 +2375,8 @@ const POSScreen = () => {
         playScanBeep();
         toast.success(
           matchedImei
-            ? `📱 Scanned Phone: ${data.name} (IMEI: ${matchedImei})`
-            : `🏷️ Added: ${data.name} — Rs. ${Number(data.price || 0).toLocaleString()}`,
+            ? `Scanned Phone: ${data.name} (IMEI: ${matchedImei})`
+            : `Added: ${data.name} — Rs. ${Number(data.price || 0).toLocaleString()}`,
           { autoClose: 1500 },
         );
       }
@@ -2428,7 +2429,7 @@ const POSScreen = () => {
         description: data.description || "",
       });
       toast.success(
-        `Coupon applied: ${data.description || couponCode.toUpperCase()} 🎉`,
+        `Coupon applied: ${data.description || couponCode.toUpperCase()}`,
       );
       setCouponCode("");
     } catch (err) {
@@ -2796,10 +2797,10 @@ const POSScreen = () => {
       setShowInvoice(true);
       toast.success(
         isHP
-          ? "Installment/HP sale recorded! 📋"
+          ? "Installment/HP sale recorded!"
           : isCredit
-            ? "Credit sale recorded! 📋"
-            : "Sale completed! 🎉",
+            ? "Credit sale recorded!"
+            : "Sale completed!",
       );
       if (pos.sendWhatsappReceipt) {
         sendWhatsAppInvoice(data);
@@ -2807,7 +2808,7 @@ const POSScreen = () => {
       if (pos.sendSmsReceipt) {
         const smsRecipient = pos.customerPhone;
         sendInvoiceReceipt(data._id, { type: 'sms', recipient: smsRecipient })
-          .then(() => toast.success(`SMS receipt sent to ${smsRecipient} 📱`))
+          .then(() => toast.success(`SMS receipt sent to ${smsRecipient}`))
           .catch((err) => toast.error(err.response?.data?.message || 'SMS receipt failed to send — you can resend it from the invoice screen.'));
       }
       pos.clearCart();
@@ -2858,7 +2859,7 @@ const POSScreen = () => {
       });
       setLastOrder(data);
       setShowInvoice(true);
-      toast.success("Quotation generated! 📄");
+      toast.success("Quotation generated!");
     } catch (err) {
       toast.error(err.response?.data?.message || "Quotation failed");
     } finally {
@@ -3140,7 +3141,7 @@ const POSScreen = () => {
   const handleSettleFull = async (orderId) => {
     try {
       await settleCreditOrder(orderId, {});
-      toast.success("Credit fully settled! ✅");
+      toast.success("Credit fully settled!");
       fetchCreditOrders();
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to settle");
@@ -3271,7 +3272,7 @@ const POSScreen = () => {
                   textAlign: "center",
                 }}
               >
-                <div style={{ fontSize: "36px", marginBottom: "10px" }}>👥</div>
+                
                 <div
                   style={{
                     fontSize: "14px",
@@ -3311,7 +3312,7 @@ const POSScreen = () => {
                     boxShadow: "0 4px 12px rgba(37, 99, 235, 0.3)",
                   }}
                 >
-                  <span>🔄</span> Load Staff List
+                  Load Staff List
                 </button>
               </div>
             ) : (
@@ -3433,7 +3434,7 @@ const POSScreen = () => {
                             fontWeight: "bold",
                           }}
                         >
-                          🏪 {cashier.assignedStore.name}
+                           {cashier.assignedStore.name}
                         </div>
                       )}
                     </div>
@@ -3660,9 +3661,10 @@ const POSScreen = () => {
                   cursor: "pointer",
                   transition: "all 0.15s",
                 }}
-                className="hover:bg-slate-800 active:scale-95"
+                className="hover:bg-slate-800 active:scale-95 flex items-center justify-center"
+                title="Backspace"
               >
-                ⌫
+                <Delete size={18} />
               </button>
             </div>
 
@@ -3951,7 +3953,7 @@ const POSScreen = () => {
                     borderRadius: "6px",
                   }}
                 >
-                  📱 Scan IMEI
+                   Scan IMEI
                 </span>
                 <span
                   style={{
@@ -3960,7 +3962,7 @@ const POSScreen = () => {
                     borderRadius: "6px",
                   }}
                 >
-                  🏷️ Scan Barcode
+                   Scan Barcode
                 </span>
                 <span
                   style={{
@@ -3969,7 +3971,7 @@ const POSScreen = () => {
                     borderRadius: "6px",
                   }}
                 >
-                  🧾 Invoice No
+                   Invoice No
                 </span>
               </div>
             </div>
@@ -4098,7 +4100,7 @@ const POSScreen = () => {
                                   border: "1px solid #bbf7d0",
                                 }}
                               >
-                                ✓ Scanned Match
+                                 Scanned Match
                               </span>
                             )}
                           </div>
@@ -4268,187 +4270,188 @@ const POSScreen = () => {
 
       {/* Top Bar */}
       <header className="pos-topbar">
+        {/* Left: Brand + Store Branch + Shift Status */}
         <div className="pos-topbar-left">
-          <ShoppingCart size={26} className="pos-topbar-icon" />
-          <h1 className="pos-topbar-title">{brandName} POS</h1>
-        </div>
-        <div className="pos-topbar-center">
-          <span className="pos-topbar-store">
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div
+              style={{
+                width: "32px",
+                height: "32px",
+                borderRadius: "8px",
+                background: "#2563eb",
+                color: "#ffffff",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <ShoppingCart size={17} />
+            </div>
+            <span
+              style={{
+                fontSize: "14px",
+                fontWeight: "800",
+                color: "#0f172a",
+                letterSpacing: "-0.2px",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {brandName} <span style={{ color: "#2563eb" }}>POS</span>
+            </span>
+          </div>
+
+          <span
+            className="pos-topbar-store"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              padding: "2px 8px",
+              borderRadius: "6px",
+              fontSize: "11px",
+              fontWeight: "700",
+              background: "#f1f5f9",
+              color: "#475569",
+              border: "1px solid #e2e8f0",
+              textTransform: "uppercase",
+              letterSpacing: "0.4px",
+            }}
+          >
             {user?.assignedStoreName || "Store"}
           </span>
-        </div>
-        <div className="pos-topbar-right">
-          {/* Navigation / Switch to Client Web */}
-          <button
-            className="pos-topbar-btn"
-            onClick={() => navigate("/shop")}
-            title="Switch to Customer Web Store"
-            style={{
-              background: "#ecfdf5",
-              color: "#047857",
-              borderColor: "#a7f3d0",
-              fontWeight: "bold",
-            }}
-          >
-            <ExternalLink size={15} />
-            <span className="pos-topbar-btn-text">Client Web</span>
-          </button>
 
-          <button
-            className="pos-topbar-btn"
-            onClick={handleBack}
-            title="Leave POS & Return to Dashboard"
-            style={{
-              background: "#f8fafc",
-              color: "#334155",
-              borderColor: "#cbd5e1",
-              fontWeight: "bold",
-            }}
-          >
-            <ArrowLeft size={15} />
-            <span className="pos-topbar-btn-text">Leave</span>
-          </button>
+          <div
+            className="hidden md:block"
+            style={{ width: "1px", height: "16px", background: "#e2e8f0", margin: "0 2px" }}
+          />
 
-          {/* Shift & Daily Accounting */}
+          {/* Shift Status Pill */}
           {posSession ? (
             <span
               title={`Shift started at ${new Date(posSession.startedAt).toLocaleTimeString()}`}
               style={{
-                display: "flex",
+                display: "inline-flex",
                 alignItems: "center",
-                gap: "5px",
-                padding: "0.35rem 0.55rem",
-                borderRadius: "8px",
+                gap: "6px",
+                padding: "3px 10px",
+                borderRadius: "20px",
+                fontSize: "12px",
+                fontWeight: "600",
                 background: "#ecfdf5",
                 color: "#047857",
                 border: "1px solid #a7f3d0",
-                fontSize: "0.72rem",
-                fontWeight: "700",
                 whiteSpace: "nowrap",
               }}
             >
-              🟢 Shift Active —{" "}
-              {new Date(posSession.startedAt).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+              <span
+                style={{
+                  width: "6px",
+                  height: "6px",
+                  borderRadius: "50%",
+                  background: "#10b981",
+                  display: "inline-block",
+                }}
+              />
+              <span className="hidden md:inline">Shift Active</span>
+              <span style={{ fontSize: "11px", color: "#059669", fontFamily: "monospace" }}>
+                • {new Date(posSession.startedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              </span>
             </span>
           ) : (
             <span
               title="No active shift — start a new shift to take sales"
               style={{
-                display: "flex",
+                display: "inline-flex",
                 alignItems: "center",
-                gap: "5px",
-                padding: "0.35rem 0.55rem",
-                borderRadius: "8px",
+                gap: "6px",
+                padding: "3px 10px",
+                borderRadius: "20px",
+                fontSize: "12px",
+                fontWeight: "600",
                 background: "#fef2f2",
                 color: "#b91c1c",
                 border: "1px solid #fecaca",
-                fontSize: "0.72rem",
-                fontWeight: "700",
                 whiteSpace: "nowrap",
               }}
             >
-              🔴 Shift Closed
+              <span
+                style={{
+                  width: "6px",
+                  height: "6px",
+                  borderRadius: "50%",
+                  background: "#ef4444",
+                  display: "inline-block",
+                }}
+              />
+              <span>Shift Closed</span>
             </span>
           )}
+        </div>
+
+        {/* Right: Operational Actions + Tools + Cashier + Navigation */}
+        <div className="pos-topbar-right">
+          {/* Quick Counter Actions (Desktop) */}
           <button
-            className="pos-topbar-btn"
-            onClick={openEndSessionModal}
-            title="Close POS Session"
-          >
-            <Clock size={15} />
-            <span className="pos-topbar-btn-text">Close</span>
-          </button>
-          <button
-            className="pos-topbar-btn"
-            onClick={() => openBalanceModal(balanceDate)}
-            title="View Daily Balance Sheet"
-          >
-            <DollarSign size={15} />
-            <span className="pos-topbar-btn-text">Balance</span>
-          </button>
-          <button
-            className="pos-topbar-btn"
+            className="pos-topbar-action-btn pos-btn-invoices pos-topbar-btn-desktop-only"
             onClick={() => {
               setShowInvoiceSearchModal(true);
               handleFetchRecentInvoices("", true);
             }}
             title="Search & View Invoice Details"
-            style={{
-              background: "#e0e7ff",
-              color: "#3730a3",
-              borderColor: "#c7d2fe",
-              fontWeight: "bold",
-            }}
           >
-            <FileText size={15} />
-            <span className="pos-topbar-btn-text">Invoices</span>
+            <FileText size={14} style={{ color: "#4f46e5" }} />
+            <span>Invoices</span>
           </button>
 
-          {/* Direct Sales Features */}
           <button
-            className="pos-topbar-btn"
+            className="pos-topbar-action-btn pos-btn-return pos-topbar-btn-desktop-only"
+            onClick={() => handleInitiateReturnWithAuth()}
+            title="Return / Exchange Item"
+          >
+            <RefreshCw size={14} style={{ color: "#e11d48" }} />
+            <span>Return</span>
+          </button>
+
+          <button
+            className="pos-topbar-action-btn pos-btn-credit pos-topbar-btn-desktop-only"
             onClick={() => {
               setShowCreditSettleModal(true);
               handleSearchCreditOrders("");
             }}
             title="Settle Customer Credit"
-            style={{
-              background: "#fef3c7",
-              color: "#92400e",
-              borderColor: "#fde68a",
-              fontWeight: "bold",
-            }}
           >
-            <Clock size={15} />
-            <span className="pos-topbar-btn-text">Credit</span>
-          </button>
-          <button
-            className="pos-topbar-btn"
-            onClick={() => handleInitiateReturnWithAuth()}
-            title="Return / Exchange Item"
-            style={{
-              background: "#fef2f2",
-              color: "#991b1b",
-              borderColor: "#fee2e2",
-            }}
-          >
-            <RefreshCw size={15} />
-            <span className="pos-topbar-btn-text">Return</span>
-          </button>
-          <button
-            className="pos-topbar-btn"
-            onClick={() => setShowReloadModal(true)}
-            title="Reload & Bill Payments"
-            style={{
-              background: "#f0fdf4",
-              color: "#166534",
-              borderColor: "#bbf7d0",
-              fontWeight: "bold",
-            }}
-          >
-            <Smartphone size={15} />
-            <span className="pos-topbar-btn-text">Reload</span>
+            <Clock size={14} style={{ color: "#d97706" }} />
+            <span>Credit</span>
           </button>
 
-          {/* More Tools Dropdown */}
+          <button
+            className="pos-topbar-action-btn pos-btn-reload pos-topbar-btn-desktop-only"
+            onClick={() => setShowReloadModal(true)}
+            title="Reload & Bill Payments"
+          >
+            <Smartphone size={14} style={{ color: "#059669" }} />
+            <span>Reload</span>
+          </button>
+
+          <button
+            className="pos-topbar-action-btn pos-btn-balance pos-topbar-btn-desktop-only"
+            onClick={() => openBalanceModal(balanceDate)}
+            title="View Daily Balance Sheet"
+          >
+            <DollarSign size={14} style={{ color: "#0284c7" }} />
+            <span>Balance</span>
+          </button>
+
+          {/* Tools Menu (Dropdown) */}
           <div ref={toolsDropdownRef} style={{ position: "relative" }}>
             <button
-              className="pos-topbar-btn"
+              className="pos-topbar-action-btn pos-btn-tools"
               onClick={() => setShowToolsDropdown(!showToolsDropdown)}
-              title="More Counter Tools (HP, Trade-In, Petty Cash, Shift, Shortcuts)"
-              style={{
-                background: showToolsDropdown ? "#e0e7ff" : "#f8fafc",
-                color: "#3730a3",
-                borderColor: "#c7d2fe",
-                fontWeight: "bold",
-              }}
+              title="Counter Tools & Shift Operations"
             >
-              <Zap size={15} className="text-amber-500" />
-              <span className="pos-topbar-btn-text">Tools</span>
-              <ChevronDown size={13} />
+              <Zap size={14} style={{ color: "#7c3aed" }} />
+              <span>Tools</span>
+              <ChevronDown size={12} style={{ color: "#7c3aed" }} />
             </button>
 
             {showToolsDropdown && (
@@ -4458,40 +4461,84 @@ const POSScreen = () => {
                   top: "calc(100% + 6px)",
                   right: 0,
                   background: "#ffffff",
-                  border: "1.5px solid #cbd5e1",
+                  border: "1px solid #e2e8f0",
                   borderRadius: "12px",
-                  boxShadow: "0 12px 28px -4px rgba(0,0,0,0.18)",
+                  boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05)",
                   padding: "6px",
                   zIndex: 99999,
-                  minWidth: "220px",
+                  minWidth: "230px",
+                  maxHeight: "85vh",
+                  overflowY: "auto",
                   display: "flex",
                   flexDirection: "column",
-                  gap: "4px",
+                  gap: "2px",
                 }}
               >
+                {/* Mobile / Small screen quick access tools */}
+                <div className="lg:hidden flex flex-col gap-1 pb-1 mb-1 border-b border-slate-100">
+                  <button
+                    onClick={() => {
+                      setShowToolsDropdown(false);
+                      setShowInvoiceSearchModal(true);
+                      handleFetchRecentInvoices("", true);
+                    }}
+                    className="dropdown-menu-item"
+                  >
+                    <FileText size={15} style={{ color: "#64748b" }} />
+                    <span>Invoices & Receipts</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowToolsDropdown(false);
+                      handleInitiateReturnWithAuth();
+                    }}
+                    className="dropdown-menu-item"
+                  >
+                    <RefreshCw size={15} style={{ color: "#64748b" }} />
+                    <span>Return / Exchange</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowToolsDropdown(false);
+                      setShowCreditSettleModal(true);
+                      handleSearchCreditOrders("");
+                    }}
+                    className="dropdown-menu-item"
+                  >
+                    <Clock size={15} style={{ color: "#64748b" }} />
+                    <span>Credit Settle</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowToolsDropdown(false);
+                      setShowReloadModal(true);
+                    }}
+                    className="dropdown-menu-item"
+                  >
+                    <Smartphone size={15} style={{ color: "#64748b" }} />
+                    <span>Reload & Bills</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowToolsDropdown(false);
+                      openBalanceModal(balanceDate);
+                    }}
+                    className="dropdown-menu-item"
+                  >
+                    <DollarSign size={15} style={{ color: "#64748b" }} />
+                    <span>Daily Balance Sheet</span>
+                  </button>
+                </div>
+
                 <button
                   onClick={() => {
                     setShowToolsDropdown(false);
                     handleShiftSummary();
                   }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    padding: "9px 12px",
-                    borderRadius: "8px",
-                    border: "none",
-                    background: "#f0fdf4",
-                    color: "#166534",
-                    fontSize: "12px",
-                    fontWeight: "bold",
-                    cursor: "pointer",
-                    textAlign: "left",
-                    transition: "all 0.15s",
-                  }}
+                  className="dropdown-menu-item"
                 >
-                  <TrendingUp size={16} />
-                  <span>📈 Shift Summary</span>
+                  <TrendingUp size={15} style={{ color: "#059669" }} />
+                  <span>Shift Summary</span>
                 </button>
                 <button
                   onClick={() => {
@@ -4499,72 +4546,30 @@ const POSScreen = () => {
                     setShowHpQuickPayModal(true);
                     handleSearchHpRecords("");
                   }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    padding: "9px 12px",
-                    borderRadius: "8px",
-                    border: "none",
-                    background: "#fff7ed",
-                    color: "#c2410c",
-                    fontSize: "12px",
-                    fontWeight: "bold",
-                    cursor: "pointer",
-                    textAlign: "left",
-                    transition: "all 0.15s",
-                  }}
+                  className="dropdown-menu-item"
                 >
-                  <CreditCard size={16} />
-                  <span>💳 HP Installment Pay</span>
+                  <CreditCard size={15} style={{ color: "#2563eb" }} />
+                  <span>HP Installment Pay</span>
                 </button>
                 <button
                   onClick={() => {
                     setShowToolsDropdown(false);
                     setShowTradeInModal(true);
                   }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    padding: "9px 12px",
-                    borderRadius: "8px",
-                    border: "none",
-                    background: "#e0f2fe",
-                    color: "#0369a1",
-                    fontSize: "12px",
-                    fontWeight: "bold",
-                    cursor: "pointer",
-                    textAlign: "left",
-                    transition: "all 0.15s",
-                  }}
+                  className="dropdown-menu-item"
                 >
-                  <Smartphone size={16} />
-                  <span>📱 Trade-In Estimator</span>
+                  <Smartphone size={15} style={{ color: "#0891b2" }} />
+                  <span>Trade-In Estimator</span>
                 </button>
                 <button
                   onClick={() => {
                     setShowToolsDropdown(false);
                     setShowPettyCashModal(true);
                   }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    padding: "9px 12px",
-                    borderRadius: "8px",
-                    border: "none",
-                    background: "#fffbeb",
-                    color: "#92400e",
-                    fontSize: "12px",
-                    fontWeight: "bold",
-                    cursor: "pointer",
-                    textAlign: "left",
-                    transition: "all 0.15s",
-                  }}
+                  className="dropdown-menu-item"
                 >
-                  <DollarSign size={16} />
-                  <span>☕ Petty Cash Expense</span>
+                  <DollarSign size={15} style={{ color: "#d97706" }} />
+                  <span>Petty Cash Expense</span>
                 </button>
                 <button
                   onClick={() => {
@@ -4572,81 +4577,60 @@ const POSScreen = () => {
                     setShowBillsModal(true);
                     handleFetchRecentBills();
                   }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    padding: "9px 12px",
-                    borderRadius: "8px",
-                    border: "none",
-                    background: "#eff6ff",
-                    color: "#1d4ed8",
-                    fontSize: "12px",
-                    fontWeight: "bold",
-                    cursor: "pointer",
-                    textAlign: "left",
-                    transition: "all 0.15s",
-                  }}
+                  className="dropdown-menu-item"
                 >
-                  <DollarSign size={16} />
-                  <span>💰 Counter Cash Ledger (In/Out)</span>
+                  <DollarSign size={15} style={{ color: "#4f46e5" }} />
+                  <span>Cash In/Out Ledger</span>
                 </button>
                 <button
                   onClick={() => {
                     setShowToolsDropdown(false);
+                    openEndSessionModal();
+                  }}
+                  className="dropdown-menu-item"
+                  style={{ color: "#dc2626" }}
+                >
+                  <Clock size={15} style={{ color: "#ef4444" }} />
+                  <span>Close Current Shift</span>
+                </button>
+                <button
+                  className="dropdown-menu-item hidden md:flex"
+                  onClick={() => {
+                    setShowToolsDropdown(false);
                     setShowShortcutsHelp(true);
                   }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    padding: "9px 12px",
-                    borderRadius: "8px",
-                    border: "none",
-                    background: "#f8fafc",
-                    color: "#334155",
-                    fontSize: "12px",
-                    fontWeight: "bold",
-                    cursor: "pointer",
-                    textAlign: "left",
-                    transition: "all 0.15s",
-                  }}
                 >
-                  <span style={{ fontSize: "14px" }}>⌨️</span>
+                  <Clock size={15} style={{ color: "#94a3b8" }} />
                   <span>Keyboard Shortcuts (F1)</span>
                 </button>
               </div>
             )}
           </div>
 
+          <div
+            className="hidden sm:block"
+            style={{ width: "1px", height: "16px", background: "#e2e8f0", margin: "0 2px" }}
+          />
+
           {/* Cashier profile & Switch Cashier */}
           <div
-            className="pos-topbar-cashier"
+            className="pos-topbar-cashier-card pos-topbar-btn-desktop-only"
             title={`Logged in as ${user?.name || "User"} (${user?.role || "Staff"})`}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              padding: "4px 10px",
-              background: "#f8fafc",
-              borderRadius: "12px",
-              border: "1px solid #cbd5e1",
-            }}
           >
             <div
-              className="pos-topbar-avatar"
               style={{
                 width: "28px",
                 height: "28px",
                 borderRadius: "50%",
-                background: "linear-gradient(135deg, #2563eb, #1d4ed8)",
+                background: "#2563eb",
                 color: "#ffffff",
-                fontSize: "13px",
+                fontSize: "12px",
                 fontWeight: "bold",
                 overflow: "hidden",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                flexShrink: 0,
               }}
             >
               {user?.avatar ? (
@@ -4664,14 +4648,18 @@ const POSScreen = () => {
                 display: "flex",
                 flexDirection: "column",
                 lineHeight: "1.2",
+                textAlign: "left",
               }}
             >
               <span
-                className="pos-topbar-cashier-name"
                 style={{
-                  fontWeight: "800",
+                  fontWeight: "700",
                   fontSize: "12px",
                   color: "#1e293b",
+                  maxWidth: "90px",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
                 }}
               >
                 {user?.name}
@@ -4679,49 +4667,130 @@ const POSScreen = () => {
               <span
                 style={{
                   fontSize: "10px",
-                  color: "#3b82f6",
-                  fontWeight: "800",
+                  color: "#2563eb",
+                  fontWeight: "700",
                   textTransform: "uppercase",
                   letterSpacing: "0.3px",
                 }}
               >
                 {user?.role === "admin"
-                  ? "🛡️ ADMIN"
+                  ? "Admin"
                   : user?.role === "manager"
-                    ? "🏪 MANAGER"
+                    ? "Manager"
                     : user?.role === "cashier"
-                      ? "👤 CASHIER"
-                      : user?.role || "STAFF"}
+                      ? "Cashier"
+                      : user?.role || "Staff"}
               </span>
             </div>
+            <button
+              onClick={handleSwitchCashier}
+              title="Switch Cashier Profile"
+              style={{
+                border: "none",
+                background: "transparent",
+                color: "#94a3b8",
+                cursor: "pointer",
+                padding: "2px",
+                display: "flex",
+                alignItems: "center",
+                borderRadius: "4px",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#2563eb")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "#94a3b8")}
+            >
+              <Users size={13} />
+            </button>
           </div>
+
+          {/* Navigation / Switch to Client Web */}
           <button
-            className="pos-topbar-btn"
-            onClick={handleSwitchCashier}
-            title="Switch Cashier Profile"
+            className="pos-topbar-action-btn pos-btn-web pos-topbar-btn-desktop-only"
+            onClick={() => navigate("/shop")}
+            title="Switch to Customer Web Store"
+          >
+            <ExternalLink size={14} style={{ color: "#0d9488" }} />
+            <span>Web Store</span>
+          </button>
+
+          {/* Leave Button */}
+          <button
+            className="pos-topbar-action-btn"
+            onClick={handleBack}
+            title="Leave POS & Return to Dashboard"
             style={{
-              background: "#f5f3ff",
-              color: "#5b21b6",
-              borderColor: "#ddd6fe",
-              fontWeight: "bold",
+              background: "#f8fafc",
+              color: "#334155",
+              borderColor: "#cbd5e1",
             }}
           >
-            <Users size={15} />
-            <span className="pos-topbar-btn-text">Switch</span>
+            <ArrowLeft size={14} style={{ color: "#475569" }} />
+            <span className="hidden sm:inline">Leave</span>
           </button>
+
+          {/* Logout Button */}
           <button
-            className="pos-topbar-logout"
             onClick={handleLogout}
             title="Logout"
+            style={{
+              width: "32px",
+              height: "32px",
+              borderRadius: "8px",
+              border: "1px solid #e2e8f0",
+              background: "#ffffff",
+              color: "#94a3b8",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              transition: "all 0.15s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "#ef4444";
+              e.currentTarget.style.background = "#fef2f2";
+              e.currentTarget.style.borderColor = "#fecaca";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "#94a3b8";
+              e.currentTarget.style.background = "#ffffff";
+              e.currentTarget.style.borderColor = "#e2e8f0";
+            }}
           >
-            <LogOut size={16} />
+            <LogOut size={15} />
           </button>
         </div>
       </header>
 
       <div className="pos-main">
+        {/* Mobile View Switcher */}
+        <div className="lg:hidden flex border-b border-slate-200 bg-white p-2 gap-2 flex-shrink-0 w-full">
+          <button
+            type="button"
+            onClick={() => setPosMobileTab("products")}
+            className={`flex-1 py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+              posMobileTab === "products"
+                ? "bg-blue-600 text-white shadow-sm"
+                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+            }`}
+          >
+            <Package size={15} />
+            <span>Products ({products.length})</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setPosMobileTab("cart")}
+            className={`flex-1 py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+              posMobileTab === "cart"
+                ? "bg-blue-600 text-white shadow-sm"
+                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+            }`}
+          >
+            <ShoppingCart size={15} />
+            <span>Cart ({pos.cart.length})</span>
+          </button>
+        </div>
+
         {/* ──────── LEFT PANEL: Products ──────── */}
-        <div className="pos-products-panel">
+        <div className={`pos-products-panel ${posMobileTab === "cart" ? "pos-mobile-hidden" : ""}`}>
           {/* Search Bar */}
           <div className="pos-search-bar">
             <div className="pos-search-input-wrapper">
@@ -5025,9 +5094,27 @@ const POSScreen = () => {
           </div>
         )}
 
+          {/* Mobile Bottom Quick Cart Bar */}
+          {pos.cart.length > 0 && (
+            <div className="lg:hidden sticky bottom-0 p-3 bg-white/95 backdrop-blur-sm border-t border-slate-200 shadow-xl flex items-center justify-between gap-3 z-20">
+              <div>
+                <span className="text-xs text-slate-500 font-semibold">{pos.cart.length} item(s)</span>
+                <p className="text-sm font-bold text-slate-900 m-0">Rs. {(typeof pos.getGrandTotal === 'function' ? pos.getGrandTotal() : 0).toLocaleString()}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPosMobileTab("cart")}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-md flex items-center gap-1.5 cursor-pointer"
+              >
+                <span>View Cart</span>
+                <ShoppingCart size={14} />
+              </button>
+            </div>
+          )}
+
         {/* ──────── RIGHT PANEL: Cart ──────── */}
         <div
-          className="pos-cart-panel"
+          className={`pos-cart-panel ${posMobileTab === "products" ? "pos-mobile-hidden" : ""}`}
           style={
             pos.cart.length > 0
               ? { flex: "5.5", maxWidth: "680px", transition: "all 0.3s ease" }
@@ -5038,6 +5125,14 @@ const POSScreen = () => {
             <Receipt size={20} />
             <h2>Current Sale</h2>
             <span className="pos-cart-count">{pos.cart.length} items</span>
+            <button
+              type="button"
+              onClick={() => setPosMobileTab("products")}
+              className="lg:hidden ml-auto text-xs text-blue-600 font-bold flex items-center gap-1 py-1 px-2.5 rounded-lg bg-blue-50 border border-blue-200 cursor-pointer"
+            >
+              <ArrowLeft size={13} />
+              <span>Back</span>
+            </button>
           </div>
 
           {/* Cart Top Quick Barcode / IMEI Scanner */}
@@ -5051,7 +5146,7 @@ const POSScreen = () => {
               gap: "8px",
             }}
           >
-            <span style={{ fontSize: "15px" }}>⚡</span>
+            
             <input
               ref={cartScanRef}
               type="text"
@@ -5142,7 +5237,7 @@ const POSScreen = () => {
                               }}
                               title="Product Barcode / SKU"
                             >
-                              🏷️ {barcode}
+                               {barcode}
                             </span>
                           )}
                         </div>
@@ -5219,7 +5314,7 @@ const POSScreen = () => {
                           className="mt-2 bg-[#f8fafc] border border-gray-200 rounded-xl p-2.5 space-y-2 text-xs text-left"
                           style={{ width: "100%" }}
                         >
-                          <div className="flex justify-between items-center text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                          <div className="flex justify-between items-center text-xs font-bold text-gray-500 uppercase tracking-wider">
                             <span>IMEI Scan/Selection Required</span>
                             <span
                               className={
@@ -5238,7 +5333,7 @@ const POSScreen = () => {
                               {selectedImeis.map((im) => (
                                 <span
                                   key={im}
-                                  className="bg-primary-blue text-white text-[10px] font-bold px-2 py-0.5 rounded-lg flex items-center gap-1 shadow-sm"
+                                  className="bg-primary-blue text-white text-xs font-bold px-2 py-0.5 rounded-lg flex items-center gap-1 shadow-sm"
                                 >
                                   {im}
                                   <button
@@ -5286,12 +5381,12 @@ const POSScreen = () => {
                                     ))}
                                   </select>
                                 ) : (
-                                  <span className="text-[10px] text-red-500 italic flex-grow py-1">
+                                  <span className="text-xs text-red-500 italic flex-grow py-1">
                                     No available IMEIs in stock.
                                   </span>
                                 )
                               ) : (
-                                <div className="flex-grow text-[10px] text-gray-500 italic py-1">
+                                <div className="flex-grow text-xs text-gray-500 italic py-1">
                                   Enter manual IMEI
                                 </div>
                               )}
@@ -5406,8 +5501,8 @@ const POSScreen = () => {
                                 }}
                               >
                                 {isVerified
-                                  ? "✓ Barcode Verified"
-                                  : "🏷️ Accessory Barcode / SKU"}
+                                  ? "Barcode Verified"
+                                  : "Accessory Barcode / SKU"}
                               </span>
                               {registeredBarcode && (
                                 <span
@@ -5453,7 +5548,7 @@ const POSScreen = () => {
                                   if (!val) return;
                                   pos.setCartItemBarcode(item.productId, val);
                                   toast.success(
-                                    `✓ Barcode verified for ${item.name}!`,
+                                    `Barcode verified for ${item.name}!`,
                                   );
                                   e.target.value = "";
                                 }
@@ -5542,7 +5637,7 @@ const POSScreen = () => {
                 )}
                 {couponDiscount > 0 && (
                   <div className="pos-total-row pos-discount-row">
-                    <span>🎟️ Coupon ({pos.coupon?.code})</span>
+                    <span> Coupon ({pos.coupon?.code})</span>
                     <span>-Rs. {couponDiscount.toFixed(2)}</span>
                     <button
                       className="pos-discount-clear"
@@ -5589,7 +5684,7 @@ const POSScreen = () => {
                 {exchangeCredit > 0 && (
                   <div className="pos-total-row pos-discount-row">
                     <span style={{ color: "#2563eb", fontWeight: 600 }}>
-                      🔄 Return Credit (Applied)
+                       Return Credit (Applied)
                     </span>
                     <span style={{ color: "#2563eb", fontWeight: 700 }}>
                       -Rs. {exchangeCredit.toFixed(2)}
@@ -5608,7 +5703,7 @@ const POSScreen = () => {
                 )}
                 {loyaltyDiscount > 0 && (
                   <div className="pos-total-row pos-discount-row">
-                    <span>🏆 Loyalty ({pos.loyaltyPointsToRedeem} pts)</span>
+                    <span> Loyalty ({pos.loyaltyPointsToRedeem} pts)</span>
                     <span>-Rs. {loyaltyDiscount.toFixed(2)}</span>
                     <button
                       className="pos-discount-clear"
@@ -5688,7 +5783,7 @@ const POSScreen = () => {
                     color: showLoyalty ? "#92400e" : undefined,
                   }}
                 >
-                  🏆{" "}
+                  {" "}
                   {pos.loyaltyPointsToRedeem > 0
                     ? `Points Applied: ${pos.loyaltyPointsToRedeem}`
                     : "Redeem Loyalty Points"}
@@ -5733,7 +5828,7 @@ const POSScreen = () => {
                             fontWeight: 600,
                           }}
                         >
-                          ✅ {pos.loyaltyPointsToRedeem} pts = Rs.
+                           {pos.loyaltyPointsToRedeem} pts = Rs.
                           {pos.loyaltyDiscount}
                         </span>
                         <button
@@ -5951,7 +6046,7 @@ const POSScreen = () => {
                               gap: "6px",
                             }}
                           >
-                            <span>⚠️</span> Outstanding Debt:{" "}
+                            Outstanding Debt:{" "}
                             <strong>
                               Rs.{" "}
                               {Number(
@@ -6613,7 +6708,7 @@ const POSScreen = () => {
                             marginBottom: "10px",
                           }}
                         >
-                          🔖 Reference Code: {hpNextCode}
+                           Reference Code: {hpNextCode}
                         </div>
                       )}
 
@@ -6626,7 +6721,7 @@ const POSScreen = () => {
                             marginBottom: "10px",
                           }}
                         >
-                          📦 Product Barcode:{" "}
+                           Product Barcode:{" "}
                           {pos.cart
                             .filter((i) => i.barcode || i.sku)
                             .map((i) => i.barcode || i.sku)
@@ -6829,7 +6924,7 @@ const POSScreen = () => {
                                 border: "1px solid #fde68a",
                               }}
                             >
-                              🔒 Auto Today
+                               Auto Today
                             </span>
                           </label>
                           <input
@@ -7466,7 +7561,7 @@ const POSScreen = () => {
                     checked={isCredit}
                     onChange={(e) => setIsCredit(e.target.checked)}
                   />
-                  <span>📋 Credit Sale (Pay Later)</span>
+                  <span> Credit Sale (Pay Later)</span>
                 </label>
                 {isCredit && (
                   <div className="pos-credit-fields">
@@ -7537,7 +7632,7 @@ const POSScreen = () => {
                 }}
               >
                 <Zap size={18} />
-                <span>⚡ FAST CASH INVOICE & PRINT</span>
+                <span> FAST CASH INVOICE & PRINT</span>
                 <span
                   style={{
                     fontSize: "11px",
@@ -7578,7 +7673,7 @@ const POSScreen = () => {
                     borderRadius: "12px",
                   }}
                 >
-                  <span style={{ fontWeight: "bold" }}>📄 QUOTATION</span>
+                  <span style={{ fontWeight: "bold" }}> QUOTATION</span>
                   <span
                     style={{
                       fontSize: "10px",
@@ -8065,7 +8160,7 @@ const POSScreen = () => {
                           gap: "6px",
                         }}
                       >
-                        <span>📊</span> SYSTEM CALCULATED CASH MOVEMENTS
+                        SYSTEM CALCULATED CASH MOVEMENTS
                       </div>
 
                       <div
@@ -8294,7 +8389,7 @@ const POSScreen = () => {
                             marginBottom: "8px",
                           }}
                         >
-                          🌐 NON-DRAWER DIGITAL & CREDIT PAYMENTS
+                           NON-DRAWER DIGITAL & CREDIT PAYMENTS
                         </div>
                         <div
                           style={{
@@ -8312,7 +8407,7 @@ const POSScreen = () => {
                             }}
                           >
                             <span style={{ color: "#38bdf8" }}>
-                              🏛️ Bank / Online:
+                               Bank / Online:
                             </span>
                             <div
                               style={{
@@ -8339,7 +8434,7 @@ const POSScreen = () => {
                             }}
                           >
                             <span style={{ color: "#60a5fa" }}>
-                              💳 Card (POS):
+                               Card (POS):
                             </span>
                             <div
                               style={{
@@ -8364,7 +8459,7 @@ const POSScreen = () => {
                             }}
                           >
                             <span style={{ color: "#fbbf24" }}>
-                              📋 Credit (Due):
+                               Credit (Due):
                             </span>
                             <div
                               style={{
@@ -8389,7 +8484,7 @@ const POSScreen = () => {
                             }}
                           >
                             <span style={{ color: "#c084fc" }}>
-                              🧾 Cheques:
+                               Cheques:
                             </span>
                             <div
                               style={{
@@ -8438,7 +8533,7 @@ const POSScreen = () => {
                             letterSpacing: "0.5px",
                           }}
                         >
-                          🔢 PHYSICAL CASH COUNT
+                           PHYSICAL CASH COUNT
                         </div>
                         <button
                           type="button"
@@ -8455,8 +8550,8 @@ const POSScreen = () => {
                           }}
                         >
                           {useDirectCount
-                            ? "🪙 Switch to Denominations"
-                            : "💵 Enter Total Amount Directly"}
+                            ? "Switch to Denominations"
+                            : "Enter Total Amount Directly"}
                         </button>
                       </div>
 
@@ -8470,7 +8565,7 @@ const POSScreen = () => {
                               fontWeight: "bold",
                             }}
                           >
-                            ⚠️ Enter NUMBER OF NOTES (Not total Rupees):
+                             Enter NUMBER OF NOTES (Not total Rupees):
                           </div>
                           <div
                             style={{
@@ -8576,7 +8671,7 @@ const POSScreen = () => {
                               boxShadow: "0 4px 12px rgba(29, 78, 216, 0.4)",
                             }}
                           >
-                            💾 Save & Apply Counted Cash (Rs.{" "}
+                             Save & Apply Counted Cash (Rs.{" "}
                             {countedCash.toLocaleString("en-LK", {
                               minimumFractionDigits: 2,
                             })}
@@ -8705,22 +8800,22 @@ const POSScreen = () => {
                       >
                         {!hasCounted ? (
                           <span>
-                            ⏳ NOT YET COUNTED — enter the drawer count above
+                            NOT YET COUNTED — enter the drawer count above
                           </span>
                         ) : Math.abs(discrepancy) <= 0.01 ? (
                           <span>
-                            ✅ BALANCED: Exact match (Rs. 0.00 discrepancy)
+                             BALANCED: Exact match (Rs. 0.00 discrepancy)
                           </span>
                         ) : discrepancy < 0 ? (
                           <span>
-                            ⚠️ ARREARS / SHORTAGE: - Rs.{" "}
+                             ARREARS / SHORTAGE: - Rs.{" "}
                             {Math.abs(discrepancy).toLocaleString("en-LK", {
                               minimumFractionDigits: 2,
                             })}
                           </span>
                         ) : (
                           <span>
-                            💡 OVERAGE / EXCESS: + Rs.{" "}
+                             OVERAGE / EXCESS: + Rs.{" "}
                             {discrepancy.toLocaleString("en-LK", {
                               minimumFractionDigits: 2,
                             })}
@@ -8794,7 +8889,7 @@ const POSScreen = () => {
                         textAlign: "center",
                       }}
                     >
-                      🔒 Shift already closed — start a new shift from the
+                       Shift already closed — start a new shift from the
                       prompt after closing, or reopen this dialog once one
                       begins.
                     </div>
@@ -8983,7 +9078,7 @@ const POSScreen = () => {
                     : "0 4px 15px rgba(16, 185, 129, 0.4)",
                 }}
               >
-                {startingSession ? "Starting Shift..." : "🟢 Start New Shift"}
+                {startingSession ? "Starting Shift..." : "Start New Shift"}
               </button>
 
               <button
@@ -9167,7 +9262,7 @@ const POSScreen = () => {
                       color: "#ffffff",
                     }}
                   >
-                    ⚖️ Shift Register & Cash Drawer
+                     Shift Register & Cash Drawer
                   </span>
                 </div>
 
@@ -9284,7 +9379,7 @@ const POSScreen = () => {
                           textTransform: "uppercase",
                         }}
                       >
-                        💵 Counter Cash Sales
+                         Counter Cash Sales
                       </div>
                       <div
                         style={{
@@ -9329,7 +9424,7 @@ const POSScreen = () => {
                           textTransform: "uppercase",
                         }}
                       >
-                        🏛️ Bank & Online Transfer
+                         Bank & Online Transfer
                       </div>
                       <div
                         style={{
@@ -9384,7 +9479,7 @@ const POSScreen = () => {
                           textTransform: "uppercase",
                         }}
                       >
-                        💳 Card (POS Terminal)
+                         Card (POS Terminal)
                       </div>
                       <div
                         style={{
@@ -9429,7 +9524,7 @@ const POSScreen = () => {
                           textTransform: "uppercase",
                         }}
                       >
-                        📋 Credit Sales (Due)
+                         Credit Sales (Due)
                       </div>
                       <div
                         style={{
@@ -9473,7 +9568,7 @@ const POSScreen = () => {
                           textTransform: "uppercase",
                         }}
                       >
-                        📱 Mobile Phones Sales
+                         Mobile Phones Sales
                       </div>
                       <div
                         style={{
@@ -9517,7 +9612,7 @@ const POSScreen = () => {
                           textTransform: "uppercase",
                         }}
                       >
-                        🎧 Accessories & Other
+                         Accessories & Other
                       </div>
                       <div
                         style={{
@@ -9561,7 +9656,7 @@ const POSScreen = () => {
                           textTransform: "uppercase",
                         }}
                       >
-                        ⚡ Reload & Scratch Cards
+                         Reload & Scratch Cards
                       </div>
                       <div
                         style={{
@@ -9607,7 +9702,7 @@ const POSScreen = () => {
                           textTransform: "uppercase",
                         }}
                       >
-                        📑 HP Installment Cash
+                         HP Installment Cash
                       </div>
                       <div
                         style={{
@@ -9653,7 +9748,7 @@ const POSScreen = () => {
                           textTransform: "uppercase",
                         }}
                       >
-                        ☕ Petty Cash Out (Expenses)
+                         Petty Cash Out (Expenses)
                       </div>
                       <div
                         style={{
@@ -9699,7 +9794,7 @@ const POSScreen = () => {
                           textTransform: "uppercase",
                         }}
                       >
-                        💰 Other Cash In (Ledger)
+                         Other Cash In (Ledger)
                       </div>
                       <div
                         style={{
@@ -9758,7 +9853,7 @@ const POSScreen = () => {
                                 textTransform: "uppercase",
                               }}
                             >
-                              ⚖️ Cash Settlement
+                               Cash Settlement
                             </div>
                             <div
                               style={{
@@ -9802,10 +9897,10 @@ const POSScreen = () => {
                             }}
                           >
                             {isShort
-                              ? "📉 Cash Short"
+                              ? "Cash Short"
                               : isOver
-                                ? "📈 Cash Over"
-                                : "✅ Balanced"}
+                                ? "Cash Over"
+                                : "Balanced"}
                           </div>
                           <div
                             style={{
@@ -9855,7 +9950,7 @@ const POSScreen = () => {
                           textTransform: "uppercase",
                         }}
                       >
-                        🏦 Total Day Revenue
+                         Total Day Revenue
                       </div>
                       <div
                         style={{
@@ -10082,9 +10177,9 @@ const POSScreen = () => {
                             }}
                           >
                             {!hasCount
-                              ? "⏳ Not Yet Counted"
+                              ? "Not Yet Counted"
                               : Math.abs(diff) <= 0.01
-                                ? "✅ Exact Match (No Discrepancy)"
+                                ? "Exact Match (No Discrepancy)"
                                 : diff > 0
                                   ? `+ Rs. ${diff.toLocaleString("en-LK", { minimumFractionDigits: 2 })} (Overage)`
                                   : `- Rs. ${Math.abs(diff).toLocaleString("en-LK", { minimumFractionDigits: 2 })} (Shortage)`}
@@ -10110,7 +10205,7 @@ const POSScreen = () => {
                               marginBottom: "8px",
                             }}
                           >
-                            🪙 SAVED PHYSICAL DENOMINATION BREAKDOWN:
+                             SAVED PHYSICAL DENOMINATION BREAKDOWN:
                           </div>
                           <div
                             style={{
@@ -10161,7 +10256,7 @@ const POSScreen = () => {
                             fontStyle: "italic",
                           }}
                         >
-                          📝 Handover Note:{" "}
+                           Handover Note:{" "}
                           <strong>{balanceSessionData.varianceNote}</strong>
                         </div>
                       )}
@@ -10395,7 +10490,7 @@ const POSScreen = () => {
           >
             <div className="pos-credit-panel-header">
               <div>
-                <h2>📋 Credit Orders</h2>
+                <h2> Credit Orders</h2>
                 <p>{creditOrders.length} pending credit sales</p>
               </div>
               <button
@@ -10412,7 +10507,7 @@ const POSScreen = () => {
                 </div>
               ) : creditOrders.length === 0 ? (
                 <div className="pos-credit-empty">
-                  <p>✅</p>
+                  <p>Completed</p>
                   <p>No pending credit orders</p>
                 </div>
               ) : (
@@ -10706,7 +10801,7 @@ const POSScreen = () => {
                       letterSpacing: "-0.3px",
                     }}
                   >
-                    Quick Installment (HP) Payment 💳
+                    Quick Installment (HP) Payment 
                   </h3>
                   <p
                     style={{
@@ -10893,7 +10988,7 @@ const POSScreen = () => {
                           marginTop: "2px",
                         }}
                       >
-                        📞 {rec.customer?.phone} | Due:{" "}
+                         {rec.customer?.phone} | Due:{" "}
                         <strong style={{ color: "#d97706" }}>
                           Rs.{" "}
                           {(rec.remainingBalance !== undefined
@@ -11087,13 +11182,13 @@ const POSScreen = () => {
                     }}
                   >
                     <span>
-                      📞 Customer Phone:{" "}
+                       Customer Phone:{" "}
                       <strong style={{ color: "#0f172a" }}>
                         {selectedHpRecord.customer?.phone || "N/A"}
                       </strong>
                     </span>
                     <span>
-                      🪪 NIC:{" "}
+                       NIC:{" "}
                       <strong style={{ color: "#0f172a" }}>
                         {selectedHpRecord.customer?.nic || "N/A"}
                       </strong>
@@ -11122,7 +11217,7 @@ const POSScreen = () => {
                           textTransform: "uppercase",
                         }}
                       >
-                        📌 Fixed Monthly Installment
+                         Fixed Monthly Installment
                       </div>
                       <div
                         style={{
@@ -11165,7 +11260,7 @@ const POSScreen = () => {
                           cursor: "pointer",
                         }}
                       >
-                        ⚡ Fill 1-Month (Rs.{" "}
+                         Fill 1-Month (Rs.{" "}
                         {Number(
                           selectedHpRecord.installmentAmount || 0,
                         ).toLocaleString()}
@@ -11199,7 +11294,7 @@ const POSScreen = () => {
                           cursor: "pointer",
                         }}
                       >
-                        ⚡ Fill Full Balance
+                         Fill Full Balance
                       </button>
                     </div>
                   </div>
@@ -11223,7 +11318,7 @@ const POSScreen = () => {
                             marginBottom: "6px",
                           }}
                         >
-                          📜 Payment History ({selectedHpRecord.payments.length}{" "}
+                           Payment History ({selectedHpRecord.payments.length}{" "}
                           Payments):
                         </div>
                         <div
@@ -11312,9 +11407,9 @@ const POSScreen = () => {
                         outline: "none",
                       }}
                     >
-                      <option value="Cash">💵 Cash</option>
-                      <option value="Card">💳 Card</option>
-                      <option value="Bank Transfer">🏛️ Bank Transfer</option>
+                      <option value="Cash"> Cash</option>
+                      <option value="Card"> Card</option>
+                      <option value="Bank Transfer"> Bank Transfer</option>
                     </select>
                   </div>
                   <div>
@@ -11379,7 +11474,7 @@ const POSScreen = () => {
                         marginBottom: "6px",
                       }}
                     >
-                      💵 Customer Given Cash (Rs.)
+                       Customer Given Cash (Rs.)
                     </label>
                     <input
                       type="number"
@@ -11416,7 +11511,7 @@ const POSScreen = () => {
                         marginBottom: "6px",
                       }}
                     >
-                      🔄 Change to Return
+                       Change to Return
                     </label>
                     <div
                       style={{
@@ -11468,7 +11563,7 @@ const POSScreen = () => {
                       marginBottom: "6px",
                     }}
                   >
-                    💰 Amount to Pay (Rs.) *
+                     Amount to Pay (Rs.) *
                   </label>
                   <input
                     type="number"
@@ -11559,7 +11654,7 @@ const POSScreen = () => {
                   fontWeight: "600",
                 }}
               >
-                ⚠️ No active HP agreement found matching "
+                 No active HP agreement found matching "
                 <strong style={{ color: "#0f172a" }}>{hpSearchInput}</strong>"
               </div>
             ) : null}
@@ -11591,7 +11686,7 @@ const POSScreen = () => {
                       fontSize: "15px",
                     }}
                   >
-                    ✅ Payment Recorded Successfully!
+                     Payment Recorded Successfully!
                   </span>
                   <button
                     onClick={handlePrintHpReceipt}
@@ -11852,7 +11947,7 @@ const POSScreen = () => {
                       color: "#92400e",
                     }}
                   >
-                    ⚠️ This payment will fully settle and CLOSE this HP
+                     This payment will fully settle and CLOSE this HP
                     installment (Remaining Due → Rs. 0.00).
                   </div>
                 )}
@@ -11959,7 +12054,7 @@ const POSScreen = () => {
                     fontSize: "22px",
                   }}
                 >
-                  📋
+                  
                 </div>
                 <div>
                   <h3
@@ -11970,7 +12065,7 @@ const POSScreen = () => {
                       color: "#0f172a",
                     }}
                   >
-                    Customer Credit Collection 🏷️
+                    Customer Credit Collection 
                   </h3>
                   <p
                     style={{
@@ -12101,7 +12196,7 @@ const POSScreen = () => {
                       color: "#92400e",
                     }}
                   >
-                    📋 Found {creditOrdersList.length} Unpaid Bill(s)
+                     Found {creditOrdersList.length} Unpaid Bill(s)
                   </div>
                   <div
                     style={{
@@ -12168,7 +12263,7 @@ const POSScreen = () => {
                             marginTop: "2px",
                           }}
                         >
-                          📞 {ord.customerPhone || "N/A"} | Date:{" "}
+                           {ord.customerPhone || "N/A"} | Date:{" "}
                           {new Date(ord.createdAt).toLocaleDateString("en-GB")}{" "}
                           | Total: Rs.{" "}
                           {Number(ord.totalAmount || 0).toLocaleString()} |
@@ -12376,7 +12471,7 @@ const POSScreen = () => {
                     }}
                   >
                     <div>
-                      📞 Customer Phone:{" "}
+                       Customer Phone:{" "}
                       <strong style={{ color: "#0f172a" }}>
                         {selectedCreditOrder.customerPhone || "N/A"}
                       </strong>
@@ -12400,7 +12495,7 @@ const POSScreen = () => {
                         cursor: "pointer",
                       }}
                     >
-                      ⚡ 1-Click Full Due (Rs.{" "}
+                       1-Click Full Due (Rs.{" "}
                       {Number(
                         selectedCreditOrder.creditBalance || 0,
                       ).toLocaleString()}
@@ -12486,9 +12581,9 @@ const POSScreen = () => {
                         outline: "none",
                       }}
                     >
-                      <option value="Cash">💵 Cash</option>
-                      <option value="Card">💳 Card</option>
-                      <option value="Bank Transfer">🏛️ Bank Transfer</option>
+                      <option value="Cash"> Cash</option>
+                      <option value="Card"> Card</option>
+                      <option value="Bank Transfer"> Bank Transfer</option>
                     </select>
                   </div>
                 </div>
@@ -12654,7 +12749,7 @@ const POSScreen = () => {
         onApplyDiscount={(amount, label) => {
           pos.setDiscount(amount, "fixed");
           toast.success(
-            `Trade-In discount of LKR ${amount.toLocaleString()} applied to cart! 📱`,
+            `Trade-In discount of LKR ${amount.toLocaleString()} applied to cart!`,
           );
         }}
       />
@@ -12691,7 +12786,7 @@ const POSScreen = () => {
               <div
                 style={{ display: "flex", alignItems: "center", gap: "10px" }}
               >
-                <span style={{ fontSize: "24px" }}>☕</span>
+                
                 <div>
                   <h3
                     style={{
@@ -12935,7 +13030,7 @@ const POSScreen = () => {
                     fontSize: "22px",
                   }}
                 >
-                  💰
+                  
                 </div>
                 <div>
                   <h3
@@ -13035,7 +13130,7 @@ const POSScreen = () => {
                       : "none",
                 }}
               >
-                <span>🟢 Money IN (Income / Cash Received +)</span>
+                <span> Money IN (Income / Cash Received +)</span>
               </button>
 
               <button
@@ -13071,7 +13166,7 @@ const POSScreen = () => {
                       : "none",
                 }}
               >
-                <span>🔴 Money OUT (Expense / Cash Paid -)</span>
+                <span> Money OUT (Expense / Cash Paid -)</span>
               </button>
             </div>
 
@@ -13100,8 +13195,8 @@ const POSScreen = () => {
                 }}
               >
                 {billsForm.type === "Income"
-                  ? "➕ Record New Money IN (Income Entry)"
-                  : "➖ Record New Money OUT (Expense Entry)"}
+                  ? "Record New Money IN (Income Entry)"
+                  : "Record New Money OUT (Expense Entry)"}
               </div>
 
               <div
@@ -13142,37 +13237,37 @@ const POSScreen = () => {
                     {billsForm.type === "Income" ? (
                       <>
                         <option value="Service Charge / Fee">
-                          🛠️ Service / Repair Charge Income
+                           Service / Repair Charge Income
                         </option>
                         <option value="Reload Commission / Cash In">
-                          ⚡ Reload Commission / Cash In
+                           Reload Commission / Cash In
                         </option>
                         <option value="Trade-In / Scrap Sale">
-                          📱 Trade-In / Scrap Device Sale
+                           Trade-In / Scrap Device Sale
                         </option>
                         <option value="Customer Payment / Income">
-                          💵 Customer Fee / Misc Income
+                           Customer Fee / Misc Income
                         </option>
                       </>
                     ) : (
                       <>
                         <option value="Utility Bill">
-                          💡 Utility Bill (Electricity / Water / Internet)
+                           Utility Bill (Electricity / Water / Internet)
                         </option>
                         <option value="Service / Repair Expense">
-                          🛠️ External Technician / Repair Cost
+                           External Technician / Repair Cost
                         </option>
                         <option value="Shop Rent & Expenses">
-                          🏬 Shop Rent & Maintenance
+                           Shop Rent & Maintenance
                         </option>
                         <option value="Supplier Payment">
-                          📦 Supplier / Stock Purchase
+                           Supplier / Stock Purchase
                         </option>
                         <option value="Tea & Refreshments">
-                          ☕ Tea & Counter Refreshments
+                           Tea & Counter Refreshments
                         </option>
                         <option value="Other Expense">
-                          💵 Other Outgoing Expense
+                           Other Outgoing Expense
                         </option>
                       </>
                     )}
@@ -13326,9 +13421,9 @@ const POSScreen = () => {
                       fontWeight: "600",
                     }}
                   >
-                    <option value="Cash">💵 Cash (Affects Drawer)</option>
-                    <option value="Card">💳 Card</option>
-                    <option value="Bank Transfer">🏛️ Bank Transfer</option>
+                    <option value="Cash"> Cash (Affects Drawer)</option>
+                    <option value="Card"> Card</option>
+                    <option value="Bank Transfer"> Bank Transfer</option>
                   </select>
                 </div>
               </div>
@@ -13371,7 +13466,7 @@ const POSScreen = () => {
                 >
                   {submittingBill
                     ? "Saving Record..."
-                    : `💾 Save ${billsForm.type === "Income" ? "Income (+)" : "Expense (-)"} & Update Balance Report`}
+                    : `Save ${billsForm.type === "Income" ? "Income (+)" : "Expense (-)"} & Update Balance Report`}
                 </button>
               </div>
             </form>
@@ -13598,7 +13693,7 @@ const POSScreen = () => {
                                   color: isIn ? "#166534" : "#991b1b",
                                 }}
                               >
-                                {isIn ? "🟢 Money IN" : "🔴 Money OUT"}
+                                {isIn ? "Money IN" : "Money OUT"}
                               </span>
                             </td>
                             <td
@@ -13668,7 +13763,7 @@ const POSScreen = () => {
                                   gap: "4px",
                                 }}
                               >
-                                👁️ View Voucher
+                                 View Voucher
                               </button>
                             </td>
                           </tr>
@@ -13716,7 +13811,7 @@ const POSScreen = () => {
               <div
                 style={{ display: "flex", alignItems: "center", gap: "8px" }}
               >
-                <span style={{ fontSize: "20px" }}>📜</span>
+                
                 <div>
                   <h4
                     style={{
@@ -13807,8 +13902,8 @@ const POSScreen = () => {
                   }}
                 >
                   {selectedVoucherForPreview.type === "Income"
-                    ? "🟢 OFFICIAL MONEY IN VOUCHER"
-                    : "🔴 OFFICIAL MONEY OUT VOUCHER"}
+                    ? "OFFICIAL MONEY IN VOUCHER"
+                    : "OFFICIAL MONEY OUT VOUCHER"}
                 </div>
               </div>
 
@@ -13976,7 +14071,7 @@ const POSScreen = () => {
                   boxShadow: "0 4px 12px rgba(37, 99, 235, 0.3)",
                 }}
               >
-                <Printer size={16} /> 🖨️ Print Thermal Slip
+                <Printer size={16} />  Print Thermal Slip
               </button>
             </div>
           </div>
@@ -14018,7 +14113,7 @@ const POSScreen = () => {
               <div
                 style={{ display: "flex", alignItems: "center", gap: "10px" }}
               >
-                <span style={{ fontSize: "22px" }}>📄</span>
+                
                 <div>
                   <h3
                     style={{
@@ -14300,7 +14395,7 @@ const POSScreen = () => {
                               color: isIn ? "#166534" : "#991b1b",
                             }}
                           >
-                            {isIn ? "🟢 Money IN" : "🔴 Money OUT"}
+                            {isIn ? "Money IN" : "Money OUT"}
                           </td>
                           <td
                             style={{
@@ -14389,7 +14484,7 @@ const POSScreen = () => {
                   boxShadow: "0 4px 12px rgba(37, 99, 235, 0.3)",
                 }}
               >
-                <Printer size={16} /> 🖨️ Print / Save as PDF
+                <Printer size={16} />  Print / Save as PDF
               </button>
             </div>
           </div>
@@ -14432,7 +14527,7 @@ const POSScreen = () => {
                   color: "#dc2626",
                 }}
               >
-                🔐
+                
               </div>
               <h3
                 style={{
@@ -14561,7 +14656,7 @@ const POSScreen = () => {
                 >
                   {verifyingReturnPassword
                     ? "Verifying..."
-                    : "🔓 Unlock Return"}
+                    : "Unlock Return"}
                 </button>
               </div>
             </form>
@@ -14601,7 +14696,7 @@ const POSScreen = () => {
               <div
                 style={{ display: "flex", alignItems: "center", gap: "10px" }}
               >
-                <span style={{ fontSize: "24px" }}>⌨️</span>
+                
                 <div>
                   <h3
                     style={{
@@ -15239,7 +15334,7 @@ const POSScreen = () => {
                               fontWeight: "600",
                             }}
                           >
-                            🕒 {invDate}
+                             {invDate}
                           </span>
                         </div>
                         <div
@@ -15260,7 +15355,7 @@ const POSScreen = () => {
                               border: "1px solid #cbd5e1",
                             }}
                           >
-                            💳 {payMethod}
+                             {payMethod}
                           </span>
                           {inv.isCredit && (
                             <span
@@ -15300,7 +15395,7 @@ const POSScreen = () => {
                               color: "#0f172a",
                             }}
                           >
-                            👤 {custName}{" "}
+                             {custName}{" "}
                             {custPhone && (
                               <span
                                 style={{ color: "#475569", fontWeight: "600" }}
@@ -15316,7 +15411,7 @@ const POSScreen = () => {
                               marginTop: "4px",
                             }}
                           >
-                            📦 {itemsCount} Item(s):{" "}
+                             {itemsCount} Item(s):{" "}
                             {inv.items
                               ?.map(
                                 (it) =>
@@ -15753,7 +15848,7 @@ const POSScreen = () => {
                     fontSize: "22px",
                   }}
                 >
-                  💳
+                  
                 </div>
                 <div>
                   <h3
@@ -16157,7 +16252,7 @@ const POSScreen = () => {
                         textTransform: "uppercase",
                       }}
                     >
-                      🔀 Payment Allocation (Split Payments)
+                       Payment Allocation (Split Payments)
                     </label>
                     <span
                       style={{
@@ -16208,13 +16303,13 @@ const POSScreen = () => {
                             color: "#1e293b",
                           }}
                         >
-                          <option value="cash">💵 Cash</option>
-                          <option value="card">💳 Card</option>
+                          <option value="cash"> Cash</option>
+                          <option value="card"> Card</option>
                           <option value="bank_transfer">
-                            🏛️ Bank Transfer
+                             Bank Transfer
                           </option>
-                          <option value="cheque">🧾 Cheque</option>
-                          <option value="koko">📱 Koko</option>
+                          <option value="cheque"> Cheque</option>
+                          <option value="koko"> Koko</option>
                         </select>
 
                         {p.method !== "cash" && (
@@ -16347,7 +16442,7 @@ const POSScreen = () => {
                         color: "#065f46",
                       }}
                     >
-                      💵 Cash Amount Tendered (Given by Customer)
+                       Cash Amount Tendered (Given by Customer)
                     </label>
                     <span
                       style={{
@@ -16436,7 +16531,7 @@ const POSScreen = () => {
                       color: "#92400e",
                     }}
                   >
-                    📋 Credit Sale Details (Pay Later)
+                     Credit Sale Details (Pay Later)
                   </h4>
                   <div
                     style={{
@@ -16496,19 +16591,19 @@ const POSScreen = () => {
               <div style={{ display: 'flex', gap: '16px', alignItems: 'center', background: '#f8fafc', padding: '12px 16px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: '700', color: '#334155', cursor: 'pointer' }}>
                   <input type="checkbox" checked={pos.printReceipt} onChange={(e) => pos.setReceiptOptions({ sendWhatsappReceipt: pos.sendWhatsappReceipt, sendSmsReceipt: pos.sendSmsReceipt, sendReceiptEmail: pos.sendReceiptEmail, receiptEmail: pos.receiptEmail, printReceipt: e.target.checked })} />
-                  🖨️ Print Thermal Receipt
+                   Print Thermal Receipt
                 </label>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: '700', color: '#334155', cursor: 'pointer' }}>
                   <input type="checkbox" checked={pos.sendWhatsappReceipt} onChange={(e) => pos.setReceiptOptions({ sendWhatsappReceipt: e.target.checked, sendSmsReceipt: pos.sendSmsReceipt, sendReceiptEmail: pos.sendReceiptEmail, receiptEmail: pos.receiptEmail, printReceipt: pos.printReceipt })} />
-                  💬 Send Receipt via WhatsApp
+                   Send Receipt via WhatsApp
                 </label>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: '700', color: '#334155', cursor: 'pointer' }}>
                   <input type="checkbox" checked={pos.sendSmsReceipt} onChange={(e) => pos.setReceiptOptions({ sendWhatsappReceipt: pos.sendWhatsappReceipt, sendSmsReceipt: e.target.checked, sendReceiptEmail: pos.sendReceiptEmail, receiptEmail: pos.receiptEmail, printReceipt: pos.printReceipt })} />
-                  📱 Send Receipt via SMS
+                   Send Receipt via SMS
                 </label>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: '700', color: '#334155', cursor: 'pointer' }}>
                   <input type="checkbox" checked={pos.sendReceiptEmail} onChange={(e) => pos.setReceiptOptions({ sendWhatsappReceipt: pos.sendWhatsappReceipt, sendSmsReceipt: pos.sendSmsReceipt, sendReceiptEmail: e.target.checked, receiptEmail: pos.receiptEmail, printReceipt: pos.printReceipt })} />
-                  📧 Send Email Receipt
+                   Send Email Receipt
                 </label>
                 {pos.customerPhone && (
                   <button
@@ -16587,7 +16682,7 @@ const POSScreen = () => {
                 }}
               >
                 <Zap size={20} />
-                <span>🚀 COMPLETE SALE & PRINT RECEIPT</span>
+                <span> COMPLETE SALE & PRINT RECEIPT</span>
               </button>
             </div>
           </div>

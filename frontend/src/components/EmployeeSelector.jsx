@@ -107,14 +107,14 @@ const EmployeeSelector = ({
 
       {multiple && allowSelectAll && (
         <div className="flex items-center justify-between px-3 py-2 border-b border-slate-100 bg-slate-50/60">
-          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
             {value.length} of {employees.length} selected
           </span>
           <div className="flex gap-2">
-            <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={selectAll} className="text-[10px] font-bold text-brand-indigo hover:text-indigo-800 bg-brand-indigo/10 px-2.5 py-1 rounded-lg transition-colors cursor-pointer">
+            <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={selectAll} className="text-xs font-bold text-brand-indigo hover:text-indigo-800 bg-brand-indigo/10 px-2.5 py-1 rounded-lg transition-colors cursor-pointer">
               Select All
             </button>
-            <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={clearAll} className="text-[10px] font-bold text-slate-500 hover:text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg transition-colors cursor-pointer">
+            <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={clearAll} className="text-xs font-bold text-slate-500 hover:text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg transition-colors cursor-pointer">
               Clear All
             </button>
           </div>
@@ -149,7 +149,7 @@ const EmployeeSelector = ({
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-slate-800 truncate m-0">{emp.name}</p>
-                  <p className="text-[10px] text-slate-400 font-semibold truncate m-0">
+                  <p className="text-xs text-slate-400 font-semibold truncate m-0">
                     {emp.role}{emp.employeeInfo?.department ? ` · ${emp.employeeInfo.department}` : ''}{emp.email ? ` · ${emp.email}` : ''}
                   </p>
                 </div>
@@ -168,7 +168,7 @@ const EmployeeSelector = ({
         {multiple && selectedEmployees.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-2">
             {selectedEmployees.map((emp) => (
-              <span key={emp._id} className="inline-flex items-center gap-1 bg-brand-indigo/10 text-brand-indigo text-[11px] font-bold pl-2.5 pr-1.5 py-1 rounded-full">
+              <span key={emp._id} className="inline-flex items-center gap-1 bg-brand-indigo/10 text-brand-indigo text-xs font-bold pl-2.5 pr-1.5 py-1 rounded-full">
                 {emp.name}
                 <button type="button" onClick={(e) => remove(emp._id, e)} className="hover:text-indigo-900">
                   <X size={12} />
@@ -195,14 +195,14 @@ const EmployeeSelector = ({
           ) : multiple ? (
             <>
               {selectedEmployees.slice(0, 3).map((emp) => (
-                <span key={emp._id} className="inline-flex items-center gap-1 bg-brand-indigo/10 text-brand-indigo text-[10px] font-bold pl-2 pr-1 py-0.5 rounded-full">
+                <span key={emp._id} className="inline-flex items-center gap-1 bg-brand-indigo/10 text-brand-indigo text-xs font-bold pl-2 pr-1 py-0.5 rounded-full">
                   {emp.name}
                   <span role="button" onClick={(e) => remove(emp._id, e)} className="hover:text-indigo-900">
                     <X size={10} />
                   </span>
                 </span>
               ))}
-              {value.length > 3 && <span className="text-[10px] font-bold text-slate-400 self-center">+{value.length - 3} more</span>}
+              {value.length > 3 && <span className="text-xs font-bold text-slate-400 self-center">+{value.length - 3} more</span>}
             </>
           ) : (
             <span className="text-slate-800 truncate">{selectedEmployees[0]?.name}</span>

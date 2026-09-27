@@ -46,9 +46,9 @@ const ALLOWED_DENOMS_LKR = [5000, 1000, 500, 100, 50, 20];
 const calcDenomsTotal = (lines = []) =>
   (lines || []).reduce((s, l) => s + (Number(l.denom || 0) * Number(l.qty || 0)), 0);
 
-// @desc    Get active POS session
-// @route   GET /api/pos/session/active
-// @access  Private/Cashier/Manager/Admin
+// @desc Get active POS session
+// @route GET /api/pos/session/active
+// @access Private/Cashier/Manager/Admin
 const getActiveSession = async (req, res, next) => {
   try {
     const storeId = await resolveStoreId(req.user);
@@ -58,9 +58,9 @@ const getActiveSession = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Start POS session (opening cash + denominations)
-// @route   POST /api/pos/session/start
-// @access  Private/Cashier/Manager/Admin
+// @desc Start POS session (opening cash + denominations)
+// @route POST /api/pos/session/start
+// @access Private/Cashier/Manager/Admin
 const startSession = async (req, res, next) => {
   try {
     const storeId = await resolveStoreId(req.user);
@@ -91,9 +91,9 @@ const startSession = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    End POS session (closing cash count + reconciliation)
-// @route   POST /api/pos/session/end
-// @access  Private/Cashier/Manager/Admin
+// @desc End POS session (closing cash count + reconciliation)
+// @route POST /api/pos/session/end
+// @access Private/Cashier/Manager/Admin
 const endSession = async (req, res, next) => {
   try {
     const storeId = await resolveStoreId(req.user);
@@ -335,9 +335,9 @@ const endSession = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Get products for POS
-// @route   GET /api/pos/products
-// @access  Private/Cashier/Manager/Admin
+// @desc Get products for POS
+// @route GET /api/pos/products
+// @access Private/Cashier/Manager/Admin
 const getPosProducts = async (req, res, next) => {
   try {
     const storeId = await resolveStoreId(req.user);
@@ -387,9 +387,9 @@ const getPosProducts = async (req, res, next) => {
   }
 };
 
-// @desc    Look up a product by barcode or IMEI or SKU
-// @route   GET /api/pos/products/barcode/:code
-// @access  Private/Cashier/Manager/Admin
+// @desc Look up a product by barcode or IMEI or SKU
+// @route GET /api/pos/products/barcode/:code
+// @access Private/Cashier/Manager/Admin
 const getProductByBarcode = async (req, res, next) => {
   try {
     const storeId = await resolveStoreId(req.user);
@@ -446,9 +446,9 @@ const getProductByBarcode = async (req, res, next) => {
   }
 };
 
-// @desc    Create a quotation
-// @route   POST /api/pos/quotation
-// @access  Private/Cashier/Manager/Admin
+// @desc Create a quotation
+// @route POST /api/pos/quotation
+// @access Private/Cashier/Manager/Admin
 const createQuotation = async (req, res, next) => {
   try {
     const { items, customerName, customerPhone, discount, discountType, notes } = req.body;
@@ -510,9 +510,9 @@ const createQuotation = async (req, res, next) => {
 };
 
 
-// @desc    Process POS checkout
-// @route   POST /api/pos/checkout
-// @access  Private/Cashier
+// @desc Process POS checkout
+// @route POST /api/pos/checkout
+// @access Private/Cashier
 const posCheckout = async (req, res, next) => {
   try {
     const {
@@ -995,9 +995,9 @@ const posCheckout = async (req, res, next) => {
 };
 
 
-// @desc    Get POS orders for today's shift
-// @route   GET /api/pos/orders
-// @access  Private/Cashier
+// @desc Get POS orders for today's shift
+// @route GET /api/pos/orders
+// @access Private/Cashier
 const getPosOrders = async (req, res, next) => {
   try {
     let startOfDay, endOfDay;
@@ -1466,9 +1466,9 @@ const getPosOrders = async (req, res, next) => {
   }
 };
 
-// @desc    Get single POS order (invoice)
-// @route   GET /api/pos/orders/:id
-// @access  Private/Cashier
+// @desc Get single POS order (invoice)
+// @route GET /api/pos/orders/:id
+// @access Private/Cashier
 const getPosOrderById = async (req, res, next) => {
   try {
     const order = await Order.findById(req.params.id)
@@ -1492,9 +1492,9 @@ const getPosOrderById = async (req, res, next) => {
   }
 };
 
-// @desc    Get cashier-wise sales report
-// @route   GET /api/pos/cashier-report
-// @access  Private/Admin/Manager
+// @desc Get cashier-wise sales report
+// @route GET /api/pos/cashier-report
+// @access Private/Admin/Manager
 const getCashierSalesReport = async (req, res, next) => {
   try {
     const { startDate, endDate } = req.query;
@@ -1560,9 +1560,9 @@ const getCashierSalesReport = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Get credit orders (unpaid/partial)
-// @route   GET /api/pos/credit-orders
-// @access  Private/Cashier/Manager/Admin
+// @desc Get credit orders (unpaid/partial)
+// @route GET /api/pos/credit-orders
+// @access Private/Cashier/Manager/Admin
 const getCreditOrders = async (req, res, next) => {
   try {
     const storeId = await resolveStoreId(req.user);
@@ -1616,9 +1616,9 @@ const getCreditOrders = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Get customer credit summary by phone number
-// @route   GET /api/pos/customer-credit/:phone
-// @access  Private/Cashier/Manager/Admin
+// @desc Get customer credit summary by phone number
+// @route GET /api/pos/customer-credit/:phone
+// @access Private/Cashier/Manager/Admin
 const getCustomerCreditSummary = async (req, res, next) => {
   try {
     const rawPhone = (req.params.phone || '').trim();
@@ -1664,9 +1664,9 @@ const getCustomerCreditSummary = async (req, res, next) => {
   }
 };
 
-// @desc    Look up a returning customer's saved details by phone (for checkout auto-fill)
-// @route   GET /api/pos/customer-lookup/:phone
-// @access  Private (cashier, manager, admin)
+// @desc Look up a returning customer's saved details by phone (for checkout auto-fill)
+// @route GET /api/pos/customer-lookup/:phone
+// @access Private (cashier, manager, admin)
 const getCustomerByPhone = async (req, res, next) => {
   try {
     const rawPhone = (req.params.phone || '').trim();
@@ -1699,9 +1699,9 @@ const getCustomerByPhone = async (req, res, next) => {
   }
 };
 
-// @desc    Settle credit order (mark remaining as paid)
-// @route   PUT /api/pos/credit-orders/:id/settle
-// @access  Private/Cashier/Manager/Admin
+// @desc Settle credit order (mark remaining as paid)
+// @route PUT /api/pos/credit-orders/:id/settle
+// @access Private/Cashier/Manager/Admin
 const settleCreditOrder = async (req, res, next) => {
   try {
     const order = await Order.findById(req.params.id);
@@ -1771,9 +1771,9 @@ const settleCreditOrder = async (req, res, next) => {
 };
 
 
-// @desc    Get POS order by invoice number, IMEI, or Barcode
-// @route   GET /api/pos/orders/invoice/:invoiceNumber
-// @access  Private/Cashier/Manager/Admin
+// @desc Get POS order by invoice number, IMEI, or Barcode
+// @route GET /api/pos/orders/invoice/:invoiceNumber
+// @access Private/Cashier/Manager/Admin
 const getPosOrderByInvoice = async (req, res, next) => {
   try {
     const rawInvoice = req.params.invoiceNumber || '';
@@ -1892,9 +1892,9 @@ const getPosOrderByInvoice = async (req, res, next) => {
   }
 };
 
-// @desc    Send receipt via SMS or Email manually
-// @route   POST /api/pos/orders/:id/send-receipt
-// @access  Private/Cashier/Manager/Admin
+// @desc Send receipt via SMS or Email manually
+// @route POST /api/pos/orders/:id/send-receipt
+// @access Private/Cashier/Manager/Admin
 const sendReceipt = async (req, res, next) => {
   try {
     const { type, recipient } = req.body;
@@ -1919,7 +1919,7 @@ const sendReceipt = async (req, res, next) => {
         .join('\n');
       const imeiList = (order.items || [])
         .filter((item) => Array.isArray(item.imei) && item.imei.length > 0)
-        .map((item) => `📱 IMEI (${item.name}): ${item.imei.join(', ')}`)
+        .map((item) => `IMEI (${item.name}): ${item.imei.join(', ')}`)
         .join('\n');
       const baseUrl = (process.env.FRONTEND_URL || 'https://mobixa-official.vercel.app').replace(/\/$/, '');
       const warrantyImei = order.items?.[0]?.imei?.[0] || invoiceNo;

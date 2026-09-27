@@ -41,10 +41,10 @@ export default function CustomerFooter() {
                 />
               </div>
               <div className="flex flex-col">
-                <span className="font-extrabold text-xl tracking-tight text-white leading-none">
+                <span className="font-bold text-xl tracking-tight text-white leading-none">
                   Mobixa
                 </span>
-                <span className="text-[10px] font-semibold text-slate-400 tracking-wider mt-1">
+                <span className="text-xs font-semibold text-slate-400 tracking-wider mt-1">
                   MOBILE SHOP ERP
                 </span>
               </div>
@@ -191,15 +191,15 @@ export default function CustomerFooter() {
           <div className="flex items-center gap-4 text-slate-400">
             <span className="text-slate-400 font-medium">Accepted Payments:</span>
             <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-md text-[11px] font-semibold text-slate-300">
+              <span className="flex items-center gap-1 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-md text-xs font-semibold text-slate-300">
                 <CreditCard className="w-3 h-3 text-blue-400" />
                 Card
               </span>
-              <span className="flex items-center gap-1 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-md text-[11px] font-semibold text-slate-300">
+              <span className="flex items-center gap-1 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-md text-xs font-semibold text-slate-300">
                 <Building className="w-3 h-3 text-emerald-400" />
                 Bank
               </span>
-              <span className="flex items-center gap-1 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-md text-[11px] font-semibold text-slate-300">
+              <span className="flex items-center gap-1 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-md text-xs font-semibold text-slate-300">
                 <Banknote className="w-3 h-3 text-amber-400" />
                 Cash
               </span>

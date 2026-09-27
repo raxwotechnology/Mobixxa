@@ -8,9 +8,9 @@ import { getSalesPredictions } from '../../services/api';
 import { toast } from 'react-toastify';
 
 const PERIOD_OPTIONS = [
-  { key: 'daily', label: 'Daily', icon: '📅' },
-  { key: 'weekly', label: 'Weekly', icon: '📆' },
-  { key: 'monthly', label: 'Monthly', icon: '🗓️' },
+  { key: 'daily', label: 'Daily', icon: '' },
+  { key: 'weekly', label: 'Weekly', icon: '' },
+  { key: 'monthly', label: 'Monthly', icon: '' },
 ];
 
 const AdminPredictions = () => {
@@ -39,7 +39,7 @@ const AdminPredictions = () => {
         <div className="flex items-center justify-center min-h-[400px] text-slate-400">
           <div className="text-center">
             <Brain size={48} className="text-brand-fuchsia mb-4 mx-auto animate-pulse" />
-            <p className="text-[10px] font-black uppercase tracking-wider text-brand-indigo">Analyzing {period} sales data...</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-brand-indigo">Analyzing {period} sales data...</p>
           </div>
         </div>
       </DashboardLayout>
@@ -49,7 +49,7 @@ const AdminPredictions = () => {
   if (!data) {
     return (
       <DashboardLayout navItems={navItems} title="AI Predictions">
-        <div className="text-center p-12 text-[10px] font-black uppercase tracking-wider text-slate-400">Failed to load prediction data</div>
+        <div className="text-center p-12 text-xs font-bold uppercase tracking-wider text-slate-400">Failed to load prediction data</div>
       </DashboardLayout>
     );
   }
@@ -65,65 +65,71 @@ const AdminPredictions = () => {
 
   return (
     <DashboardLayout navItems={navItems} title="AI Predictions">
-      <div className="animate-fade-in space-y-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-brand-indigo/10 to-brand-fuchsia/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
-          <div>
-            <div className="flex items-center gap-3 mb-1">
-              <div className="w-10 h-10 rounded-2xl bg-brand-fuchsia/10 flex items-center justify-center text-brand-fuchsia">
-                <Brain size={20} strokeWidth={2.5} />
-              </div>
-              <h1 className="text-2xl font-semibold text-slate-900 m-0">AI Sales Predictions</h1>
+      <div className="ds-page">
+        <div className="ds-page-header">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700">
+              <Brain size={20} strokeWidth={2} />
             </div>
-            <p className="text-[10px] font-normal uppercase tracking-wider text-slate-500 mt-2 m-0">Statistical forecasting — {period} view</p>
+            <div>
+              <h1 className="ds-page-title">AI Sales Predictions</h1>
+              <p className="ds-page-subtitle">Statistical forecasting & trend analysis — {period} view</p>
+            </div>
           </div>
 
           {/* Period Selector */}
-          <div className="flex gap-2 bg-white/40 p-2 rounded-2xl backdrop-blur-sm border border-white/40 shadow-sm w-fit">
+          <div className="ds-tab-bar">
             {PERIOD_OPTIONS.map((p) => (
               <button
                 key={p.key}
                 onClick={() => setPeriod(p.key)}
-                className={`px-4 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer ${
-                  period === p.key ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-white hover:text-slate-900'
-                }`}
+                className={`ds-tab-btn ${period === p.key ? 'active' : ''}`}
               >
-                <span>{p.icon}</span> {p.label}
+                {p.label}
               </button>
             ))}
           </div>
         </div>
 
         {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            { label: `${periodLabel} Forecast`, value: `Rs. ${data.summary.nextMonthPrediction.toLocaleString()}`, icon: DollarSign, colorClass: 'text-brand-fuchsia', bgClass: 'bg-teal-50/50 border border-teal-100/60' },
-            { label: `Avg ${period === 'daily' ? 'Daily' : period === 'weekly' ? 'Weekly' : 'Monthly'}`, value: `Rs. ${data.summary.avgMonthlyRevenue.toLocaleString()}`, icon: BarChart3, colorClass: 'text-brand-indigo', bgClass: 'bg-slate-50/60 border border-slate-200/60' },
-            { label: 'Growth Rate', value: `${data.growthRate > 0 ? '+' : ''}${data.growthRate}%`, icon: TrendIcon, colorClass: trendColorClass, bgClass: trendBgClass },
-            { label: 'Forecast Status', value: trendLabel, icon: Brain, colorClass: trendColorClass, bgClass: trendBgClass },
-          ].map((c, i) => (
-            <div key={i} className="glass-card rounded-2xl p-6 relative overflow-hidden group">
-              <div className="flex items-center gap-3 mb-3 relative">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${c.bgClass} ${c.colorClass}`}>
-                  <c.icon size={18} strokeWidth={2.5} />
-                </div>
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">{c.label}</span>
-              </div>
-              <p className={`text-2xl font-black ${c.colorClass} relative m-0`}>{c.value}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="ds-stat">
+            <span className="ds-stat-label">{periodLabel} Forecast</span>
+            <div className="ds-stat-value text-slate-900">Rs. {data.summary.nextMonthPrediction.toLocaleString()}</div>
+            <p className="ds-stat-sub">Projected gross revenue</p>
+          </div>
+          <div className="ds-stat">
+            <span className="ds-stat-label">Avg {period === 'daily' ? 'Daily' : period === 'weekly' ? 'Weekly' : 'Monthly'}</span>
+            <div className="ds-stat-value text-slate-900">Rs. {data.summary.avgMonthlyRevenue.toLocaleString()}</div>
+            <p className="ds-stat-sub">Historical run rate</p>
+          </div>
+          <div className="ds-stat">
+            <span className={`ds-stat-label ${data.growthRate >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>Growth Rate</span>
+            <div className={`ds-stat-value ${data.growthRate >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+              {data.growthRate > 0 ? '+' : ''}{data.growthRate}%
             </div>
-          ))}
+            <p className="ds-stat-sub">Compared to previous period</p>
+          </div>
+          <div className="ds-stat">
+            <span className="ds-stat-label">Forecast Status</span>
+            <div className="ds-stat-value text-slate-900 flex items-center gap-1.5">
+              <TrendIcon size={18} className={trendColorClass} />
+              <span>{trendLabel}</span>
+            </div>
+            <p className="ds-stat-sub">Trend trajectory</p>
+          </div>
         </div>
 
         {/* Revenue Chart */}
-        <div className="bg-white/60 backdrop-blur-md rounded-3xl border border-white/40 p-6 shadow-sm">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-            <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider">Revenue — Actual vs Predicted ({period})</h3>
-            <div className="flex gap-4 text-[10px] font-black uppercase tracking-wider text-slate-500">
-              <span className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-sm bg-brand-indigo"></span> Actual
+        <div className="ds-card">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3 pb-3 border-b border-slate-100">
+            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider m-0">Revenue — Actual vs Predicted ({period})</h3>
+            <div className="flex gap-4 text-xs font-medium text-slate-500">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-sm bg-slate-900"></span> Actual
               </span>
-              <span className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-sm bg-orange-400"></span> Predicted
+              <span className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-sm bg-amber-500"></span> Predicted
               </span>
             </div>
           </div>
@@ -131,18 +137,18 @@ const AdminPredictions = () => {
             {allData.slice(-30).map((d, i) => (
               <div key={i} className="flex flex-col items-center flex-1 min-w-[28px] group relative">
                 <div
-                  className={`w-full max-w-[28px] rounded-t-md transition-all duration-300 ${
+                  className={`w-full max-w-[28px] rounded-t transition-all ${
                     d.isPrediction
-                      ? 'bg-gradient-to-t from-orange-400 to-orange-300 opacity-90'
-                      : 'bg-gradient-to-t from-brand-indigo to-indigo-400'
-                  } hover:opacity-100 hover:shadow-lg`}
+                      ? 'bg-amber-400 hover:bg-amber-500'
+                      : 'bg-slate-900 hover:bg-slate-800'
+                  }`}
                   style={{ height: `${Math.max(4, (d.revenue / maxRevenue) * 160)}px` }}
                 >
-                  <div className="opacity-0 group-hover:opacity-100 absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] font-black px-2 py-1 rounded-lg pointer-events-none whitespace-nowrap transition-opacity z-10">
+                  <div className="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[0.65rem] font-bold px-2 py-1 rounded pointer-events-none whitespace-nowrap transition-opacity z-10">
                     Rs. {d.revenue.toLocaleString()}
                   </div>
                 </div>
-                <span className="text-[9px] font-black text-slate-400 mt-2 -rotate-45 origin-top-left absolute -bottom-6 whitespace-nowrap">
+                <span className="text-[0.65rem] text-slate-400 mt-2 -rotate-45 origin-top-left absolute -bottom-6 whitespace-nowrap font-medium">
                   {d.label}
                 </span>
               </div>
@@ -151,57 +157,56 @@ const AdminPredictions = () => {
         </div>
 
         {/* Forecast Breakdown */}
-        <div className="bg-white/60 backdrop-blur-md rounded-3xl border border-white/40 p-6 shadow-sm">
-          <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider mb-6">
+        <div className="ds-card">
+          <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-4 pb-2 border-b border-slate-100 m-0">
             {period === 'daily' ? '7-Day' : period === 'weekly' ? '4-Week' : '3-Month'} Forecast Breakdown
           </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {data.predictions.map((p, i) => (
-              <div key={i} className="bg-orange-50/50 backdrop-blur-sm rounded-2xl p-5 border border-orange-100 text-center relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-orange-400"></div>
-                <p className="text-[10px] font-black uppercase tracking-wider text-orange-600 mb-2">{p.label}</p>
-                <p className="text-lg font-black text-slate-900 mb-2">Rs. {p.revenue.toLocaleString()}</p>
-                <div className="flex justify-center gap-3 text-[9px] font-black uppercase tracking-wider mt-3">
-                  <span className="text-red-600">Exp: {p.expenses.toLocaleString()}</span>
-                  <span className={p.profit >= 0 ? 'text-emerald-600' : 'text-red-600'}>
-                    {p.profit >= 0 ? '+' : ''}{p.profit.toLocaleString()}
+              <div key={i} className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 text-center">
+                <p className="text-[0.7rem] font-bold uppercase tracking-wider text-slate-500 mb-1">{p.label}</p>
+                <p className="text-sm font-bold text-slate-900 mb-1.5">Rs. {p.revenue.toLocaleString()}</p>
+                <div className="flex justify-center gap-2 text-[0.7rem] font-semibold text-slate-500">
+                  <span>Exp: Rs. {p.expenses.toLocaleString()}</span>
+                  <span className={p.profit >= 0 ? 'text-emerald-600' : 'text-rose-600'}>
+                    ({p.profit >= 0 ? '+' : ''}{p.profit.toLocaleString()})
                   </span>
                 </div>
-                <p className="mt-2 text-[9px] font-black uppercase tracking-wider text-slate-400">~{p.orders} orders</p>
+                <p className="mt-1 text-[0.65rem] text-slate-400 font-medium">~{p.orders} orders</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* Data Table */}
-        <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
-            <h3 className="text-[11px] font-black uppercase tracking-wider text-slate-800 m-0">
+        <div className="ds-table-wrap">
+          <div className="p-4 border-b border-slate-100">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 m-0">
               {period === 'daily' ? 'Daily' : period === 'weekly' ? 'Weekly' : 'Monthly'} Data Log
             </h3>
           </div>
           <div className="overflow-x-auto max-h-[400px]">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-100">
+            <table className="ds-table">
+              <thead>
                 <tr>
                   {['Period', 'Revenue', 'Expenses', 'Profit', 'Orders', 'Type'].map((h) => (
-                    <th key={h} className="px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">{h}</th>
+                    <th key={h}>{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody>
                 {allData.slice(-30).map((d, i) => (
-                  <tr key={i} className={`hover:bg-slate-50/50 transition-colors ${d.isPrediction ? 'bg-orange-50/30' : ''}`}>
-                    <td className="px-6 py-4 font-bold text-slate-800">{d.label}</td>
-                    <td className="px-6 py-4 font-bold text-brand-indigo">Rs. {d.revenue.toLocaleString()}</td>
-                    <td className="px-6 py-4 font-bold text-red-600">Rs. {d.expenses.toLocaleString()}</td>
-                    <td className={`px-6 py-4 font-bold ${d.profit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                  <tr key={i} className={d.isPrediction ? 'bg-amber-50/20' : ''}>
+                    <td className="font-semibold text-xs text-slate-900">{d.label}</td>
+                    <td className="text-xs font-medium text-slate-800">Rs. {d.revenue.toLocaleString()}</td>
+                    <td className="text-xs font-medium text-rose-600">Rs. {d.expenses.toLocaleString()}</td>
+                    <td className={`text-xs font-bold ${d.profit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                       Rs. {d.profit.toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 text-slate-600 font-mono text-xs">{d.orders || '—'}</td>
-                    <td className="px-6 py-4">
-                      <span className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${
-                        d.isPrediction ? 'bg-orange-100/50 text-orange-700' : 'bg-emerald-100/50 text-emerald-700'
+                    <td className="text-slate-500 text-xs font-mono">{d.orders || '—'}</td>
+                    <td>
+                      <span className={`ds-badge ${
+                        d.isPrediction ? 'ds-badge-amber' : 'ds-badge-green'
                       }`}>
                         {d.isPrediction ? 'PREDICTED' : 'ACTUAL'}
                       </span>

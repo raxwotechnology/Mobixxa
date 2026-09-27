@@ -123,14 +123,14 @@ const AttendanceDashboardView = ({
       {/* Top Header Title & Export Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight m-0">My Attendance</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight m-0">My Attendance</h1>
           <p className="text-xs sm:text-sm font-semibold text-slate-500 m-0 mt-1">Track your daily attendance and monthly summary.</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {onMarkAttendanceModal && (
             <button
               onClick={onMarkAttendanceModal}
-              className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-black px-4 py-2.5 rounded-xl shadow-sm transition-all flex items-center gap-2 border-0 cursor-pointer"
+              className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-sm transition-all flex items-center gap-2 border-0 cursor-pointer"
             >
               <Clock size={15} /> Mark Attendance
             </button>
@@ -138,7 +138,7 @@ const AttendanceDashboardView = ({
           {onExportExcel && (
             <button
               onClick={onExportExcel}
-              className="bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 text-xs font-extrabold px-3.5 py-2.5 rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+              className="bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 text-xs font-bold px-3.5 py-2.5 rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
             >
               <FileSpreadsheet size={15} /> Excel
             </button>
@@ -146,7 +146,7 @@ const AttendanceDashboardView = ({
           {onExportPDF && (
             <button
               onClick={onExportPDF}
-              className="bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 text-xs font-extrabold px-3.5 py-2.5 rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+              className="bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 text-xs font-bold px-3.5 py-2.5 rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
             >
               <FileText size={15} /> PDF
             </button>
@@ -157,8 +157,8 @@ const AttendanceDashboardView = ({
       {/* Real-time Clock Hero Card */}
       <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="space-y-1">
-          <p className="text-[11px] font-black text-slate-400 uppercase tracking-wider m-0">{formattedDate}</p>
-          <div className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight m-0">{formattedClock}</div>
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider m-0">{formattedDate}</p>
+          <div className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight m-0">{formattedClock}</div>
           <p className="text-xs font-bold text-slate-500 m-0 pt-1 flex items-center gap-1.5">
             <Clock size={14} className="text-blue-600" />
             <span>{workedTodayStr}</span>
@@ -169,11 +169,11 @@ const AttendanceDashboardView = ({
           {/* Status Indicator Pill */}
           <div className="flex items-center gap-2">
             {isOnBreak ? (
-              <span className="inline-flex items-center gap-2 bg-amber-50 text-amber-700 border border-amber-200 px-3.5 py-1.5 rounded-full text-xs font-extrabold shadow-xs">
+              <span className="inline-flex items-center gap-2 bg-amber-50 text-amber-700 border border-amber-200 px-3.5 py-1.5 rounded-full text-xs font-bold shadow-xs">
                 <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" /> On Break
               </span>
             ) : isClockedIn ? (
-              <span className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 border border-emerald-200 px-3.5 py-1.5 rounded-full text-xs font-extrabold shadow-xs">
+              <span className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 border border-emerald-200 px-3.5 py-1.5 rounded-full text-xs font-bold shadow-xs">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 In at {new Date(todayRecord.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </span>
@@ -197,7 +197,7 @@ const AttendanceDashboardView = ({
                 disabled={actionLoading}
                 className={`px-4 py-2.5 rounded-xl font-bold text-xs transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer border ${
                   isOnBreak
-                    ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-600 font-black'
+                    ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-600 font-bold'
                     : 'bg-sky-50 hover:bg-sky-100 text-sky-700 border-sky-200'
                 }`}
               >
@@ -211,7 +211,7 @@ const AttendanceDashboardView = ({
               <button
                 onClick={() => handleAction(onCheckOut)}
                 disabled={actionLoading}
-                className="bg-rose-600 hover:bg-rose-700 text-white font-black text-xs px-5 py-2.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer border-0"
+                className="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer border-0"
               >
                 <LogOut size={15} />
                 <span>Clock Out</span>
@@ -220,7 +220,7 @@ const AttendanceDashboardView = ({
               <button
                 onClick={() => handleAction(onCheckIn)}
                 disabled={actionLoading || isClockedOut}
-                className={`font-black text-xs px-5 py-2.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 border-0 ${
+                className={`font-bold text-xs px-5 py-2.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 border-0 ${
                   isClockedOut
                     ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
                     : 'bg-blue-600 hover:bg-blue-700 text-white cursor-pointer shadow-[0_4px_16px_rgba(37,99,235,0.35)]'
@@ -234,109 +234,168 @@ const AttendanceDashboardView = ({
         </div>
       </div>
 
-      {/* 4 Summary Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* 5 Summary Stat Cards matching enterprise reference card format */}
+      <div className="ds-stats">
         {/* PRESENT */}
-        <div className="bg-emerald-50/60 border-t-4 border-t-emerald-500 border-x border-b border-emerald-200/80 rounded-2xl p-5 shadow-xs transition-transform hover:-translate-y-0.5">
-          <p className="text-[11px] font-black text-emerald-800 uppercase tracking-wider m-0 mb-1">PRESENT</p>
-          <p className="text-3xl font-black text-emerald-900 m-0">{summary.present}</p>
+        <div className="ds-stat">
+          <div className="ds-stat-top">
+            <div className="ds-stat-icon" style={{ background: '#f0fdf4', color: '#15803d' }}>
+              <CheckCircle size={18} />
+            </div>
+            <span className="ds-stat-change up">Present</span>
+          </div>
+          <div className="ds-stat-bottom">
+            <p className="ds-stat-label">Present Days</p>
+            <p className="ds-stat-value text-emerald-600">{summary.present}</p>
+          </div>
         </div>
 
         {/* HALF DAYS */}
-        <div className="bg-blue-50/60 border-t-4 border-t-blue-500 border-x border-b border-blue-200/80 rounded-2xl p-5 shadow-xs transition-transform hover:-translate-y-0.5">
-          <p className="text-[11px] font-black text-blue-800 uppercase tracking-wider m-0 mb-1">HALF DAYS</p>
-          <p className="text-3xl font-black text-blue-900 m-0">{summary.halfDays}</p>
+        <div className="ds-stat">
+          <div className="ds-stat-top">
+            <div className="ds-stat-icon" style={{ background: '#eff6ff', color: '#1d4ed8' }}>
+              <Clock size={18} />
+            </div>
+            <span className="ds-stat-change blue">Half Day</span>
+          </div>
+          <div className="ds-stat-bottom">
+            <p className="ds-stat-label">Half Days</p>
+            <p className="ds-stat-value text-blue-600">{summary.halfDays}</p>
+          </div>
         </div>
 
         {/* LEAVES TAKEN */}
-        <div className="bg-purple-50/60 border-t-4 border-t-purple-500 border-x border-b border-purple-200/80 rounded-2xl p-5 shadow-xs transition-transform hover:-translate-y-0.5">
-          <p className="text-[11px] font-black text-purple-800 uppercase tracking-wider m-0 mb-1">LEAVES TAKEN</p>
-          <p className="text-3xl font-black text-purple-900 m-0">{summary.leavesTaken}</p>
+        <div className="ds-stat">
+          <div className="ds-stat-top">
+            <div className="ds-stat-icon" style={{ background: '#f5f3ff', color: '#7c3aed' }}>
+              <Calendar size={18} />
+            </div>
+            <span className="ds-stat-change neu">Leave</span>
+          </div>
+          <div className="ds-stat-bottom">
+            <p className="ds-stat-label">Leaves Taken</p>
+            <p className="ds-stat-value text-purple-600">{summary.leavesTaken}</p>
+          </div>
         </div>
 
         {/* ABSENT */}
-        <div className="bg-rose-50/60 border-t-4 border-t-rose-500 border-x border-b border-rose-200/80 rounded-2xl p-5 shadow-xs transition-transform hover:-translate-y-0.5">
-          <p className="text-[11px] font-black text-rose-800 uppercase tracking-wider m-0 mb-1">ABSENT</p>
-          <p className="text-3xl font-black text-rose-900 m-0">{summary.absent}</p>
+        <div className="ds-stat">
+          <div className="ds-stat-top">
+            <div className="ds-stat-icon" style={{ background: '#fff1f2', color: '#be123c' }}>
+              <ShieldAlert size={18} />
+            </div>
+            <span className="ds-stat-change down">Absent</span>
+          </div>
+          <div className="ds-stat-bottom">
+            <p className="ds-stat-label">Absent Days</p>
+            <p className="ds-stat-value text-rose-600">{summary.absent}</p>
+          </div>
+        </div>
+
+        {/* TOTAL HOURS */}
+        <div className="ds-stat">
+          <div className="ds-stat-top">
+            <div className="ds-stat-icon" style={{ background: '#f8fafc', color: '#334155' }}>
+              <Clock size={18} />
+            </div>
+            <span className="ds-stat-change neu">Logged</span>
+          </div>
+          <div className="ds-stat-bottom">
+            <p className="ds-stat-label">Total Hours</p>
+            <p className="ds-stat-value">{summary.totalHours.toFixed(1)}h</p>
+          </div>
         </div>
       </div>
 
       {/* Month & Year Filter Bar */}
-      <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-xs flex items-center gap-4 flex-wrap">
-        <div className="flex items-center gap-2">
-          <Calendar size={16} className="text-slate-400" />
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Month</span>
-          <select
-            value={month}
-            onChange={(e) => onMonthChange(Number(e.target.value))}
-            className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs font-extrabold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 cursor-pointer"
-          >
-            {Array.from({ length: 12 }, (_, i) => (
-              <option key={i + 1} value={i + 1}>
-                {new Date(2000, i).toLocaleString('en-US', { month: 'long' })}
-              </option>
-            ))}
-          </select>
-        </div>
+      <div className="ds-card" style={{ padding: '0.875rem 1.25rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Calendar size={16} className="text-slate-400" />
+            <span className="ds-label" style={{ margin: 0 }}>Month</span>
+            <select
+              value={month}
+              onChange={(e) => onMonthChange(Number(e.target.value))}
+              className="ds-input ds-select"
+              style={{ width: 'auto', minWidth: '150px' }}
+            >
+              {Array.from({ length: 12 }, (_, i) => (
+                <option key={i + 1} value={i + 1}>
+                  {new Date(2000, i).toLocaleString('en-US', { month: 'long' })}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Year</span>
-          <input
-            type="number"
-            value={year}
-            onChange={(e) => onYearChange(Number(e.target.value))}
-            className="w-20 bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs font-extrabold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
-          />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span className="ds-label" style={{ margin: 0 }}>Year</span>
+            <input
+              type="number"
+              value={year}
+              onChange={(e) => onYearChange(Number(e.target.value))}
+              className="ds-input"
+              style={{ width: '90px' }}
+            />
+          </div>
         </div>
       </div>
 
       {/* Monthly Attendance Trend Chart */}
-      <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm">
-        <h3 className="font-black text-slate-900 text-base m-0 mb-6 tracking-tight">Monthly Attendance Trend</h3>
-        <div className="w-full h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-              <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#64748b', fontWeight: '700' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 10, fill: '#64748b', fontWeight: '700' }} axisLine={false} tickLine={false} allowDecimals={false} />
-              <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
-              <Legend wrapperStyle={{ paddingTop: '15px', fontSize: '10px', fontWeight: '800', textTransform: 'uppercase', color: '#64748b' }} iconType="circle" />
-              <Bar dataKey="Present" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={28} />
-              <Bar dataKey="Half Day" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={28} />
-              <Bar dataKey="Late" fill="#f97316" radius={[4, 4, 0, 0]} maxBarSize={28} />
-              <Bar dataKey="Absent" fill="#ef4444" radius={[4, 4, 0, 0]} maxBarSize={28} />
-            </BarChart>
-          </ResponsiveContainer>
+      <div className="ds-card">
+        <div className="ds-card-header">
+          <h3 className="ds-card-title">Monthly Attendance Trend</h3>
+          <span className="ds-badge ds-badge-slate">{records.length} Recorded Days</span>
+        </div>
+        <div className="ds-card-body">
+          <div style={{ width: '100%', height: 260 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#64748b', fontWeight: '700' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: '#64748b', fontWeight: '700' }} axisLine={false} tickLine={false} allowDecimals={false} />
+                <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }} />
+                <Legend wrapperStyle={{ paddingTop: '15px', fontSize: '10px', fontWeight: '700', textTransform: 'uppercase', color: '#64748b' }} iconType="circle" />
+                <Bar dataKey="Present" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                <Bar dataKey="Half Day" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                <Bar dataKey="Late" fill="#f97316" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                <Bar dataKey="Absent" fill="#ef4444" radius={[4, 4, 0, 0]} maxBarSize={28} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
 
       {/* Daily Records Table */}
-      <div className="bg-white border border-slate-200/80 rounded-3xl overflow-hidden shadow-sm">
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-          <h3 className="font-black text-slate-900 text-xs uppercase tracking-wider m-0">Attendance History Records</h3>
-          <span className="text-xs font-bold text-slate-400">{records.length} Entries</span>
+      <div className="ds-card">
+        <div className="ds-card-header">
+          <h3 className="ds-card-title">Attendance History Records</h3>
+          <span className="ds-badge ds-badge-slate">{records.length} Entries</span>
         </div>
 
-        <div className="overflow-x-auto w-full">
-          <table className="w-full text-left text-xs border-collapse">
+        <div className="ds-table-wrap">
+          <table className="ds-table">
             <thead>
-              <tr className="bg-slate-50/80 border-b border-slate-200/80">
-                <th className="px-6 py-3.5 font-black uppercase text-slate-500 tracking-wider">DATE</th>
-                <th className="px-6 py-3.5 font-black uppercase text-slate-500 tracking-wider">STATUS</th>
-                <th className="px-6 py-3.5 font-black uppercase text-slate-500 tracking-wider text-center">CLOCK IN</th>
-                <th className="px-6 py-3.5 font-black uppercase text-slate-500 tracking-wider text-center">CLOCK OUT</th>
-                <th className="px-6 py-3.5 font-black uppercase text-slate-500 tracking-wider text-center">BREAK</th>
-                <th className="px-6 py-3.5 font-black uppercase text-slate-500 tracking-wider text-right">WORKED</th>
+              <tr>
+                <th>Date</th>
+                <th>Status</th>
+                <th style={{ textAlign: 'center' }}>Clock In</th>
+                <th style={{ textAlign: 'center' }}>Clock Out</th>
+                <th style={{ textAlign: 'center' }}>Break</th>
+                <th style={{ textAlign: 'right' }}>Worked</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-10 font-bold text-slate-400">Loading attendance data...</td>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '2.5rem' }}>
+                    <div className="ds-loading"><div className="ds-spinner" /></div>
+                  </td>
                 </tr>
               ) : records.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-10 font-bold text-slate-400">No attendance records found for this period.</td>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--ds-text-muted)' }}>
+                    No attendance records found for this period.
+                  </td>
                 </tr>
               ) : (
                 records.map((r, idx) => {
@@ -349,11 +408,11 @@ const AttendanceDashboardView = ({
                   });
 
                   const st = (r.status || 'present').toLowerCase();
-                  let badgeStyle = 'bg-emerald-100 text-emerald-800 border-emerald-200';
-                  if (st === 'half-day') badgeStyle = 'bg-blue-100 text-blue-800 border-blue-200';
-                  else if (st === 'late') badgeStyle = 'bg-orange-100 text-orange-800 border-orange-200';
-                  else if (st === 'leave') badgeStyle = 'bg-purple-100 text-purple-800 border-purple-200';
-                  else if (st === 'absent') badgeStyle = 'bg-rose-100 text-rose-800 border-rose-200';
+                  let badgeClass = 'ds-badge ds-badge-green';
+                  if (st === 'half-day') badgeClass = 'ds-badge ds-badge-blue';
+                  else if (st === 'late') badgeClass = 'ds-badge ds-badge-amber';
+                  else if (st === 'leave') badgeClass = 'ds-badge ds-badge-violet';
+                  else if (st === 'absent') badgeClass = 'ds-badge ds-badge-red';
 
                   const checkInFormatted = r.checkIn
                     ? new Date(r.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -367,17 +426,17 @@ const AttendanceDashboardView = ({
                   const workedStr = r.hoursWorked > 0 ? `${r.hoursWorked.toFixed(1)}h` : '—';
 
                   return (
-                    <tr key={r._id || idx} className="hover:bg-slate-50/70 transition-colors">
-                      <td className="px-6 py-4 font-bold text-slate-800 whitespace-nowrap">{dateFormatted}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${badgeStyle}`}>
+                    <tr key={r._id || idx}>
+                      <td style={{ fontWeight: 600 }}>{dateFormatted}</td>
+                      <td>
+                        <span className={badgeClass}>
                           {r.status || 'Present'}
                         </span>
                       </td>
-                      <td className="px-6 py-4 font-bold text-slate-700 text-center whitespace-nowrap">{checkInFormatted}</td>
-                      <td className="px-6 py-4 font-bold text-slate-700 text-center whitespace-nowrap">{checkOutFormatted}</td>
-                      <td className="px-6 py-4 font-semibold text-slate-500 text-center whitespace-nowrap">{breakStr}</td>
-                      <td className="px-6 py-4 font-black text-slate-900 text-right whitespace-nowrap">{workedStr}</td>
+                      <td style={{ textAlign: 'center', fontWeight: 500 }}>{checkInFormatted}</td>
+                      <td style={{ textAlign: 'center', fontWeight: 500 }}>{checkOutFormatted}</td>
+                      <td style={{ textAlign: 'center', color: 'var(--ds-text-muted)' }}>{breakStr}</td>
+                      <td style={{ textAlign: 'right', fontWeight: 700 }}>{workedStr}</td>
                     </tr>
                   );
                 })

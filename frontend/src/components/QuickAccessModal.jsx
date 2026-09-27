@@ -161,10 +161,10 @@ const QuickAccessModal = ({ isOpen, onClose }) => {
         {/* Shortcuts List */}
         <div className="p-4 sm:p-6 overflow-y-auto space-y-3 custom-scrollbar flex-1">
           <div className="flex items-center justify-between px-1 mb-2">
-            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
               {role.toUpperCase()} • QUICK ACCESS SHORTCUTS ({filteredShortcuts.length})
             </span>
-            <span className="text-[10px] font-bold text-slate-400 hidden sm:inline">Press Esc to close</span>
+            <span className="text-xs font-bold text-slate-400 hidden sm:inline">Press Esc to close</span>
           </div>
 
           {filteredShortcuts.length === 0 ? (
@@ -187,16 +187,16 @@ const QuickAccessModal = ({ isOpen, onClose }) => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1">
-                        <span className="font-extrabold text-xs sm:text-sm text-slate-900 truncate group-hover:text-blue-600 transition-colors">
+                        <span className="font-bold text-xs sm:text-sm text-slate-900 truncate group-hover:text-blue-600 transition-colors">
                           {item.title}
                         </span>
                         {item.badge && (
-                          <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-md bg-blue-100 text-blue-700 flex-shrink-0">
+                          <span className="text-xs font-bold uppercase px-2 py-0.5 rounded-md bg-blue-100 text-blue-700 flex-shrink-0">
                             {item.badge}
                           </span>
                         )}
                       </div>
-                      <p className="text-[11px] font-semibold text-slate-500 truncate m-0 mt-0.5">{item.desc}</p>
+                      <p className="text-xs font-semibold text-slate-500 truncate m-0 mt-0.5">{item.desc}</p>
                     </div>
                     <ChevronRight size={16} className="text-slate-300 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
                   </button>

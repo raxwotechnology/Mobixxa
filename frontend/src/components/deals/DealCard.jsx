@@ -33,7 +33,7 @@ export default function DealCard({ deal }) {
       >
         {/* Floating Top-Left Discount Pill */}
         <div className="absolute top-3 left-3 z-20">
-          <span className="bg-[#ff3b30] text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-sm tracking-wide">
+          <span className="bg-[#ff3b30] text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm tracking-wide">
             {deal.discount}
           </span>
         </div>
@@ -128,7 +128,7 @@ export default function DealCard({ deal }) {
             From Rs {deal.price}
           </p>
           {deal.originalPrice && (
-            <span className="text-[11px] text-slate-400 line-through">
+            <span className="text-xs text-slate-400 line-through">
               Rs {deal.originalPrice}
             </span>
           )}
@@ -158,7 +158,7 @@ export default function DealCard({ deal }) {
             );
           })
         ) : (
-          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
             Standard Edition
           </span>
         )}
@@ -194,7 +194,7 @@ function MarshallHeadphonesIllustration({ color }) {
           style={{ backgroundColor: color }}
         >
           <div className="w-9 h-14 rounded-xl bg-slate-950 border border-amber-500/40 flex items-center justify-center shadow-inner">
-            <span className="text-[8px] font-serif italic font-bold text-amber-200/90 tracking-widest">
+            <span className="text-xs font-serif italic font-bold text-amber-200/90 tracking-widest">
               M
             </span>
           </div>
@@ -212,7 +212,7 @@ function MarshallHeadphonesIllustration({ color }) {
           style={{ backgroundColor: color }}
         >
           <div className="w-9 h-14 rounded-xl bg-slate-950 border border-amber-500/40 flex items-center justify-center shadow-inner">
-            <span className="text-[8px] font-serif italic font-bold text-amber-200/90 tracking-widest">
+            <span className="text-xs font-serif italic font-bold text-amber-200/90 tracking-widest">
               M
             </span>
           </div>
@@ -256,7 +256,7 @@ function MarshallSpeakerIllustration({ color }) {
           />
           {/* Golden Script Marshall Script */}
           <div className="relative z-10 bg-slate-950/80 px-3 py-0.5 rounded-md border border-amber-400/30">
-            <span className="text-xs font-serif italic font-black text-amber-300 tracking-wider">
+            <span className="text-xs font-serif italic font-bold text-amber-300 tracking-wider">
               Marshall
             </span>
           </div>
@@ -316,7 +316,7 @@ function Pixel10ProIllustration({ color }) {
       <div className="w-18 h-42 bg-slate-950 rounded-[20px] p-1.5 shadow-xl border-2 border-slate-800 flex flex-col justify-between">
         <div className="w-1.5 h-1.5 rounded-full bg-slate-800 mx-auto mt-0.5" />
         <div className="h-30 rounded-[14px] bg-gradient-to-tr from-slate-900 via-blue-950 to-indigo-950 flex flex-col items-center justify-center text-center">
-          <span className="text-[9px] font-bold text-white">Pixel 10 Pro</span>
+          <span className="text-xs font-bold text-white">Pixel 10 Pro</span>
           <span className="text-[7px] text-blue-300">Tensor G5</span>
         </div>
         <div className="w-6 h-0.5 bg-slate-600 rounded-full mx-auto mb-1" />

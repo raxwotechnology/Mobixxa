@@ -423,27 +423,21 @@ const BarcodeGenerator = () => {
 
   return (
     <DashboardLayout navItems={getNavItems()} title={dashTitle}>
-      <div className="no-print animate-fade-in space-y-6">
+      <div className="no-print ds-page">
         {/* Header Block */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-indigo/5 rounded-full blur-3xl pointer-events-none -z-10"></div>
+        <div className="ds-page-header">
           <div>
-            <div className="flex items-center gap-3 mb-1">
-              <div className="w-10 h-10 rounded-2xl bg-brand-indigo/10 flex items-center justify-center text-brand-indigo">
-                <Barcode size={20} strokeWidth={2.5} />
-              </div>
-              <h1 className="text-2xl font-semibold text-slate-900 m-0">Barcode Generator</h1>
-            </div>
-            <p className="text-[10px] font-normal uppercase tracking-wider text-slate-500 mt-2 m-0">Generate print-ready barcode labels for products</p>
+            <h1 className="ds-page-title">Barcode Generator</h1>
+            <p className="ds-page-subtitle">Generate and print standardized barcode labels for your inventory</p>
           </div>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-6">
           {/* Left — Product Selection */}
           <div className="space-y-4">
-            <div className="glass-card rounded-[2rem] p-6">
-              <h2 className="text-sm font-black text-slate-800 mb-4 uppercase tracking-wider flex items-center gap-2">
-                <Package size={16} /> Select Product
+            <div className="ds-card">
+              <h2 className="text-sm font-semibold text-slate-900 mb-4 uppercase tracking-wider flex items-center gap-2">
+                <Package size={16} className="text-blue-600" /> Select Product
               </h2>
               <div className="flex flex-col sm:flex-row gap-3 mb-4">
                 {stores.length > 0 && (
@@ -453,7 +447,7 @@ const BarcodeGenerator = () => {
                       onChange={e => setSelectedStore(e.target.value)}
                       className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all cursor-pointer"
                     >
-                      <option value="all">🏪 All Stores ({stores.length})</option>
+                      <option value="all"> All Stores ({stores.length})</option>
                       {stores.map(s => (
                         <option key={s._id} value={s._id}>
                           {s.name} ({s.code || s.location || 'Store'})
@@ -513,9 +507,9 @@ const BarcodeGenerator = () => {
           {/* Right — Settings & Preview */}
           <div className="space-y-4">
             {/* Label Settings */}
-            <div className="glass-card rounded-[2rem] p-6">
-              <h2 className="text-sm font-black text-slate-800 mb-4 uppercase tracking-wider flex items-center gap-2">
-                <Store size={16} /> Label Settings
+            <div className="ds-card">
+              <h2 className="text-sm font-semibold text-slate-900 mb-4 uppercase tracking-wider flex items-center gap-2">
+                <Store size={16} className="text-blue-600" /> Label Settings
               </h2>
 
               {selectedProduct ? (
@@ -551,7 +545,7 @@ const BarcodeGenerator = () => {
                         onClick={() => setShowPrinterModal(true)}
                         className="text-[10px] font-black uppercase tracking-wider text-brand-indigo hover:text-brand-violet transition-colors flex items-center gap-1 bg-transparent border-0 cursor-pointer p-0"
                       >
-                        ⚙️ Link Printer
+                         Link Printer
                       </button>
                     </div>
                     <select
@@ -662,12 +656,12 @@ const BarcodeGenerator = () => {
                 </div>
 
                 {/* Printer Assignments & Routing */}
-                <div className="glass-card rounded-[2rem] p-6 space-y-4">
+                <div className="ds-card space-y-4">
                   <div>
-                    <h3 className="font-black text-slate-800 text-sm flex items-center gap-2 m-0 uppercase tracking-wider">
-                      <Printer size={16} className="text-brand-indigo" /> Printer Assignment & Routing
+                    <h3 className="font-semibold text-slate-900 text-sm flex items-center gap-2 m-0 uppercase tracking-wider">
+                      <Printer size={16} className="text-blue-600" /> Printer Assignment & Routing
                     </h3>
-                    <p className="text-xs text-slate-450 font-semibold mt-1 m-0">
+                    <p className="text-xs text-slate-500 font-medium mt-1 m-0">
                       Distribute and print the generated labels across your connected/linked printers:
                     </p>
                   </div>
@@ -739,15 +733,15 @@ const BarcodeGenerator = () => {
                         </span>
                         {diff === 0 ? (
                           <span className="text-teal-600 font-extrabold flex items-center gap-1">
-                            ✓ All labels routed
+                             All labels routed
                           </span>
                         ) : diff > 0 ? (
                           <span className="text-amber-650 font-extrabold">
-                            ⚠️ Over-assigned (+{diff})
+                             Over-assigned (+{diff})
                           </span>
                         ) : (
                           <span className="text-amber-650 font-extrabold">
-                            ⚠️ Under-assigned ({Math.abs(diff)} left)
+                             Under-assigned ({Math.abs(diff)} left)
                           </span>
                         )}
                       </div>
@@ -788,7 +782,7 @@ const BarcodeGenerator = () => {
           <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-fade-in">
             <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-slate-50">
               <h2 className="text-sm font-black text-slate-800 m-0 uppercase tracking-wider flex items-center gap-2">
-                ⚙️ Link & Manage Label Printers
+                 Link & Manage Label Printers
               </h2>
               <button onClick={() => setShowPrinterModal(false)} className="p-1.5 rounded-lg hover:bg-slate-200 text-slate-500 transition-colors border-0 cursor-pointer bg-transparent">
                 <X size={18} />
@@ -940,7 +934,7 @@ const BarcodeGenerator = () => {
               
               {(selectedProduct.store?.name || selectedProduct.storeName) && (
                 <span className="mt-2 text-[10px] font-black uppercase tracking-wider bg-slate-200 text-slate-700 px-2.5 py-0.5 rounded-full">
-                  🏪 Store: {selectedProduct.store?.name || selectedProduct.storeName}
+                   Store: {selectedProduct.store?.name || selectedProduct.storeName}
                 </span>
               )}
             </div>

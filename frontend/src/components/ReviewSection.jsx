@@ -193,7 +193,7 @@ const ReviewSection = ({ productId, onReviewsChanged }) => {
         </div>
       ) : reviews.length === 0 ? (
         <div className="text-center py-8 text-muted-text">
-          <p className="text-3xl mb-2">💬</p>
+          <p className="text-3xl mb-2"></p>
           <p className="m-0">No reviews yet. Be the first to share your thoughts!</p>
         </div>
       ) : (

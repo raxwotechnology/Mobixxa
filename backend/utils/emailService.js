@@ -43,7 +43,7 @@ const sendEmail = async (to, subject, html) => {
     const fromEmail = process.env.EMAIL_FROM || process.env.SMTP_USER || process.env.GMAIL_USER;
     const appPassword = process.env.EMAIL_APP_PASSWORD || process.env.SMTP_PASS || process.env.GMAIL_PASS;
 
-        if (!fromEmail || !appPassword) {
+      if (!fromEmail || !appPassword) {
       console.warn(`[Email Notice] EMAIL_FROM/EMAIL_APP_PASSWORD not configured. Skipped sending to "${to}".`);
       return null;
     }
@@ -91,18 +91,18 @@ const orderConfirmationEmail = (order, customerName) => {
   const confirmationUrl = `${frontendBase}/order-confirmation/${encodeURIComponent(order._id)}`;
 
   return {
-    subject: `📱 Mobixa — Official Electronic Order Receipt #${safeOrderIdStr}`,
+    subject: `Mobixa — Official Electronic Order Receipt #${safeOrderIdStr}`,
     html: `
       <div style="font-family: 'Plus Jakarta Sans', 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 620px; margin: 0 auto; background: #f8fafc; border-radius: 20px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
         <!-- Header -->
         <div style="background: linear-gradient(135deg, #1e40af, #2563eb, #3b82f6); padding: 35px 30px; text-align: center;">
-          <h1 style="color: white; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -0.5px;">⚡ MOBIXA</h1>
+          <h1 style="color: white; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -0.5px;"> MOBIXA</h1>
           <p style="color: #dbeafe; margin: 8px 0 0; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Official Digital Invoice & Order Confirmation</p>
         </div>
 
         <!-- Body -->
         <div style="padding: 32px; background: #ffffff;">
-          <h2 style="color: #0f172a; margin-top: 0; font-size: 20px; font-weight: 800;">Hi ${safeCustomerName}! 🎉</h2>
+          <h2 style="color: #0f172a; margin-top: 0; font-size: 20px; font-weight: 800;">Hi ${safeCustomerName}! </h2>
           <p style="color: #475569; font-size: 14px; line-height: 1.6; margin-bottom: 24px;">
             Thank you for shopping with <strong>Mobixa</strong>! Your order has been placed successfully. Below is your itemized electronic invoice:
           </p>
@@ -143,14 +143,14 @@ const orderConfirmationEmail = (order, customerName) => {
           <!-- Direct Link CTA Button -->
           <div style="text-align: center; margin: 30px 0 10px;">
             <a href="${confirmationUrl}" target="_blank" style="background: #2563eb; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 800; padding: 16px 32px; border-radius: 14px; display: inline-block; box-shadow: 0 4px 14px rgba(37,99,235,0.4);">
-              📄 View Official Digital Receipt & Track Order →
+               View Official Digital Receipt & Track Order →
             </a>
           </div>
         </div>
 
         <!-- Footer -->
         <div style="background: #f1f5f9; padding: 24px; text-align: center; border-top: 1px solid #e2e8f0;">
-          <p style="color: #64748b; font-size: 13px; font-weight: 700; margin: 0 0 6px;">📞 Store Hotline: +94 11 255 5000</p>
+          <p style="color: #64748b; font-size: 13px; font-weight: 700; margin: 0 0 6px;"> Store Hotline: +94 11 255 5000</p>
           <p style="color: #94a3b8; font-size: 12px; margin: 0;">© ${new Date().getFullYear()} Mobixa Official Store. Premium Tech Delivered With Care.</p>
         </div>
       </div>
@@ -167,7 +167,7 @@ const deliveryAssignmentEmail = (order, deliveryGuyName) => {
     html: `
       <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: linear-gradient(135deg, #2563eb, #3b82f6); padding: 30px; text-align: center;">
-          <h1 style="color: white; margin: 0;">🚚 Delivery Assignment</h1>
+          <h1 style="color: white; margin: 0;"> Delivery Assignment</h1>
         </div>
         <div style="padding: 30px; background: white;">
           <h2 style="color: #1e293b; margin-top: 0;">Hi ${safeName}!</h2>
@@ -193,7 +193,7 @@ const salaryPaidEmail = (employeeName, payroll) => {
     html: `
       <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: linear-gradient(135deg, #059669, #10b981); padding: 30px; text-align: center;">
-          <h1 style="color: white; margin: 0;">💰 Salary Credited</h1>
+          <h1 style="color: white; margin: 0;"> Salary Credited</h1>
         </div>
         <div style="padding: 30px; background: white;">
           <h2 style="color: #1e293b; margin-top: 0;">Hi ${safeName}!</h2>
@@ -215,15 +215,15 @@ const welcomeEmail = (name) => {
   const safeName = escapeHtml(name);
 
   return {
-    subject: 'Welcome to Mobixa! ✨',
+    subject: 'Welcome to Mobixa!',
     html: `
       <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: linear-gradient(135deg, #059669, #10b981); padding: 40px; text-align: center;">
-          <h1 style="color: white; margin: 0; font-size: 32px;">⚡ Mobixa</h1>
+          <h1 style="color: white; margin: 0; font-size: 32px;"> Mobixa</h1>
           <p style="color: #d1fae5; margin: 10px 0 0; font-size: 16px;">Premium tech and smart devices, delivered with care</p>
         </div>
         <div style="padding: 30px; background: white;">
-          <h2 style="color: #1e293b; margin-top: 0;">Welcome, ${safeName}! 🎉</h2>
+          <h2 style="color: #1e293b; margin-top: 0;">Welcome, ${safeName}! </h2>
           <p style="color: #64748b; line-height: 1.6;">Thank you for joining Mobixa! Explore our curated range of tech, gadgets, accessories, and smart essentials.</p>
           <div style="background: #f0fdf4; border-radius: 12px; padding: 20px; margin: 20px 0; text-align: center;">
             <p style="margin: 0; font-size: 14px; color: #64748b;">Use code</p>
@@ -263,13 +263,13 @@ const paymentReceiptEmail = (order, customerName) => {
       <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
         <!-- Header -->
         <div style="background: linear-gradient(135deg, #059669, #0d9488); padding: 35px; text-align: center;">
-          <h1 style="color: white; margin: 0; font-size: 28px; letter-spacing: -0.5px;">⚡ Mobixa</h1>
+          <h1 style="color: white; margin: 0; font-size: 28px; letter-spacing: -0.5px;"> Mobixa</h1>
           <p style="color: #d1fae5; margin: 8px 0 0; font-size: 14px;">Payment Receipt</p>
         </div>
 
         <!-- Success Banner -->
         <div style="background: #f0fdf4; padding: 20px; text-align: center; border-bottom: 1px solid #dcfce7;">
-          <p style="margin: 0; font-size: 24px;">✅</p>
+          <p style="margin: 0; font-size: 24px;"></p>
           <h2 style="color: #059669; margin: 8px 0 0; font-size: 18px;">Payment Successful!</h2>
         </div>
 
@@ -317,8 +317,8 @@ const paymentReceiptEmail = (order, customerName) => {
           <!-- Payment Method -->
           <div style="margin-top: 15px; padding: 12px 15px; background: #eff6ff; border-radius: 10px;">
             <p style="margin: 0; font-size: 13px; color: #3b82f6;">
-              💳 Payment Method: <strong>${safePaymentMethod}</strong>
-              ${order.isPaid ? ' — ✅ Confirmed' : ''}
+               Payment Method: <strong>${safePaymentMethod}</strong>
+              ${order.isPaid ? ' —  Confirmed' : ''}
             </p>
           </div>
 
@@ -326,7 +326,7 @@ const paymentReceiptEmail = (order, customerName) => {
           ${order.shippingAddress ? `
           <div style="margin-top: 15px; padding: 12px 15px; background: #fefce8; border-radius: 10px;">
             <p style="margin: 0; font-size: 13px; color: #ca8a04;">
-              📍 Delivery to: <strong>${safeAddress}, ${safeCity}</strong>
+               Delivery to: <strong>${safeAddress}, ${safeCity}</strong>
             </p>
           </div>
           ` : ''}
@@ -334,7 +334,7 @@ const paymentReceiptEmail = (order, customerName) => {
 
         <!-- Footer -->
         <div style="background: #f1f5f9; padding: 20px; text-align: center;">
-          <p style="color: #64748b; font-size: 13px; margin: 0 0 5px;">Thank you for shopping with Mobixa! ✨</p>
+          <p style="color: #64748b; font-size: 13px; margin: 0 0 5px;">Thank you for shopping with Mobixa! </p>
           <p style="color: #94a3b8; font-size: 11px; margin: 0;">© ${new Date().getFullYear()} Mobixa. Premium tech and smart devices delivered with care.</p>
         </div>
       </div>
@@ -422,7 +422,7 @@ const customerReturnUpdateEmail = ({ order, returnDoc }) => {
     html: `
       <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:650px;margin:0 auto;background:#ffffff;">
         <div style="background:linear-gradient(135deg,#059669,#10b981);padding:28px;text-align:center;">
-          <h1 style="color:#fff;margin:0;font-size:26px;">📦 Return Update</h1>
+          <h1 style="color:#fff;margin:0;font-size:26px;"> Return Update</h1>
           <p style="color:#d1fae5;margin:6px 0 0;font-size:13px;">Reference: <strong>${rma}</strong></p>
         </div>
         <div style="padding:24px;">
@@ -462,12 +462,12 @@ const passwordResetOtpEmail = (name, otp) => {
   const safeOtp = escapeHtml(otp);
 
   return {
-    subject: `🔐 Mobixa — Password Reset Verification Code: ${safeOtp}`,
+    subject: `Mobixa — Password Reset Verification Code: ${safeOtp}`,
     html: `
       <div style="font-family: 'Plus Jakarta Sans', 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 20px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
         <!-- Header -->
         <div style="background: linear-gradient(135deg, #0f172a, #1e293b, #2563eb); padding: 35px 30px; text-align: center;">
-          <h1 style="color: white; margin: 0; font-size: 24px; font-weight: 900; letter-spacing: -0.5px;">⚡ MOBIXA</h1>
+          <h1 style="color: white; margin: 0; font-size: 24px; font-weight: 900; letter-spacing: -0.5px;"> MOBIXA</h1>
           <p style="color: #93c5fd; margin: 8px 0 0; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Password Reset Verification Request</p>
         </div>
 
@@ -502,7 +502,7 @@ const passwordResetOtpEmail = (name, otp) => {
 const registrationOtpEmail = (name, otp) => {
   const tpl = passwordResetOtpEmail(name, otp);
   return {
-    subject: `🔐 Mobixa — Registration Verification Code: ${otp}`,
+    subject: `Mobixa — Registration Verification Code: ${otp}`,
     html: tpl.html
       .replace('Password Reset Verification Request', 'Registration Verification Request')
       .replace('We received a request to reset the password for your Mobixa account. Use the 6-digit verification code below to authorize your password reset:', 'Use the 6-digit verification code below to complete your Mobixa registration:')

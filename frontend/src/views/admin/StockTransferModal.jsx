@@ -187,7 +187,7 @@ const StockTransferModal = ({ isOpen, onClose, stores }) => {
 
           {/* Payment & Transfer Method */}
           <div className="border border-card-border rounded-xl p-4 mb-6 bg-slate-50">
-            <h3 className="text-sm font-bold text-dark-navy mb-3">💰 Transfer Valuation & Payment</h3>
+            <h3 className="text-sm font-bold text-dark-navy mb-3"> Transfer Valuation & Payment</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-muted-text mb-1.5">Transfer Mode *</label>

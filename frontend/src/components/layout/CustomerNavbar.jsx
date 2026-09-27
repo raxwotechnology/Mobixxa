@@ -69,14 +69,14 @@ export default function CustomerNavbar() {
         <div className="flex items-center justify-between h-20 gap-4">
           {/* Brand Logo */}
           <Link href="/" className="flex items-center gap-3 group flex-shrink-0">
-            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black text-xl shadow-md shadow-blue-500/30 group-hover:scale-105 transition-transform duration-200">
+            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-md shadow-blue-500/30 group-hover:scale-105 transition-transform duration-200">
               M
             </div>
             <div className="flex flex-col">
-              <span className="font-extrabold text-xl tracking-tight text-slate-900 leading-none">
+              <span className="font-bold text-xl tracking-tight text-slate-900 leading-none">
                 Mobixa
               </span>
-              <span className="text-[10px] font-semibold text-slate-400 tracking-wider mt-1">
+              <span className="text-xs font-semibold text-slate-400 tracking-wider mt-1">
                 MOBILE SHOP ERP
               </span>
             </div>
@@ -136,7 +136,7 @@ export default function CustomerNavbar() {
             >
               <ShoppingBag className="w-5 h-5" />
               {cartCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 bg-blue-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm">
+                <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 bg-blue-600 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-sm">
                   {cartCount}
                 </span>
               )}

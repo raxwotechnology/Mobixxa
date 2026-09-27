@@ -249,8 +249,10 @@ const AdminVouchers = () => {
   if (loading) {
     return (
       <DashboardLayout navItems={navItems} title="Vouchers">
-        <div className="flex items-center justify-center h-64">
-          <div className="w-10 h-10 border-4 border-primary-blue border-t-transparent rounded-full animate-spin" />
+        <div className="ds-page">
+          <div className="ds-loading">
+            <div className="ds-spinner" />
+          </div>
         </div>
       </DashboardLayout>
     );
@@ -258,13 +260,14 @@ const AdminVouchers = () => {
 
   return (
     <DashboardLayout navItems={navItems} title="Vouchers">
-      <div>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl font-semibold text-dark-navy">🎟️ Voucher Management</h1>
-            <p className="text-muted-text text-sm mt-1">{vouchers.length} vouchers total</p>
+      <div className="ds-page">
+        <div className="ds-page-header">
+          <div className="ds-page-header-left">
+            <span className="ds-page-header-badge">Vouchers</span>
+            <h1>Voucher Management</h1>
+            <p>{vouchers.length} vouchers total</p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="ds-page-header-right">
             <button onClick={() => {
               const rows = [['Code', 'Type', 'Value', 'Min Order', 'Max Discount', 'Used', 'Max Uses', 'Per User', 'Expires', 'Status', 'Description']];
               vouchers.forEach(v => {
@@ -285,44 +288,48 @@ const AdminVouchers = () => {
               a.href = url; a.download = `vouchers_export_${new Date().toISOString().split('T')[0]}.csv`;
               a.click(); URL.revokeObjectURL(url);
               toast.success('Vouchers exported!');
-            }} className="flex items-center gap-2 border border-card-border text-dark-navy px-4 py-2.5 rounded-xl font-semibold hover:bg-gray-50 transition-all text-sm">
-              📥 Export CSV
+            }} className="ds-btn ds-btn-secondary">
+               Export CSV
             </button>
-            <button onClick={downloadPDF} className="flex items-center gap-2 border border-red-200 text-red-600 px-4 py-2.5 rounded-xl font-semibold hover:bg-red-50 transition-all text-sm">
+            <button onClick={downloadPDF} className="ds-btn ds-btn-danger">
               <FileText size={16} /> Export PDF
             </button>
-            <button onClick={openCreate} className="flex items-center gap-2 bg-primary-blue text-white px-4 py-2.5 rounded-xl font-semibold hover:bg-emerald-600 shadow-lg shadow-emerald-200 transition-all text-sm">
+            <button onClick={openCreate} className="ds-btn ds-btn-primary">
               <Plus size={18} /> Create Voucher
             </button>
           </div>
         </div>
 
-        <div className="relative mb-6">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input placeholder="Search vouchers..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full sm:w-96 border border-card-border rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" />
+        <div className="ds-card p-4">
+          <div className="ds-filter-bar mb-0">
+            <div className="relative flex-1">
+              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input placeholder="Search vouchers..." value={search} onChange={(e) => setSearch(e.target.value)} className="ds-search pl-10" />
+            </div>
+          </div>
         </div>
 
-        <div className="grid gap-4">
+        <div className="grid gap-4 mt-6">
           {filtered.map((v) => (
-            <div key={v._id} className="bg-white rounded-2xl border border-card-border p-5 shadow-sm hover:shadow-md transition-shadow">
+            <div key={v._id} className="ds-card p-5">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center shadow-lg">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center shadow-lg">
                     <Ticket size={24} className="text-white" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-dark-navy text-lg tracking-wider">{v.code}</span>
+                      <span className="font-mono font-bold text-gray-900 text-lg tracking-wider">{v.code}</span>
                       <button onClick={() => copyCode(v.code, v._id)} className="p-1 rounded-lg hover:bg-gray-100 transition-colors">
-                        {copiedId === v._id ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} className="text-muted-text" />}
+                        {copiedId === v._id ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} className="text-gray-400" />}
                       </button>
                     </div>
-                    <p className="text-xs text-muted-text mt-0.5">{v.description || 'No description'}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{v.description || 'No description'}</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1 border border-card-border rounded-xl px-2 py-1">
+                  <div className="flex items-center gap-1 border border-gray-200 rounded-xl px-2 py-1">
                     <input
                       type="number"
                       min="1"
@@ -341,107 +348,110 @@ const AdminVouchers = () => {
                 </div>
               </div>
 
-              <div className="mt-3 grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">
+              <div className="mt-4 grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">
                 <div className="bg-emerald-50 rounded-xl p-2.5 text-center">
-                  <p className="text-muted-text">Discount</p>
+                  <p className="text-gray-500">Discount</p>
                   <p className="font-bold text-emerald-700 text-sm">{v.type === 'percentage' ? `${v.value}%` : `Rs. ${v.value}`}</p>
                 </div>
                 <div className="bg-blue-50 rounded-xl p-2.5 text-center">
-                  <p className="text-muted-text">Min Order</p>
+                  <p className="text-gray-500">Min Order</p>
                   <p className="font-bold text-blue-700 text-sm">Rs. {v.minOrderAmount || 0}</p>
                 </div>
                 <div className="bg-amber-50 rounded-xl p-2.5 text-center">
-                  <p className="text-muted-text">Used</p>
+                  <p className="text-gray-500">Used</p>
                   <p className="font-bold text-amber-700 text-sm">{v.usedCount || 0} / {v.maxUses || '∞'}</p>
                 </div>
                 <div className="bg-purple-50 rounded-xl p-2.5 text-center">
-                  <p className="text-muted-text">Expires</p>
+                  <p className="text-gray-500">Expires</p>
                   <p className="font-bold text-purple-700 text-sm">{v.expiresAt ? new Date(v.expiresAt).toLocaleDateString() : 'Never'}</p>
                 </div>
-                <div className={`rounded-xl p-2.5 text-center ${v.isActive ? 'bg-emerald-50' : 'bg-red-50'}`}>
-                  <p className="text-muted-text">Status</p>
-                  <p className={`font-bold text-sm ${v.isActive ? 'text-emerald-700' : 'text-red-700'}`}>{v.isActive ? 'Active' : 'Inactive'}</p>
+                <div className="text-center flex items-center justify-center">
+                  <span className={`ds-badge ${v.isActive ? 'ds-badge-green' : 'ds-badge-red'}`}>
+                    {v.isActive ? 'Active' : 'Inactive'}
+                  </span>
                 </div>
               </div>
             </div>
           ))}
           {filtered.length === 0 && (
-            <div className="bg-white rounded-2xl border border-card-border p-12 text-center text-muted-text">
-              <Ticket size={40} className="mx-auto mb-3 text-gray-300" />
-              <p>No vouchers found</p>
+            <div className="ds-card p-12">
+              <div className="ds-empty">
+                <Ticket size={40} className="mx-auto mb-3 text-gray-300" />
+                <p>No vouchers found</p>
+              </div>
             </div>
           )}
         </div>
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
-          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-card-border flex items-center justify-between sticky top-0 bg-white rounded-t-2xl z-10">
-              <h2 className="text-lg font-bold text-dark-navy">{editing ? 'Edit Voucher' : 'Create Voucher'}</h2>
+        <div className="ds-modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="ds-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="ds-modal-header">
+              <h2 className="ds-modal-title">{editing ? 'Edit Voucher' : 'Create Voucher'}</h2>
               <button onClick={() => setShowModal(false)} className="p-1.5 rounded-lg hover:bg-gray-100"><X size={20} /></button>
             </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-dark-navy mb-1">Voucher Code *</label>
-                <input required value={form.code} onChange={(e) => setForm({...form, code: e.target.value.toUpperCase()})} placeholder="e.g. SAVE20" className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue font-mono tracking-wider" />
+            <form onSubmit={handleSubmit} className="ds-modal-body space-y-4">
+              <div className="ds-form-group">
+                <label className="ds-label">Voucher Code *</label>
+                <input required value={form.code} onChange={(e) => setForm({...form, code: e.target.value.toUpperCase()})} placeholder="e.g. SAVE20" className="ds-input font-mono tracking-wider" />
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-dark-navy mb-1">Discount Type</label>
-                  <select value={form.type} onChange={(e) => setForm({...form, type: e.target.value})} className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue">
+                <div className="ds-form-group">
+                  <label className="ds-label">Discount Type</label>
+                  <select value={form.type} onChange={(e) => setForm({...form, type: e.target.value})} className="ds-select">
                     <option value="percentage">Percentage (%)</option>
                     <option value="fixed">Fixed Amount (Rs.)</option>
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-dark-navy mb-1">Value *</label>
-                  <input type="number" required value={form.value} onChange={(e) => setForm({...form, value: e.target.value})} placeholder={form.type === 'percentage' ? 'e.g. 10' : 'e.g. 500'} className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" />
+                <div className="ds-form-group">
+                  <label className="ds-label">Value *</label>
+                  <input type="number" required value={form.value} onChange={(e) => setForm({...form, value: e.target.value})} placeholder={form.type === 'percentage' ? 'e.g. 10' : 'e.g. 500'} className="ds-input" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-dark-navy mb-1">Min Order (Rs.)</label>
-                  <input type="number" value={form.minOrderAmount} onChange={(e) => setForm({...form, minOrderAmount: e.target.value})} className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" />
+                <div className="ds-form-group">
+                  <label className="ds-label">Min Order (Rs.)</label>
+                  <input type="number" value={form.minOrderAmount} onChange={(e) => setForm({...form, minOrderAmount: e.target.value})} className="ds-input" />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-dark-navy mb-1">Max Uses</label>
-                  <input type="number" value={form.maxUses} onChange={(e) => setForm({...form, maxUses: e.target.value})} className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" />
+                <div className="ds-form-group">
+                  <label className="ds-label">Max Uses</label>
+                  <input type="number" value={form.maxUses} onChange={(e) => setForm({...form, maxUses: e.target.value})} className="ds-input" />
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-dark-navy mb-1">Usage Limit Per User</label>
-                <input type="number" value={form.perUserMaxUses} onChange={(e) => setForm({...form, perUserMaxUses: e.target.value})} className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" />
+              <div className="ds-form-group">
+                <label className="ds-label">Usage Limit Per User</label>
+                <input type="number" value={form.perUserMaxUses} onChange={(e) => setForm({...form, perUserMaxUses: e.target.value})} className="ds-input" />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-dark-navy mb-1">Expiry Date</label>
-                <input type="date" value={form.expiresAt} onChange={(e) => setForm({...form, expiresAt: e.target.value})} className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" />
+              <div className="ds-form-group">
+                <label className="ds-label">Expiry Date</label>
+                <input type="date" value={form.expiresAt} onChange={(e) => setForm({...form, expiresAt: e.target.value})} className="ds-input" />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-dark-navy mb-1">Description</label>
-                <input value={form.description} onChange={(e) => setForm({...form, description: e.target.value})} placeholder="e.g. 10% off for new users" className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" />
+              <div className="ds-form-group">
+                <label className="ds-label">Description</label>
+                <input value={form.description} onChange={(e) => setForm({...form, description: e.target.value})} placeholder="e.g. 10% off for new users" className="ds-input" />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-dark-navy mb-1">Applicable Product IDs (optional)</label>
+              <div className="ds-form-group">
+                <label className="ds-label">Applicable Product IDs (optional)</label>
                 <input
                   value={form.applicableProductIds}
                   onChange={(e) => setForm({ ...form, applicableProductIds: e.target.value })}
                   placeholder="comma separated product ids"
-                  className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  className="ds-input"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-dark-navy mb-1">Applicable Category IDs (optional)</label>
+              <div className="ds-form-group">
+                <label className="ds-label">Applicable Category IDs (optional)</label>
                 <input
                   value={form.applicableCategoryIds}
                   onChange={(e) => setForm({ ...form, applicableCategoryIds: e.target.value })}
                   placeholder="comma separated category ids"
-                  className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  className="ds-input"
                 />
               </div>
-              <div className="flex gap-3 pt-2">
-                <button type="submit" className="flex-1 bg-primary-blue text-white py-2.5 rounded-xl font-semibold hover:bg-emerald-600 transition-all text-sm">{editing ? 'Update' : 'Create'}</button>
-                <button type="button" onClick={() => setShowModal(false)} className="flex-1 border border-card-border py-2.5 rounded-xl font-semibold text-muted-text hover:bg-gray-50 text-sm">Cancel</button>
+              <div className="ds-modal-footer flex gap-3 pt-2">
+                <button type="submit" className="ds-btn ds-btn-primary flex-1">{editing ? 'Update' : 'Create'}</button>
+                <button type="button" onClick={() => setShowModal(false)} className="ds-btn ds-btn-secondary flex-1">Cancel</button>
               </div>
             </form>
           </div>
@@ -450,125 +460,122 @@ const AdminVouchers = () => {
 
       {/* Live Voucher Preview & Export Modal */}
       {showVoucherPreviewModal && selectedVoucherForPreview && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center p-4 z-[100] animate-fade-in">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100 relative text-center">
-            <button
-              onClick={() => setShowVoucherPreviewModal(false)}
-              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 bg-slate-100 rounded-full cursor-pointer transition-colors"
-            >
-              <X size={16} />
-            </button>
-
-            <div className="w-12 h-12 rounded-2xl bg-pink-50 text-pink-600 flex items-center justify-center mx-auto mb-2">
-              <Ticket size={24} />
+        <div className="ds-modal-overlay" onClick={() => setShowVoucherPreviewModal(false)}>
+          <div className="ds-modal max-w-md text-center" onClick={(e) => e.stopPropagation()}>
+            <div className="ds-modal-header relative">
+              <h3 className="ds-modal-title absolute">Live Voucher Preview</h3>
+              <button
+                onClick={() => setShowVoucherPreviewModal(false)}
+                className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-700 bg-gray-100 rounded-full cursor-pointer transition-colors"
+              >
+                <X size={16} />
+              </button>
             </div>
-            <h3 className="text-lg font-black text-slate-900 m-0">Live Voucher Preview</h3>
-            <p className="text-xs text-slate-500 font-semibold mt-0.5">
-              Preview discount voucher ticket & export options
-            </p>
-
-            {/* Voucher Card Container */}
-            <div className="my-5 p-5 bg-gradient-to-br from-pink-50 via-purple-50 to-white border-2 border-dashed border-pink-400 rounded-3xl relative overflow-hidden shadow-inner text-center">
-              <div className="absolute top-[-30px] right-[-30px] w-24 h-24 bg-pink-500/10 rounded-full pointer-events-none" />
-              <div className="absolute bottom-[-20px] left-[-20px] w-20 h-20 bg-purple-500/10 rounded-full pointer-events-none" />
-
-              <p className="text-sm font-black text-slate-900 uppercase tracking-widest m-0">
-                {settings?.shopName || 'Mobixa'}
-              </p>
-              <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest mt-0.5 m-0 mb-3">
-                Official Discount Voucher
+            <div className="ds-modal-body p-6">
+              <div className="w-12 h-12 rounded-xl bg-pink-50 text-pink-600 flex items-center justify-center mx-auto mb-2">
+                <Ticket size={24} />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 m-0">Live Voucher Preview</h3>
+              <p className="text-xs text-gray-500 font-semibold mt-0.5">
+                Preview discount voucher ticket & export options
               </p>
 
-              <div className="bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-2xl py-3 px-5 shadow-md mb-3">
-                <p className="text-2xl font-black tracking-wider m-0">
-                  {selectedVoucherForPreview.type === 'percentage'
-                    ? `${selectedVoucherForPreview.value}% OFF`
-                    : `Rs. ${selectedVoucherForPreview.value} OFF`}
+              {/* Voucher Card Container */}
+              <div className="my-5 p-5 bg-gradient-to-br from-pink-50 via-purple-50 to-white border-2 border-dashed border-pink-400 rounded-2xl relative overflow-hidden shadow-inner text-center">
+                <div className="absolute top-[-30px] right-[-30px] w-24 h-24 bg-pink-500/10 rounded-full pointer-events-none" />
+                <div className="absolute bottom-[-20px] left-[-20px] w-20 h-20 bg-purple-500/10 rounded-full pointer-events-none" />
+
+                <p className="text-sm font-bold text-gray-900 uppercase tracking-widest m-0">
+                  {settings?.shopName || 'Mobixa'}
                 </p>
+                <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-0.5 m-0 mb-3">
+                  Official Discount Voucher
+                </p>
+
+                <div className="bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl py-3 px-5 shadow-md mb-3">
+                  <p className="text-2xl font-bold tracking-wider m-0">
+                    {selectedVoucherForPreview.type === 'percentage'
+                      ? `${selectedVoucherForPreview.value}% OFF`
+                      : `Rs. ${selectedVoucherForPreview.value} OFF`}
+                  </p>
+                </div>
+
+                <div className="bg-white/90 border border-dashed border-pink-400 rounded-xl p-2.5 mb-3 flex items-center justify-center gap-2">
+                  <span className="font-mono text-xl font-bold text-pink-600 tracking-widest">
+                    {selectedVoucherForPreview.code}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => copyCode(selectedVoucherForPreview.code, selectedVoucherForPreview._id)}
+                    className="p-1 rounded-lg hover:bg-pink-100 text-pink-600 transition-colors border-0 bg-transparent cursor-pointer"
+                  >
+                    {copiedId === selectedVoucherForPreview._id ? <Check size={16} /> : <Copy size={16} />}
+                  </button>
+                </div>
+
+                <div className="flex justify-between items-center text-xs font-bold text-gray-600 px-1 mb-2">
+                  <span>Min Order: Rs. {selectedVoucherForPreview.minOrderAmount || 0}</span>
+                  <span>
+                    Expires:{' '}
+                    {selectedVoucherForPreview.expiresAt
+                      ? new Date(selectedVoucherForPreview.expiresAt).toLocaleDateString()
+                      : 'Never'}
+                  </span>
+                </div>
+
+                {selectedVoucherForPreview.description && (
+                  <p className="text-xs text-gray-500 font-medium italic m-0">
+                    "{selectedVoucherForPreview.description}"
+                  </p>
+                )}
               </div>
 
-              <div className="bg-white/90 border border-dashed border-pink-400 rounded-xl p-2.5 mb-3 flex items-center justify-center gap-2">
-                <span className="font-mono text-xl font-black text-pink-600 tracking-widest">
-                  {selectedVoucherForPreview.code}
-                </span>
+              {/* Quantity Selector */}
+              <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-xl p-3 mb-5">
+                <span className="text-xs font-bold text-gray-700">Print / Export Quantity:</span>
+                <div className="flex items-center gap-1.5">
+                  {[1, 2, 5, 10].map(qty => (
+                    <button
+                      key={qty}
+                      type="button"
+                      onClick={() => setPrintQty(prev => ({ ...prev, [selectedVoucherForPreview._id]: qty }))}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border-0 cursor-pointer ${
+                        (printQty[selectedVoucherForPreview._id] || 1) === qty
+                          ? 'bg-gray-900 text-white shadow-xs'
+                          : 'bg-white text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      {qty}x
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Modal Actions */}
+              <div className="ds-modal-footer flex gap-2 w-full p-0 border-0">
                 <button
                   type="button"
-                  onClick={() => copyCode(selectedVoucherForPreview.code, selectedVoucherForPreview._id)}
-                  className="p-1 rounded-lg hover:bg-pink-100 text-pink-600 transition-colors border-0 bg-transparent cursor-pointer"
+                  onClick={() => exportVoucherPDF(selectedVoucherForPreview, printQty[selectedVoucherForPreview._id] || 1)}
+                  className="ds-btn ds-btn-primary flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 border-0"
                 >
-                  {copiedId === selectedVoucherForPreview._id ? <Check size={16} /> : <Copy size={16} />}
+                  <FileText size={15} /> Export PDF
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    printVoucher(selectedVoucherForPreview);
+                  }}
+                  className="ds-btn ds-btn-secondary flex-1 bg-gray-900 text-white hover:bg-gray-800 border-0"
+                >
+                  <Printer size={15} /> Instant Print
                 </button>
               </div>
-
-              <div className="flex justify-between items-center text-xs font-bold text-slate-600 px-1 mb-2">
-                <span>Min Order: Rs. {selectedVoucherForPreview.minOrderAmount || 0}</span>
-                <span>
-                  Expires:{' '}
-                  {selectedVoucherForPreview.expiresAt
-                    ? new Date(selectedVoucherForPreview.expiresAt).toLocaleDateString()
-                    : 'Never'}
-                </span>
-              </div>
-
-              {selectedVoucherForPreview.description && (
-                <p className="text-xs text-slate-500 font-medium italic m-0">
-                  "{selectedVoucherForPreview.description}"
-                </p>
-              )}
-            </div>
-
-            {/* Quantity Selector */}
-            <div className="flex items-center justify-between bg-slate-50 border border-slate-200/80 rounded-2xl p-3 mb-5">
-              <span className="text-xs font-bold text-slate-700">Print / Export Quantity:</span>
-              <div className="flex items-center gap-1.5">
-                {[1, 2, 5, 10].map(qty => (
-                  <button
-                    key={qty}
-                    type="button"
-                    onClick={() => setPrintQty(prev => ({ ...prev, [selectedVoucherForPreview._id]: qty }))}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all border-0 cursor-pointer ${
-                      (printQty[selectedVoucherForPreview._id] || 1) === qty
-                        ? 'bg-slate-900 text-white shadow-xs'
-                        : 'bg-white text-slate-600 hover:bg-slate-200'
-                    }`}
-                  >
-                    {qty}x
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Modal Actions */}
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => exportVoucherPDF(selectedVoucherForPreview, printQty[selectedVoucherForPreview._id] || 1)}
-                className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black py-3 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer border-0"
-              >
-                <FileText size={15} /> Export PDF
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  printVoucher(selectedVoucherForPreview);
-                }}
-                className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-black py-3 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer border-0"
-              >
-                <Printer size={15} /> Instant Print
-              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Hidden Printable Voucher Container for Direct Clean Print without popup windows or black screen.
-          id="pos-receipt-content" is the same convention InvoiceModal/ManagerRepairs/AdminOrders/
-          AdminBarcodes use — index.css/globals.css hide the rest of the page and pin this via
-          position:fixed for print. The previous "#voucher-print-area" + "body.printing-voucher" pairing
-          relied on a body class that nothing ever set, and even fixed, the app's other unconditional
-          print rule (visibility:hidden on every body descendant) still had nothing un-hiding this
-          element's own children — so printing here previously printed the whole dashboard, not just
-          the voucher. */}
+      {/* Hidden Printable Voucher Container for Direct Clean Print */}
       {selectedVoucherForPreview && (
         <div id="pos-receipt-content" className="hidden print:block">
           {Array(printQty[selectedVoucherForPreview._id] || 1).fill(0).map((_, idx) => (

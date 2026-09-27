@@ -46,7 +46,7 @@ const CartPage = () => {
           <div className="w-20 h-20 bg-brand-indigo/5 border border-brand-indigo/10 rounded-full mx-auto mb-6 flex items-center justify-center">
             <ShoppingBag size={32} className="text-brand-indigo" />
           </div>
-          <h2 className="text-2xl font-black text-slate-800 mb-2 mt-0">Your Cart is Empty</h2>
+          <h2 className="text-2xl font-bold text-slate-800 mb-2 mt-0">Your Cart is Empty</h2>
           <p className="text-slate-400 text-sm mb-6 font-medium">Looks like you haven't added anything to your cart yet.</p>
           <Link
             to="/shop"
@@ -60,15 +60,18 @@ const CartPage = () => {
   }
 
   return (
-    <div className="base-container py-10">
-      <h1 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight mt-0 mb-8 border-b border-slate-100 pb-4">
-        Shopping Cart <span className="text-slate-400 font-bold text-base md:text-lg">({items.length} items)</span>
-      </h1>
+    <div className="ds-page">
+      <div className="ds-page-header">
+        <div>
+          <h1 className="ds-page-title">Shopping Cart</h1>
+          <p className="ds-page-subtitle">Review items, adjust quantities, and proceed to checkout ({items.length} items)</p>
+        </div>
+      </div>
 
-      <div className="flex flex-col lg:flex-row gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Cart Items */}
-        <div className="flex-1 w-full">
-          <div className="bg-white border border-slate-200/60 rounded-[2rem] overflow-hidden shadow-sm">
+        <div className="lg:col-span-8 space-y-4">
+          <div className="ds-card p-0 overflow-hidden divide-y divide-slate-100">
             <AnimatePresence>
               {items.map((item, i) => {
                 const product = item.productId || {};
@@ -88,28 +91,28 @@ const CartPage = () => {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20, height: 0 }}
                     transition={{ delay: i * 0.05, duration: 0.3 }}
-                    className="flex flex-wrap sm:flex-nowrap items-center gap-4 p-5 border-b border-slate-100 last:border-b-0 relative"
+                    className="flex flex-wrap sm:flex-nowrap items-center gap-4 p-4 sm:p-5"
                   >
                     {/* Product Image */}
                     <Link to={`/product/${productId}`} className="flex-shrink-0">
                       <img
                         src={getImageUrl(image) || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&auto=format&fit=crop&q=60'}
                         alt={name}
-                        className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border border-slate-100 p-1"
+                        className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover border border-slate-200/80 p-1 bg-white"
                         onError={(e) => handleImageError(e, 'Product')}
                       />
                     </Link>
 
                     {/* Details */}
-                    <div className="flex-1 min-w-[140px]">
-                      <Link to={`/product/${productId}`} className="font-bold text-slate-800 hover:text-brand-indigo transition-colors text-sm sm:text-base block line-clamp-2 leading-snug">
+                    <div className="flex-1 min-w-[150px]">
+                      <Link to={`/product/${productId}`} className="font-semibold text-slate-800 hover:text-blue-600 transition-colors text-sm sm:text-base block line-clamp-2 leading-snug">
                         {name}
                       </Link>
-                      {unit && <p className="text-[10px] font-bold text-slate-400 m-0 mt-1 uppercase tracking-wide">per {unit}</p>}
+                      {unit && <p className="text-xs font-medium text-slate-400 m-0 mt-1 uppercase tracking-wide">per {unit}</p>}
                       <div className="flex items-center gap-2 mt-1.5">
-                        <span className="font-extrabold text-slate-800 text-sm">{formatPrice(convertPrice(price))}</span>
+                        <span className="font-bold text-slate-900 text-sm">{formatPrice(convertPrice(price))}</span>
                         {mrp > price && (
-                          <span className="text-xs text-slate-400 line-through font-semibold">{formatPrice(convertPrice(mrp))}</span>
+                          <span className="text-xs text-slate-400 line-through font-medium">{formatPrice(convertPrice(mrp))}</span>
                         )}
                       </div>
                     </div>
@@ -117,20 +120,20 @@ const CartPage = () => {
                     {/* Quantity & Actions wrapper */}
                     <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100 mt-2 sm:mt-0">
                       {/* Quantity */}
-                      <div className="flex items-center border border-slate-200 rounded-xl overflow-hidden bg-slate-50">
+                      <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden bg-slate-50">
                         <button
                           onClick={() => handleQuantityChange(productId, item.quantity - 1)}
-                          className="w-8 h-8 flex items-center justify-center hover:bg-slate-205 transition-colors cursor-pointer text-slate-500"
+                          className="w-8 h-8 flex items-center justify-center hover:bg-slate-200 transition-colors cursor-pointer text-slate-600"
                           disabled={item.quantity <= 1}
                         >
                           <Minus size={12} />
                         </button>
-                        <span className="w-10 h-8 flex items-center justify-center border-x border-slate-200 text-xs font-bold text-slate-800">
+                        <span className="w-10 h-8 flex items-center justify-center border-x border-slate-200 text-xs font-bold text-slate-800 font-mono">
                           {item.quantity}
                         </span>
                         <button
                           onClick={() => handleQuantityChange(productId, item.quantity + 1)}
-                          className="w-8 h-8 flex items-center justify-center hover:bg-slate-205 transition-colors cursor-pointer text-slate-500"
+                          className="w-8 h-8 flex items-center justify-center hover:bg-slate-200 transition-colors cursor-pointer text-slate-600"
                           disabled={item.quantity >= stock}
                         >
                           <Plus size={12} />
@@ -138,17 +141,17 @@ const CartPage = () => {
                       </div>
 
                       {/* Line Total */}
-                      <div className="text-right min-w-[80px]">
-                        <span className="font-black text-blue-600 text-base sm:text-lg">{formatPrice(convertPrice(price * item.quantity))}</span>
+                      <div className="text-right min-w-[90px]">
+                        <span className="font-bold text-blue-600 text-base sm:text-lg tabular-nums">{formatPrice(convertPrice(price * item.quantity))}</span>
                       </div>
 
                       {/* Remove */}
                       <button
                         onClick={() => handleRemove(productId, name)}
-                        className="text-slate-400 hover:text-rose-500 transition-colors p-2 rounded-xl hover:bg-rose-50 cursor-pointer border-0 bg-transparent"
+                        className="text-slate-400 hover:text-rose-600 transition-colors p-2 rounded-lg hover:bg-rose-50 cursor-pointer border-0 bg-transparent"
                         title="Remove item"
                       >
-                        <Trash2 size={15} />
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </motion.div>
@@ -159,59 +162,59 @@ const CartPage = () => {
         </div>
 
         {/* Order Summary */}
-        <div className="lg:w-96 w-full">
+        <div className="lg:col-span-4 w-full">
           <motion.div
-            className="bg-white border border-slate-200/80 rounded-[2rem] p-6 lg:p-8 sticky top-24 shadow-md"
+            className="ds-card sticky top-24"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.2 }}
           >
-            <h3 className="font-black text-slate-900 text-xl mt-0 mb-5 border-b border-slate-100 pb-3 tracking-tight">Order Summary</h3>
+            <h3 className="font-semibold text-slate-900 text-base mt-0 mb-4 border-b border-slate-100 pb-3">Order Summary</h3>
 
-            <div className="space-y-4 mb-5">
-              <div className="flex justify-between text-xs font-bold uppercase tracking-wider text-slate-500">
+            <div className="space-y-3 mb-5">
+              <div className="flex justify-between items-center text-xs font-semibold text-slate-500 uppercase tracking-wide">
                 <span>Subtotal</span>
-                <span className="text-slate-800 font-black text-sm">{formatPrice(convertPrice(subtotal))}</span>
+                <span className="text-slate-900 font-bold text-sm tabular-nums">{formatPrice(convertPrice(subtotal))}</span>
               </div>
-              <div className="flex justify-between text-xs font-bold uppercase tracking-wider text-slate-500">
+              <div className="flex justify-between items-center text-xs font-semibold text-slate-500 uppercase tracking-wide">
                 <span>Delivery Fee</span>
-                <span className="text-slate-800 font-black text-sm">
+                <span className="text-slate-900 font-bold text-sm tabular-nums">
                   {deliveryFee === 0 ? (
-                    <span className="text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full font-black">FREE</span>
+                    <span className="ds-badge-green font-bold text-xs">FREE</span>
                   ) : (
                     formatPrice(convertPrice(deliveryFee))
                   )}
                 </span>
               </div>
-              <div className="flex justify-between text-xs font-bold uppercase tracking-wider text-slate-500">
+              <div className="flex justify-between items-center text-xs font-semibold text-slate-500 uppercase tracking-wide">
                 <span>Tax (8%)</span>
-                <span className="text-slate-800 font-black text-sm">{formatPrice(convertPrice(tax))}</span>
+                <span className="text-slate-900 font-bold text-sm tabular-nums">{formatPrice(convertPrice(tax))}</span>
               </div>
               {subtotal < 50 && (
-                <p className="text-xs text-blue-700 bg-blue-50 border border-blue-200/80 rounded-xl px-4 py-3 m-0 font-semibold">
+                <div className="text-xs text-blue-700 bg-blue-50 border border-blue-200/80 rounded-lg p-3 font-medium">
                   Add {formatPrice(convertPrice(50 - subtotal))} more for free delivery!
-                </p>
+                </div>
               )}
             </div>
 
-            <div className="border-t border-slate-100 pt-5 mb-6">
+            <div className="border-t border-slate-100 pt-4 mb-5">
               <div className="flex justify-between items-baseline">
-                <span className="font-black text-slate-900 text-lg">Total</span>
-                <span className="font-black text-blue-600 text-2xl tracking-tight">{formatPrice(convertPrice(total))}</span>
+                <span className="font-semibold text-slate-900 text-sm">Total</span>
+                <span className="font-bold text-blue-600 text-xl tracking-tight tabular-nums">{formatPrice(convertPrice(total))}</span>
               </div>
             </div>
 
             {user ? (
               <Link
                 to="/checkout"
-                className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-black text-sm py-4 px-6 rounded-2xl transition-all shadow-[0_4px_16px_rgba(37,99,235,0.35)] hover:shadow-[0_6px_22px_rgba(37,99,235,0.45)] hover:-translate-y-0.5 flex items-center justify-center gap-2 cursor-pointer no-underline"
+                className="ds-btn ds-btn-primary w-full justify-center text-sm py-3 cursor-pointer no-underline"
               >
-                Proceed to Checkout <ArrowRight size={16} />
+                Proceed to Checkout <ArrowRight size={15} />
               </Link>
             ) : (
               <Link
                 to="/login"
-                className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-black text-sm py-4 px-6 rounded-2xl transition-all shadow-[0_4px_16px_rgba(37,99,235,0.35)] hover:shadow-[0_6px_22px_rgba(37,99,235,0.45)] hover:-translate-y-0.5 flex items-center justify-center gap-2 text-center cursor-pointer no-underline"
+                className="ds-btn ds-btn-primary w-full justify-center text-sm py-3 text-center cursor-pointer no-underline"
               >
                 Sign In to Checkout
               </Link>
@@ -219,9 +222,9 @@ const CartPage = () => {
 
             <Link
               to="/shop"
-              className="block text-center text-xs font-extrabold text-blue-600 hover:text-blue-700 mt-5 uppercase tracking-wider no-underline"
+              className="block text-center text-xs font-semibold text-slate-500 hover:text-blue-600 mt-4 tracking-wide no-underline transition-colors"
             >
-              Continue Shopping
+              ← Continue Shopping
             </Link>
           </motion.div>
         </div>

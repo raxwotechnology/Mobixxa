@@ -131,7 +131,7 @@ const ManagerTargets = () => {
               </div>
               <h1 className="text-2xl font-semibold text-slate-900 m-0">Employee Targets</h1>
             </div>
-            <p className="text-[10px] font-normal uppercase tracking-wider text-slate-500 mt-2 m-0">Current period: {targets.length} targets assigned, {completedCount} completed</p>
+            <p className="text-xs font-normal uppercase tracking-wider text-slate-500 mt-2 m-0">Current period: {targets.length} targets assigned, {completedCount} completed</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <select value={filterMonth} onChange={(e) => setFilterMonth(Number(e.target.value))}
@@ -142,7 +142,7 @@ const ManagerTargets = () => {
               className="bg-white/80 border border-slate-200 rounded-xl py-2 px-3.5 text-xs font-bold text-slate-700 outline-none cursor-pointer focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo">
               {[2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
             </select>
-            <button onClick={() => setShowModal(true)} className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
+            <button onClick={() => setShowModal(true)} className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
               <Plus size={14} /> Assign Target
             </button>
           </div>
@@ -162,7 +162,7 @@ const ManagerTargets = () => {
                   </div>
                   <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${isCompleted ? 'bg-emerald-100 text-emerald-700' : t.status === 'missed' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'
                     }`}>
-                    {isCompleted ? '✅ Done' : t.status === 'missed' ? '❌ Missed' : '🔄 Active'}
+                    {isCompleted ? 'Done' : t.status === 'missed' ? 'Missed' : 'Active'}
                   </span>
                   <button onClick={() => handleDeleteClick(t)} className="ml-2 text-red-500 hover:text-red-700 p-1 rounded-md hover:bg-red-50">
                     <Trash2 size={16} />
@@ -184,7 +184,7 @@ const ManagerTargets = () => {
                   <span className="text-xs text-muted-text">{progress}%</span>
                   <div className="flex gap-1">
                     {!isCompleted && t.targetType === 'sales' && (
-                      <span className="text-[10px] uppercase font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-lg">Live · from POS sales</span>
+                      <span className="text-xs uppercase font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-lg">Live · from POS sales</span>
                     )}
                     {!isCompleted && t.targetType !== 'sales' && (
                       <button onClick={() => handleUpdateProgress(t._id, t.achievedValue)} className="text-xs bg-blue-50 text-blue-600 px-3 py-1 rounded-lg hover:bg-blue-100 font-medium">Update</button>

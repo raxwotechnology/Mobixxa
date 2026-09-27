@@ -146,19 +146,19 @@ const AdminCashierAccountability = ({ navItems: propNavItems }) => {
 
   return (
     <DashboardLayout navItems={navItems} title="Cashier Cash Accountability">
-      <div>
+      <div className="ds-page">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm relative overflow-hidden mb-6">
-          <div className="relative">
-            <h1 className="text-2xl font-semibold text-slate-900 tracking-tight flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-rose-100 flex items-center justify-center text-rose-600">
-                <ShieldAlert size={18} />
-              </div>
-              Cashier Cash Accountability
-            </h1>
-            <p className="text-sm font-normal text-slate-500 mt-1">Per-cashier cash shortages, recoveries, and outstanding balances</p>
+        <div className="ds-page-header">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700">
+              <ShieldAlert size={20} strokeWidth={2} />
+            </div>
+            <div>
+              <h1 className="ds-page-title">Cashier Cash Accountability</h1>
+              <p className="ds-page-subtitle">Per-cashier cash shortages, recoveries, and outstanding balances</p>
+            </div>
           </div>
-          <div className="flex gap-2 flex-wrap items-center relative z-10">
+          <div className="flex gap-2 flex-wrap items-center">
             <div className="w-48">
               <EmployeeSelector
                 multiple={false}
@@ -168,45 +168,42 @@ const AdminCashierAccountability = ({ navItems: propNavItems }) => {
                 triggerLabel="All Cashiers"
               />
             </div>
-            <input type="date" value={dateRange.startDate} onChange={(e) => setDateRange((r) => ({ ...r, startDate: e.target.value }))} className="bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 shadow-sm" />
-            <input type="date" value={dateRange.endDate} onChange={(e) => setDateRange((r) => ({ ...r, endDate: e.target.value }))} className="bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 shadow-sm" />
+            <input type="date" value={dateRange.startDate} onChange={(e) => setDateRange((r) => ({ ...r, startDate: e.target.value }))} className="ds-input py-2 px-3 text-xs w-auto" />
+            <input type="date" value={dateRange.endDate} onChange={(e) => setDateRange((r) => ({ ...r, endDate: e.target.value }))} className="ds-input py-2 px-3 text-xs w-auto" />
           </div>
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-          <div className="glass-card rounded-2xl p-6 relative overflow-hidden">
-            <div className="w-10 h-10 rounded-2xl bg-rose-100/50 flex items-center justify-center mb-4">
-              <TrendingDown size={20} className="text-rose-600" strokeWidth={2.5} />
-            </div>
-            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">Total Shortage Accumulated</p>
-            <p className="text-2xl font-black text-rose-600 tracking-tight">Rs. {totalShortage.toLocaleString()}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="ds-stat">
+            <div className="ds-stat-label text-rose-600">Total Shortage Accumulated</div>
+            <div className="ds-stat-value text-rose-600">Rs. {totalShortage.toLocaleString()}</div>
+            <p className="ds-stat-sub">Cumulative deficits</p>
           </div>
-          <div className="glass-card rounded-2xl p-6 relative overflow-hidden">
-            <div className="w-10 h-10 rounded-2xl bg-teal-100/50 flex items-center justify-center mb-4">
-              <TrendingUp size={20} className="text-emerald-600" strokeWidth={2.5} />
-            </div>
-            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">Total Recovered</p>
-            <p className="text-2xl font-black text-emerald-600 tracking-tight">Rs. {totalRecovered.toLocaleString()}</p>
+          <div className="ds-stat">
+            <div className="ds-stat-label text-emerald-600">Total Recovered</div>
+            <div className="ds-stat-value text-emerald-600">Rs. {totalRecovered.toLocaleString()}</div>
+            <p className="ds-stat-sub">Recovered to date</p>
           </div>
-          <div className="glass-card rounded-2xl p-6 relative overflow-hidden">
-            <div className="w-10 h-10 rounded-2xl bg-amber-100/50 flex items-center justify-center mb-4">
-              <Wallet size={20} className="text-amber-600" strokeWidth={2.5} />
-            </div>
-            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">Outstanding (All Cashiers)</p>
-            <p className="text-2xl font-black text-amber-600 tracking-tight">Rs. {totalOutstanding.toLocaleString()}</p>
+          <div className="ds-stat">
+            <div className="ds-stat-label text-amber-600">Outstanding (All Cashiers)</div>
+            <div className="ds-stat-value text-amber-600">Rs. {totalOutstanding.toLocaleString()}</div>
+            <p className="ds-stat-sub">Pending recovery</p>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex flex-wrap gap-2 bg-slate-100/50 p-1.5 rounded-2xl w-max mb-6">
+        <div className="ds-tab-bar">
           {[
-            { key: 'summary', label: '👤 Per-Cashier Summary' },
-            { key: 'sheet', label: '📋 Detail Sheet' },
-            { key: 'history', label: '🕒 Recovery History' },
+            { key: 'summary', label: 'Per-Cashier Summary' },
+            { key: 'sheet', label: 'Detail Sheet' },
+            { key: 'history', label: 'Recovery History' },
           ].map((t) => (
-            <button key={t.key} onClick={() => setTab(t.key)}
-              className={`py-2.5 px-5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all duration-300 ${tab === t.key ? 'bg-white text-brand-fuchsia shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 border border-transparent'}`}>
+            <button 
+              key={t.key} 
+              onClick={() => setTab(t.key)}
+              className={`ds-tab-btn ${tab === t.key ? 'active' : ''}`}
+            >
               {t.label}
             </button>
           ))}
@@ -216,91 +213,91 @@ const AdminCashierAccountability = ({ navItems: propNavItems }) => {
         {tab === 'summary' && (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {summary.map((row) => (
-              <div key={row.cashierId} className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm relative overflow-hidden">
+              <div key={row.cashierId} className="ds-card p-5">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 font-black">
+                  <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 font-bold text-xs">
                     {row.cashier?.name?.charAt(0)?.toUpperCase() || '?'}
                   </div>
                   <div>
-                    <p className="font-black text-sm text-slate-900">{row.cashier?.name || 'Unknown'}</p>
-                    <p className="text-xs text-slate-400">{row.cashier?.email}</p>
+                    <p className="font-semibold text-xs text-slate-900 m-0">{row.cashier?.name || 'Unknown'}</p>
+                    <p className="text-[0.7rem] text-slate-400 m-0">{row.cashier?.email}</p>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3 text-xs mb-4">
+                <div className="grid grid-cols-2 gap-3 text-xs mb-4 p-3 bg-slate-50/70 rounded-xl border border-slate-100">
                   <div>
-                    <span className="text-[9px] font-black uppercase tracking-wider text-slate-500 block">Shortage</span>
-                    <span className="font-black text-rose-600">Rs. {row.totalShortage.toLocaleString()}</span>
+                    <span className="text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 block">Shortage</span>
+                    <span className="font-bold text-rose-600 text-xs">Rs. {row.totalShortage.toLocaleString()}</span>
                   </div>
                   <div>
-                    <span className="text-[9px] font-black uppercase tracking-wider text-slate-500 block">Recovered</span>
-                    <span className="font-black text-emerald-600">Rs. {row.totalRecovered.toLocaleString()}</span>
+                    <span className="text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 block">Recovered</span>
+                    <span className="font-bold text-emerald-600 text-xs">Rs. {row.totalRecovered.toLocaleString()}</span>
                   </div>
                   <div>
-                    <span className="text-[9px] font-black uppercase tracking-wider text-slate-500 block">Over (separate)</span>
-                    <span className="font-black text-slate-600">Rs. {row.totalOver.toLocaleString()}</span>
+                    <span className="text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 block">Over (sep)</span>
+                    <span className="font-semibold text-slate-700 text-xs">Rs. {row.totalOver.toLocaleString()}</span>
                   </div>
                   <div>
-                    <span className="text-[9px] font-black uppercase tracking-wider text-slate-500 block">Outstanding</span>
-                    <span className="font-black text-amber-600">Rs. {row.outstanding.toLocaleString()}</span>
+                    <span className="text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 block">Outstanding</span>
+                    <span className="font-bold text-amber-600 text-xs">Rs. {row.outstanding.toLocaleString()}</span>
                   </div>
                 </div>
                 <button
                   disabled={row.outstanding <= 0}
                   onClick={() => openDeductionModal(row)}
-                  className="w-full bg-slate-900 hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white text-[11px] font-black uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all"
+                  className="ds-btn ds-btn-primary w-full justify-center text-xs"
                 >
                   Record Deduction
                 </button>
               </div>
             ))}
             {summary.length === 0 && (
-              <div className="col-span-full py-16 text-center text-[11px] font-black uppercase tracking-wider text-slate-400">No cashiers found</div>
+              <div className="col-span-full py-16 text-center text-xs text-slate-400">No cashiers found</div>
             )}
           </div>
         )}
 
         {/* Detail Sheet */}
         {tab === 'sheet' && (
-          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+          <div className="ds-table-wrap">
             <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="bg-slate-50 text-[10px] uppercase font-black tracking-wider text-slate-500 border-b border-slate-200">
+              <table className="ds-table">
+                <thead>
                   <tr>
-                    <th className="px-6 py-4">Date</th>
-                    <th className="px-4 py-4">Cashier</th>
-                    <th className="px-4 py-4 text-right">Expected</th>
-                    <th className="px-4 py-4 text-right">Counted</th>
-                    <th className="px-4 py-4 text-right">Variance</th>
-                    <th className="px-4 py-4 text-center">Status</th>
-                    <th className="px-4 py-4">Note</th>
-                    <th className="px-6 py-4 text-right">Action</th>
+                    <th>Date</th>
+                    <th>Cashier</th>
+                    <th className="text-right">Expected</th>
+                    <th className="text-right">Counted</th>
+                    <th className="text-right">Variance</th>
+                    <th className="text-center">Status</th>
+                    <th>Note</th>
+                    <th className="text-right">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody>
                   {ledger.map((row) => (
-                    <tr key={row._id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4 text-xs font-bold text-slate-600">{new Date(row.date).toLocaleDateString()}</td>
-                      <td className="px-4 py-4 text-xs font-black text-slate-800">{row.cashierId?.name || 'Unknown'}</td>
-                      <td className="px-4 py-4 text-right text-xs font-bold text-slate-600">Rs. {row.expectedCash.toLocaleString()}</td>
-                      <td className="px-4 py-4 text-right text-xs font-bold text-slate-600">Rs. {row.countedCash.toLocaleString()}</td>
-                      <td className={`px-4 py-4 text-right text-xs font-black ${row.type === 'short' ? 'text-rose-600' : 'text-emerald-600'}`}>
+                    <tr key={row._id}>
+                      <td className="text-xs text-slate-500">{new Date(row.date).toLocaleDateString()}</td>
+                      <td className="font-semibold text-xs text-slate-900">{row.cashierId?.name || 'Unknown'}</td>
+                      <td className="text-right text-xs text-slate-600">Rs. {row.expectedCash.toLocaleString()}</td>
+                      <td className="text-right text-xs text-slate-600">Rs. {row.countedCash.toLocaleString()}</td>
+                      <td className={`text-right text-xs font-bold ${row.type === 'short' ? 'text-rose-600' : 'text-emerald-600'}`}>
                         {row.type === 'short' ? '-' : '+'}Rs. {Math.abs(row.variance).toLocaleString()}
                       </td>
-                      <td className="px-4 py-4 text-center">
-                        <span className={`px-2 py-1 rounded-md text-[10px] font-black uppercase ${row.type === 'short' ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                      <td className="text-center">
+                        <span className={`ds-badge ${row.type === 'short' ? 'ds-badge-red' : 'ds-badge-green'}`}>
                           {row.type === 'short' ? 'Cash Short' : 'Cash Over'}
                         </span>
                       </td>
-                      <td className="px-4 py-4 text-xs text-slate-500 max-w-[160px] truncate">{row.varianceNote || '—'}</td>
-                      <td className="px-6 py-4 text-right">
-                        <button onClick={() => openReassignModal(row)} className="inline-flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-brand-indigo hover:text-brand-indigo/70">
+                      <td className="text-xs text-slate-500 max-w-[160px] truncate">{row.varianceNote || '—'}</td>
+                      <td className="text-right">
+                        <button onClick={() => openReassignModal(row)} className="inline-flex items-center gap-1 text-xs font-semibold text-slate-700 hover:text-slate-900 border-0 bg-transparent cursor-pointer">
                           <ArrowRightLeft size={12} /> Reassign
                         </button>
                       </td>
                     </tr>
                   ))}
                   {ledger.length === 0 && (
-                    <tr><td colSpan={8} className="py-16 text-center text-[11px] font-black uppercase tracking-wider text-slate-400">No shortage/over events found</td></tr>
+                    <tr><td colSpan={8} className="py-16 text-center text-xs text-slate-400">No shortage/over events found</td></tr>
                   )}
                 </tbody>
               </table>
@@ -310,32 +307,32 @@ const AdminCashierAccountability = ({ navItems: propNavItems }) => {
 
         {/* Recovery History */}
         {tab === 'history' && (
-          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+          <div className="ds-table-wrap">
             <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="bg-slate-50 text-[10px] uppercase font-black tracking-wider text-slate-500 border-b border-slate-200">
+              <table className="ds-table">
+                <thead>
                   <tr>
-                    <th className="px-6 py-4">Date</th>
-                    <th className="px-4 py-4">Cashier</th>
-                    <th className="px-4 py-4 text-right">Amount Recovered</th>
-                    <th className="px-4 py-4">Note</th>
-                    <th className="px-4 py-4">Payroll Period</th>
-                    <th className="px-6 py-4">Recorded By</th>
+                    <th>Date</th>
+                    <th>Cashier</th>
+                    <th className="text-right">Amount Recovered</th>
+                    <th>Note</th>
+                    <th>Payroll Period</th>
+                    <th>Recorded By</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody>
                   {recoveries.map((row) => (
-                    <tr key={row._id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4 text-xs font-bold text-slate-600">{new Date(row.date).toLocaleDateString()}</td>
-                      <td className="px-4 py-4 text-xs font-black text-slate-800">{row.cashierId?.name || 'Unknown'}</td>
-                      <td className="px-4 py-4 text-right text-xs font-black text-emerald-600">Rs. {row.amount.toLocaleString()}</td>
-                      <td className="px-4 py-4 text-xs text-slate-500 max-w-[180px] truncate">{row.note || '—'}</td>
-                      <td className="px-4 py-4 text-xs text-slate-500">{row.payrollPeriod?.month ? `${row.payrollPeriod.month}/${row.payrollPeriod.year}` : '—'}</td>
-                      <td className="px-6 py-4 text-xs text-slate-500">{row.recordedBy?.name || 'System'}</td>
+                    <tr key={row._id}>
+                      <td className="text-xs text-slate-500">{new Date(row.date).toLocaleDateString()}</td>
+                      <td className="font-semibold text-xs text-slate-900">{row.cashierId?.name || 'Unknown'}</td>
+                      <td className="text-right text-xs font-bold text-emerald-600">Rs. {row.amount.toLocaleString()}</td>
+                      <td className="text-xs text-slate-500 max-w-[180px] truncate">{row.note || '—'}</td>
+                      <td className="text-xs text-slate-500">{row.payrollPeriod?.month ? `${row.payrollPeriod.month}/${row.payrollPeriod.year}` : '—'}</td>
+                      <td className="text-xs text-slate-500">{row.recordedBy?.name || 'System'}</td>
                     </tr>
                   ))}
                   {recoveries.length === 0 && (
-                    <tr><td colSpan={6} className="py-16 text-center text-[11px] font-black uppercase tracking-wider text-slate-400">No recoveries recorded yet</td></tr>
+                    <tr><td colSpan={6} className="py-16 text-center text-xs text-slate-400">No recoveries recorded yet</td></tr>
                   )}
                 </tbody>
               </table>
@@ -349,28 +346,28 @@ const AdminCashierAccountability = ({ navItems: propNavItems }) => {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4" onClick={() => setDeductionModal(null)}>
           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <h2 className="text-lg font-black text-slate-900">Record Deduction — {deductionModal.cashier?.name}</h2>
+              <h2 className="text-lg font-bold text-slate-900">Record Deduction — {deductionModal.cashier?.name}</h2>
               <button onClick={() => setDeductionModal(null)} className="p-1.5 rounded-lg hover:bg-slate-100"><X size={20} /></button>
             </div>
             <form onSubmit={submitDeduction} className="p-6 space-y-4">
               <div className="bg-amber-50 rounded-xl p-3 text-center">
-                <p className="text-[10px] font-black uppercase tracking-wider text-amber-600">Outstanding Balance</p>
-                <p className="text-xl font-black text-amber-700">Rs. {deductionModal.outstanding.toLocaleString()}</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-amber-600">Outstanding Balance</p>
+                <p className="text-xl font-bold text-amber-700">Rs. {deductionModal.outstanding.toLocaleString()}</p>
               </div>
               <div>
-                <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Amount Recovered (Rs.) *</label>
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">Amount Recovered (Rs.) *</label>
                 <input type="number" min="0.01" step="0.01" required value={deductionForm.amount} onChange={(e) => setDeductionForm({ ...deductionForm, amount: e.target.value })} placeholder="e.g. 4000" className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-sm font-bold text-slate-700" />
               </div>
               <div>
-                <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Date *</label>
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">Date *</label>
                 <input type="date" required value={deductionForm.date} onChange={(e) => setDeductionForm({ ...deductionForm, date: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-sm font-bold text-slate-700" />
               </div>
               <div>
-                <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Note</label>
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">Note</label>
                 <input value={deductionForm.note} onChange={(e) => setDeductionForm({ ...deductionForm, note: e.target.value })} placeholder="e.g. Deducted from September salary" className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-sm font-bold text-slate-700" />
               </div>
               <div>
-                <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Payroll Period *</label>
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">Payroll Period *</label>
                 <div className="grid grid-cols-2 gap-3">
                   <select value={deductionForm.payrollMonth} onChange={(e) => setDeductionForm({ ...deductionForm, payrollMonth: Number(e.target.value) })}
                     className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-sm font-bold text-slate-700 cursor-pointer">
@@ -384,13 +381,13 @@ const AdminCashierAccountability = ({ navItems: propNavItems }) => {
               </div>
               {Number(deductionForm.amount || 0) > deductionModal.outstanding && (
                 <div>
-                  <label className="text-[10px] font-black uppercase tracking-wider text-rose-500 block mb-2">This exceeds the outstanding balance — reason required to proceed *</label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-rose-500 block mb-2">This exceeds the outstanding balance — reason required to proceed *</label>
                   <input value={deductionForm.overrideReason} onChange={(e) => setDeductionForm({ ...deductionForm, overrideReason: e.target.value })} placeholder="Explain why this exceeds the balance" className="w-full bg-white border border-rose-200 rounded-xl py-2.5 px-4 text-sm font-bold text-slate-700" />
                 </div>
               )}
               <div className="flex gap-3 pt-2">
-                <button type="submit" className="flex-1 bg-slate-900 text-white py-2.5 rounded-xl font-black text-[11px] uppercase tracking-wider hover:bg-slate-800">Record</button>
-                <button type="button" onClick={() => setDeductionModal(null)} className="flex-1 border border-slate-200 py-2.5 rounded-xl font-black text-[11px] uppercase tracking-wider text-slate-500 hover:bg-slate-50">Cancel</button>
+                <button type="submit" className="flex-1 bg-slate-900 text-white py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-slate-800">Record</button>
+                <button type="button" onClick={() => setDeductionModal(null)} className="flex-1 border border-slate-200 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-slate-500 hover:bg-slate-50">Cancel</button>
               </div>
             </form>
           </div>
@@ -402,15 +399,15 @@ const AdminCashierAccountability = ({ navItems: propNavItems }) => {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4" onClick={() => setReassignModal(null)}>
           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <h2 className="text-lg font-black text-slate-900">Reassign Shortage</h2>
+              <h2 className="text-lg font-bold text-slate-900">Reassign Shortage</h2>
               <button onClick={() => setReassignModal(null)} className="p-1.5 rounded-lg hover:bg-slate-100"><X size={20} /></button>
             </div>
             <form onSubmit={submitReassign} className="p-6 space-y-4">
               <p className="text-xs text-slate-500">
-                Currently attributed to <span className="font-black text-slate-800">{reassignModal.cashierId?.name || 'Unknown'}</span> — Rs. {Math.abs(reassignModal.variance).toLocaleString()} on {new Date(reassignModal.date).toLocaleDateString()}
+                Currently attributed to <span className="font-bold text-slate-800">{reassignModal.cashierId?.name || 'Unknown'}</span> — Rs. {Math.abs(reassignModal.variance).toLocaleString()} on {new Date(reassignModal.date).toLocaleDateString()}
               </p>
               <div>
-                <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Reassign To *</label>
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">Reassign To *</label>
                 <EmployeeSelector
                   multiple={false}
                   employees={cashiers.filter((c) => c._id !== reassignModal.cashierId?._id)}
@@ -420,12 +417,12 @@ const AdminCashierAccountability = ({ navItems: propNavItems }) => {
                 />
               </div>
               <div>
-                <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Reason *</label>
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">Reason *</label>
                 <input required value={reassignForm.reason} onChange={(e) => setReassignForm({ ...reassignForm, reason: e.target.value })} placeholder="e.g. B was actually on till, A only closed it" className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-sm font-bold text-slate-700" />
               </div>
               <div className="flex gap-3 pt-2">
-                <button type="submit" className="flex-1 bg-slate-900 text-white py-2.5 rounded-xl font-black text-[11px] uppercase tracking-wider hover:bg-slate-800">Reassign</button>
-                <button type="button" onClick={() => setReassignModal(null)} className="flex-1 border border-slate-200 py-2.5 rounded-xl font-black text-[11px] uppercase tracking-wider text-slate-500 hover:bg-slate-50">Cancel</button>
+                <button type="submit" className="flex-1 bg-slate-900 text-white py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-slate-800">Reassign</button>
+                <button type="button" onClick={() => setReassignModal(null)} className="flex-1 border border-slate-200 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-slate-500 hover:bg-slate-50">Cancel</button>
               </div>
             </form>
           </div>

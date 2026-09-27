@@ -115,13 +115,13 @@ const bootstrapUsers = async () => {
         if (userData.permissions) user.permissions = userData.permissions;
         if (userData.employeeInfo) user.employeeInfo = userData.employeeInfo;
         await user.save();
-        console.log(`✅ Updated account: ${userData.email} (${userData.role})`);
+        console.log(`Updated account: ${userData.email} (${userData.role})`);
       } else {
         user = await User.create({
           ...userData,
           password: hashedPassword,
         });
-        console.log(`✅ Created account: ${userData.email} (${userData.role})`);
+        console.log(`Created account: ${userData.email} (${userData.role})`);
       }
     }
 

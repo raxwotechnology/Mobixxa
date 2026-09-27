@@ -378,42 +378,37 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
   if (loading) {
     return (
       <DashboardLayout navItems={navItems} title="Leaves">
-        <div className="flex items-center justify-center h-64">
-          <div className="w-10 h-10 border-4 border-primary-blue border-t-transparent rounded-full animate-spin" />
-        </div>
+        <div className="ds-loading"><div className="ds-spinner" /></div>
       </DashboardLayout>
     );
   }
 
   return (
     <DashboardLayout navItems={navItems} title="Leaves">
-      <div>
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-          <div>
-            <div className="flex items-center gap-2.5 mb-1">
-              <span className="inline-flex items-center gap-1.5 bg-brand-indigo/10 text-brand-indigo text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg border border-brand-indigo/15">
-                USER & EMPLOYEE MANAGEMENT
-              </span>
-            </div>
-            <h1 className="text-2xl font-semibold text-slate-900 m-0">Leave Management</h1>
-            <p className="text-slate-400 text-xs font-normal mt-1 m-0">Configure leave policies and track employee leave requests</p>
+      <div className="ds-page">
+        {/* Page Header */}
+        <div className="ds-page-header">
+          <div className="ds-page-header-left">
+            <span className="ds-page-header-badge">Leave &amp; Absence</span>
+            <h1>Leave Management</h1>
+            <p>Configure leave policies and track employee leave requests across stores</p>
           </div>
-          <div className="flex gap-2 flex-wrap items-center bg-white border border-slate-200 p-2 rounded-2xl shadow-sm">
+          <div className="ds-page-header-right">
             {activeTab === 'requests' && (
               <>
-                <button onClick={() => setShowAddLeaveModal(true)} className="flex items-center gap-2 bg-brand-indigo hover:bg-indigo-700 text-white text-[11px] font-black uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all shadow-sm shadow-brand-indigo/20">
+                <button onClick={() => setShowAddLeaveModal(true)} className="ds-btn ds-btn-primary">
                   <Calendar size={14} /> Add Leave
                 </button>
-                <button onClick={exportExcel} className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 text-emerald-700 text-[11px] font-black uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all shadow-sm">
+                <button onClick={exportExcel} className="ds-btn ds-btn-secondary ds-btn-sm">
                   <FileSpreadsheet size={14} /> Excel
                 </button>
-                <button onClick={exportPDF} className="flex items-center gap-2 bg-rose-50 border border-rose-200 hover:bg-rose-100 text-rose-700 text-[11px] font-black uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all shadow-sm">
+                <button onClick={exportPDF} className="ds-btn ds-btn-secondary ds-btn-sm">
                   <FileText size={14} /> PDF
                 </button>
               </>
             )}
             {activeTab === 'leave-policies' && (
-              <button onClick={openCreateLeave} className="bg-brand-indigo hover:bg-indigo-700 text-white text-[11px] font-black uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all shadow-sm shadow-brand-indigo/20 flex items-center gap-2">
+              <button onClick={openCreateLeave} className="ds-btn ds-btn-primary">
                 <Plus size={14} /> Create Policy
               </button>
             )}
@@ -421,207 +416,208 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
         </div>
 
         {/* Tab switcher */}
-        {/* Tab switcher */}
-        <div className="flex border-b border-slate-200 mb-6 gap-8">
-          <button
-            onClick={() => setActiveTab('requests')}
-            className={`pb-3 text-[11px] font-black uppercase tracking-wider transition-all border-b-2 ${
-              activeTab === 'requests' ? 'border-brand-indigo text-brand-indigo' : 'border-transparent text-slate-400 hover:text-slate-700'
-            }`}
-          >
-            📋 Leave Requests
-          </button>
-          <button
-            onClick={() => setActiveTab('leave-policies')}
-            className={`pb-3 text-[11px] font-black uppercase tracking-wider transition-all border-b-2 ${
-              activeTab === 'leave-policies' ? 'border-brand-indigo text-brand-indigo' : 'border-transparent text-slate-400 hover:text-slate-700'
-            }`}
-          >
-            🌴 Leave Policies
-          </button>
-          <button
-            onClick={() => setActiveTab('assign-policies')}
-            className={`pb-3 text-[11px] font-black uppercase tracking-wider transition-all border-b-2 ${
-              activeTab === 'assign-policies' ? 'border-brand-indigo text-brand-indigo' : 'border-transparent text-slate-400 hover:text-slate-700'
-            }`}
-          >
-            👤 Assign Policies
-          </button>
+        <div className="ds-card" style={{ padding: '0.375rem', width: 'fit-content' }}>
+          <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => setActiveTab('requests')}
+              className={`ds-btn ds-btn-sm ${activeTab === 'requests' ? 'ds-btn-primary' : 'ds-btn-ghost'}`}
+            >
+              Leave Requests
+            </button>
+            <button
+              onClick={() => setActiveTab('leave-policies')}
+              className={`ds-btn ds-btn-sm ${activeTab === 'leave-policies' ? 'ds-btn-primary' : 'ds-btn-ghost'}`}
+            >
+              Leave Policies
+            </button>
+            <button
+              onClick={() => setActiveTab('assign-policies')}
+              className={`ds-btn ds-btn-sm ${activeTab === 'assign-policies' ? 'ds-btn-primary' : 'ds-btn-ghost'}`}
+            >
+              Assign Policies
+            </button>
+          </div>
         </div>
 
         {activeTab === 'requests' && (
           <>
-            {/* Request My Leave form */}
-            {/* Request My Leave form */}
-            <form onSubmit={handleCreateLeaveRequest} className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm mb-6 relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-1.5 h-full bg-brand-indigo"></div>
-              <h2 className="text-lg font-black text-slate-900 mb-4">Request My Leave</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Leave Type</label>
-                  <select
-                    value={requestForm.leaveType}
-                    onChange={(e) => setRequestForm((prev) => ({ ...prev, leaveType: e.target.value }))}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all cursor-pointer"
-                  >
-                    {['annual', 'sick', 'casual', 'maternity', 'paternity', 'unpaid'].map((t) => (
-                      <option key={t} value={t}>{t}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Start Date</label>
-                  <input
-                    type="date"
-                    value={requestForm.startDate}
-                    onChange={(e) => setRequestForm((prev) => ({ ...prev, startDate: e.target.value }))}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all"
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">End Date</label>
-                  <input
-                    type="date"
-                    value={requestForm.endDate}
-                    onChange={(e) => setRequestForm((prev) => ({ ...prev, endDate: e.target.value }))}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all"
-                  />
-                </div>
-                <div className="flex items-end">
-                  <button
-                    type="submit"
-                    disabled={requesting}
-                    className="w-full h-[42px] rounded-xl bg-brand-indigo hover:bg-indigo-700 text-white text-[11px] uppercase tracking-wider font-black shadow-lg shadow-brand-indigo/20 transition-all disabled:opacity-60 flex items-center justify-center"
-                  >
-                    {requesting ? 'Submitting...' : 'Submit Request'}
-                  </button>
-                </div>
+            {/* Stats - Unified Metrics Scale */}
+            <div className="ds-stats">
+              <div className="ds-stat">
+                <p className="ds-stat-label">Pending Requests</p>
+                <p className="ds-stat-value" style={{ color: '#d97706' }}>{leaves.filter(l => l.status === 'pending').length}</p>
+                <p className="ds-stat-sub">Awaiting decision</p>
               </div>
-              <div className="mt-4">
-                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Reason</label>
-                <textarea
-                  value={requestForm.reason}
-                  onChange={(e) => setRequestForm((prev) => ({ ...prev, reason: e.target.value }))}
-                  rows={2}
-                  placeholder="Provide a reason for your leave..."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all resize-none"
-                />
+              <div className="ds-stat">
+                <p className="ds-stat-label">Approved Leaves</p>
+                <p className="ds-stat-value" style={{ color: '#15803d' }}>{leaves.filter(l => l.status === 'approved').length}</p>
+                <p className="ds-stat-sub">Active &amp; scheduled</p>
               </div>
-            </form>
-
-            {/* Stats */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm text-center flex flex-col justify-center items-center">
-                <p className="text-3xl font-black text-amber-500 mb-1">{leaves.filter(l => l.status === 'pending').length}</p>
-                <p className="text-[10px] uppercase font-black tracking-wider text-slate-400">Pending</p>
+              <div className="ds-stat">
+                <p className="ds-stat-label">Rejected Requests</p>
+                <p className="ds-stat-value" style={{ color: '#dc2626' }}>{leaves.filter(l => l.status === 'rejected').length}</p>
+                <p className="ds-stat-sub">Declined applications</p>
               </div>
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm text-center flex flex-col justify-center items-center">
-                <p className="text-3xl font-black text-emerald-500 mb-1">{leaves.filter(l => l.status === 'approved').length}</p>
-                <p className="text-[10px] uppercase font-black tracking-wider text-slate-400">Approved</p>
-              </div>
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm text-center flex flex-col justify-center items-center">
-                <p className="text-3xl font-black text-rose-500 mb-1">{leaves.filter(l => l.status === 'rejected').length}</p>
-                <p className="text-[10px] uppercase font-black tracking-wider text-slate-400">Rejected</p>
-              </div>
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm text-center flex flex-col justify-center items-center">
-                <p className="text-3xl font-black text-slate-900 mb-1">{leaves.filter(l => l.status === 'approved').reduce((s, l) => s + (l.totalDays || 0), 0)}</p>
-                <p className="text-[10px] uppercase font-black tracking-wider text-slate-400">Total Days Used</p>
+              <div className="ds-stat">
+                <p className="ds-stat-label">Total Days Used</p>
+                <p className="ds-stat-value" style={{ color: 'var(--ds-primary)' }}>
+                  {leaves.filter(l => l.status === 'approved').reduce((s, l) => s + (l.totalDays || 0), 0)}
+                </p>
+                <p className="ds-stat-sub">Across all staff</p>
               </div>
             </div>
 
-            {/* Filters */}
-            {/* Filters */}
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-6 bg-white border border-slate-200 p-2 rounded-2xl shadow-sm">
-              <div className="flex flex-wrap gap-2">
-                {['all', 'pending', 'approved', 'rejected'].map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => setFilter(s)}
-                    className={`px-4 py-2 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all ${
-                      filter === s ? 'bg-slate-800 text-white shadow-md shadow-slate-800/20' : 'bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-700'
-                    }`}
-                  >
-                    {s.charAt(0).toUpperCase() + s.slice(1)} ({s === 'all' ? leaves.length : leaves.filter(l => l.status === s).length})
-                  </button>
-                ))}
+            {/* Request My Leave form */}
+            <div className="ds-card">
+              <div className="ds-card-header">
+                <h3 className="ds-card-title"><Calendar size={16} /> Request My Leave</h3>
+                <span className="ds-badge ds-badge-slate">Quick Application</span>
               </div>
+              <form onSubmit={handleCreateLeaveRequest} className="ds-card-body">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                  <div className="ds-form-group">
+                    <label className="ds-label">Leave Type</label>
+                    <select
+                      value={requestForm.leaveType}
+                      onChange={(e) => setRequestForm((prev) => ({ ...prev, leaveType: e.target.value }))}
+                      className="ds-input ds-select"
+                    >
+                      {['annual', 'sick', 'casual', 'maternity', 'paternity', 'unpaid'].map((t) => (
+                        <option key={t} value={t}>{t}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="ds-form-group">
+                    <label className="ds-label">Start Date</label>
+                    <input
+                      type="date"
+                      value={requestForm.startDate}
+                      onChange={(e) => setRequestForm((prev) => ({ ...prev, startDate: e.target.value }))}
+                      className="ds-input"
+                    />
+                  </div>
+                  <div className="ds-form-group">
+                    <label className="ds-label">End Date</label>
+                    <input
+                      type="date"
+                      value={requestForm.endDate}
+                      onChange={(e) => setRequestForm((prev) => ({ ...prev, endDate: e.target.value }))}
+                      className="ds-input"
+                    />
+                  </div>
+                  <div className="ds-form-group" style={{ display: 'flex', alignItems: 'flex-end' }}>
+                    <button type="submit" disabled={requesting} className="ds-btn ds-btn-primary" style={{ width: '100%', height: '42px' }}>
+                      {requesting ? 'Submitting...' : 'Submit Request'}
+                    </button>
+                  </div>
+                </div>
+                <div className="ds-form-group" style={{ marginTop: '0.75rem' }}>
+                  <label className="ds-label">Reason</label>
+                  <textarea
+                    value={requestForm.reason}
+                    onChange={(e) => setRequestForm((prev) => ({ ...prev, reason: e.target.value }))}
+                    rows={2}
+                    placeholder="Provide a reason for your leave..."
+                    className="ds-input"
+                    style={{ resize: 'none' }}
+                  />
+                </div>
+              </form>
+            </div>
 
-              <div className="flex flex-wrap gap-3">
-                <select
-                  value={roleFilter}
-                  onChange={(e) => setRoleFilter(e.target.value)}
-                  className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[11px] font-black uppercase tracking-wider text-slate-600 outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all cursor-pointer"
-                >
-                  <option value="all">All Roles</option>
-                  <option value="cashier">Cashier</option>
-                  <option value="deliveryGuy">Delivery</option>
-                  <option value="stockEmployee">Stock</option>
-                  <option value="manager">Manager</option>
-                </select>
-                <select
-                  value={deptFilter}
-                  onChange={(e) => setDeptFilter(e.target.value)}
-                  className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[11px] font-black uppercase tracking-wider text-slate-600 outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all cursor-pointer"
-                >
-                  <option value="all">All Departments</option>
-                  {departments.map(dept => (
-                    <option key={dept} value={dept}>{dept}</option>
+            {/* Filters */}
+            <div className="ds-card" style={{ padding: '0.75rem 1rem' }}>
+              <div className="ds-filter-bar" style={{ background: 'transparent', padding: 0, border: 'none' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem' }}>
+                  {['all', 'pending', 'approved', 'rejected'].map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setFilter(s)}
+                      className={`ds-btn ds-btn-sm ${filter === s ? 'ds-btn-primary' : 'ds-btn-ghost'}`}
+                    >
+                      {s.charAt(0).toUpperCase() + s.slice(1)} ({s === 'all' ? leaves.length : leaves.filter(l => l.status === s).length})
+                    </button>
                   ))}
-                </select>
+                </div>
+
+                <div style={{ marginLeft: 'auto', display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <select
+                    value={roleFilter}
+                    onChange={(e) => setRoleFilter(e.target.value)}
+                    className="ds-input ds-select"
+                    style={{ minWidth: '130px' }}
+                  >
+                    <option value="all">All Roles</option>
+                    <option value="cashier">Cashier</option>
+                    <option value="deliveryGuy">Delivery</option>
+                    <option value="stockEmployee">Stock</option>
+                    <option value="manager">Manager</option>
+                  </select>
+                  <select
+                    value={deptFilter}
+                    onChange={(e) => setDeptFilter(e.target.value)}
+                    className="ds-input ds-select"
+                    style={{ minWidth: '150px' }}
+                  >
+                    <option value="all">All Departments</option>
+                    {departments.map(dept => (
+                      <option key={dept} value={dept}>{dept}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
 
             {filtered.length === 0 ? (
-              <div className="bg-white rounded-3xl border border-slate-100 p-16 text-center shadow-sm flex flex-col items-center justify-center">
-                <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4 border border-slate-100">
-                  <Calendar size={32} className="text-slate-300" />
-                </div>
-                <h3 className="text-lg font-black text-slate-800 mb-1">No Leave Requests</h3>
-                <p className="text-sm font-bold text-slate-400">There are no leave requests matching your filters.</p>
+              <div className="ds-empty">
+                <Calendar size={36} className="ds-empty-icon" />
+                <p className="ds-empty-title">No Leave Requests</p>
+                <p className="ds-empty-desc">There are no leave requests matching your current filters.</p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div style={{ display: 'grid', gap: '0.875rem' }}>
                 {filtered.map((leave) => (
-                  <div key={leave._id} className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
-                    <div className={`absolute top-0 left-0 w-1.5 h-full ${
-                      leave.status === 'pending' ? 'bg-amber-400' :
-                      leave.status === 'approved' ? 'bg-emerald-400' : 'bg-rose-400'
-                    }`}></div>
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-indigo to-brand-violet flex items-center justify-center text-white font-black text-lg shadow-md shadow-brand-indigo/20">
+                  <div key={leave._id} className="ds-card" style={{ padding: '1.25rem' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
+                        <div style={{
+                          width: '2.5rem', height: '2.5rem', borderRadius: 'var(--ds-r-md)',
+                          background: 'linear-gradient(135deg, var(--ds-primary) 0%, #7c3aed 100%)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: '#fff', fontWeight: 700, fontSize: 'var(--ds-text-md)', flexShrink: 0
+                        }}>
                           {leave.employeeId?.name?.charAt(0)?.toUpperCase() || '?'}
                         </div>
                         <div>
-                          <h3 className="font-black text-slate-900 text-base">{leave.employeeId?.name}</h3>
-                          <div className="flex items-center gap-2 mt-0.5">
-                            <span className="text-[10px] uppercase font-black tracking-wider text-slate-400">{leave.employeeId?.role}</span>
-                            <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                            <span className="text-[10px] uppercase font-black tracking-wider text-slate-600">{leave.leaveType} leave</span>
+                          <h3 style={{ fontSize: 'var(--ds-text-sm)', fontWeight: 600, color: 'var(--ds-text-head)', margin: 0 }}>
+                            {leave.employeeId?.name}
+                          </h3>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginTop: '0.2rem' }}>
+                            <span className="ds-badge ds-badge-slate">{leave.employeeId?.role}</span>
+                            <span style={{ fontSize: 'var(--ds-text-xs)', color: 'var(--ds-text-muted)' }}>{leave.leaveType} leave</span>
                           </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3">
-                        <span className={`text-[10px] uppercase font-black tracking-widest px-3 py-1.5 rounded-lg border ${
-                          leave.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-200' :
-                          leave.status === 'approved' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' :
-                          'bg-rose-50 text-rose-600 border-rose-200'
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span className={`ds-badge ${
+                          leave.status === 'pending' ? 'ds-badge-amber' :
+                          leave.status === 'approved' ? 'ds-badge-green' : 'ds-badge-red'
                         }`}>
                           {leave.status}
                         </span>
                         {leave.status === 'pending' && (
-                          <div className="flex gap-2">
-                            <button onClick={() => handleApprove(leave)} className="w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white border border-emerald-100 hover:border-emerald-500 transition-all shadow-sm">
-                              <Check size={16} strokeWidth={3} />
+                          <div style={{ display: 'flex', gap: '0.375rem' }}>
+                            <button onClick={() => handleApprove(leave)} className="ds-btn ds-btn-sm" style={{ background: '#f0fdf4', color: '#15803d', border: '1px solid #bbf7d0', padding: '0.25rem 0.5rem' }} title="Approve">
+                              <Check size={14} strokeWidth={2.5} />
                             </button>
-                            <button onClick={() => handleReject(leave._id)} className="w-8 h-8 flex items-center justify-center rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white border border-rose-100 hover:border-rose-500 transition-all shadow-sm">
-                              <X size={16} strokeWidth={3} />
+                            <button onClick={() => handleReject(leave._id)} className="ds-btn ds-btn-danger ds-btn-sm" style={{ padding: '0.25rem 0.5rem' }} title="Reject">
+                              <X size={14} strokeWidth={2.5} />
                             </button>
                           </div>
                         )}
                         {isAdmin && (leave.status === 'approved' || leave.status === 'rejected') && (
-                          <button onClick={() => handleCancelDecision(leave._id)} className="text-[9px] uppercase font-black tracking-wider px-3 py-1.5 rounded-lg bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 border border-slate-200 transition-all">
+                          <button onClick={() => handleCancelDecision(leave._id)} className="ds-btn ds-btn-ghost ds-btn-sm">
                             Cancel Decision
                           </button>
                         )}
@@ -644,23 +640,23 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
                     </div>
                     {leave.reason && (
                       <div className="mt-4 bg-slate-50 rounded-xl p-3 border border-slate-100">
-                        <p className="text-[10px] uppercase font-black tracking-wider text-slate-400 mb-1">Reason</p>
+                        <p className="text-xs uppercase font-bold tracking-wider text-slate-400 mb-1">Reason</p>
                         <p className="text-sm font-semibold text-slate-700">{leave.reason}</p>
                       </div>
                     )}
                     {leave.rejectionReason && (
                       <div className="mt-4 bg-rose-50 rounded-xl p-3 border border-rose-100">
-                        <p className="text-[10px] uppercase font-black tracking-wider text-rose-400 mb-1">Rejection Reason</p>
+                        <p className="text-xs uppercase font-bold tracking-wider text-rose-400 mb-1">Rejection Reason</p>
                         <p className="text-sm font-semibold text-rose-700">{leave.rejectionReason}</p>
                       </div>
                     )}
                     {leave.decisions?.length > 0 && (
                       <div className="mt-4 border-t border-slate-100 pt-3">
-                        <p className="text-[10px] uppercase font-black tracking-wider text-slate-400 mb-2">Decision History</p>
+                        <p className="text-xs uppercase font-bold tracking-wider text-slate-400 mb-2">Decision History</p>
                         <div className="space-y-1.5">
                           {leave.decisions.map((d, i) => (
-                            <p key={i} className="text-[11px] font-semibold text-slate-500 m-0">
-                              <span className={`uppercase font-black ${d.action === 'approved' ? 'text-emerald-600' : d.action === 'rejected' ? 'text-rose-600' : 'text-slate-600'}`}>{d.action}</span>
+                            <p key={i} className="text-xs font-semibold text-slate-500 m-0">
+                              <span className={`uppercase font-bold ${d.action === 'approved' ? 'text-emerald-600' : d.action === 'rejected' ? 'text-rose-600' : 'text-slate-600'}`}>{d.action}</span>
                               {' '}by {d.by?.name || 'unknown'} on {new Date(d.at).toLocaleString()}
                               {d.note ? ` — ${d.note}` : ''}
                             </p>
@@ -690,34 +686,34 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
                 {leavePolicies.map(p => (
                   <div key={p._id} className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden flex flex-col justify-between group">
                     {p.isDefault && (
-                      <div className="absolute top-0 right-0 bg-emerald-50 text-emerald-600 border-b border-l border-emerald-100 text-[9px] font-black px-3 py-1.5 rounded-bl-xl uppercase tracking-wider shadow-sm">
+                      <div className="absolute top-0 right-0 bg-emerald-50 text-emerald-600 border-b border-l border-emerald-100 text-xs font-bold px-3 py-1.5 rounded-bl-xl uppercase tracking-wider shadow-sm">
                         System Default
                       </div>
                     )}
                     <div>
-                      <h3 className="font-black text-slate-800 text-lg mb-5 pr-16">{p.name}</h3>
+                      <h3 className="font-bold text-slate-800 text-lg mb-5 pr-16">{p.name}</h3>
                       <div className="space-y-3 text-sm text-slate-600 mb-6">
                         <div className="flex justify-between items-center border-b border-slate-50 pb-2">
-                          <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">🗓️ Cycle</span>
-                          <span className="font-black text-slate-800 capitalize">{(p.periodType || 'monthly').replace('_', ' ')}</span>
+                          <span className="text-xs uppercase font-bold tracking-wider text-slate-500"> Cycle</span>
+                          <span className="font-bold text-slate-800 capitalize">{(p.periodType || 'monthly').replace('_', ' ')}</span>
                         </div>
                         <div className="flex justify-between items-center border-b border-slate-50 pb-2">
-                          <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">🌴 Allowed Leaves</span>
-                          <span className="font-black text-slate-800">{p.allowedLeaves} days</span>
+                          <span className="text-xs uppercase font-bold tracking-wider text-slate-500"> Allowed Leaves</span>
+                          <span className="font-bold text-slate-800">{p.allowedLeaves} days</span>
                         </div>
                         <div className="flex justify-between items-center border-b border-slate-50 pb-2">
-                          <span className="text-[10px] uppercase font-black tracking-wider text-emerald-600">💚 Full-Attendance Bonus</span>
-                          <span className="font-black text-emerald-600">Rs. {(p.unusedLeaveBonusPerDay || 0).toLocaleString()} / day</span>
+                          <span className="text-xs uppercase font-bold tracking-wider text-emerald-600"> Full-Attendance Bonus</span>
+                          <span className="font-bold text-emerald-600">Rs. {(p.unusedLeaveBonusPerDay || 0).toLocaleString()} / day</span>
                         </div>
                         <div className="flex justify-between items-center border-b border-slate-50 pb-2">
-                          <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">💸 Excess Penalty</span>
-                          <span className="font-black text-rose-500">Rs. {p.deductionPerExcessLeave.toLocaleString()} / day</span>
+                          <span className="text-xs uppercase font-bold tracking-wider text-slate-500"> Excess Penalty</span>
+                          <span className="font-bold text-rose-500">Rs. {p.deductionPerExcessLeave.toLocaleString()} / day</span>
                         </div>
                       </div>
                     </div>
                     <div className="flex gap-3 border-t border-slate-100 pt-5 mt-auto opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => openEditLeave(p)} className="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-700 py-2.5 rounded-xl text-[10px] uppercase tracking-wider font-black flex items-center justify-center gap-1.5 transition-all border border-slate-200"><Edit2 size={12} /> Edit</button>
-                      <button onClick={() => handlePolicyDeleteClick(p)} className="flex-1 bg-rose-50 hover:bg-rose-100 text-rose-600 py-2.5 rounded-xl text-[10px] uppercase tracking-wider font-black flex items-center justify-center gap-1.5 transition-all border border-rose-200"><Trash2 size={12} /> Delete</button>
+                      <button onClick={() => openEditLeave(p)} className="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-700 py-2.5 rounded-xl text-xs uppercase tracking-wider font-bold flex items-center justify-center gap-1.5 transition-all border border-slate-200"><Edit2 size={12} /> Edit</button>
+                      <button onClick={() => handlePolicyDeleteClick(p)} className="flex-1 bg-rose-50 hover:bg-rose-100 text-rose-600 py-2.5 rounded-xl text-xs uppercase tracking-wider font-bold flex items-center justify-center gap-1.5 transition-all border border-rose-200"><Trash2 size={12} /> Delete</button>
                     </div>
                   </div>
                 ))}
@@ -730,12 +726,12 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row justify-between sm:items-center bg-white p-6 rounded-2xl border border-slate-200 shadow-sm gap-4">
               <div>
-                <h3 className="font-black text-slate-800 text-lg">Bulk Policy Assignment</h3>
+                <h3 className="font-bold text-slate-800 text-lg">Bulk Policy Assignment</h3>
                 <p className="text-xs font-bold text-slate-500 mt-1">Assign leave policies to all employees at once</p>
               </div>
               <button
                 onClick={() => openAssignModal(null)}
-                className="bg-brand-indigo hover:bg-indigo-700 text-white text-[11px] font-black uppercase tracking-wider px-5 py-3 rounded-xl transition-all shadow-sm shadow-brand-indigo/20"
+                className="bg-brand-indigo hover:bg-indigo-700 text-white text-xs font-bold uppercase tracking-wider px-5 py-3 rounded-xl transition-all shadow-sm shadow-brand-indigo/20"
               >
                 Bulk Assign to All
               </button>
@@ -744,7 +740,7 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
-                  <thead className="bg-slate-50 text-[10px] uppercase font-black tracking-wider text-slate-500 border-b border-slate-200">
+                  <thead className="bg-slate-50 text-xs uppercase font-bold tracking-wider text-slate-500 border-b border-slate-200">
                     <tr>
                       <th className="px-6 py-4">Employee</th>
                       <th className="px-6 py-4">Role</th>
@@ -766,14 +762,14 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
                         return (
                           <tr key={emp._id} className="hover:bg-slate-50/50 transition-colors">
                             <td className="px-6 py-4 font-bold text-slate-800">{emp.name}</td>
-                            <td className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-wider">{emp.role}</td>
+                            <td className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">{emp.role}</td>
                             <td className="px-6 py-4">
                               {lp ? (
-                                <span className="bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-lg text-[10px] uppercase font-black tracking-wider border border-emerald-100">
+                                <span className="bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-lg text-xs uppercase font-bold tracking-wider border border-emerald-100">
                                   {lp.name}
                                 </span>
                               ) : (
-                                <span className="text-[10px] uppercase font-black tracking-wider text-slate-400 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
+                                <span className="text-xs uppercase font-bold tracking-wider text-slate-400 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
                                   System Default
                                 </span>
                               )}
@@ -781,7 +777,7 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
                             <td className="px-6 py-4 text-center">
                               <button
                                 onClick={() => openAssignModal(emp)}
-                                className="text-[10px] font-black uppercase tracking-wider bg-brand-indigo hover:bg-indigo-700 text-white px-4 py-2 rounded-xl transition-all shadow-sm shadow-brand-indigo/20"
+                                className="text-xs font-bold uppercase tracking-wider bg-brand-indigo hover:bg-indigo-700 text-white px-4 py-2 rounded-xl transition-all shadow-sm shadow-brand-indigo/20"
                               >
                                 Assign Policy
                               </button>
@@ -809,13 +805,13 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
               <div className="w-12 h-12 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center mb-3 border border-amber-100 shadow-sm">
                 <Calendar size={24} />
               </div>
-              <h3 className="font-black text-slate-900 text-xl">Create Leave</h3>
+              <h3 className="font-bold text-slate-900 text-xl">Create Leave</h3>
               <p className="text-xs font-bold text-slate-500 mt-1">Add a manual leave record for an employee</p>
             </div>
             
             <div className="p-6 bg-slate-50/50 space-y-4">
               <div>
-                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Employee *</label>
+                <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">Employee *</label>
                 <EmployeeSelector
                   multiple={false}
                   employees={employees}
@@ -826,7 +822,7 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Leave Type</label>
+                  <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">Leave Type</label>
                   <select value={leaveForm.type} onChange={(e) => setLeaveForm({...leaveForm, type: e.target.value})}
                     className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm cursor-pointer">
                     <option value="casual">Casual</option>
@@ -836,7 +832,7 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
                   </select>
                 </div>
                 <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Status</label>
+                  <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">Status</label>
                   <select value={leaveForm.status} onChange={(e) => setLeaveForm({...leaveForm, status: e.target.value})}
                     className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm cursor-pointer">
                     <option value="approved">Approved</option>
@@ -846,26 +842,26 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Start Date *</label>
+                  <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">Start Date *</label>
                   <input type="date" value={leaveForm.startDate} onChange={(e) => setLeaveForm({...leaveForm, startDate: e.target.value})}
                     className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm" />
                 </div>
                 <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">End Date *</label>
+                  <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">End Date *</label>
                   <input type="date" value={leaveForm.endDate} onChange={(e) => setLeaveForm({...leaveForm, endDate: e.target.value})}
                     className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm" />
                 </div>
               </div>
               <div>
-                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Reason</label>
+                <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">Reason</label>
                 <input value={leaveForm.reason} onChange={(e) => setLeaveForm({...leaveForm, reason: e.target.value})}
                   className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm" placeholder="Reason for leave" />
               </div>
               <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setShowAddLeaveModal(false)} className="flex-1 py-3 rounded-xl bg-slate-100 text-[11px] uppercase tracking-wider font-black hover:bg-slate-200 text-slate-700 transition-all">
+                <button type="button" onClick={() => setShowAddLeaveModal(false)} className="flex-1 py-3 rounded-xl bg-slate-100 text-xs uppercase tracking-wider font-bold hover:bg-slate-200 text-slate-700 transition-all">
                   Cancel
                 </button>
-                <button onClick={handleAddLeave} className="flex-1 py-3 rounded-xl bg-brand-indigo hover:bg-indigo-700 text-white text-[11px] uppercase tracking-wider font-black shadow-lg shadow-brand-indigo/20 transition-all">
+                <button onClick={handleAddLeave} className="flex-1 py-3 rounded-xl bg-brand-indigo hover:bg-indigo-700 text-white text-xs uppercase tracking-wider font-bold shadow-lg shadow-brand-indigo/20 transition-all">
                   Create Leave
                 </button>
               </div>
@@ -883,14 +879,14 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
                 <X size={16} />
               </button>
               <div className="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-3 border border-emerald-100 shadow-sm text-xl">
-                🌴
+                
               </div>
-              <h3 className="font-black text-slate-900 text-xl">{editingLeavePolicyId ? 'Edit Leave Policy' : 'Create Leave Policy'}</h3>
+              <h3 className="font-bold text-slate-900 text-xl">{editingLeavePolicyId ? 'Edit Leave Policy' : 'Create Leave Policy'}</h3>
             </div>
             
             <form onSubmit={handleSaveLeavePolicy} className="p-6 bg-slate-50/50 space-y-4">
               <div>
-                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Policy Name *</label>
+                <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">Policy Name *</label>
                 <input
                   type="text"
                   required
@@ -902,7 +898,7 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1">Policy Cycle / Period *</label>
+                  <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-1">Policy Cycle / Period *</label>
                   <select
                     value={leavePolicyForm.periodType}
                     onChange={(e) => setLeavePolicyForm({ ...leavePolicyForm, periodType: e.target.value })}
@@ -916,7 +912,7 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
                   </select>
                 </div>
                 <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1">Allowed Paid Leaves</label>
+                  <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-1">Allowed Paid Leaves</label>
                   <input
                     type="number"
                     min="0"
@@ -930,7 +926,7 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-emerald-700 block mb-1">Unused Leave Bonus / Day (Rs.)</label>
+                  <label className="text-xs uppercase font-bold tracking-wider text-emerald-700 block mb-1">Unused Leave Bonus / Day (Rs.)</label>
                   <input
                     type="number"
                     min="0"
@@ -939,10 +935,10 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
                     placeholder="e.g. 1000"
                     className="w-full bg-white border border-emerald-200 rounded-xl px-3 py-2.5 text-xs font-semibold text-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-300"
                   />
-                  <p className="text-[9px] text-slate-400 mt-0.5">Bonus paid per unused leave day if employee works</p>
+                  <p className="text-xs text-slate-400 mt-0.5">Bonus paid per unused leave day if employee works</p>
                 </div>
                 <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-rose-600 block mb-1">Excess Leave Fine / Day (Rs.)</label>
+                  <label className="text-xs uppercase font-bold tracking-wider text-rose-600 block mb-1">Excess Leave Fine / Day (Rs.)</label>
                   <input
                     type="number"
                     min="0"
@@ -951,7 +947,7 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
                     placeholder="e.g. 1500"
                     className="w-full bg-white border border-rose-200 rounded-xl px-3 py-2.5 text-xs font-semibold text-rose-800 focus:outline-none focus:ring-2 focus:ring-rose-300"
                   />
-                  <p className="text-[9px] text-slate-400 mt-0.5">Fine deducted for extra leaves beyond allowed limit</p>
+                  <p className="text-xs text-slate-400 mt-0.5">Fine deducted for extra leaves beyond allowed limit</p>
                 </div>
               </div>
 
@@ -963,15 +959,15 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
                   onChange={(e) => setLeavePolicyForm({ ...leavePolicyForm, isDefault: e.target.checked })}
                   className="w-4 h-4 rounded text-brand-indigo focus:ring-brand-indigo accent-brand-indigo cursor-pointer"
                 />
-                <label htmlFor="leaveDefault" className="text-xs font-black text-slate-700 cursor-pointer select-none">
+                <label htmlFor="leaveDefault" className="text-xs font-bold text-slate-700 cursor-pointer select-none">
                   Set as system default leave policy
                 </label>
               </div>
               <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setShowLeaveModal(false)} className="flex-1 py-3 rounded-xl bg-slate-100 text-[11px] uppercase tracking-wider font-black hover:bg-slate-200 text-slate-700 transition-all">
+                <button type="button" onClick={() => setShowLeaveModal(false)} className="flex-1 py-3 rounded-xl bg-slate-100 text-xs uppercase tracking-wider font-bold hover:bg-slate-200 text-slate-700 transition-all">
                   Cancel
                 </button>
-                <button type="submit" className="flex-1 py-3 rounded-xl bg-brand-indigo hover:bg-indigo-700 text-white text-[11px] uppercase tracking-wider font-black shadow-lg shadow-brand-indigo/20 transition-all">
+                <button type="submit" className="flex-1 py-3 rounded-xl bg-brand-indigo hover:bg-indigo-700 text-white text-xs uppercase tracking-wider font-bold shadow-lg shadow-brand-indigo/20 transition-all">
                   {editingLeavePolicyId ? 'Update Policy' : 'Create Policy'}
                 </button>
               </div>
@@ -989,14 +985,14 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
                 <X size={16} />
               </button>
               <div className="w-12 h-12 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mb-3 border border-blue-100 shadow-sm text-xl">
-                👤
+                
               </div>
-              <h3 className="font-black text-slate-900 text-xl">Assign Policy</h3>
+              <h3 className="font-bold text-slate-900 text-xl">Assign Policy</h3>
             </div>
 
             <form onSubmit={handleSaveAssignment} className="p-6 bg-slate-50/50 space-y-4 overflow-y-auto">
               <div>
-                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Employees</label>
+                <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">Employees</label>
                 <EmployeeSelector
                   alwaysOpen
                   multiple
@@ -1006,14 +1002,14 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
                 />
               </div>
               <div>
-                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Select Leave Policy *</label>
+                <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">Select Leave Policy *</label>
                 {leavePolicies.length === 0 ? (
                   <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
                     <p className="text-xs font-bold text-amber-700 mb-3">No leave policies exist yet — create one first.</p>
                     <button
                       type="button"
                       onClick={() => { setShowAssignModal(false); openCreateLeave(); }}
-                      className="text-[11px] uppercase tracking-wider font-black bg-brand-indigo hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl shadow-sm transition-all"
+                      className="text-xs uppercase tracking-wider font-bold bg-brand-indigo hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl shadow-sm transition-all"
                     >
                       + Create Leave Policy
                     </button>
@@ -1048,13 +1044,13 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
                 )}
               </div>
               <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setShowAssignModal(false)} className="flex-1 py-3 rounded-xl bg-slate-100 text-[11px] uppercase tracking-wider font-black hover:bg-slate-200 text-slate-700 transition-all">
+                <button type="button" onClick={() => setShowAssignModal(false)} className="flex-1 py-3 rounded-xl bg-slate-100 text-xs uppercase tracking-wider font-bold hover:bg-slate-200 text-slate-700 transition-all">
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={assignForm.employeeIds.length === 0 || !assignForm.leavePolicyId}
-                  className="flex-1 py-3 rounded-xl bg-brand-indigo hover:bg-indigo-700 text-white text-[11px] uppercase tracking-wider font-black shadow-lg shadow-brand-indigo/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-brand-indigo"
+                  className="flex-1 py-3 rounded-xl bg-brand-indigo hover:bg-indigo-700 text-white text-xs uppercase tracking-wider font-bold shadow-lg shadow-brand-indigo/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-brand-indigo"
                 >
                   Save Changes
                 </button>
@@ -1080,7 +1076,7 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
                 <AlertCircle size={24} />
               </div>
               <div>
-                <h3 className="font-extrabold text-slate-900 text-lg">Bulk Policy Assignment</h3>
+                <h3 className="font-bold text-slate-900 text-lg">Bulk Policy Assignment</h3>
                 <p className="text-xs text-slate-500 font-medium">Please confirm this action</p>
               </div>
             </div>
@@ -1118,7 +1114,7 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
                 <AlertCircle size={24} />
               </div>
               <div>
-                <h3 className="font-extrabold text-slate-900 text-lg">Exceeds Leave Allowance</h3>
+                <h3 className="font-bold text-slate-900 text-lg">Exceeds Leave Allowance</h3>
                 <p className="text-xs text-slate-500 font-medium">Please confirm this action</p>
               </div>
             </div>
@@ -1162,8 +1158,8 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
                 <X size={20} />
               </div>
               <div className="flex-1">
-                <h3 className="font-extrabold text-slate-900 text-base">Reject Leave Request</h3>
-                <p className="text-[11px] text-rose-700 font-medium mt-0.5">A reason is required and will be shown to the employee</p>
+                <h3 className="font-bold text-slate-900 text-base">Reject Leave Request</h3>
+                <p className="text-xs text-rose-700 font-medium mt-0.5">A reason is required and will be shown to the employee</p>
               </div>
               <button
                 type="button"
@@ -1176,7 +1172,7 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
 
             <form onSubmit={(e) => { e.preventDefault(); doReject(); }} className="p-6 space-y-4">
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Rejection Reason</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Rejection Reason</label>
                 <textarea
                   autoFocus
                   required

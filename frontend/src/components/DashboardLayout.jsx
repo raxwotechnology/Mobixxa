@@ -34,37 +34,40 @@ const NavLink = ({ item, location, collapsed, onNavigate, userRole }) => {
       style={
         isActive
           ? {
-              backgroundColor: primaryColor,
-              color: '#ffffff',
-              boxShadow: `0 8px 20px -4px ${primaryColor}70`,
+              backgroundColor: `${primaryColor}14`,
+              color: primaryColor,
+              borderColor: `${primaryColor}30`,
             }
           : isHovered
           ? {
-              backgroundColor: `${primaryColor}18`,
+              backgroundColor: `${primaryColor}0a`,
               color: primaryColor,
             }
           : {}
       }
-      className={`relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all group ${
+      className={`relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all group border ${
         isActive
-          ? 'text-white shadow-md'
-          : 'text-slate-600'
+          ? 'font-bold shadow-2xs'
+          : 'text-slate-600 border-transparent hover:text-slate-900'
       }`}
     >
       {isActive && (
-        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-white rounded-r-full shadow-xs" />
+        <span
+          className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-r-full shadow-2xs"
+          style={{ backgroundColor: primaryColor }}
+        />
       )}
       <item.icon
         size={16}
-        style={!isActive && isHovered ? { color: primaryColor } : {}}
+        style={isActive || isHovered ? { color: primaryColor } : {}}
         className={`flex-shrink-0 transition-transform duration-200 group-hover:scale-105 ${
-          isActive ? 'text-white' : 'text-slate-400'
+          isActive ? '' : 'text-slate-400'
         }`}
       />
       {!collapsed && (
         <>
           <span className="flex-1 leading-snug tracking-tight">{item.label}</span>
-          {isActive && <ChevronRight size={13} className="opacity-90 flex-shrink-0 text-white" />}
+          {isActive && <ChevronRight size={13} style={{ color: primaryColor }} className="opacity-90 flex-shrink-0" />}
         </>
       )}
     </Link>
@@ -136,17 +139,20 @@ const DashboardLayout = ({ children, navItems, title }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
-  const isStaff = user && ['admin', 'manager', 'cashier', 'deliveryGuy', 'stockEmployee'].includes(user.role);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const path = location.pathname;
-  const showDashboardHeader = isStaff && (
+  const isStaff = user && ['admin', 'manager', 'cashier', 'deliveryGuy', 'stockEmployee'].includes(user.role);
+  const showDashboardHeader =
     path.startsWith('/admin') ||
     path.startsWith('/manager') ||
     path.startsWith('/employee') ||
     path.startsWith('/delivery') ||
     path.startsWith('/barcode') ||
-    path === '/settings' ||
-    path === '/profile'
-  );
+    (isStaff && (path === '/settings' || path === '/profile'));
   const headerHeightClass = showDashboardHeader ? 'top-14 sm:top-16' : 'top-[100px]';
   const sidebarHeight = showDashboardHeader ? 'calc(100dvh - 3.5rem)' : 'calc(100vh - 100px)';
   const mainMinHeight = showDashboardHeader ? 'calc(100dvh - 3.5rem)' : 'calc(100vh - 100px)';
@@ -154,12 +160,12 @@ const DashboardLayout = ({ children, navItems, title }) => {
   const fetchSettings = useSettingsStore((s) => s.fetchSettings);
   const { selectedStoreId, setSelectedStoreId } = useAdminStoreStore();
   const [stores, setStores] = useState([]);
-  const authUser = user || (typeof window !== 'undefined' ? (() => {
+  const authUser = user || (mounted && typeof window !== 'undefined' ? (() => {
     try {
-      const stored = localStorage.getItem('auth-storage');
+      const stored = localStorage.getItem('userInfo') || localStorage.getItem('auth-storage');
       if (stored) {
         const parsed = JSON.parse(stored);
-        return parsed?.state?.user || null;
+        return parsed?.state?.user || parsed || null;
       }
     } catch { }
     return null;
@@ -256,7 +262,7 @@ const DashboardLayout = ({ children, navItems, title }) => {
     navigate('/');
   };
 
-  const sidebarW = collapsed ? 'w-[72px]' : 'w-[min(100%,16rem)] sm:w-64';
+  const sidebarW = collapsed ? 'w-72 lg:w-[72px]' : 'w-72 sm:w-64';
   const mainML = collapsed ? 'lg:ml-[72px]' : 'lg:ml-64';
 
   return (
@@ -457,7 +463,7 @@ const DashboardLayout = ({ children, navItems, title }) => {
         </aside>
 
         <main className={`flex-1 min-w-0 transition-all duration-250 ${mainML}`}>
-          <div className="p-3 sm:p-5 md:p-6 lg:p-8 w-full max-w-[1600px] mx-auto" style={{ minHeight: mainMinHeight }}>
+          <div className="workspace-content p-4 sm:p-5 md:p-6 lg:p-8 w-full max-w-[1440px] mx-auto" style={{ minHeight: mainMinHeight }}>
             {children}
           </div>
         </main>

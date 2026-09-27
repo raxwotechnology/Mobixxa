@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Wallet, Search, ArrowLeft, CreditCard, TrendingUp, TrendingDown, DollarSign, Calendar, Download, ChevronDown, X, FileText, FileSpreadsheet, RefreshCw } from 'lucide-react';
+import { Wallet, Search, ArrowLeft, CreditCard, TrendingUp, TrendingDown, DollarSign, Calendar, Download, ChevronDown, X, FileText, FileSpreadsheet, RefreshCw, Building2, AlertTriangle } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
 import { managerNavGroups as navItems } from './managerNavItems';
 import { getSupplierPaymentSummary, getSupplierLedger, recordSupplierPayment, recordSupplierPurchase, getSupplierPayments } from '../../services/api';
@@ -199,7 +199,7 @@ const ManagerSupplierPayments = () => {
         <div className="animate-fade-in space-y-6">
           {/* Back Button */}
           <button onClick={() => { setSelectedSupplier(null); setLedger(null); }}
-            className="flex items-center gap-2 text-brand-indigo hover:text-brand-violet text-xs font-black uppercase tracking-wider bg-transparent border-0 cursor-pointer p-0 transition-colors">
+            className="flex items-center gap-2 text-brand-indigo hover:text-brand-violet text-xs font-bold uppercase tracking-wider bg-transparent border-0 cursor-pointer p-0 transition-colors">
             <ArrowLeft size={16} /> Back to Suppliers
           </button>
 
@@ -208,17 +208,17 @@ const ManagerSupplierPayments = () => {
             <div className="absolute top-0 right-0 w-64 h-64 bg-brand-indigo/5 rounded-full blur-3xl pointer-events-none -z-10"></div>
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div>
-                <h2 className="text-xl font-black text-slate-800 m-0">{selectedSupplier.name}</h2>
+                <h2 className="text-xl font-bold text-slate-800 m-0">{selectedSupplier.name}</h2>
                 <p className="text-xs text-slate-400 font-bold m-0 mt-1">{selectedSupplier.phone} {selectedSupplier.email && `· ${selectedSupplier.email}`}</p>
               </div>
               <div className="flex flex-wrap gap-2.5">
-                <button onClick={exportCSV} className="bg-white border border-slate-200 text-slate-650 hover:bg-slate-55 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
+                <button onClick={exportCSV} className="bg-white border border-slate-200 text-slate-650 hover:bg-slate-55 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
                   <Download size={14} /> Export CSV
                 </button>
-                <button onClick={() => setShowPurchaseModal(true)} className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
+                <button onClick={() => setShowPurchaseModal(true)} className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
                   <TrendingUp size={14} /> Record Purchase
                 </button>
-                <button onClick={() => setShowPayModal(true)} className="bg-brand-indigo hover:bg-brand-violet text-white px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors shadow-md flex items-center gap-2 cursor-pointer">
+                <button onClick={() => setShowPayModal(true)} className="bg-brand-indigo hover:bg-brand-violet text-white px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shadow-md flex items-center gap-2 cursor-pointer">
                   <CreditCard size={14} /> Record Payment
                 </button>
               </div>
@@ -233,8 +233,8 @@ const ManagerSupplierPayments = () => {
               ].map((c, i) => (
                 <div key={i} className="bg-white rounded-2xl p-4 border border-slate-100 text-center flex flex-col items-center">
                   <c.icon size={20} className={`${c.color} mb-1.5`} />
-                  <p className="text-[9px] uppercase font-black tracking-wider text-slate-400 m-0 mb-1">{c.label}</p>
-                  <p className={`text-lg font-black m-0 ${c.color}`}>Rs. {c.value.toLocaleString()}</p>
+                  <p className="text-xs uppercase font-bold tracking-wider text-slate-400 m-0 mb-1">{c.label}</p>
+                  <p className={`text-lg font-bold m-0 ${c.color}`}>Rs. {c.value.toLocaleString()}</p>
                 </div>
               ))}
             </div>
@@ -243,7 +243,7 @@ const ManagerSupplierPayments = () => {
           {/* Transactions Table */}
           <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
             <div className="px-6 py-4.5 border-b border-slate-100">
-              <h3 className="font-black text-slate-800 text-xs uppercase tracking-wider m-0">Transaction Ledger</h3>
+              <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider m-0">Transaction Ledger</h3>
             </div>
             {ledgerLoading ? (
               <div className="py-16 text-center text-slate-400 font-bold text-xs uppercase tracking-wider">Loading...</div>
@@ -255,7 +255,7 @@ const ManagerSupplierPayments = () => {
                   <thead>
                     <tr className="bg-slate-50 border-b border-slate-100">
                       {['Date', 'Type', 'Description', 'Recorded By', 'Amount', 'Balance'].map((h) => (
-                        <th key={h} className="px-6 py-3.5 text-left text-[10px] uppercase font-black tracking-wider text-slate-500">{h}</th>
+                        <th key={h} className="px-6 py-3.5 text-left text-xs uppercase font-bold tracking-wider text-slate-500">{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -264,7 +264,7 @@ const ManagerSupplierPayments = () => {
                       <tr key={i} className="hover:bg-slate-50/50 transition-colors">
                         <td className="px-6 py-4 text-slate-650 font-bold">{new Date(t.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
                         <td className="px-6 py-4">
-                          <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md border ${
+                          <span className={`text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${
                             t.type === 'purchase' ? 'bg-amber-50 text-amber-700 border-amber-100/60' : 'bg-teal-50 text-teal-700 border-teal-100/60'
                           }`}>
                             {t.type}
@@ -272,10 +272,10 @@ const ManagerSupplierPayments = () => {
                         </td>
                         <td className="px-6 py-4 text-slate-500 font-semibold max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">{t.description}</td>
                         <td className="px-6 py-4 text-slate-500 font-semibold">{t.createdBy?.name || '—'}</td>
-                        <td className={`px-6 py-4 font-black ${t.type === 'purchase' ? 'text-rose-500' : 'text-teal-650'}`}>
+                        <td className={`px-6 py-4 font-bold ${t.type === 'purchase' ? 'text-rose-500' : 'text-teal-650'}`}>
                           {t.type === 'purchase' ? '+' : '-'} Rs. {t.amount.toLocaleString()}
                         </td>
-                        <td className={`px-6 py-4 font-black ${t.runningBalance > 0 ? 'text-rose-550' : 'text-teal-650'}`}>
+                        <td className={`px-6 py-4 font-bold ${t.runningBalance > 0 ? 'text-rose-550' : 'text-teal-650'}`}>
                           Rs. {t.runningBalance.toLocaleString()}
                         </td>
                       </tr>
@@ -320,27 +320,27 @@ const ManagerSupplierPayments = () => {
                 
                 {payMethod === 'cheque' && (
                   <div className="bg-slate-50 border border-slate-200/60 p-4 rounded-xl space-y-3">
-                    <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider m-0">Cheque Details</h4>
+                    <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider m-0">Cheque Details</h4>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Cheque No. *</label>
+                        <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Cheque No. *</label>
                         <input type="text" value={chequeDetails.chequeNumber} onChange={(e) => setChequeDetails({...chequeDetails, chequeNumber: e.target.value})} placeholder="0000123"
                           className="w-full border border-slate-200 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all" />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Bank Name *</label>
+                        <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Bank Name *</label>
                         <input type="text" value={chequeDetails.bankName} onChange={(e) => setChequeDetails({...chequeDetails, bankName: e.target.value})} placeholder="BOC"
                           className="w-full border border-slate-200 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all" />
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Cheque Date *</label>
+                        <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Cheque Date *</label>
                         <input type="date" value={chequeDetails.chequeDate} onChange={(e) => setChequeDetails({...chequeDetails, chequeDate: e.target.value})}
                           className="w-full border border-slate-200 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all" />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Account No.</label>
+                        <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Account No.</label>
                         <input type="text" value={chequeDetails.accountNumber} onChange={(e) => setChequeDetails({...chequeDetails, accountNumber: e.target.value})} placeholder="Optional"
                           className="w-full border border-slate-200 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all" />
                       </div>
@@ -421,13 +421,13 @@ const ManagerSupplierPayments = () => {
               </div>
               <h1 className="text-2xl font-semibold text-slate-900 m-0">Supplier Payments</h1>
             </div>
-            <p className="text-[10px] font-normal uppercase tracking-wider text-slate-500 mt-2 m-0">Track supplier balances, purchases, and payments</p>
+            <p className="text-xs font-normal uppercase tracking-wider text-slate-500 mt-2 m-0">Track supplier balances, purchases, and payments</p>
           </div>
           <div className="flex flex-wrap gap-2.5">
             <button
               onClick={() => fetchSummary(true)}
               disabled={loading}
-              className="bg-white border border-slate-200 text-slate-650 hover:bg-slate-50 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors shadow-sm flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              className="bg-white border border-slate-200 text-slate-650 hover:bg-slate-50 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shadow-sm flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh
             </button>
@@ -446,8 +446,8 @@ const ManagerSupplierPayments = () => {
                 <c.icon size={20} className={c.color} />
               </div>
               <div>
-                <p className="text-[9px] uppercase font-black tracking-wider text-slate-400 m-0 mb-1">{c.label}</p>
-                <p className={`text-xl font-black m-0 ${c.color}`}>Rs. {c.value.toLocaleString()}</p>
+                <p className="text-xs uppercase font-bold tracking-wider text-slate-400 m-0 mb-1">{c.label}</p>
+                <p className={`text-xl font-bold m-0 ${c.color}`}>Rs. {c.value.toLocaleString()}</p>
               </div>
             </div>
           ))}
@@ -461,10 +461,10 @@ const ManagerSupplierPayments = () => {
               className="w-full bg-white border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all" />
           </div>
           <div className="flex gap-2 flex-wrap">
-            <button onClick={exportAllPaymentsExcel} className="bg-teal-50 border border-teal-100/60 text-teal-755 hover:bg-teal-100 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
+            <button onClick={exportAllPaymentsExcel} className="bg-teal-50 border border-teal-100/60 text-teal-755 hover:bg-teal-100 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
               <FileSpreadsheet size={14} /> Excel Export
             </button>
-            <button onClick={exportAllPaymentsPDF} className="bg-rose-50 border border-rose-100/65 text-rose-650 hover:bg-rose-100 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
+            <button onClick={exportAllPaymentsPDF} className="bg-rose-50 border border-rose-100/65 text-rose-650 hover:bg-rose-100 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
               <FileText size={14} /> PDF Export
             </button>
           </div>
@@ -482,7 +482,7 @@ const ManagerSupplierPayments = () => {
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-100">
                     {['Supplier', 'Contact', 'Total Purchased', 'Total Paid', 'Balance Due', 'Actions'].map((h) => (
-                      <th key={h} className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500 text-left">{h}</th>
+                      <th key={h} className="px-6 py-4 text-xs uppercase font-bold tracking-wider text-slate-500 text-left">{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -490,13 +490,13 @@ const ManagerSupplierPayments = () => {
                   {filtered.map((s) => (
                     <tr key={s._id} className="hover:bg-slate-50/50 transition-colors cursor-pointer" onClick={() => openLedger(s)}>
                       <td className="px-6 py-4.5">
-                        <span className="font-black text-slate-800 text-xs">{s.name}</span>
+                        <span className="font-bold text-slate-800 text-xs">{s.name}</span>
                       </td>
                       <td className="px-6 py-4.5 text-slate-450 font-bold">{s.phone || s.email || '—'}</td>
-                      <td className="px-6 py-4.5 font-black text-slate-850">Rs. {(s.totalPurchased || 0).toLocaleString()}</td>
-                      <td className="px-6 py-4.5 font-black text-teal-700">Rs. {(s.totalPaid || 0).toLocaleString()}</td>
+                      <td className="px-6 py-4.5 font-bold text-slate-850">Rs. {(s.totalPurchased || 0).toLocaleString()}</td>
+                      <td className="px-6 py-4.5 font-bold text-teal-700">Rs. {(s.totalPaid || 0).toLocaleString()}</td>
                       <td className="px-6 py-4.5">
-                        <span className={`text-[10px] font-black tracking-wider px-2.5 py-1 rounded-md border ${
+                        <span className={`text-xs font-bold tracking-wider px-2.5 py-1 rounded-md border ${
                           s.balanceDue > 0 ? 'bg-rose-50 text-rose-700 border-rose-100/60' : 'bg-teal-50 text-teal-700 border-teal-100/60'
                         }`}>
                           Rs. {(s.balanceDue || 0).toLocaleString()}
@@ -504,7 +504,7 @@ const ManagerSupplierPayments = () => {
                       </td>
                       <td className="px-6 py-4.5">
                         <button onClick={(e) => { e.stopPropagation(); setSupplierToPay(s); setShowPayModal(true); }}
-                          className="bg-brand-indigo/10 text-brand-indigo hover:bg-brand-indigo hover:text-white px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer">
+                          className="bg-brand-indigo/10 text-brand-indigo hover:bg-brand-indigo hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer">
                           Pay
                         </button>
                       </td>
@@ -549,27 +549,27 @@ const ManagerSupplierPayments = () => {
                 
                 {payMethod === 'cheque' && (
                   <div className="bg-slate-50 border border-slate-200/60 p-4 rounded-xl space-y-3">
-                    <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider m-0">Cheque Details</h4>
+                    <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider m-0">Cheque Details</h4>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Cheque No. *</label>
+                        <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Cheque No. *</label>
                         <input type="text" value={chequeDetails.chequeNumber} onChange={(e) => setChequeDetails({...chequeDetails, chequeNumber: e.target.value})} placeholder="0000123"
                           className="w-full border border-slate-200 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all" />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Bank Name *</label>
+                        <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Bank Name *</label>
                         <input type="text" value={chequeDetails.bankName} onChange={(e) => setChequeDetails({...chequeDetails, bankName: e.target.value})} placeholder="BOC"
                           className="w-full border border-slate-200 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all" />
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Cheque Date *</label>
+                        <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Cheque Date *</label>
                         <input type="date" value={chequeDetails.chequeDate} onChange={(e) => setChequeDetails({...chequeDetails, chequeDate: e.target.value})}
                           className="w-full border border-slate-200 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all" />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Account No.</label>
+                        <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Account No.</label>
                         <input type="text" value={chequeDetails.accountNumber} onChange={(e) => setChequeDetails({...chequeDetails, accountNumber: e.target.value})} placeholder="Optional"
                           className="w-full border border-slate-200 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all" />
                       </div>

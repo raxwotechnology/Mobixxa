@@ -244,7 +244,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
         tag: 'E-Reload', cardValue: 1, commissionRate: 4,
         qty: amountVal, notes: addReloadForm.notes,
       });
-      toast.success(`+ Rs. ${amountVal.toLocaleString()} float added to ${addReloadForm.operatorName}! 📲`);
+      toast.success(`+ Rs. ${amountVal.toLocaleString()} float added to ${addReloadForm.operatorName}!`);
       setAddReloadForm({ operatorName: 'Dialog E-Reload', amount: '', notes: '' });
       setShowAddReloadModal(false);
     } catch (err) {
@@ -273,7 +273,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
         bgLight: '#fff1f2', border: '#fecdd3', tag: 'Scratch Card', cardValue: cardVal, commissionRate: 4,
         qty: qtyVal, notes: addCardForm.notes,
       });
-      toast.success(`+ ${qtyVal} pcs of ${addCardForm.network} Rs. ${cardVal} added! 💳`);
+      toast.success(`+ ${qtyVal} pcs of ${addCardForm.network} Rs. ${cardVal} added!`);
       setAddCardForm({ network: 'Dialog', cardValue: '100', quantity: '', notes: '' });
       setShowAddCardModal(false);
     } catch (err) {
@@ -305,7 +305,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
         ? { ...r, stockId: data._id, status: data.status, closingStock: data.closingStock, eveningInHand: data.closingStock }
         : r));
       setClosingDraft(prev => { const next = { ...prev }; delete next[row.operatorName]; return next; });
-      toast.success(`${row.operatorName} closed for the day — Sold locked in. ✅`);
+      toast.success(`${row.operatorName} closed for the day — Sold locked in.`);
       if (onSyncSuccess) onSyncSuccess();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to submit closing count');
@@ -340,7 +340,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
       setRows(prev => prev.map(r => r.stockId === adjustTarget.stockId
         ? { ...r, closingStock: data.closingStock, eveningInHand: data.closingStock, openingStock: data.openingStock, addedToday: data.addedStock }
         : r));
-      toast.success('Correction saved & logged ✅');
+      toast.success('Correction saved & logged');
       setAdjustTarget(null);
       if (onSyncSuccess) onSyncSuccess();
     } catch (err) {
@@ -535,7 +535,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
     try {
       setSubmittingCredit(true);
       await createReload({ ...creditForm, storeId, paymentMethod: 'Credit', type: 'Prepaid', accountId: null });
-      toast.success('Credit Reload logged successfully! 🏷️');
+      toast.success('Credit Reload logged successfully!');
       setCreditForm({ mobileNumber: '', customerName: '', operator: 'Dialog', amount: '', notes: '' });
       loadCreditReloads();
     } catch (err) {
@@ -552,7 +552,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
       setSubmittingSettle(true);
       const { data: { data: updated } } = await settleCreditReload(settleTarget._id, { paymentMethod: 'Cash' });
       setCreditReloads(prev => prev.map(cr => (cr._id === updated._id ? updated : cr)));
-      toast.success(`Rs. ${Number(settleTarget.amount).toLocaleString()} collected from ${settleTarget.mobileNumber} ✅`);
+      toast.success(`Rs. ${Number(settleTarget.amount).toLocaleString()} collected from ${settleTarget.mobileNumber}`);
       setSettleTarget(null);
       if (onSyncSuccess) onSyncSuccess();
     } catch (err) {
@@ -587,7 +587,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                 <h2 className="text-xl font-semibold text-white flex items-center gap-2.5">
                   Reload &amp; Card Management
                   <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                    ⚡ Auto 4% Comm.
+                     Auto 4% Comm.
                   </span>
                 </h2>
                 <p className="text-xs text-slate-400 mt-0.5">
@@ -608,7 +608,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  <Smartphone size={15} /> 📲 Reload
+                  <Smartphone size={15} />  Reload
                 </button>
                 <button
                   type="button"
@@ -619,7 +619,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  <CreditCard size={15} /> 💳 Card
+                  <CreditCard size={15} />  Card
                 </button>
                 <button
                   type="button"
@@ -630,7 +630,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  <Layers size={15} /> 📊 Summary
+                  <Layers size={15} />  Summary
                 </button>
                 <button
                   type="button"
@@ -641,7 +641,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  🏷️ Credit
+                   Credit
                 </button>
               </div>
 
@@ -661,24 +661,24 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
         {/* ── Realtime KPI Metric Ribbon ─────────────────────────────────── */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 p-4 bg-slate-950/60 border-b border-slate-800 shrink-0">
           <div className="bg-slate-900/80 p-3 rounded-2xl border border-slate-800">
-            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">(+) Added Today</div>
-            <div className="text-lg font-black text-emerald-400 mt-1">+ Rs. {totalAdded.toLocaleString()}</div>
+            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">(+) Added Today</div>
+            <div className="text-lg font-bold text-emerald-400 mt-1">+ Rs. {totalAdded.toLocaleString()}</div>
           </div>
           <div className="bg-slate-900/80 p-3 rounded-2xl border border-slate-800">
-            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Evening In-Hand</div>
-            <div className="text-lg font-black text-slate-300 mt-1">Rs. {totalInHand.toLocaleString()}</div>
+            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Evening In-Hand</div>
+            <div className="text-lg font-bold text-slate-300 mt-1">Rs. {totalInHand.toLocaleString()}</div>
           </div>
           <div className="bg-gradient-to-br from-blue-900/40 to-indigo-900/40 p-3 rounded-2xl border border-blue-500/30 text-white">
-            <div className="text-[10px] font-bold text-blue-300 uppercase tracking-wider">🎯 Gross Sold</div>
-            <div className="text-xl font-black text-blue-100 mt-1">Rs. {totalGrossSold.toLocaleString()}</div>
+            <div className="text-xs font-bold text-blue-300 uppercase tracking-wider"> Gross Sold</div>
+            <div className="text-xl font-bold text-blue-100 mt-1">Rs. {totalGrossSold.toLocaleString()}</div>
           </div>
           <div className="bg-gradient-to-br from-amber-900/40 to-orange-900/40 p-3 rounded-2xl border border-amber-500/30">
-            <div className="text-[10px] font-bold text-amber-300 uppercase tracking-wider">4% Comm. Earned</div>
-            <div className="text-lg font-black text-amber-400 mt-1">+ Rs. {totalCommission.toLocaleString()}</div>
+            <div className="text-xs font-bold text-amber-300 uppercase tracking-wider">4% Comm. Earned</div>
+            <div className="text-lg font-bold text-amber-400 mt-1">+ Rs. {totalCommission.toLocaleString()}</div>
           </div>
           <div className="bg-gradient-to-br from-emerald-900/40 to-teal-900/40 p-3 rounded-2xl border border-emerald-500/40">
-            <div className="text-[10px] font-bold text-emerald-300 uppercase tracking-wider">💰 Net Total (104%)</div>
-            <div className="text-xl font-black text-emerald-400 mt-1">Rs. {totalNetImpact.toLocaleString()}</div>
+            <div className="text-xs font-bold text-emerald-300 uppercase tracking-wider"> Net Total (104%)</div>
+            <div className="text-xl font-bold text-emerald-400 mt-1">Rs. {totalNetImpact.toLocaleString()}</div>
           </div>
         </div>
 
@@ -693,7 +693,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <Smartphone size={18} className="text-indigo-400" />
-                  <span className="text-sm font-black text-white uppercase tracking-wide">
+                  <span className="text-sm font-bold text-white uppercase tracking-wide">
                     Reload Machine Floats
                   </span>
                   <span className="text-xs text-slate-400 hidden sm:inline">• Enter Today Added Float &amp; Evening In-Hand</span>
@@ -728,34 +728,34 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                       <div className="flex items-center gap-2.5">
                         <div className="w-4 h-4 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: row.color }} />
                         <div>
-                          <h4 className="text-sm font-black text-white leading-tight">{row.operatorName}</h4>
-                          <span className="text-[10px] font-bold text-slate-400 uppercase">{row.tag} • 4% Comm</span>
+                          <h4 className="text-sm font-bold text-white leading-tight">{row.operatorName}</h4>
+                          <span className="text-xs font-bold text-slate-400 uppercase">{row.tag} • 4% Comm</span>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-[10px] font-bold text-emerald-400 uppercase">In Stock</div>
-                        <div className="text-sm font-mono font-black text-emerald-300">Rs. {Number(row._inHand).toLocaleString()}</div>
-                        <div className="text-[9px] font-medium text-slate-500 uppercase mt-0.5">Float: Rs. {Number(row._totalFloat).toLocaleString()}</div>
+                        <div className="text-xs font-bold text-emerald-400 uppercase">In Stock</div>
+                        <div className="text-sm font-mono font-bold text-emerald-300">Rs. {Number(row._inHand).toLocaleString()}</div>
+                        <div className="text-xs font-medium text-slate-500 uppercase mt-0.5">Float: Rs. {Number(row._totalFloat).toLocaleString()}</div>
                       </div>
                     </div>
 
                     {/* Inputs Section */}
                     <div className="grid grid-cols-2 gap-2.5 mb-3 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80">
                       <div>
-                        <label className="text-[10px] font-bold text-emerald-400 block mb-1 uppercase tracking-wider">
+                        <label className="text-xs font-bold text-emerald-400 block mb-1 uppercase tracking-wider">
                           (+) Added Float (Rs.)
                         </label>
                         <div className="w-full py-2 px-2.5 font-mono font-bold text-emerald-300 bg-slate-900 border border-emerald-500/30 rounded-lg text-sm flex items-center justify-between">
                           <span>Rs. {Number(row._added).toLocaleString()}</span>
                           <Lock size={11} className="text-emerald-500/50" />
                         </div>
-                        <div className="text-[10px] text-slate-500 font-medium mt-1.5">
+                        <div className="text-xs text-slate-500 font-medium mt-1.5">
                           {row.addLog?.length || 0} add{row.addLog?.length === 1 ? '' : 's'} logged today
                         </div>
                       </div>
 
                       <div>
-                        <label className="text-[10px] font-bold text-indigo-400 block mb-1 uppercase tracking-wider">
+                        <label className="text-xs font-bold text-indigo-400 block mb-1 uppercase tracking-wider">
                           Evening In-Hand (Rs.)
                         </label>
                         {row.status === 'closed' ? (
@@ -774,7 +774,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                             className="w-full py-2 px-2.5 font-mono font-bold text-indigo-300 bg-slate-900 border border-indigo-500/30 rounded-lg text-sm focus:border-indigo-500 focus:bg-slate-800 outline-none transition-all"
                           />
                         )}
-                        <div className="text-[10px] text-slate-500 font-medium mt-1.5 truncate">
+                        <div className="text-xs text-slate-500 font-medium mt-1.5 truncate">
                           Opening: Rs. {Number(row._opening).toLocaleString()}
                         </div>
                       </div>
@@ -785,7 +785,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                         <button
                           type="button"
                           onClick={() => openAdjustModal(row)}
-                          className="w-full mb-2.5 py-1.5 rounded-lg border border-amber-500/30 text-amber-400 text-[10px] font-bold hover:bg-amber-500/10 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                          className="w-full mb-2.5 py-1.5 rounded-lg border border-amber-500/30 text-amber-400 text-xs font-bold hover:bg-amber-500/10 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                         >
                           <Edit3 size={11} /> Adjust (logged)
                         </button>
@@ -795,7 +795,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                         type="button"
                         onClick={() => handleSubmitClosing(row)}
                         disabled={closingBusy === row.operatorName}
-                        className="w-full mb-2.5 py-1.5 rounded-lg bg-indigo-600/90 hover:bg-indigo-600 text-white text-[10px] font-bold transition-colors cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-60"
+                        className="w-full mb-2.5 py-1.5 rounded-lg bg-indigo-600/90 hover:bg-indigo-600 text-white text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-60"
                       >
                         {closingBusy === row.operatorName ? <Loader2 size={11} className="animate-spin" /> : <CheckCircle size={11} />}
                         Submit Closing
@@ -805,16 +805,16 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                     {/* Bottom Live Calculation Ribbon */}
                     <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex items-center justify-between">
                       <div>
-                        <div className="text-[9px] font-bold text-slate-400 uppercase">Sold Out</div>
-                        <div className="text-xs font-mono font-black text-emerald-400">Rs. {Number(row._soldAmount).toLocaleString()}</div>
+                        <div className="text-xs font-bold text-slate-400 uppercase">Sold Out</div>
+                        <div className="text-xs font-mono font-bold text-emerald-400">Rs. {Number(row._soldAmount).toLocaleString()}</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-[9px] font-bold text-amber-400 uppercase">+4% Comm.</div>
+                        <div className="text-xs font-bold text-amber-400 uppercase">+4% Comm.</div>
                         <div className="text-xs font-mono font-bold text-amber-300">+ Rs. {Number(row._commAmount).toLocaleString()}</div>
                       </div>
                       <div className="text-right">
-                        <div className="text-[9px] font-bold text-teal-400 uppercase">Net (104%)</div>
-                        <div className="text-sm font-mono font-black text-teal-300">Rs. {Number(row._netAmount).toLocaleString()}</div>
+                        <div className="text-xs font-bold text-teal-400 uppercase">Net (104%)</div>
+                        <div className="text-sm font-mono font-bold text-teal-300">Rs. {Number(row._netAmount).toLocaleString()}</div>
                       </div>
                     </div>
 
@@ -832,11 +832,11 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-2 flex-wrap">
                   <CreditCard size={18} className="text-rose-400" />
-                  <span className="text-sm font-black text-white uppercase tracking-wide">
+                  <span className="text-sm font-bold text-white uppercase tracking-wide">
                     Scratch Card Stock (Pieces)
                   </span>
                   <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-mono font-bold">
-                    📦 In Stock: Rs. {cardStockSummary.totalValue.toLocaleString()} ({cardStockSummary.totalPcs} pcs)
+                     In Stock: Rs. {cardStockSummary.totalValue.toLocaleString()} ({cardStockSummary.totalPcs} pcs)
                   </span>
                 </div>
 
@@ -894,21 +894,21 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                     {/* Card Header */}
                     <div className="flex items-center justify-between mb-2.5 pt-1">
                       <div>
-                        <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full" style={{ backgroundColor: `${row.color}25`, color: row.color }}>
+                        <span className="text-xs font-bold uppercase px-2 py-0.5 rounded-full" style={{ backgroundColor: `${row.color}25`, color: row.color }}>
                           {row.network}
                         </span>
-                        <h4 className="text-sm font-black text-white mt-1">Rs. {row.cardValue} Card</h4>
+                        <h4 className="text-sm font-bold text-white mt-1">Rs. {row.cardValue} Card</h4>
                       </div>
                       <div className="flex flex-col items-center justify-center px-2.5 py-1 rounded-xl min-w-[52px]" style={{ backgroundColor: `${row.color}20`, color: row.color }}>
-                        <span className="text-[8px] font-bold uppercase leading-none">In Stock</span>
-                        <span className="text-base font-black leading-tight mt-0.5">{row._inHand} <span className="text-[9px] font-bold">pcs</span></span>
+                        <span className="text-xs font-bold uppercase leading-none">In Stock</span>
+                        <span className="text-base font-bold leading-tight mt-0.5">{row._inHand} <span className="text-xs font-bold">pcs</span></span>
                       </div>
                     </div>
 
                     {/* Card Inputs */}
                     <div className="grid grid-cols-2 gap-2 mb-2.5 bg-slate-950/60 p-2 rounded-xl border border-slate-800/80">
                       <div>
-                        <label className="text-[9px] font-bold text-emerald-400 block mb-1 uppercase tracking-wider">
+                        <label className="text-xs font-bold text-emerald-400 block mb-1 uppercase tracking-wider">
                           (+) Added (Pcs)
                         </label>
                         <div className="w-full py-1.5 px-2 font-mono font-bold text-emerald-300 bg-slate-900 border border-emerald-500/30 rounded-lg text-xs flex items-center justify-between">
@@ -917,11 +917,11 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                         </div>
                       </div>
                       <div>
-                        <label className="text-[9px] font-bold text-indigo-400 block mb-1 uppercase tracking-wider">
+                        <label className="text-xs font-bold text-indigo-400 block mb-1 uppercase tracking-wider">
                           In-Hand (Pcs)
                         </label>
                         {row.status === 'closed' ? (
-                          <div className="w-full py-2 px-2 font-mono font-black text-indigo-200 bg-indigo-950/50 border border-indigo-500/40 rounded-lg text-sm flex items-center justify-between">
+                          <div className="w-full py-2 px-2 font-mono font-bold text-indigo-200 bg-indigo-950/50 border border-indigo-500/40 rounded-lg text-sm flex items-center justify-between">
                             <span>{row.eveningInHand} pcs</span>
                             <Lock size={11} className="text-indigo-400/60" />
                           </div>
@@ -933,13 +933,13 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                             placeholder="0"
                             value={closingDraft[row.operatorName] ?? row._totalFloat}
                             onChange={(e) => handleClosingDraftChange(row.operatorName, e.target.value)}
-                            className="w-full py-2 px-2 font-mono font-black text-indigo-200 bg-indigo-950/50 border border-indigo-500/40 rounded-lg text-sm focus:border-indigo-400 focus:bg-slate-800 outline-none transition-all"
+                            className="w-full py-2 px-2 font-mono font-bold text-indigo-200 bg-indigo-950/50 border border-indigo-500/40 rounded-lg text-sm focus:border-indigo-400 focus:bg-slate-800 outline-none transition-all"
                           />
                         )}
                       </div>
                     </div>
 
-                    <div className="text-[9px] text-slate-500 font-medium mb-2 truncate">
+                    <div className="text-xs text-slate-500 font-medium mb-2 truncate">
                       Opening: {row._opening} pcs • Float: {row._totalFloat} pcs
                     </div>
 
@@ -948,7 +948,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                         <button
                           type="button"
                           onClick={() => openAdjustModal(row)}
-                          className="w-full mb-2.5 py-1 rounded-lg border border-amber-500/30 text-amber-400 text-[9px] font-bold hover:bg-amber-500/10 transition-colors cursor-pointer flex items-center justify-center gap-1"
+                          className="w-full mb-2.5 py-1 rounded-lg border border-amber-500/30 text-amber-400 text-xs font-bold hover:bg-amber-500/10 transition-colors cursor-pointer flex items-center justify-center gap-1"
                         >
                           <Edit3 size={10} /> Adjust
                         </button>
@@ -958,7 +958,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                         type="button"
                         onClick={() => handleSubmitClosing(row)}
                         disabled={closingBusy === row.operatorName}
-                        className="w-full mb-2.5 py-1 rounded-lg bg-indigo-600/90 hover:bg-indigo-600 text-white text-[9px] font-bold transition-colors cursor-pointer flex items-center justify-center gap-1 disabled:opacity-60"
+                        className="w-full mb-2.5 py-1 rounded-lg bg-indigo-600/90 hover:bg-indigo-600 text-white text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1 disabled:opacity-60"
                       >
                         {closingBusy === row.operatorName ? <Loader2 size={10} className="animate-spin" /> : <CheckCircle size={10} />}
                         Submit Closing
@@ -968,12 +968,12 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                     {/* Live Metric Bar */}
                     <div className="bg-slate-950 p-2 rounded-xl border border-slate-800 flex items-center justify-between text-xs font-mono">
                       <div>
-                        <span className="text-[9px] text-slate-400 block uppercase">Sold</span>
-                        <span className="font-black text-emerald-400">{row._soldQty} pcs</span>
+                        <span className="text-xs text-slate-400 block uppercase">Sold</span>
+                        <span className="font-bold text-emerald-400">{row._soldQty} pcs</span>
                       </div>
                       <div className="text-right">
-                        <span className="text-[9px] text-slate-400 block uppercase">Gross (104%)</span>
-                        <span className="font-black text-teal-300">Rs. {Number(row._netAmount).toLocaleString()}</span>
+                        <span className="text-xs text-slate-400 block uppercase">Gross (104%)</span>
+                        <span className="font-bold text-teal-300">Rs. {Number(row._netAmount).toLocaleString()}</span>
                       </div>
                     </div>
 
@@ -990,7 +990,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
             <div className="bg-slate-900 rounded-2xl border border-slate-800 p-5 space-y-5">
               <div className="flex items-center justify-between border-b border-slate-800 pb-4">
                 <div>
-                  <h3 className="text-base font-black text-white">📊 Daily Reload &amp; Card Bookkeeping Summary</h3>
+                  <h3 className="text-base font-bold text-white"> Daily Reload &amp; Card Bookkeeping Summary</h3>
                   <p className="text-xs text-slate-400 mt-0.5">Summary breakdown with 4% commissions and cash drawer impact</p>
                 </div>
                 <button
@@ -1005,19 +1005,19 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800">
                   <div className="text-xs font-bold text-slate-400 uppercase">Reload Float Sales</div>
-                  <div className="text-2xl font-black text-white mt-1">
+                  <div className="text-2xl font-bold text-white mt-1">
                     Rs. {ereloadRows.reduce((a, b) => a + b._soldAmount, 0).toLocaleString()}
                   </div>
                 </div>
                 <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800">
                   <div className="text-xs font-bold text-slate-400 uppercase">Card Sales Value</div>
-                  <div className="text-2xl font-black text-white mt-1">
+                  <div className="text-2xl font-bold text-white mt-1">
                     Rs. {calculations.computedRows.filter(r => r.tag === 'Scratch Card').reduce((a, b) => a + b._soldAmount, 0).toLocaleString()}
                   </div>
                 </div>
                 <div className="bg-emerald-950/40 p-4 rounded-2xl border border-emerald-500/40">
                   <div className="text-xs font-bold text-emerald-400 uppercase">Total Shop Earnings (104%)</div>
-                  <div className="text-2xl font-black text-emerald-300 mt-1">
+                  <div className="text-2xl font-bold text-emerald-300 mt-1">
                     Rs. {totalNetImpact.toLocaleString()}
                   </div>
                 </div>
@@ -1025,7 +1025,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
 
               <div className="overflow-x-auto border border-slate-800 rounded-2xl">
                 <table className="w-full text-left text-xs border-collapse">
-                  <thead className="bg-slate-950 text-slate-400 font-extrabold uppercase text-[10px]">
+                  <thead className="bg-slate-950 text-slate-400 font-bold uppercase text-xs">
                     <tr>
                       <th className="p-3">Item</th>
                       <th className="p-3 text-center">Type</th>
@@ -1040,7 +1040,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                       <tr key={r.operatorName} className="hover:bg-slate-800/50">
                         <td className="p-3 font-bold text-slate-200">{r.operatorName}</td>
                         <td className="p-3 text-center">
-                          <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 text-[10px] font-bold">
+                          <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 text-xs font-bold">
                             {r.tag}
                           </span>
                         </td>
@@ -1053,7 +1053,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                         <td className="p-3 text-center font-mono text-amber-400 font-bold">
                           + Rs. {r._commAmount.toLocaleString()}
                         </td>
-                        <td className="p-3 text-right font-mono font-black text-teal-300">
+                        <td className="p-3 text-right font-mono font-bold text-teal-300">
                           Rs. {r._netAmount.toLocaleString()}
                         </td>
                       </tr>
@@ -1073,7 +1073,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
               {/* Left Form: Add Credit Reload */}
               <div className="lg:col-span-5 bg-slate-900 p-6 rounded-3xl border border-slate-800 shadow-xl space-y-5">
                 <div className="border-b border-slate-800 pb-3">
-                  <h3 className="text-base font-black text-white">🏷️ Record Credit Reload</h3>
+                  <h3 className="text-base font-bold text-white"> Record Credit Reload</h3>
                   <p className="text-xs text-slate-400 mt-1">Log reload given to a customer on credit.</p>
                 </div>
                 <form onSubmit={handleCreditSubmit} className="space-y-4">
@@ -1087,7 +1087,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                           onClick={() => setCreditForm({ ...creditForm, operator: op })}
                           className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                             creditForm.operator === op
-                              ? 'bg-amber-500 text-slate-950 border-amber-500 font-black shadow-md'
+                              ? 'bg-amber-500 text-slate-950 border-amber-500 font-bold shadow-md'
                               : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
                           }`}
                         >
@@ -1142,7 +1142,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                   <button
                     type="submit"
                     disabled={submittingCredit}
-                    className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-black text-sm shadow-lg shadow-amber-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-bold text-sm shadow-lg shadow-amber-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
                     {submittingCredit ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle size={18} />}
                     Save Credit Reload Entry
@@ -1154,8 +1154,8 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
               <div className="lg:col-span-7 bg-slate-900 p-6 rounded-3xl border border-slate-800 shadow-xl flex flex-col space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-800 pb-3 flex-wrap gap-3">
                   <div>
-                    <h3 className="text-base font-black text-white flex items-center gap-2">
-                      <span>📋 Credit Reloads Ledger ({stockDate})</span>
+                    <h3 className="text-base font-bold text-white flex items-center gap-2">
+                      <span> Credit Reloads Ledger ({stockDate})</span>
                     </h3>
                     <p className="text-xs text-slate-400 mt-0.5">
                       {creditReloads.length} Credit {creditReloads.length === 1 ? 'entry' : 'entries'} on record
@@ -1163,14 +1163,14 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-right">
-                      <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">Total Credit</span>
-                      <span className="text-lg font-black text-amber-300 font-mono">
+                      <span className="text-xs font-bold text-amber-400 uppercase tracking-wider block">Total Credit</span>
+                      <span className="text-lg font-bold text-amber-300 font-mono">
                         Rs. {totalCreditAmount.toLocaleString()}
                       </span>
                     </div>
                     <div className="text-right">
-                      <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider block">Collected Today</span>
-                      <span className="text-lg font-black text-emerald-300 font-mono">
+                      <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider block">Collected Today</span>
+                      <span className="text-lg font-bold text-emerald-300 font-mono">
                         Rs. {totalCollectedAmount.toLocaleString()}
                       </span>
                     </div>
@@ -1212,7 +1212,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                         {creditReloads.length === 0 ? `No credit reloads recorded for ${stockDate}` : `No ${creditStatusFilter} entries`}
                       </p>
                       {creditReloads.length === 0 && (
-                        <p className="text-[10px] text-slate-500 mt-1">Submit the form on the left to add a credit reload.</p>
+                        <p className="text-xs text-slate-500 mt-1">Submit the form on the left to add a credit reload.</p>
                       )}
                     </div>
                   ) : (
@@ -1222,17 +1222,17 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                         className="p-3.5 rounded-2xl border border-slate-800 bg-slate-950/80 hover:bg-slate-950 transition-all flex items-center justify-between gap-3"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center font-black text-xs shrink-0 border border-amber-500/20">
+                          <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center font-bold text-xs shrink-0 border border-amber-500/20">
                             {cr.operator?.slice(0, 3).toUpperCase() || 'REL'}
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="font-black text-white text-xs">{cr.mobileNumber}</span>
+                              <span className="font-bold text-white text-xs">{cr.mobileNumber}</span>
                               {cr.customerName && (
                                 <span className="text-xs font-semibold text-slate-300">({cr.customerName})</span>
                               )}
                             </div>
-                            <div className="flex items-center gap-2 text-[10px] text-slate-400 mt-0.5">
+                            <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
                               <span className="font-bold text-slate-300">{cr.operator}</span>
                               <span>•</span>
                               <span>{new Date(cr.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
@@ -1244,8 +1244,8 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                               )}
                             </div>
                             {cr.creditSettled && (
-                              <div className="text-[10px] text-emerald-400 mt-0.5">
-                                ✓ Paid {new Date(cr.creditSettledAt).toLocaleString([], { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })}
+                              <div className="text-xs text-emerald-400 mt-0.5">
+                                 Paid {new Date(cr.creditSettledAt).toLocaleString([], { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })}
                                 {cr.settledBy?.name ? ` by ${cr.settledBy.name}` : ''}
                               </div>
                             )}
@@ -1253,10 +1253,10 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                         </div>
 
                         <div className="text-right shrink-0">
-                          <div className="font-black text-amber-400 text-sm font-mono">
+                          <div className="font-bold text-amber-400 text-sm font-mono">
                             Rs. {Number(cr.amount || 0).toLocaleString()}
                           </div>
-                          <span className={`inline-block px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider mt-1 ${
+                          <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider mt-1 ${
                             cr.creditSettled
                               ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                               : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
@@ -1267,7 +1267,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                             <button
                               type="button"
                               onClick={() => setSettleTarget(cr)}
-                              className="block mt-1.5 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold transition-colors cursor-pointer"
+                              className="block mt-1.5 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-colors cursor-pointer"
                             >
                               Mark as Paid
                             </button>
@@ -1286,7 +1286,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
         {/* ── Footer Actions ──────────────────────────────────────────────── */}
         <div className="p-4 bg-slate-950 text-white flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0 border-t border-slate-800">
           <div className="text-xs text-slate-400 font-medium">
-            Total Net Impact: <span className="text-emerald-400 font-black text-sm">Rs. {totalNetImpact.toLocaleString()}</span> (Includes 4% Commission)
+            Total Net Impact: <span className="text-emerald-400 font-bold text-sm">Rs. {totalNetImpact.toLocaleString()}</span> (Includes 4% Commission)
           </div>
           <div className="flex items-center gap-3 w-full sm:w-auto">
             <button
@@ -1320,7 +1320,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                   <Smartphone size={20} />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-white">+ Add Reload Float</h3>
+                  <h3 className="text-base font-bold text-white">+ Add Reload Float</h3>
                   <p className="text-xs text-slate-400">Record new float added today</p>
                 </div>
               </div>
@@ -1360,7 +1360,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                   placeholder="e.g. 5000"
                   value={addReloadForm.amount}
                   onChange={(e) => setAddReloadForm({ ...addReloadForm, amount: e.target.value })}
-                  className="w-full py-2.5 px-3 border border-slate-700 rounded-xl text-sm font-mono font-black text-emerald-400 outline-none focus:border-indigo-500 bg-slate-950"
+                  className="w-full py-2.5 px-3 border border-slate-700 rounded-xl text-sm font-mono font-bold text-emerald-400 outline-none focus:border-indigo-500 bg-slate-950"
                 />
               </div>
 
@@ -1405,7 +1405,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                   <CreditCard size={20} />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-white">+ Add Card Stock</h3>
+                  <h3 className="text-base font-bold text-white">+ Add Card Stock</h3>
                   <p className="text-xs text-slate-400">Record scratch cards received today</p>
                 </div>
               </div>
@@ -1442,7 +1442,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
               <div>
                 <label className="text-xs font-bold text-slate-300 block mb-1.5">Card Denomination (Value) *</label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-black text-slate-500">Rs.</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-500">Rs.</span>
                   <input
                     type="number"
                     min="1"
@@ -1460,7 +1460,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                         key={v}
                         type="button"
                         onClick={() => setAddCardForm({ ...addCardForm, cardValue: String(v) })}
-                        className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${
+                        className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
                           addCardForm.cardValue === String(v)
                             ? 'bg-rose-600 text-white border-rose-600'
                             : 'bg-slate-950 text-slate-400 border-slate-700 hover:text-white'
@@ -1471,7 +1471,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                     ))}
                   </div>
                 ) : (
-                  <p className="text-[10px] text-slate-500 mt-2">
+                  <p className="text-xs text-slate-500 mt-2">
                     No card stock currently in hand for {addCardForm.network} — type an amount below to add your first denomination.
                   </p>
                 )}
@@ -1487,7 +1487,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                   placeholder="e.g. 50 pcs"
                   value={addCardForm.quantity}
                   onChange={(e) => setAddCardForm({ ...addCardForm, quantity: e.target.value })}
-                  className="w-full py-2.5 px-3 border border-slate-700 rounded-xl text-sm font-mono font-black text-rose-400 outline-none focus:border-rose-500 bg-slate-950"
+                  className="w-full py-2.5 px-3 border border-slate-700 rounded-xl text-sm font-mono font-bold text-rose-400 outline-none focus:border-rose-500 bg-slate-950"
                 />
               </div>
 
@@ -1532,7 +1532,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                   <Edit3 size={20} />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-white">Adjust Closed Item</h3>
+                  <h3 className="text-base font-bold text-white">Adjust Closed Item</h3>
                   <p className="text-xs text-slate-400">{adjustTarget.operatorName} — {stockDate}</p>
                 </div>
               </div>
@@ -1545,7 +1545,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
               </button>
             </div>
 
-            <div className="rounded-xl bg-amber-500/10 border border-amber-500/30 p-3 text-[11px] text-amber-300">
+            <div className="rounded-xl bg-amber-500/10 border border-amber-500/30 p-3 text-xs text-amber-300">
               This is a logged correction — it will be recorded with your name, the old value, and your reason.
             </div>
 
@@ -1560,9 +1560,9 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                   required
                   value={adjustValue}
                   onChange={(e) => setAdjustValue(e.target.value)}
-                  className="w-full py-2.5 px-3 border border-slate-700 rounded-xl text-sm font-mono font-black text-amber-400 outline-none focus:border-amber-500 bg-slate-950"
+                  className="w-full py-2.5 px-3 border border-slate-700 rounded-xl text-sm font-mono font-bold text-amber-400 outline-none focus:border-amber-500 bg-slate-950"
                 />
-                <div className="text-[10px] text-slate-500 mt-1">Current: {adjustTarget.eveningInHand} {adjustTarget.tag === 'Scratch Card' ? 'pcs' : ''}</div>
+                <div className="text-xs text-slate-500 mt-1">Current: {adjustTarget.eveningInHand} {adjustTarget.tag === 'Scratch Card' ? 'pcs' : ''}</div>
               </div>
 
               <div>
@@ -1608,7 +1608,7 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
                   <CheckCircle size={20} />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-white">Mark as Paid</h3>
+                  <h3 className="text-base font-bold text-white">Mark as Paid</h3>
                   <p className="text-xs text-slate-400">Confirm this credit has been collected</p>
                 </div>
               </div>
@@ -1632,11 +1632,11 @@ const ReloadModal = ({ isOpen, onClose, storeId, accountId, onSyncSuccess, userR
               </div>
               <div className="flex items-center justify-between text-sm pt-1.5 border-t border-slate-800 mt-1.5">
                 <span className="text-slate-300 font-bold">Amount to Collect</span>
-                <span className="font-black text-emerald-400 font-mono">Rs. {Number(settleTarget.amount).toLocaleString()}</span>
+                <span className="font-bold text-emerald-400 font-mono">Rs. {Number(settleTarget.amount).toLocaleString()}</span>
               </div>
             </div>
 
-            <div className="rounded-xl bg-amber-500/10 border border-amber-500/30 p-3 text-[11px] text-amber-300">
+            <div className="rounded-xl bg-amber-500/10 border border-amber-500/30 p-3 text-xs text-amber-300">
               This is final — once marked paid, it can't be flipped back to pending from this screen.
             </div>
 

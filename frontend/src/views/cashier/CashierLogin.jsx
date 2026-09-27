@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useNavigate } from '../../utils/navigation';
-import { ShoppingCart, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { ShoppingCart, Eye, EyeOff, AlertCircle, Zap, Package, Receipt, ScanBarcode } from 'lucide-react';
 import { loginUser } from '../../services/api';
 import useAuthStore from '../../store/authStore';
 import useSettingsStore from '../../store/settingsStore';
@@ -36,8 +36,13 @@ const CashierLogin = () => {
       }
 
       login(data);
+      if (data.token && typeof window !== 'undefined') {
+        localStorage.setItem('token', data.token);
+      }
       toast.success(`Welcome, ${data.name}!`);
-      navigate('/pos');
+      setTimeout(() => {
+        window.location.href = '/pos';
+      }, 300);
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid credentials');
     } finally {
@@ -64,19 +69,19 @@ const CashierLogin = () => {
             <p className="pos-login-tagline">Tech & Smart POS</p>
             <div className="pos-login-features">
               <div className="pos-login-feature">
-                <span className="pos-feature-icon">⚡</span>
+                <Zap size={16} className="text-blue-400 shrink-0" />
                 <span>Fast Checkout</span>
               </div>
               <div className="pos-login-feature">
-                <span className="pos-feature-icon">📦</span>
+                <Package size={16} className="text-blue-400 shrink-0" />
                 <span>Real-time Inventory</span>
               </div>
               <div className="pos-login-feature">
-                <span className="pos-feature-icon">🧾</span>
+                <Receipt size={16} className="text-blue-400 shrink-0" />
                 <span>Digital Receipts</span>
               </div>
               <div className="pos-login-feature">
-                <span className="pos-feature-icon">📱</span>
+                <ScanBarcode size={16} className="text-blue-400 shrink-0" />
                 <span>Barcode Scanning</span>
               </div>
             </div>

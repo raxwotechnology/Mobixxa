@@ -100,11 +100,11 @@ const Shop = () => {
       <section className="catalog-hero base-container py-10 sm:py-12 px-6 lg:px-12 text-white mb-8">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_60%)] pointer-events-none" />
         <div className="base-container relative z-10">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-900/40 border border-white/20 text-white text-[10px] font-extrabold uppercase tracking-widest mb-3">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-900/40 border border-white/20 text-white text-xs font-bold uppercase tracking-widest mb-3">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-300" />
             Official Hardware Catalog
           </div>
-          <h1 className="text-3xl sm:text-4xl font-black text-white m-0 tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-bold text-white m-0 tracking-tight">
             Explore All Products
           </h1>
           <p className="text-blue-100 text-xs sm:text-sm m-0 mt-1 max-w-xl">
@@ -118,7 +118,7 @@ const Shop = () => {
         <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-4 mb-6">
           <button
             onClick={() => { setSelectedCategory(''); setPage(1); setSearchParams({}); }}
-            className={`px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all flex-shrink-0 cursor-pointer ${
+            className={`px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all flex-shrink-0 cursor-pointer ${
               selectedCategory === ''
                 ? 'storefront-pill-active'
                 : 'storefront-pill hover:border-blue-400'
@@ -134,7 +134,7 @@ const Shop = () => {
                 setPage(1);
                 setSearchParams({ category: cat._id });
               }}
-              className={`px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all flex-shrink-0 cursor-pointer ${
+              className={`px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all flex-shrink-0 cursor-pointer ${
                 selectedCategory === cat._id
                   ? 'storefront-pill-active'
                   : 'storefront-pill hover:border-blue-400'
@@ -150,7 +150,7 @@ const Shop = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="inline-flex items-center gap-2 bg-slate-50 hover:bg-slate-100 border border-slate-200/80 rounded-xl px-4 py-2 text-xs font-extrabold uppercase tracking-wider text-slate-700 transition-all"
+              className="inline-flex items-center gap-2 bg-slate-50 hover:bg-slate-100 border border-slate-200/80 rounded-xl px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-700 transition-all"
             >
               <SlidersHorizontal size={14} className="text-blue-600" />
               {showFilters ? 'Hide Filters' : 'Show Filters'}
@@ -201,7 +201,7 @@ const Shop = () => {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 {/* Price Range */}
                 <div>
-                  <h4 className="text-xs font-black uppercase text-slate-800 mb-2">Price Range (Rs.)</h4>
+                  <h4 className="text-xs font-bold uppercase text-slate-800 mb-2">Price Range (Rs.)</h4>
                   <div className="flex items-center gap-2">
                     <input
                       type="number"
@@ -223,7 +223,7 @@ const Shop = () => {
 
                 {/* Rating */}
                 <div>
-                  <h4 className="text-xs font-black uppercase text-slate-800 mb-2">Minimum Rating</h4>
+                  <h4 className="text-xs font-bold uppercase text-slate-800 mb-2">Minimum Rating</h4>
                   <div className="flex gap-2">
                     {[4, 3, 2].map((r) => (
                       <button
@@ -233,7 +233,7 @@ const Shop = () => {
                           ratingFilter === String(r) ? 'bg-blue-600 text-white border-blue-600' : 'bg-slate-50 text-slate-700 border-slate-200'
                         }`}
                       >
-                        {r}★ &amp; Up
+                        {r} &amp; Up
                       </button>
                     ))}
                   </div>
@@ -262,7 +262,7 @@ const Shop = () => {
           </div>
         ) : products.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-3xl border border-slate-200 p-8 max-w-md mx-auto">
-            <span className="text-4xl">🔍</span>
+            
             <h3 className="font-bold text-lg text-slate-800 mt-2">No products found</h3>
             <p className="text-xs text-slate-500 mb-4">Try clearing filters or search with a different keyword.</p>
             <button onClick={clearFilters} className="bg-blue-600 text-white font-bold text-xs px-5 py-2 rounded-xl">

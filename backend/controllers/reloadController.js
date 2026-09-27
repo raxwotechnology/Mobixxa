@@ -8,9 +8,9 @@ const Supplier = require("../models/Supplier");
 const SupplierPayment = require("../models/SupplierPayment");
 const { recordTransaction, reverseTransaction } = require("../services/ledgerService");
 
-// @desc    Record a new reload
-// @route   POST /api/reloads
-// @access  Private
+// @desc Record a new reload
+// @route POST /api/reloads
+// @access Private
 const createReload = async (req, res, next) => {
   try {
     const {
@@ -101,9 +101,9 @@ const createReload = async (req, res, next) => {
   }
 };
 
-// @desc    Get all reloads
-// @route   GET /api/reloads
-// @access  Private
+// @desc Get all reloads
+// @route GET /api/reloads
+// @access Private
 const getReloads = async (req, res, next) => {
   try {
     const {
@@ -168,10 +168,10 @@ const getReloads = async (req, res, next) => {
   }
 };
 
-// @desc    Mark a pending credit reload as paid — always settled in full,
+// @desc Mark a pending credit reload as paid — always settled in full,
 //          locked afterward (no un-settle from this endpoint).
-// @route   PUT /api/reloads/:id/settle
-// @access  Private (any cashier/manager/admin)
+// @route PUT /api/reloads/:id/settle
+// @access Private (any cashier/manager/admin)
 const settleCreditReload = async (req, res, next) => {
   try {
     const reload = await Reload.findById(req.params.id);
@@ -370,9 +370,9 @@ const findOrCreateReloadStockItem = async (
   });
 };
 
-// @desc    Get daily reload stocks
-// @route   GET /api/reloads/stocks
-// @access  Private
+// @desc Get daily reload stocks
+// @route GET /api/reloads/stocks
+// @access Private
 const getReloadStocks = async (req, res, next) => {
   try {
     const { date, storeId } = req.query;
@@ -437,9 +437,9 @@ const getReloadStocks = async (req, res, next) => {
   }
 };
 
-// @desc    Add stock (append-only log entry) to a reload/card item for a date
-// @route   POST /api/reloads/stocks/add
-// @access  Private
+// @desc Add stock (append-only log entry) to a reload/card item for a date
+// @route POST /api/reloads/stocks/add
+// @access Private
 const addReloadStock = async (req, res, next) => {
   try {
     // `qty` is the new, preferred field name for the amount being added.
@@ -514,9 +514,9 @@ const addReloadStock = async (req, res, next) => {
   }
 };
 
-// @desc    Close evening shop stock balance & auto-calculate Sell-Out & Income Ledger
-// @route   POST /api/reloads/stocks/close
-// @access  Private
+// @desc Close evening shop stock balance & auto-calculate Sell-Out & Income Ledger
+// @route POST /api/reloads/stocks/close
+// @access Private
 const closeReloadStock = async (req, res, next) => {
   try {
     const { stockId, storeId, operator, cardValue, date, closingStock, notes } =
@@ -613,11 +613,11 @@ const closeReloadStock = async (req, res, next) => {
   }
 };
 
-// @desc    Correct a locked (closed) reload stock record — the only way to
+// @desc Correct a locked (closed) reload stock record — the only way to
 //          change openingStock/addedStock/closingStock once closed. Always
 //          logged to adjustLog with a mandatory reason.
-// @route   POST /api/reloads/stocks/adjust
-// @access  Private/Admin/Manager (route-level authorize)
+// @route POST /api/reloads/stocks/adjust
+// @access Private/Admin/Manager (route-level authorize)
 const adjustReloadStock = async (req, res, next) => {
   try {
     const { stockId, field, newValue, reason } = req.body;
@@ -689,9 +689,9 @@ const adjustReloadStock = async (req, res, next) => {
   }
 };
 
-// @desc    Add Supplier / Service Float Payment Expense
-// @route   POST /api/reloads/supplier-payment
-// @access  Private
+// @desc Add Supplier / Service Float Payment Expense
+// @route POST /api/reloads/supplier-payment
+// @access Private
 const addReloadSupplierPayment = async (req, res, next) => {
   try {
     const { storeId, supplierName, operator, amount, paymentMethod, notes } =
@@ -774,9 +774,9 @@ const addReloadSupplierPayment = async (req, res, next) => {
   }
 };
 
-// @desc    Bulk save whole Daily In-Hand Reload & Card Sheet with auto-calculated Sell-Out
-// @route   POST /api/reloads/stocks/save-sheet
-// @access  Private
+// @desc Bulk save whole Daily In-Hand Reload & Card Sheet with auto-calculated Sell-Out
+// @route POST /api/reloads/stocks/save-sheet
+// @access Private
 const saveReloadDailySheet = async (req, res, next) => {
   try {
     const { storeId, date, items } = req.body;
@@ -857,7 +857,7 @@ const saveReloadDailySheet = async (req, res, next) => {
       success: true,
       data: updatedRecords,
       totalSellOutRevenue: totalDailySellOutRevenue,
-      message: "Daily reload balance sheet saved & synced successfully! 📊✅",
+      message: "Daily reload balance sheet saved & synced successfully!",
     });
   } catch (error) {
     next(error);

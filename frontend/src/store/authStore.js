@@ -1,14 +1,7 @@
 import { create } from 'zustand';
 import { logoutUser } from '../services/api';
 
-const withoutToken = (userData) => {
-  if (!userData) return userData;
-  const { token, ...safeUserData } = userData;
-  return safeUserData;
-};
-
 // Safely parse userInfo from localStorage
-// Auth itself now lives in an httpOnly cookie, not localStorage/`.token` — see BUG-08.
 const getSavedUser = () => {
   if (typeof window === 'undefined') return null;
   try {
@@ -21,7 +14,6 @@ const getSavedUser = () => {
     localStorage.removeItem('userInfo');
     return null;
   } catch (e) {
-    // Invalid persisted data cannot represent an authenticated user.
     localStorage.removeItem('userInfo');
     return null;
   }
@@ -38,19 +30,23 @@ const useAuthStore = create((set) => ({
   },
 
   login: (userData) => {
-    const safeUserData = withoutToken(userData);
     if (typeof window !== 'undefined') {
-      localStorage.setItem('userInfo', JSON.stringify(safeUserData));
+      localStorage.setItem('userInfo', JSON.stringify(userData));
+      if (userData?.token) {
+        localStorage.setItem('token', userData.token);
+      }
     }
-    set({ user: safeUserData, isAuthenticated: true });
+    set({ user: userData, isAuthenticated: true, isHydrated: true });
   },
 
   setUser: (userData) => {
-    const safeUserData = withoutToken(userData);
     if (typeof window !== 'undefined') {
-      localStorage.setItem('userInfo', JSON.stringify(safeUserData));
+      localStorage.setItem('userInfo', JSON.stringify(userData));
+      if (userData?.token) {
+        localStorage.setItem('token', userData.token);
+      }
     }
-    set({ user: safeUserData });
+    set({ user: userData });
   },
 
   logout: async () => {
@@ -61,9 +57,11 @@ const useAuthStore = create((set) => ({
     }
     if (typeof window !== 'undefined') {
       localStorage.removeItem('userInfo');
+      localStorage.removeItem('token');
+      localStorage.removeItem('mobixa_user');
       sessionStorage.clear();
     }
-    set({ user: null, isAuthenticated: false });
+    set({ user: null, isAuthenticated: false, isHydrated: true });
   },
 }));
 

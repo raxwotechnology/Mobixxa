@@ -65,7 +65,7 @@ const TradeInModal = ({ isOpen, onClose, onApplyDiscount }) => {
       setCalculating(true);
       const { data } = await calculateTradeInValuation(formData);
       setValuationResult(data);
-      toast.success('Valuation calculated successfully! 📱');
+      toast.success('Valuation calculated successfully!');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to calculate valuation');
     } finally {

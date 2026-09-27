@@ -81,7 +81,7 @@ export default function OrderSuccessPage() {
             Order Confirmed
           </span>
 
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-950 mt-3 tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-950 mt-3 tracking-tight">
             Thank you for your order!
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1.5 max-w-md mx-auto leading-relaxed">
@@ -91,19 +91,19 @@ export default function OrderSuccessPage() {
 
           <div className="mt-6 pt-6 border-t border-slate-100 flex flex-wrap items-center justify-center gap-6 text-xs text-slate-600">
             <div>
-              <span className="text-slate-400 block text-[11px]">Order Number</span>
+              <span className="text-slate-400 block text-xs">Order Number</span>
               <span className="font-mono font-bold text-slate-900 text-sm">
                 {order.orderId}
               </span>
             </div>
             <div className="h-6 w-px bg-slate-200 hidden sm:block" />
             <div>
-              <span className="text-slate-400 block text-[11px]">Date</span>
+              <span className="text-slate-400 block text-xs">Date</span>
               <span className="font-semibold text-slate-900">{order.date}</span>
             </div>
             <div className="h-6 w-px bg-slate-200 hidden sm:block" />
             <div>
-              <span className="text-slate-400 block text-[11px]">Total Amount</span>
+              <span className="text-slate-400 block text-xs">Total Amount</span>
               <span className="font-bold text-blue-600 text-sm">
                 Rs {order.total}
               </span>
@@ -135,7 +135,7 @@ export default function OrderSuccessPage() {
               >
                 <div className="flex items-center gap-3">
                   <div
-                    className="w-12 h-12 rounded-xl border border-slate-200 bg-white flex items-center justify-center flex-shrink-0 text-[8px] font-black text-slate-800"
+                    className="w-12 h-12 rounded-xl border border-slate-200 bg-white flex items-center justify-center flex-shrink-0 text-xs font-bold text-slate-800"
                     style={{ backgroundColor: item.colorCode || "#ffffff" }}
                   >
                     {item.name?.split(" ")?.slice(0, 2)?.join(" ") || "ITEM"}
@@ -144,7 +144,7 @@ export default function OrderSuccessPage() {
                     <h4 className="text-xs sm:text-sm font-bold text-slate-900">
                       {item.name}
                     </h4>
-                    <div className="text-[11px] text-slate-500">
+                    <div className="text-xs text-slate-500">
                       {item.color && <span>{item.color}</span>}
                       {item.color && item.storage && <span> • </span>}
                       {item.storage && <span>{item.storage}</span>}
@@ -163,7 +163,7 @@ export default function OrderSuccessPage() {
           {/* Delivery & Customer Summary */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-100 text-xs">
             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">
                 Recipient Details
               </span>
               <div className="font-bold text-slate-900">
@@ -176,7 +176,7 @@ export default function OrderSuccessPage() {
             </div>
 
             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">
                 {order.deliveryMethod === "delivery"
                   ? "Delivery Destination"
                   : "Pickup Branch"}

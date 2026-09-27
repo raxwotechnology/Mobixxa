@@ -98,11 +98,11 @@ const Deals = () => {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_60%)] pointer-events-none" />
         <div className="base-container flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
           <div>
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-900/40 border border-white/20 text-white text-[10px] font-extrabold uppercase tracking-widest mb-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-900/40 border border-white/20 text-white text-xs font-bold uppercase tracking-widest mb-3">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-300 animate-ping" />
               Exclusive Promotions
             </div>
-            <h1 className="text-3xl sm:text-4xl font-black text-white m-0 tracking-tight">
+            <h1 className="text-3xl sm:text-4xl font-bold text-white m-0 tracking-tight">
               Mega Deals &amp; Offers
             </h1>
             <p className="text-blue-100 text-xs sm:text-sm m-0 mt-1 max-w-lg">
@@ -113,8 +113,8 @@ const Deals = () => {
           {/* Countdown Clock Box */}
           <div className="flex items-center gap-2 bg-blue-800/60 border border-white/20 backdrop-blur-md px-4 py-2.5 rounded-2xl shadow-lg">
             <Clock size={16} className="text-amber-300" />
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-blue-200">Offers Expire In</span>
-            <span className="font-mono font-black text-sm text-white bg-blue-950/60 px-2 py-0.5 rounded-md">
+            <span className="text-xs font-bold uppercase tracking-wider text-blue-200">Offers Expire In</span>
+            <span className="font-mono font-bold text-sm text-white bg-blue-950/60 px-2 py-0.5 rounded-md">
               {String(timeLeft.hours).padStart(2, '0')} : {String(timeLeft.minutes).padStart(2, '0')} : {String(timeLeft.seconds).padStart(2, '0')}
             </span>
           </div>
@@ -131,7 +131,7 @@ const Deals = () => {
           </div>
         ) : deals.length === 0 ? (
           <div className="text-center py-16 bg-white rounded-3xl border border-slate-200 p-8 max-w-md mx-auto">
-            <span className="text-4xl">⚡</span>
+            
             <h3 className="font-bold text-lg text-slate-800 mt-2">No active mega deals right now</h3>
             <p className="text-xs text-slate-500 mb-4">Check back soon for limited-time flash sales!</p>
             <Link to="/shop" className="inline-block bg-blue-600 text-white font-bold text-xs px-6 py-2.5 rounded-xl">
@@ -156,7 +156,7 @@ const Deals = () => {
                     {/* Card Top: Discount & Wishlist */}
                     <div>
                       <div className="flex items-center justify-between mb-4">
-                        <span className="bg-black/40 text-white text-[11px] font-black px-2.5 py-1 rounded-full border border-white/15">
+                        <span className="bg-black/40 text-white text-xs font-bold px-2.5 py-1 rounded-full border border-white/15">
                           -{discount}%
                         </span>
                         <button
@@ -175,20 +175,20 @@ const Deals = () => {
                           className="max-h-36 max-w-full object-contain drop-shadow-2xl group-hover:scale-105 transition-transform duration-300"
                           onError={(e) => handleImageError(e, 'Product')}
                         />
-                        <div className="mt-2 bg-black/40 border border-white/10 px-2.5 py-0.5 rounded-full text-[9px] font-mono text-white/80">
-                          ⏱ {String(timeLeft.hours).padStart(2, '0')}h {String(timeLeft.minutes).padStart(2, '0')}m {String(timeLeft.seconds).padStart(2, '0')}s
+                        <div className="mt-2 bg-black/40 border border-white/10 px-2.5 py-0.5 rounded-full text-xs font-mono text-white/80">
+                          {String(timeLeft.hours).padStart(2, '0')}h {String(timeLeft.minutes).padStart(2, '0')}m {String(timeLeft.seconds).padStart(2, '0')}s
                         </div>
                       </div>
 
                       {/* Tag / Category Badge */}
                       <div className="mb-2">
-                        <span className={`inline-block text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md border ${theme.badge}`}>
+                        <span className={`inline-block text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${theme.badge}`}>
                           {product.category?.name || 'DEAL'} • {product.brand || 'MOBIXA'}
                         </span>
                       </div>
 
                       {/* Product Title */}
-                      <h3 className="font-extrabold text-sm sm:text-base leading-snug line-clamp-1 mb-1 text-white group-hover:text-amber-300 transition-colors">
+                      <h3 className="font-bold text-sm sm:text-base leading-snug line-clamp-1 mb-1 text-white group-hover:text-amber-300 transition-colors">
                         {product.name}
                       </h3>
 
@@ -197,7 +197,7 @@ const Deals = () => {
                         {[...Array(5)].map((_, i) => (
                           <Star key={i} size={11} className="fill-amber-400 text-amber-400" />
                         ))}
-                        <span className="text-[10px] text-slate-300 ml-1">({product.numReviews || '1,200+'})</span>
+                        <span className="text-xs text-slate-300 ml-1">({product.numReviews || '1,200+'})</span>
                       </div>
                     </div>
 
@@ -205,18 +205,18 @@ const Deals = () => {
                     <div className="pt-3 border-t border-white/10 flex items-center justify-between gap-2">
                       <div>
                         {product.mrp && product.mrp > product.price && (
-                          <p className="text-[11px] text-slate-400 line-through m-0">
+                          <p className="text-xs text-slate-400 line-through m-0">
                             {currency === 'USD' ? `$${(product.mrp / exchangeRate).toFixed(2)}` : `Rs. ${product.mrp.toLocaleString()}`}
                           </p>
                         )}
-                        <p className="text-base font-black text-white m-0">
+                        <p className="text-base font-bold text-white m-0">
                           {getProductPrice(product)}
                         </p>
                       </div>
 
                       <button
                         onClick={(e) => handleAddToCart(e, product)}
-                        className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider text-white shadow-md transition-all ${theme.btn} active:scale-95 flex items-center gap-1.5`}
+                        className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider text-white shadow-md transition-all ${theme.btn} active:scale-95 flex items-center gap-1.5`}
                       >
                         <ShoppingBag size={13} />
                         Add to Bag
@@ -234,8 +234,8 @@ const Deals = () => {
       <section className="base-container px-4 sm:px-6 pb-20">
         <div className="w-full bg-blue-600 rounded-3xl p-6 sm:p-10 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
           <div>
-            <span className="text-[10px] font-extrabold uppercase tracking-widest text-blue-200">Subscribe &amp; Save More</span>
-            <h3 className="text-2xl font-black text-white mt-1 mb-1">Get exclusive deal alerts</h3>
+            <span className="text-xs font-bold uppercase tracking-widest text-blue-200">Subscribe &amp; Save More</span>
+            <h3 className="text-2xl font-bold text-white mt-1 mb-1">Get exclusive deal alerts</h3>
             <p className="text-blue-100 text-xs sm:text-sm m-0">Be the first to know about flash sales and new arrivals.</p>
           </div>
 
@@ -250,7 +250,7 @@ const Deals = () => {
             />
             <button
               type="submit"
-              className="bg-white text-blue-700 font-extrabold text-xs px-5 py-2.5 rounded-xl hover:bg-blue-50 transition-all flex-shrink-0"
+              className="bg-white text-blue-700 font-bold text-xs px-5 py-2.5 rounded-xl hover:bg-blue-50 transition-all flex-shrink-0"
             >
               Subscribe
             </button>

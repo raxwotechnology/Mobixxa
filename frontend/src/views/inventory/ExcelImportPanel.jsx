@@ -155,11 +155,11 @@ const ExcelImportPanel = ({ storeId, categories, onImportComplete }) => {
     setImporting(false);
 
     if (success.length > 0) {
-      toast.success(`✅ ${success.length} product(s) imported successfully!`);
+      toast.success(`${success.length} product(s) imported successfully!`);
       onImportComplete?.();
     }
     if (failed.length > 0) {
-      toast.error(`❌ ${failed.length} product(s) failed to import.`);
+      toast.error(`${failed.length} product(s) failed to import.`);
     }
   };
 
@@ -189,7 +189,7 @@ const ExcelImportPanel = ({ storeId, categories, onImportComplete }) => {
           <div key={i} className="flex items-center gap-2">
             <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold
               ${step === i + 1 ? 'bg-primary-blue text-white' : step > i + 1 ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-muted-text'}`}>
-              {step > i + 1 ? '✓' : i + 1}
+              {step > i + 1 ? '' : i + 1}
             </div>
             <span className={`text-sm font-medium ${step === i + 1 ? 'text-dark-navy' : 'text-muted-text'}`}>{label}</span>
             {i < 2 && <div className="w-8 h-0.5 bg-gray-200 mx-1" />}
@@ -204,7 +204,7 @@ const ExcelImportPanel = ({ storeId, categories, onImportComplete }) => {
           <div>
             <label className="block text-sm font-semibold text-dark-navy mb-2">Import Type</label>
             <div className="flex gap-3">
-              {[{ id: 'products', label: '📦 General Products' }, { id: 'phones', label: '📱 Mobile Phones' }].map((t) => (
+              {[{ id: 'products', label: 'General Products' }, { id: 'phones', label: 'Mobile Phones' }].map((t) => (
                 <button
                   key={t.id}
                   onClick={() => setImportType(t.id)}
@@ -246,13 +246,13 @@ const ExcelImportPanel = ({ storeId, categories, onImportComplete }) => {
 
           {/* Field guide */}
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-            <p className="text-xs font-bold text-amber-800 mb-2">📋 Required Columns:</p>
+            <p className="text-xs font-bold text-amber-800 mb-2"> Required Columns:</p>
             <div className="flex flex-wrap gap-1.5">
               {(importType === 'phones'
                 ? ['name', 'brand', 'categoryId', 'price', 'stock']
                 : ['name', 'categoryId', 'price', 'stock']
               ).map((col) => (
-                <span key={col} className="bg-amber-100 text-amber-800 text-[11px] font-bold px-2 py-0.5 rounded-full">
+                <span key={col} className="bg-amber-100 text-amber-800 text-xs font-bold px-2 py-0.5 rounded-full">
                   {col} *
                 </span>
               ))}
@@ -260,13 +260,13 @@ const ExcelImportPanel = ({ storeId, categories, onImportComplete }) => {
                 ? ['modelNumber', 'ram', 'storage', 'color', 'condition', 'mrp', 'purchasePrice', 'imei', 'warranty']
                 : ['brand', 'color', 'mrp', 'purchasePrice', 'unit', 'description', 'warranty', 'condition']
               ).map((col) => (
-                <span key={col} className="bg-gray-100 text-gray-600 text-[11px] font-medium px-2 py-0.5 rounded-full">
+                <span key={col} className="bg-gray-100 text-gray-600 text-xs font-medium px-2 py-0.5 rounded-full">
                   {col}
                 </span>
               ))}
             </div>
-            <p className="text-[11px] text-amber-700 mt-2">
-              💡 <strong>categoryId</strong>: Type the category name (e.g., "Phones") — it will be created automatically if it doesn't exist.
+            <p className="text-xs text-amber-700 mt-2">
+               <strong>categoryId</strong>: Type the category name (e.g., "Phones") — it will be created automatically if it doesn't exist.
             </p>
           </div>
         </div>
@@ -277,7 +277,7 @@ const ExcelImportPanel = ({ storeId, categories, onImportComplete }) => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-sm font-semibold text-dark-navy">
-              📋 {preview.length} product(s) ready to import from <span className="text-primary-blue">{file?.name}</span>
+               {preview.length} product(s) ready to import from <span className="text-primary-blue">{file?.name}</span>
             </p>
             <button onClick={() => fileRef.current?.click()} className="text-xs text-muted-text hover:underline">
               Change file
@@ -309,7 +309,7 @@ const ExcelImportPanel = ({ storeId, categories, onImportComplete }) => {
                     <tr key={i} className={`${!p.name ? 'bg-red-50' : 'hover:bg-gray-50'}`}>
                       <td className="px-3 py-2 text-muted-text">{i + 1}</td>
                       <td className="px-3 py-2 font-medium text-dark-navy">
-                        {p.name || <span className="text-red-500">⚠ Missing name</span>}
+                        {p.name || <span className="text-red-500"> Missing name</span>}
                       </td>
                       {importType === 'phones' && <td className="px-3 py-2 text-muted-text">{p.brand || '—'}</td>}
                       {importType === 'phones' && <td className="px-3 py-2 text-muted-text">{p.ram}{p.storage ? ` / ${p.storage}` : ''}</td>}
@@ -317,7 +317,7 @@ const ExcelImportPanel = ({ storeId, categories, onImportComplete }) => {
                       <td className="px-3 py-2 text-right font-semibold">Rs. {Number(p.price).toLocaleString()}</td>
                       <td className="px-3 py-2 text-right">{p.stock}</td>
                       <td className="px-3 py-2">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase
                           ${p.condition === 'new' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
                           {p.condition}
                         </span>

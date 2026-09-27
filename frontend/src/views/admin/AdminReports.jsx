@@ -34,11 +34,6 @@ const AdminReports = () => {
   const [payrollData, setPayrollData] = useState([]);
 
   useEffect(() => {
-    const fetch = async () => {
-      try { const { data } = await getAdminOrders(); setOrders(data); }
-      catch { toast.error('Failed to load data'); }
-      finally { setLoading(false); }
-    };
     const fetchAll = async () => {
       try {
         const [u, p, o, r, e, i] = await Promise.all([
@@ -183,27 +178,29 @@ const AdminReports = () => {
     if (type === 'pdf') exportToPDF(cfg.rows, cfg.cols, cfg.title);
   };
 
-  if (loading) return <DashboardLayout navItems={navItems} title="Reports"><div className="flex items-center justify-center h-64"><div className="w-10 h-10 border-4 border-slate-200 border-t-brand-fuchsia rounded-full animate-spin" /></div></DashboardLayout>;
+  if (loading) return <DashboardLayout navItems={navItems} title="Reports"><div className="flex items-center justify-center h-64"><div className="ds-spinner" /></div></DashboardLayout>;
 
   return (
     <DashboardLayout navItems={navItems} title="Reports">
-      <div className="animate-fade-in space-y-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-indigo/5 rounded-full blur-3xl pointer-events-none -z-10"></div>
-          <div>
-            <h1 className="text-2xl font-semibold text-slate-900 flex items-center gap-3">
-              <span className="text-2xl">📊</span> Categorized Reports
-            </h1>
-            <p className="text-[10px] font-normal uppercase tracking-wider text-slate-500 mt-2">Filter by category/role and export as PDF or Excel</p>
+      <div className="ds-page">
+        <div className="ds-page-header">
+          <div className="ds-page-header-left">
+            <span className="ds-page-header-badge">
+              REPORTS
+            </span>
+            <h1>Categorized Reports</h1>
+            <p>Filter by category/role and export as PDF or Excel</p>
           </div>
-          <div className="flex items-center gap-2">
-            <button onClick={() => exportCurrent('csv')} className="px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors shadow-sm">CSV</button>
-            <button onClick={() => exportCurrent('excel')} className="px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider bg-emerald-100/50 text-emerald-700 hover:bg-emerald-200/50 transition-colors shadow-sm">Excel</button>
-            <button onClick={() => exportCurrent('pdf')} className="px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider bg-red-100/50 text-red-700 hover:bg-red-200/50 flex items-center gap-2 transition-colors shadow-sm"><FileDown size={14} strokeWidth={3} />PDF</button>
+          <div className="ds-page-header-right flex items-center gap-2">
+            <button onClick={() => exportCurrent('csv')} className="ds-btn ds-btn-secondary">CSV</button>
+            <button onClick={() => exportCurrent('excel')} className="ds-btn ds-btn-secondary">Excel</button>
+            <button onClick={() => exportCurrent('pdf')} className="ds-btn ds-btn-primary">
+              <FileDown size={14} /> PDF
+            </button>
           </div>
         </div>
 
-        <div className="flex gap-2 flex-wrap bg-white/40 p-2 rounded-2xl backdrop-blur-sm border border-white/40 shadow-sm w-fit">
+        <div className="flex gap-2 flex-wrap mb-4">
           {[
             ['users', 'Users/Employees'],
             ['products', 'Products'],
@@ -216,104 +213,104 @@ const AdminReports = () => {
             <button
               key={id}
               onClick={() => setActiveTab(id)}
-              className={`px-4 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all ${activeTab === id ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-white hover:text-slate-900'}`}
+              className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${activeTab === id ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-white hover:text-slate-900'}`}
             >
               {label}
             </button>
           ))}
         </div>
 
-        <div className="bg-white/60 backdrop-blur-md rounded-3xl border border-white/40 p-6 shadow-sm">
-          {activeTab === 'users' && (
-            <>
-              <div className="mb-4">
-                <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 mr-3">Role</label>
-                <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo shadow-sm">
-                  {['all', 'customer', 'cashier', 'manager', 'deliveryGuy', 'stockEmployee', 'admin'].map((r) => <option key={r} value={r}>{r}</option>)}
-                </select>
-              </div>
-              <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Total Records: <span className="text-slate-700 font-black">{filteredUsers.length}</span></p>
-            </>
-          )}
-          {activeTab === 'products' && (
-            <>
-              <div className="mb-4">
-                <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 mr-3">Category</label>
-                <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo shadow-sm">
-                  <option value="all">all</option>
-                  {categories.map((c) => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
-              <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Total Records: <span className="text-slate-700 font-black">{filteredProducts.length}</span></p>
-            </>
-          )}
-          {activeTab === 'orders' && (
-            <>
-              <div className="mb-4">
-                <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 mr-3">Status</label>
-                <select value={orderStatusFilter} onChange={(e) => setOrderStatusFilter(e.target.value)} className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo shadow-sm">
-                  <option value="all">all</option>
-                  {orderStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
-              <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Total Records: <span className="text-slate-700 font-black">{filteredOrders.length}</span></p>
-            </>
-          )}
-          {activeTab === 'returns' && (
-            <>
-              <div className="mb-4">
-                <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 mr-3">Status</label>
-                <select value={returnStatusFilter} onChange={(e) => setReturnStatusFilter(e.target.value)} className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo shadow-sm">
-                  <option value="all">all</option>
-                  {returnStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
-              <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Total Records: <span className="text-slate-700 font-black">{filteredReturns.length}</span></p>
-            </>
-          )}
-          {activeTab === 'expenses' && (
-            <>
-              <div className="mb-4">
-                <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 mr-3">Category</label>
-                <select value={expenseCategoryFilter} onChange={(e) => setExpenseCategoryFilter(e.target.value)} className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo shadow-sm">
-                  <option value="all">all</option>
-                  {expenseCategories.map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
-              <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Total Records: <span className="text-slate-700 font-black">{filteredExpenses.length}</span></p>
-            </>
-          )}
-          {activeTab === 'incomes' && (
-            <>
-              <div className="mb-4">
-                <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 mr-3">Source</label>
-                <select value={incomeSourceFilter} onChange={(e) => setIncomeSourceFilter(e.target.value)} className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo shadow-sm">
-                  <option value="all">all</option>
-                  {incomeSources.map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
-              <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Total Records: <span className="text-slate-700 font-black">{filteredIncomes.length}</span></p>
-            </>
-          )}
-          {activeTab === 'salary' && (
-            <>
-              <div className="mb-4 flex flex-wrap gap-4 items-center bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
-                <div className="flex items-center gap-2">
-                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">Month</label>
-                  <input type="number" min="1" max="12" value={salaryMonth} onChange={(e) => setSalaryMonth(Number(e.target.value || 1))} className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 w-20 shadow-sm" />
+        <div className="ds-card mb-6">
+          <div className="ds-filter-bar p-4">
+            {activeTab === 'users' && (
+              <div className="flex items-center gap-4">
+                <div className="ds-form-group flex-row items-center m-0">
+                  <label className="ds-label mr-3 mb-0">Role</label>
+                  <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="ds-select">
+                    {['all', 'customer', 'cashier', 'manager', 'deliveryGuy', 'stockEmployee', 'admin'].map((r) => <option key={r} value={r}>{r}</option>)}
+                  </select>
                 </div>
-                <div className="flex items-center gap-2">
-                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">Year</label>
-                  <input type="number" value={salaryYear} onChange={(e) => setSalaryYear(Number(e.target.value || new Date().getFullYear()))} className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 w-24 shadow-sm" />
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 m-0">Total Records: <span className="text-slate-700 font-bold">{filteredUsers.length}</span></p>
+              </div>
+            )}
+            {activeTab === 'products' && (
+              <div className="flex items-center gap-4">
+                <div className="ds-form-group flex-row items-center m-0">
+                  <label className="ds-label mr-3 mb-0">Category</label>
+                  <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="ds-select">
+                    <option value="all">all</option>
+                    {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
                 </div>
-                <div className="flex items-center gap-2">
-                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">Role Category</label>
-                  <select value={salaryRoleFilter} onChange={(e) => setSalaryRoleFilter(e.target.value)} className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 shadow-sm">
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 m-0">Total Records: <span className="text-slate-700 font-bold">{filteredProducts.length}</span></p>
+              </div>
+            )}
+            {activeTab === 'orders' && (
+              <div className="flex items-center gap-4">
+                <div className="ds-form-group flex-row items-center m-0">
+                  <label className="ds-label mr-3 mb-0">Status</label>
+                  <select value={orderStatusFilter} onChange={(e) => setOrderStatusFilter(e.target.value)} className="ds-select">
+                    <option value="all">all</option>
+                    {orderStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 m-0">Total Records: <span className="text-slate-700 font-bold">{filteredOrders.length}</span></p>
+              </div>
+            )}
+            {activeTab === 'returns' && (
+              <div className="flex items-center gap-4">
+                <div className="ds-form-group flex-row items-center m-0">
+                  <label className="ds-label mr-3 mb-0">Status</label>
+                  <select value={returnStatusFilter} onChange={(e) => setReturnStatusFilter(e.target.value)} className="ds-select">
+                    <option value="all">all</option>
+                    {returnStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 m-0">Total Records: <span className="text-slate-700 font-bold">{filteredReturns.length}</span></p>
+              </div>
+            )}
+            {activeTab === 'expenses' && (
+              <div className="flex items-center gap-4">
+                <div className="ds-form-group flex-row items-center m-0">
+                  <label className="ds-label mr-3 mb-0">Category</label>
+                  <select value={expenseCategoryFilter} onChange={(e) => setExpenseCategoryFilter(e.target.value)} className="ds-select">
+                    <option value="all">all</option>
+                    {expenseCategories.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 m-0">Total Records: <span className="text-slate-700 font-bold">{filteredExpenses.length}</span></p>
+              </div>
+            )}
+            {activeTab === 'incomes' && (
+              <div className="flex items-center gap-4">
+                <div className="ds-form-group flex-row items-center m-0">
+                  <label className="ds-label mr-3 mb-0">Source</label>
+                  <select value={incomeSourceFilter} onChange={(e) => setIncomeSourceFilter(e.target.value)} className="ds-select">
+                    <option value="all">all</option>
+                    {incomeSources.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 m-0">Total Records: <span className="text-slate-700 font-bold">{filteredIncomes.length}</span></p>
+              </div>
+            )}
+            {activeTab === 'salary' && (
+              <div className="flex flex-wrap gap-4 items-center">
+                <div className="ds-form-group flex-row items-center m-0">
+                  <label className="ds-label mr-2 mb-0">Month</label>
+                  <input type="number" min="1" max="12" value={salaryMonth} onChange={(e) => setSalaryMonth(Number(e.target.value || 1))} className="ds-input w-20" />
+                </div>
+                <div className="ds-form-group flex-row items-center m-0">
+                  <label className="ds-label mr-2 mb-0">Year</label>
+                  <input type="number" value={salaryYear} onChange={(e) => setSalaryYear(Number(e.target.value || new Date().getFullYear()))} className="ds-input w-24" />
+                </div>
+                <div className="ds-form-group flex-row items-center m-0">
+                  <label className="ds-label mr-2 mb-0">Role</label>
+                  <select value={salaryRoleFilter} onChange={(e) => setSalaryRoleFilter(e.target.value)} className="ds-select">
                     {['all', 'cashier', 'manager', 'deliveryGuy', 'stockEmployee'].map((r) => <option key={r} value={r}>{r}</option>)}
                   </select>
                 </div>
-                <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
-                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 flex-shrink-0">Employees</label>
+                <div className="ds-form-group flex-row items-center m-0 w-full sm:w-auto">
+                  <label className="ds-label mr-2 mb-0 flex-shrink-0">Employees</label>
                   <div className="w-full sm:w-64">
                     <EmployeeSelector
                       multiple
@@ -324,236 +321,220 @@ const AdminReports = () => {
                     />
                   </div>
                 </div>
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 m-0 mt-2 w-full">Total Records: <span className="text-slate-700 font-bold">{payrollData.length}</span></p>
               </div>
-              <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 mt-2">Total Records: <span className="text-slate-700 font-black">{payrollData.length}</span></p>
-            </>
-          )}
-          <div className="mt-4 text-[10px] font-black uppercase tracking-wider text-slate-400 p-3 bg-brand-indigo/5 rounded-xl border border-brand-indigo/10 flex gap-2">
-             <span className="text-sm">💡</span> Use the export buttons (CSV / Excel / PDF) to download the currently filtered report.
+            )}
           </div>
         </div>
 
-        <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden mt-6">
+        <div className="ds-table-wrap">
           <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
-            <h3 className="text-[11px] font-black uppercase tracking-wider text-slate-800 m-0">Detailed Preview</h3>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 m-0">Detailed Preview</h3>
           </div>
-          <div className="overflow-x-auto">
-            {activeTab === 'users' && (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-slate-50 border-b border-slate-100">
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Name</th>
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Email</th>
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Role</th>
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Phone</th>
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Active</th>
+          {activeTab === 'users' && (
+            <table className="ds-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Phone</th>
+                  <th>Active</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredUsers.map((u) => (
+                  <tr key={u._id}>
+                    <td>{u.name}</td>
+                    <td>{u.email}</td>
+                    <td><span className="ds-badge ds-badge-slate">{u.role}</span></td>
+                    <td>{u.phone || '-'}</td>
+                    <td>
+                      <span className={`ds-badge ${u.isActive ? 'ds-badge-green' : 'ds-badge-red'}`}>
+                        {u.isActive ? 'Yes' : 'No'}
+                      </span>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {filteredUsers.map((u) => (
-                    <tr key={u._id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4 font-bold text-slate-800">{u.name}</td>
-                      <td className="px-6 py-4 text-slate-600">{u.email}</td>
-                      <td className="px-6 py-4">
-                        <span className="text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">{u.role}</span>
-                      </td>
-                      <td className="px-6 py-4 text-slate-600 font-mono text-xs">{u.phone || '-'}</td>
-                      <td className="px-6 py-4">
-                        <span className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${u.isActive ? 'bg-emerald-100/50 text-emerald-700' : 'bg-red-100/50 text-red-700'}`}>
-                          {u.isActive ? 'Yes' : 'No'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+                ))}
+              </tbody>
+            </table>
+          )}
 
-            {activeTab === 'products' && (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-slate-50 border-b border-slate-100">
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Name</th>
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Category</th>
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Price</th>
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Stock</th>
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Status</th>
+          {activeTab === 'products' && (
+            <table className="ds-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Category</th>
+                  <th>Price</th>
+                  <th>Stock</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredProducts.map((p) => (
+                  <tr key={p._id}>
+                    <td>{p.name}</td>
+                    <td><span className="ds-badge ds-badge-slate">{p.categoryId?.name || 'Uncategorized'}</span></td>
+                    <td>Rs. {Number(p.price || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                    <td>{p.stock}</td>
+                    <td>
+                      <span className={`ds-badge ${p.status === 'active' ? 'ds-badge-green' : 'ds-badge-slate'}`}>
+                        {p.status}
+                      </span>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {filteredProducts.map((p) => (
-                    <tr key={p._id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4 font-bold text-slate-800">{p.name}</td>
-                      <td className="px-6 py-4 text-slate-600">
-                        <span className="text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">{p.categoryId?.name || 'Uncategorized'}</span>
-                      </td>
-                      <td className="px-6 py-4 font-bold text-slate-800">Rs. {Number(p.price || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                      <td className="px-6 py-4 font-mono text-xs text-slate-600">{p.stock}</td>
-                      <td className="px-6 py-4">
-                        <span className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${p.status === 'active' ? 'bg-emerald-100/50 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
-                          {p.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+                ))}
+              </tbody>
+            </table>
+          )}
 
-            {activeTab === 'orders' && (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-slate-50 border-b border-slate-100">
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Order</th>
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Customer</th>
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Status</th>
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Payment</th>
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Amount</th>
+          {activeTab === 'orders' && (
+            <table className="ds-table">
+              <thead>
+                <tr>
+                  <th>Order</th>
+                  <th>Customer</th>
+                  <th>Status</th>
+                  <th>Payment</th>
+                  <th>Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredOrders.map((o) => (
+                  <tr key={o._id}>
+                    <td>#{String(o._id).slice(-8).toUpperCase()}</td>
+                    <td>{o.userId?.name || 'N/A'}</td>
+                    <td><span className="ds-badge ds-badge-slate">{o.orderStatus}</span></td>
+                    <td>
+                      <span className={`ds-badge ${o.paymentStatus === 'Paid' ? 'ds-badge-green' : 'ds-badge-amber'}`}>
+                        {o.paymentStatus}
+                      </span>
+                    </td>
+                    <td>Rs. {Number(o.totalAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {filteredOrders.map((o) => (
-                    <tr key={o._id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4 font-mono font-bold text-brand-indigo text-xs">#{String(o._id).slice(-8).toUpperCase()}</td>
-                      <td className="px-6 py-4 font-bold text-slate-800">{o.userId?.name || 'N/A'}</td>
-                      <td className="px-6 py-4">
-                        <span className="text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">{o.orderStatus}</span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${o.paymentStatus === 'Paid' ? 'bg-emerald-100/50 text-emerald-700' : 'bg-orange-100/50 text-orange-700'}`}>
-                          {o.paymentStatus}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 font-bold text-slate-800">Rs. {Number(o.totalAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+                ))}
+              </tbody>
+            </table>
+          )}
 
-            {activeTab === 'returns' && (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-slate-50 border-b border-slate-100">
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">RMA</th>
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Order</th>
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Customer</th>
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Status</th>
+          {activeTab === 'returns' && (
+            <table className="ds-table">
+              <thead>
+                <tr>
+                  <th>RMA</th>
+                  <th>Order</th>
+                  <th>Customer</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredReturns.map((r) => (
+                  <tr key={r._id}>
+                    <td>{r.holdBillNo}</td>
+                    <td>#{String(r.orderId?._id || r.orderId).slice(-8).toUpperCase()}</td>
+                    <td>{r.customerId?.name || 'N/A'}</td>
+                    <td>
+                      <span className={`ds-badge ${r.status === 'Completed' ? 'ds-badge-green' : 'ds-badge-amber'}`}>
+                        {r.status}
+                      </span>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {filteredReturns.map((r) => (
-                    <tr key={r._id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4 font-mono font-bold text-slate-800 text-xs">{r.holdBillNo}</td>
-                      <td className="px-6 py-4 font-mono font-bold text-brand-indigo text-xs">#{String(r.orderId?._id || r.orderId).slice(-8).toUpperCase()}</td>
-                      <td className="px-6 py-4 font-bold text-slate-800">{r.customerId?.name || 'N/A'}</td>
-                      <td className="px-6 py-4">
-                        <span className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${r.status === 'Completed' ? 'bg-emerald-100/50 text-emerald-700' : 'bg-orange-100/50 text-orange-700'}`}>
-                          {r.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+                ))}
+              </tbody>
+            </table>
+          )}
 
-            {activeTab === 'expenses' && (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-slate-50 border-b border-slate-100">
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Title</th>
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Category</th>
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Amount</th>
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Status</th>
+          {activeTab === 'expenses' && (
+            <table className="ds-table">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Category</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredExpenses.map((e) => (
+                  <tr key={e._id}>
+                    <td>{e.title}</td>
+                    <td><span className="ds-badge ds-badge-slate">{e.category}</span></td>
+                    <td>Rs. {Number(e.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                    <td>
+                      <span className={`ds-badge ${e.status === 'Paid' ? 'ds-badge-green' : 'ds-badge-red'}`}>
+                        {e.status}
+                      </span>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {filteredExpenses.map((e) => (
-                    <tr key={e._id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4 font-bold text-slate-800">{e.title}</td>
-                      <td className="px-6 py-4">
-                        <span className="text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">{e.category}</span>
-                      </td>
-                      <td className="px-6 py-4 font-bold text-slate-800">Rs. {Number(e.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                      <td className="px-6 py-4">
-                        <span className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${e.status === 'Paid' ? 'bg-emerald-100/50 text-emerald-700' : 'bg-red-100/50 text-red-700'}`}>
-                          {e.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+                ))}
+              </tbody>
+            </table>
+          )}
 
-            {activeTab === 'incomes' && (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-slate-50 border-b border-slate-100">
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Title</th>
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Source</th>
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Amount</th>
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Date</th>
+          {activeTab === 'incomes' && (
+            <table className="ds-table">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Source</th>
+                  <th>Amount</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredIncomes.map((i) => (
+                  <tr key={i._id}>
+                    <td>{i.title}</td>
+                    <td><span className="ds-badge ds-badge-primary">{i.source}</span></td>
+                    <td>Rs. {Number(i.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                    <td>{new Date(i.date).toLocaleDateString()}</td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {filteredIncomes.map((i) => (
-                    <tr key={i._id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4 font-bold text-slate-800">{i.title}</td>
-                      <td className="px-6 py-4">
-                        <span className="text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-indigo-50 text-brand-indigo">{i.source}</span>
-                      </td>
-                      <td className="px-6 py-4 font-bold text-slate-800">Rs. {Number(i.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                      <td className="px-6 py-4 text-slate-500 font-mono text-xs">{new Date(i.date).toLocaleDateString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+                ))}
+              </tbody>
+            </table>
+          )}
 
-            {activeTab === 'salary' && (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-slate-50 border-b border-slate-100">
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Employee</th>
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Role Category</th>
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Period</th>
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Basic</th>
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Bonus</th>
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Deductions</th>
-                    <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Net</th>
+          {activeTab === 'salary' && (
+            <table className="ds-table">
+              <thead>
+                <tr>
+                  <th>Employee</th>
+                  <th>Role Category</th>
+                  <th>Period</th>
+                  <th>Basic</th>
+                  <th>Bonus</th>
+                  <th>Deductions</th>
+                  <th>Net</th>
+                </tr>
+              </thead>
+              <tbody>
+                {payrollData.map((p) => (
+                  <tr key={p._id}>
+                    <td>{p.employeeId?.name || 'N/A'}</td>
+                    <td><span className="ds-badge ds-badge-slate">{p.employeeId?.role || 'N/A'}</span></td>
+                    <td>{p.month}/{p.year}</td>
+                    <td>Rs. {Number(p.basicSalary || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                    <td>+Rs. {Number(p.bonuses || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                    <td>-Rs. {Number(p.otherDeductions || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                    <td>Rs. {Number(p.netSalary || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {payrollData.map((p) => (
-                    <tr key={p._id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4 font-bold text-slate-800">{p.employeeId?.name || 'N/A'}</td>
-                      <td className="px-6 py-4">
-                        <span className="text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">{p.employeeId?.role || 'N/A'}</span>
-                      </td>
-                      <td className="px-6 py-4 text-slate-500 font-mono text-xs">{p.month}/{p.year}</td>
-                      <td className="px-6 py-4 text-slate-600">Rs. {Number(p.basicSalary || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                      <td className="px-6 py-4 text-emerald-600 font-bold">+Rs. {Number(p.bonuses || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                      <td className="px-6 py-4 text-red-600 font-bold">-Rs. {Number(p.otherDeductions || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                      <td className="px-6 py-4 font-black text-slate-900">Rs. {Number(p.netSalary || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+                ))}
+              </tbody>
+            </table>
+          )}
 
-            {((activeTab === 'users' && filteredUsers.length === 0)
-              || (activeTab === 'products' && filteredProducts.length === 0)
-              || (activeTab === 'orders' && filteredOrders.length === 0)
-              || (activeTab === 'returns' && filteredReturns.length === 0)
-              || (activeTab === 'expenses' && filteredExpenses.length === 0)
-              || (activeTab === 'incomes' && filteredIncomes.length === 0)
-              || (activeTab === 'salary' && payrollData.length === 0)) && (
-              <div className="px-6 py-12 text-sm text-center font-bold text-slate-400 bg-slate-50/50">No records found for the selected filters.</div>
-            )}
-          </div>
+          {((activeTab === 'users' && filteredUsers.length === 0)
+            || (activeTab === 'products' && filteredProducts.length === 0)
+            || (activeTab === 'orders' && filteredOrders.length === 0)
+            || (activeTab === 'returns' && filteredReturns.length === 0)
+            || (activeTab === 'expenses' && filteredExpenses.length === 0)
+            || (activeTab === 'incomes' && filteredIncomes.length === 0)
+            || (activeTab === 'salary' && payrollData.length === 0)) && (
+            <div className="ds-empty">No records found for the selected filters.</div>
+          )}
         </div>
+
       </div>
     </DashboardLayout>
   );

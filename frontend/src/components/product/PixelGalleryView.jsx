@@ -73,7 +73,7 @@ export default function PixelGalleryView({
               <div className="w-1 h-1 rounded-sm bg-slate-800" />
             </div>
             {/* G Logo */}
-            <div className="mt-auto mb-2 text-[6px] font-black" style={{ color: gLogoColor }}>
+            <div className="mt-auto mb-2 text-[6px] font-bold" style={{ color: gLogoColor }}>
               G
             </div>
           </div>
@@ -108,7 +108,7 @@ export default function PixelGalleryView({
               <span className="w-1.5 h-1.5 rounded-full bg-cyan-400/90" />
               <span className="w-1 h-1 rounded-full bg-amber-400/90" />
             </div>
-            <div className="mt-auto mb-2 text-[6px] font-black" style={{ color: gLogoColor }}>
+            <div className="mt-auto mb-2 text-[6px] font-bold" style={{ color: gLogoColor }}>
               G
             </div>
           </div>
@@ -147,9 +147,9 @@ export default function PixelGalleryView({
             }}
           >
             {/* Status Bar */}
-            <div className="flex items-center justify-between text-[11px] font-semibold text-slate-300 px-1">
+            <div className="flex items-center justify-between text-xs font-semibold text-slate-300 px-1">
               <span>9:30</span>
-              <div className="flex items-center gap-1.5 text-slate-300 text-[10px]">
+              <div className="flex items-center gap-1.5 text-slate-300 text-xs">
                 <span>5G</span>
                 <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L12 22l7.03-4.39C20.26 16.07 21 14.12 21 12c0-4.97-4.03-9-9-9zm0 14c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z" />
@@ -165,7 +165,7 @@ export default function PixelGalleryView({
                 <span>•</span>
                 <span>28°C Sunny</span>
               </div>
-              <div className="mt-1 flex items-center gap-1 text-[11px] text-blue-400 font-medium">
+              <div className="mt-1 flex items-center gap-1 text-xs text-blue-400 font-medium">
                 <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
                 <span>Tensor G5 Gemini Live</span>
               </div>
@@ -178,10 +178,10 @@ export default function PixelGalleryView({
                 style={{ backgroundColor: color }}
               />
               <div className="relative z-10 text-center">
-                <div className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight font-mono">
+                <div className="text-4xl sm:text-5xl font-bold text-white tracking-tight font-mono">
                   09:30
                 </div>
-                <div className="text-[10px] uppercase font-bold tracking-widest text-slate-400 mt-1">
+                <div className="text-xs uppercase font-bold tracking-widest text-slate-400 mt-1">
                   Google Pixel 10 Pro XL
                 </div>
               </div>
@@ -196,7 +196,7 @@ export default function PixelGalleryView({
                   <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 10.04 0 12s.45 3.82 1.25 5.42l4.03-3.15z" />
                   <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.35 0 3.27 2.63 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z" />
                 </svg>
-                <span className="text-[11px] text-slate-300">Ask Gemini...</span>
+                <span className="text-xs text-slate-300">Ask Gemini...</span>
               </div>
               <div className="flex items-center gap-1.5 text-slate-400">
                 <div className="w-2.5 h-2.5 rounded-full bg-blue-400/80" />
@@ -268,12 +268,12 @@ export default function PixelGalleryView({
               className="w-10 h-10 rounded-full border-2 flex items-center justify-center shadow-sm"
               style={{ borderColor: frameColor }}
             >
-              <span className="text-xl font-black tracking-tighter" style={{ color: gLogoColor }}>
+              <span className="text-xl font-bold tracking-tighter" style={{ color: gLogoColor }}>
                 G
               </span>
             </div>
             <span
-              className="text-[10px] font-bold tracking-widest uppercase mt-3 opacity-60"
+              className="text-xs font-bold tracking-widest uppercase mt-3 opacity-60"
               style={{ color: gLogoColor }}
             >
               Tensor G5
@@ -282,7 +282,7 @@ export default function PixelGalleryView({
 
           {/* Bottom Regulatory Text & Antenna Trim */}
           <div className="relative z-10 mb-3 text-center">
-            <span className="text-[9px] font-medium opacity-50 uppercase tracking-widest" style={{ color: gLogoColor }}>
+            <span className="text-xs font-medium opacity-50 uppercase tracking-widest" style={{ color: gLogoColor }}>
               Google Pixel 10 Pro XL
             </span>
           </div>
@@ -324,7 +324,7 @@ export default function PixelGalleryView({
           </div>
 
           {/* Dimension spec callout badge */}
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 bg-slate-900/90 backdrop-blur-md text-white px-3 py-1.5 rounded-full border border-slate-700 text-[11px] font-bold shadow-lg flex items-center gap-1.5">
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 bg-slate-900/90 backdrop-blur-md text-white px-3 py-1.5 rounded-full border border-slate-700 text-xs font-bold shadow-lg flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-400" />
             <span>8.5mm Ultra-Slim Profile</span>
           </div>
@@ -376,14 +376,14 @@ export default function PixelGalleryView({
                 className="w-10 h-10 rounded-full border-2 flex items-center justify-center shadow-md"
                 style={{ borderColor: frameColor }}
               >
-                <span className="text-xl font-black" style={{ color: gLogoColor }}>
+                <span className="text-xl font-bold" style={{ color: gLogoColor }}>
                   G
                 </span>
               </div>
             </div>
 
             <div className="relative z-10 mb-3 text-center">
-              <span className="text-[10px] font-bold tracking-widest uppercase opacity-70" style={{ color: gLogoColor }}>
+              <span className="text-xs font-bold tracking-widest uppercase opacity-70" style={{ color: gLogoColor }}>
                 {colorName} Finish
               </span>
             </div>

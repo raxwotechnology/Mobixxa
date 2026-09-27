@@ -56,8 +56,8 @@ const notifyStoreManager = async ({ storeId, type, title, message, link, metadat
   });
 };
 
-// @desc    Delete target
-// @route   DELETE /api/hr/targets/:id
+// @desc Delete target
+// @route DELETE /api/hr/targets/:id
 const deleteTarget = async (req, res, next) => {
   try {
     const target = await EmployeeTarget.findById(req.params.id);
@@ -123,9 +123,9 @@ const applyDayPayrollAdjustment = async (attendance, employee) => {
   }
 };
 
-// @desc    Check in
-// @route   POST /api/hr/attendance/check-in
-// @access  Private (cashier, deliveryGuy, manager)
+// @desc Check in
+// @route POST /api/hr/attendance/check-in
+// @access Private (cashier, deliveryGuy, manager)
 const checkIn = async (req, res, next) => {
   try {
     const { startOfDay } = getSriLankaDateBoundaries();
@@ -152,9 +152,9 @@ const checkIn = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Check out
-// @route   POST /api/hr/attendance/check-out
-// @access  Private
+// @desc Check out
+// @route POST /api/hr/attendance/check-out
+// @access Private
 const checkOut = async (req, res, next) => {
   try {
     const today = new Date();
@@ -184,9 +184,9 @@ const checkOut = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Get my attendance records
-// @route   GET /api/hr/attendance
-// @access  Private
+// @desc Get my attendance records
+// @route GET /api/hr/attendance
+// @access Private
 const getMyAttendance = async (req, res, next) => {
   try {
     const { month, year } = req.query;
@@ -203,9 +203,9 @@ const getMyAttendance = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Get attendance report for store (manager)
-// @route   GET /api/hr/attendance/report
-// @access  Private/Manager/Admin
+// @desc Get attendance report for store (manager)
+// @route GET /api/hr/attendance/report
+// @access Private/Manager/Admin
 const getAttendanceReport = async (req, res, next) => {
   try {
     const { month, year, storeId } = req.query;
@@ -230,11 +230,11 @@ const getAttendanceReport = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Late-deduction records (days with a billed late deduction),
+// @desc Late-deduction records (days with a billed late deduction),
 //          for the dedicated Late Deductions view — reads the stored,
 //          already-computed day figures rather than recomputing.
-// @route   GET /api/hr/attendance/late-deductions
-// @access  Private/Admin/Manager
+// @route GET /api/hr/attendance/late-deductions
+// @access Private/Admin/Manager
 const getLateDeductions = async (req, res, next) => {
   try {
     const { employeeId, startDate, endDate, month, year } = req.query;
@@ -259,9 +259,9 @@ const getLateDeductions = async (req, res, next) => {
 
 // =================== LEAVES ===================
 
-// @desc    Request leave
-// @route   POST /api/hr/leaves
-// @access  Private
+// @desc Request leave
+// @route POST /api/hr/leaves
+// @access Private
 const requestLeave = async (req, res, next) => {
   try {
     const { type, startDate, endDate, reason } = req.body;
@@ -316,9 +316,9 @@ const requestLeave = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Get my leaves
-// @route   GET /api/hr/leaves
-// @access  Private
+// @desc Get my leaves
+// @route GET /api/hr/leaves
+// @access Private
 const getMyLeaves = async (req, res, next) => {
   try {
     const leaves = await Leave.find({ employeeId: req.user._id })
@@ -327,9 +327,9 @@ const getMyLeaves = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Get all leaves for store (manager)
-// @route   GET /api/hr/leaves/store
-// @access  Private/Manager/Admin
+// @desc Get all leaves for store (manager)
+// @route GET /api/hr/leaves/store
+// @access Private/Manager/Admin
 const getStoreLeaves = async (req, res, next) => {
   try {
     const filter = {};
@@ -346,9 +346,9 @@ const getStoreLeaves = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Approve leave
-// @route   PUT /api/hr/leaves/:id/approve
-// @access  Private/Manager/Admin
+// @desc Approve leave
+// @route PUT /api/hr/leaves/:id/approve
+// @access Private/Manager/Admin
 const approveLeave = async (req, res, next) => {
   try {
     const leave = await Leave.findById(req.params.id);
@@ -378,7 +378,7 @@ const approveLeave = async (req, res, next) => {
     await sendNotification({
       userId: leave.employeeId,
       type: 'leave_update',
-      title: 'Leave Approved ✅',
+      title: 'Leave Approved',
       message: `Your ${leave.leaveType} leave from ${leave.startDate.toLocaleDateString()} to ${leave.endDate.toLocaleDateString()} has been approved.`,
       link: '/employee/leaves',
     });
@@ -408,9 +408,9 @@ const approveLeave = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Reject leave
-// @route   PUT /api/hr/leaves/:id/reject
-// @access  Private/Manager/Admin
+// @desc Reject leave
+// @route PUT /api/hr/leaves/:id/reject
+// @access Private/Manager/Admin
 const rejectLeave = async (req, res, next) => {
   try {
     const leave = await Leave.findById(req.params.id);
@@ -424,7 +424,7 @@ const rejectLeave = async (req, res, next) => {
     await sendNotification({
       userId: leave.employeeId,
       type: 'leave_update',
-      title: 'Leave Rejected ❌',
+      title: 'Leave Rejected',
       message: `Your ${leave.leaveType} leave request was rejected. Reason: ${leave.rejectionReason}`,
       link: '/employee/leaves',
     });
@@ -454,10 +454,10 @@ const rejectLeave = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Cancel a previous approve/reject decision (admin only — reverses
+// @desc Cancel a previous approve/reject decision (admin only — reverses
 //          history via a new logged entry, never a silent status flip-back)
-// @route   PUT /api/hr/leaves/:id/cancel
-// @access  Private/Admin
+// @route PUT /api/hr/leaves/:id/cancel
+// @access Private/Admin
 const cancelDecision = async (req, res, next) => {
   try {
     const { reason } = req.body;
@@ -508,9 +508,9 @@ const cancelDecision = async (req, res, next) => {
 
 // =================== EMPLOYEES ===================
 
-// @desc    Get employees (for manager's store)
-// @route   GET /api/hr/employees
-// @access  Private/Manager/Admin
+// @desc Get employees (for manager's store)
+// @route GET /api/hr/employees
+// @access Private/Manager/Admin
 const getEmployees = async (req, res, next) => {
   try {
     const roles = ['cashier', 'deliveryGuy', 'stockEmployee'];
@@ -532,9 +532,9 @@ const getEmployees = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Update employee info
-// @route   PUT /api/hr/employees/:id
-// @access  Private/Manager/Admin
+// @desc Update employee info
+// @route PUT /api/hr/employees/:id
+// @access Private/Manager/Admin
 const updateEmployee = async (req, res, next) => {
   try {
     const employee = await User.findById(req.params.id);
@@ -576,9 +576,9 @@ const updateEmployee = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Register new employee (cashier/deliveryGuy)
-// @route   POST /api/hr/employees
-// @access  Private/Manager/Admin
+// @desc Register new employee (cashier/deliveryGuy)
+// @route POST /api/hr/employees
+// @access Private/Manager/Admin
 const addEmployee = async (req, res, next) => {
   try {
     const { name, email, password, phone, role, salary, department, bankAccount, bankName, bankBranch, epfNo, etfNo } = req.body;
@@ -643,8 +643,8 @@ const addEmployee = async (req, res, next) => {
 
 const EmployeeBreak = require('../models/EmployeeBreak');
 
-// @desc    Start break
-// @route   POST /api/hr/breaks/start
+// @desc Start break
+// @route POST /api/hr/breaks/start
 const startBreak = async (req, res, next) => {
   try {
     const today = new Date();
@@ -688,8 +688,8 @@ const startBreak = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    End break
-// @route   POST /api/hr/breaks/end
+// @desc End break
+// @route POST /api/hr/breaks/end
 const endBreak = async (req, res, next) => {
   try {
     const today = new Date();
@@ -724,8 +724,8 @@ const endBreak = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Get break history
-// @route   GET /api/hr/breaks
+// @desc Get break history
+// @route GET /api/hr/breaks
 const getBreakHistory = async (req, res, next) => {
   try {
     const { startDate, endDate } = req.query;
@@ -740,8 +740,8 @@ const getBreakHistory = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Get today's active break (if any)
-// @route   GET /api/hr/breaks/active
+// @desc Get today's active break (if any)
+// @route GET /api/hr/breaks/active
 const getActiveBreak = async (req, res, next) => {
   try {
     const today = new Date();
@@ -757,8 +757,8 @@ const getActiveBreak = async (req, res, next) => {
 
 // =================== TARGETS ===================
 
-// @desc    Create target for employee
-// @route   POST /api/hr/targets
+// @desc Create target for employee
+// @route POST /api/hr/targets
 const createTarget = async (req, res, next) => {
   try {
     const { employeeId, targetType, targetValue, month, year, bonusAmount, notes } = req.body;
@@ -787,8 +787,8 @@ const createTarget = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Get targets (filtered by store/employee/month)
-// @route   GET /api/hr/targets
+// @desc Get targets (filtered by store/employee/month)
+// @route GET /api/hr/targets
 const getTargets = async (req, res, next) => {
   try {
     const { employeeId, month, year } = req.query;
@@ -810,8 +810,8 @@ const getTargets = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Get my targets (for employee)
-// @route   GET /api/hr/targets/me
+// @desc Get my targets (for employee)
+// @route GET /api/hr/targets/me
 const getMyTargets = async (req, res, next) => {
   try {
     const now = new Date();
@@ -828,8 +828,8 @@ const getMyTargets = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Update target progress
-// @route   PUT /api/hr/targets/:id/progress
+// @desc Update target progress
+// @route PUT /api/hr/targets/:id/progress
 const updateTargetProgress = async (req, res, next) => {
   try {
     const target = await EmployeeTarget.findById(req.params.id);
@@ -852,8 +852,8 @@ const updateTargetProgress = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Mark target bonus as paid
-// @route   PUT /api/hr/targets/:id/pay-bonus
+// @desc Mark target bonus as paid
+// @route PUT /api/hr/targets/:id/pay-bonus
 const payTargetBonus = async (req, res, next) => {
   try {
     const target = await EmployeeTarget.findById(req.params.id);
@@ -870,7 +870,7 @@ const payTargetBonus = async (req, res, next) => {
     await sendNotification({
       userId: target.employeeId,
       type: 'payroll',
-      title: 'Bonus Paid! 🎉',
+      title: 'Bonus Paid!',
       message: `Your bonus of Rs. ${target.bonusAmount} for meeting your ${target.targetType} target has been processed.`,
     });
 
@@ -878,8 +878,8 @@ const payTargetBonus = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Get employee performance summary
-// @route   GET /api/hr/performance/:employeeId
+// @desc Get employee performance summary
+// @route GET /api/hr/performance/:employeeId
 const getEmployeePerformance = async (req, res, next) => {
   try {
     const { employeeId } = req.params;
@@ -952,9 +952,9 @@ const getEmployeePerformance = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Admin/Manager mark attendance for an employee
-// @route   POST /api/hr/attendance/mark
-// @access  Private/Admin/Manager
+// @desc Admin/Manager mark attendance for an employee
+// @route POST /api/hr/attendance/mark
+// @access Private/Admin/Manager
 const adminMarkAttendance = async (req, res, next) => {
   try {
     let { employeeId, date, checkInTime, checkOutTime, status, notes } = req.body;
@@ -1072,9 +1072,9 @@ const adminMarkAttendance = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Admin/Manager create leave for an employee
-// @route   POST /api/hr/leaves/create-for-employee
-// @access  Private/Admin/Manager
+// @desc Admin/Manager create leave for an employee
+// @route POST /api/hr/leaves/create-for-employee
+// @access Private/Admin/Manager
 const adminCreateLeave = async (req, res, next) => {
   try {
     const { employeeId, type, startDate, endDate, reason, status } = req.body;
@@ -1118,9 +1118,9 @@ const adminCreateLeave = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Monthly attendance/leave summary (deductions, off-day pool, allowance)
-// @route   GET /api/hr/attendance-summary/:employeeId?month&year
-// @access  Private (own data) / Admin/Manager (any employee)
+// @desc Monthly attendance/leave summary (deductions, off-day pool, allowance)
+// @route GET /api/hr/attendance-summary/:employeeId?month&year
+// @access Private (own data) / Admin/Manager (any employee)
 const getAttendanceSummary = async (req, res, next) => {
   try {
     const employeeId = req.params.employeeId === 'me' ? req.user._id : req.params.employeeId;
@@ -1139,9 +1139,9 @@ const getAttendanceSummary = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Delete employee
-// @route   DELETE /api/hr/employees/:id
-// @access  Private/Manager/Admin
+// @desc Delete employee
+// @route DELETE /api/hr/employees/:id
+// @access Private/Manager/Admin
 const deleteEmployee = async (req, res, next) => {
   try {
     const employee = await User.findById(req.params.id);

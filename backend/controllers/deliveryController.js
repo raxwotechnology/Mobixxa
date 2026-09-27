@@ -4,9 +4,9 @@ const User = require('../models/User');
 const { sendNotification } = require('../utils/notificationService');
 const { deliveryAssignmentEmail } = require('../utils/emailService');
 
-// @desc    Get orders assigned to delivery guy
-// @route   GET /api/delivery/orders
-// @access  Private/DeliveryGuy
+// @desc Get orders assigned to delivery guy
+// @route GET /api/delivery/orders
+// @access Private/DeliveryGuy
 const getMyDeliveries = async (req, res, next) => {
   try {
     const orders = await Order.find({
@@ -24,9 +24,9 @@ const getMyDeliveries = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Get delivery history (completed/cancelled)
-// @route   GET /api/delivery/history
-// @access  Private/DeliveryGuy
+// @desc Get delivery history (completed/cancelled)
+// @route GET /api/delivery/history
+// @access Private/DeliveryGuy
 const getDeliveryHistory = async (req, res, next) => {
   try {
     const orders = await Order.find({
@@ -42,9 +42,9 @@ const getDeliveryHistory = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Update delivery status
-// @route   PUT /api/delivery/orders/:id/status
-// @access  Private/DeliveryGuy
+// @desc Update delivery status
+// @route PUT /api/delivery/orders/:id/status
+// @access Private/DeliveryGuy
 const updateDeliveryStatus = async (req, res, next) => {
   try {
     const order = await Order.findOne({
@@ -72,7 +72,7 @@ const updateDeliveryStatus = async (req, res, next) => {
       const statusMessages = {
         shipped: 'Your order has been shipped!',
         out_for_delivery: 'Your order is out for delivery!',
-        delivered: 'Your order has been delivered. Enjoy! 🎉',
+        delivered: 'Your order has been delivered. Enjoy!',
       };
       await sendNotification({
         userId: customer._id,
@@ -92,9 +92,9 @@ const updateDeliveryStatus = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Mark COD payment as successful and complete order
-// @route   PUT /api/delivery/orders/:id/payment-success
-// @access  Private/DeliveryGuy
+// @desc Mark COD payment as successful and complete order
+// @route PUT /api/delivery/orders/:id/payment-success
+// @access Private/DeliveryGuy
 const markCodPaymentSuccessful = async (req, res, next) => {
   try {
     const order = await Order.findOne({
@@ -118,9 +118,9 @@ const markCodPaymentSuccessful = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Get delivery earnings
-// @route   GET /api/delivery/earnings
-// @access  Private/DeliveryGuy
+// @desc Get delivery earnings
+// @route GET /api/delivery/earnings
+// @access Private/DeliveryGuy
 const getDeliveryEarnings = async (req, res, next) => {
   try {
     const deliveredOrders = await Order.find({
@@ -150,9 +150,9 @@ const getDeliveryEarnings = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Assign delivery guy to order (manager/admin)
-// @route   POST /api/delivery/assign/:orderId
-// @access  Private/Manager/Admin
+// @desc Assign delivery guy to order (manager/admin)
+// @route POST /api/delivery/assign/:orderId
+// @access Private/Manager/Admin
 const assignDeliveryGuy = async (req, res, next) => {
   try {
     const { deliveryGuyId } = req.body;
@@ -184,9 +184,9 @@ const assignDeliveryGuy = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Get available delivery guys for a store
-// @route   GET /api/delivery/available
-// @access  Private/Manager/Admin
+// @desc Get available delivery guys for a store
+// @route GET /api/delivery/available
+// @access Private/Manager/Admin
 const getAvailableDeliveryGuys = async (req, res, next) => {
   try {
     const filter = { role: 'deliveryGuy' };

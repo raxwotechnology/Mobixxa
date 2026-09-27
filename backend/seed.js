@@ -72,14 +72,14 @@ const seedData = async () => {
 
     // Create Categories
     const categories = await Category.insertMany([
-      { name: 'Smartphones', slug: 'smartphones', icon: '📱', image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400', isActive: true },
-      { name: 'Tablets', slug: 'tablets', icon: '📝', image: 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400', isActive: true },
-      { name: 'Smart Watches', slug: 'smart-watches', icon: '⌚', image: 'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=400', isActive: true },
-      { name: 'Accessories', slug: 'accessories', icon: '🔌', image: 'https://images.unsplash.com/photo-1583394838336-acd977736f90?w=400', isActive: true },
-      { name: 'Chargers', slug: 'chargers', icon: '⚡', image: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=400', isActive: true },
-      { name: 'Earbuds', slug: 'earbuds', icon: '🎧', image: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=400', isActive: true },
-      { name: 'Phone Cases', slug: 'phone-cases', icon: '🛡️', image: 'https://images.unsplash.com/photo-1601593346740-925612772716?w=400', isActive: true },
-      { name: 'Laptops', slug: 'laptops', icon: '💻', image: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400', isActive: true },
+      { name: 'Smartphones', slug: 'smartphones', icon: '', image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400', isActive: true },
+      { name: 'Tablets', slug: 'tablets', icon: '', image: 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400', isActive: true },
+      { name: 'Smart Watches', slug: 'smart-watches', icon: '', image: 'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=400', isActive: true },
+      { name: 'Accessories', slug: 'accessories', icon: '', image: 'https://images.unsplash.com/photo-1583394838336-acd977736f90?w=400', isActive: true },
+      { name: 'Chargers', slug: 'chargers', icon: '', image: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=400', isActive: true },
+      { name: 'Earbuds', slug: 'earbuds', icon: '', image: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=400', isActive: true },
+      { name: 'Phone Cases', slug: 'phone-cases', icon: '', image: 'https://images.unsplash.com/photo-1601593346740-925612772716?w=400', isActive: true },
+      { name: 'Laptops', slug: 'laptops', icon: '', image: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400', isActive: true },
     ]);
 
     console.log('Categories created...');

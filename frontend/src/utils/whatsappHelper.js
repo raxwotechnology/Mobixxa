@@ -35,9 +35,9 @@ export const sendWhatsAppInvoice = (order, brandName = 'Mobixa', storePhone = '+
   const imeiList = [];
   order.items?.forEach(i => {
     if (Array.isArray(i.imei) && i.imei.length > 0) {
-      imeiList.push(`📱 IMEI (${i.name}): ${i.imei.join(', ')}`);
+      imeiList.push(`IMEI (${i.name}): ${i.imei.join(', ')}`);
     } else if (i.imeiNumber) {
-      imeiList.push(`📱 IMEI (${i.name}): ${i.imeiNumber}`);
+      imeiList.push(`IMEI (${i.name}): ${i.imeiNumber}`);
     }
   });
 
@@ -50,27 +50,27 @@ export const sendWhatsAppInvoice = (order, brandName = 'Mobixa', storePhone = '+
     ? window.location.origin 
     : (process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://mobixa-official.vercel.app');
 
-  const textMessage = `🧾 *${brandName.toUpperCase()} - DIGITAL RECEIPT*
+  const textMessage = `*${brandName.toUpperCase()} - DIGITAL RECEIPT*
 ----------------------------------------
 Hi *${order.customerName || order.userId?.name || 'Valued Customer'}*, thank you for your purchase!
 
-📄 *Invoice No:* ${invoiceNo}
-📅 *Date:* ${dateStr}
+*Invoice No:* ${invoiceNo}
+*Date:* ${dateStr}
 
 *PURCHASED ITEMS:*
 ${itemsSummary}
 ${imeiText ? '\n' + imeiText : ''}
 
-💰 *Total Paid:* Rs. ${totalPaid}
-💳 *Payment Method:* ${(order.paymentMethod || 'cash').toUpperCase()}
+*Total Paid:* Rs. ${totalPaid}
+*Payment Method:* ${(order.paymentMethod || 'cash').toUpperCase()}
 
-🔗 *View Official Receipt & Warranty:*
+*View Official Receipt & Warranty:*
 ${baseUrl}/warranty-check?imei=${encodeURIComponent(order.items?.[0]?.imei?.[0] || invoiceNo)}
 ----------------------------------------
-📞 Store Hotline: ${storePhone}
-🏬 Thank you for shopping with us!`;
+Store Hotline: ${storePhone}
+Thank you for shopping with us!`;
 
   const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(textMessage)}`;
   window.open(whatsappUrl, '_blank');
-  toast.success(`WhatsApp receipt for ${invoiceNo} opened! 💬`);
+  toast.success(`WhatsApp receipt for ${invoiceNo} opened!`);
 };

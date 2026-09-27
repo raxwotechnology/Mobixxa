@@ -191,98 +191,81 @@ const AdminAccounts = ({ navItems: propNavItems }) => {
 
   return (
     <DashboardLayout navItems={navItems} title="Accounts Management">
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/80 backdrop-blur-md p-6 rounded-3xl border border-slate-100 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-brand-indigo/10 to-brand-violet/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
-          
-          <div className="relative">
-            <h1 className="text-2xl font-semibold text-slate-900 tracking-tight flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-brand-indigo/10 flex items-center justify-center text-brand-indigo">
-                <Landmark size={18} strokeWidth={3} />
-              </div>
-              Bank Financial Accounts
-            </h1>
-            <p className="text-sm font-normal text-slate-500 mt-1">Manage cash drawers, bank accounts and mobile wallets</p>
+      <div className="ds-page">
+        <div className="ds-page-header">
+          <div>
+            <h1 className="ds-page-title">Bank & Financial Accounts</h1>
+            <p className="ds-page-subtitle">Manage cash drawers, company bank accounts and mobile settlement wallets</p>
           </div>
           
-          <div className="relative">
-            <button onClick={openCreate} className="flex items-center gap-2 bg-brand-indigo hover:bg-indigo-700 text-white px-5 py-3 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-lg shadow-brand-indigo/20 hover:shadow-xl hover:shadow-brand-indigo/30 hover:-translate-y-0.5">
-              <Plus size={16} strokeWidth={3} /> New Account
-            </button>
+          <button onClick={openCreate} className="ds-btn ds-btn-primary">
+            <Plus size={16} /> New Account
+          </button>
+        </div>
+
+        {/* Total Liquidity Cards */}
+        <div className="ds-stats grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <div className="ds-stat">
+            <div className="ds-stat-label">Total Combined Balance</div>
+            <div className="ds-stat-value text-blue-600">
+              Rs. {totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            </div>
+            <div className="ds-stat-sub">Across all active accounts</div>
+          </div>
+          <div className="ds-stat">
+            <div className="ds-stat-label">Cash on Hand</div>
+            <div className="ds-stat-value text-emerald-600">
+              Rs. {accounts.filter(a => a.type === 'Cash').reduce((s, a) => s + a.balance, 0).toLocaleString()}
+            </div>
+            <div className="ds-stat-sub">Physical drawer cash</div>
+          </div>
+          <div className="ds-stat">
+            <div className="ds-stat-label">Bank Balance</div>
+            <div className="ds-stat-value">
+              Rs. {accounts.filter(a => a.type === 'Bank').reduce((s, a) => s + a.balance, 0).toLocaleString()}
+            </div>
+            <div className="ds-stat-sub">Bank deposits & transfers</div>
           </div>
         </div>
 
-        {/* Total Liquidity Card */}
-        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden border border-slate-800">
-          <div className="absolute top-0 right-0 p-8 opacity-5">
-            <TrendingUp size={160} strokeWidth={1} />
-          </div>
-          <div className="absolute top-0 right-1/4 w-64 h-64 bg-brand-indigo/20 rounded-full blur-3xl mix-blend-screen pointer-events-none"></div>
-          <div className="absolute bottom-0 left-1/4 w-48 h-48 bg-brand-violet/20 rounded-full blur-3xl mix-blend-screen pointer-events-none"></div>
-          
-          <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-8">
-            <div>
-              <p className="text-[11px] uppercase font-black tracking-widest text-slate-400 mb-2">Total Combined Balance</p>
-              <h2 className="text-5xl font-black tracking-tight text-white flex items-center gap-3">
-                <span className="text-2xl text-slate-400">Rs.</span>
-                {totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-              </h2>
-            </div>
-            
-            <div className="flex gap-8 bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10">
-              <div>
-                <p className="text-[10px] uppercase font-black tracking-widest text-emerald-400 mb-1 flex items-center gap-1.5"><Wallet size={12} /> Cash on Hand</p>
-                <p className="text-xl font-bold text-white">Rs. {accounts.filter(a => a.type === 'Cash').reduce((s, a) => s + a.balance, 0).toLocaleString()}</p>
-              </div>
-              <div className="w-px bg-white/10"></div>
-              <div>
-                <p className="text-[10px] uppercase font-black tracking-widest text-brand-violet mb-1 flex items-center gap-1.5"><Landmark size={12} /> Bank Balance</p>
-                <p className="text-xl font-bold text-white">Rs. {accounts.filter(a => a.type === 'Bank').reduce((s, a) => s + a.balance, 0).toLocaleString()}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {accounts.map((account) => (
-            <div key={account._id} className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-bl-[100px] -z-10 transition-colors group-hover:bg-slate-100/50"></div>
-              
-              <div className="flex justify-between items-start mb-6 relative z-10">
-                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm ${
-                  account.type === 'Cash' ? 'bg-emerald-50 text-emerald-500 border border-emerald-100' :
-                  account.type === 'Bank' ? 'bg-blue-50 text-blue-500 border border-blue-100' :
-                  'bg-brand-indigo/10 text-brand-indigo border border-brand-indigo/20'
+            <div key={account._id} className="ds-card p-5 hover:border-blue-400 transition-all group relative">
+              <div className="flex justify-between items-start mb-4">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold ${
+                  account.type === 'Cash' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200/60' :
+                  account.type === 'Bank' ? 'bg-blue-50 text-blue-600 border border-blue-200/60' :
+                  'bg-indigo-50 text-indigo-600 border border-indigo-200/60'
                 }`}>
-                  {account.type === 'Cash' ? <Wallet size={24} strokeWidth={2.5} /> : <Landmark size={24} strokeWidth={2.5} />}
+                  {account.type === 'Cash' ? <Wallet size={18} /> : <Landmark size={18} />}
                 </div>
-                <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                   <button onClick={() => fetchTransactions(account)} className="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:text-brand-indigo hover:bg-brand-indigo/10 transition-all border border-slate-100 hover:border-brand-indigo/20" title="Ledger Transactions"><History size={14} strokeWidth={2.5} /></button>
-                   <button onClick={() => openEdit(account)} className="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:text-brand-indigo hover:bg-brand-indigo/10 transition-all border border-slate-100 hover:border-brand-indigo/20" title="Edit Account"><Edit2 size={14} strokeWidth={2.5} /></button>
-                   <button onClick={() => handleDeleteClick(account)} className="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all border border-slate-100 hover:border-rose-200" title="Delete Account"><Trash2 size={14} strokeWidth={2.5} /></button>
+                <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                   <button onClick={() => fetchTransactions(account)} className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-blue-600 hover:bg-slate-100 transition-colors" title="Ledger Transactions"><History size={15} /></button>
+                   <button onClick={() => openEdit(account)} className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-blue-600 hover:bg-slate-100 transition-colors" title="Edit Account"><Edit2 size={15} /></button>
+                   <button onClick={() => handleDeleteClick(account)} className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors" title="Delete Account"><Trash2 size={15} /></button>
                 </div>
               </div>
 
-              <div className="relative z-10">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <h3 className="font-black text-slate-900 text-lg leading-tight">{account.name}</h3>
-                  {account.isDefault && <span className="text-[9px] uppercase font-black tracking-wider bg-amber-100 text-amber-700 px-2 py-0.5 rounded-lg border border-amber-200">Default</span>}
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="font-semibold text-slate-900 text-sm leading-tight m-0">{account.name}</h3>
+                  {account.isDefault && <span className="ds-badge-amber text-xs font-semibold">Default</span>}
                 </div>
-                <p className="text-[10px] uppercase font-black tracking-wider text-slate-400 mb-5">{account.type} • {account.bankName || 'Direct'}</p>
+                <p className="text-xs font-medium text-slate-400 mb-3">{account.type} • {account.bankName || 'Direct'}</p>
                 
-                <div className="text-3xl font-black text-slate-900 tracking-tight mb-2">
-                  <span className="text-xl text-slate-400 font-bold mr-1">Rs.</span>
+                <div className="text-xl font-bold text-slate-900 tracking-tight mb-1 tabular-nums">
+                  <span className="text-xs text-slate-400 font-semibold mr-1">Rs.</span>
                   {Number(account.balance || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                 </div>
-                <p className="text-xs font-bold text-slate-400 font-mono tracking-widest">{account.accountNumber || 'NO ACC. NUMBER'}</p>
+                <p className="text-xs font-mono font-medium text-slate-400 tracking-wider m-0">{account.accountNumber || 'NO ACC. NUMBER'}</p>
               </div>
 
-              <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-between relative z-10">
-                 <span className={`px-3 py-1.5 rounded-lg text-[10px] uppercase font-black tracking-wider border ${account.status === 'active' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-100 text-slate-400 border-slate-200'}`}>
-                   {account.status}
+              <div className="mt-4 pt-3.5 border-t border-slate-100 flex items-center justify-between">
+                 <span className={account.status === 'active' ? 'ds-badge-green' : 'ds-badge-slate'}>
+                   {account.status || 'active'}
                  </span>
-                 <button onClick={() => fetchTransactions(account)} className="text-[11px] uppercase font-black tracking-wider text-brand-indigo hover:text-indigo-700 transition-colors flex items-center gap-1">
-                   View Ledger <ArrowUpRight size={14} />
+                 <button onClick={() => fetchTransactions(account)} className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors flex items-center gap-1 bg-transparent border-none cursor-pointer">
+                   View Ledger <ArrowUpRight size={13} />
                  </button>
               </div>
             </div>
@@ -293,7 +276,7 @@ const AdminAccounts = ({ navItems: propNavItems }) => {
             <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center shadow-sm mb-4 group-hover:scale-110 transition-transform duration-300 group-hover:shadow-md">
               <Plus size={32} strokeWidth={2.5} />
             </div>
-            <p className="font-black text-sm">Add New Account</p>
+            <p className="font-bold text-sm">Add New Account</p>
           </div>
         </div>
 
@@ -308,18 +291,18 @@ const AdminAccounts = ({ navItems: propNavItems }) => {
                 <div className="w-12 h-12 bg-brand-indigo/10 text-brand-indigo rounded-full flex items-center justify-center mb-3 border border-brand-indigo/20 shadow-sm">
                   <Landmark size={24} />
                 </div>
-                <h2 className="text-xl font-black text-slate-900">{editingId ? 'Edit Account' : 'Create Account'}</h2>
+                <h2 className="text-xl font-bold text-slate-900">{editingId ? 'Edit Account' : 'Create Account'}</h2>
                 <p className="text-xs font-bold text-slate-500 mt-1">{editingId ? 'Update account details' : 'Add a new financial account'}</p>
               </div>
 
               <form onSubmit={handleSubmit} className="p-6 bg-slate-50/50 space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="md:col-span-2">
-                    <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Account Label / Name *</label>
+                    <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">Account Label / Name *</label>
                     <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm" placeholder="e.g. Commercial Bank - Main" />
                   </div>
                   <div>
-                    <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Account Type *</label>
+                    <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">Account Type *</label>
                     <select required value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm cursor-pointer">
                       <option value="Cash">Cash Drawer</option>
                       <option value="Bank">Bank Account</option>
@@ -328,21 +311,21 @@ const AdminAccounts = ({ navItems: propNavItems }) => {
                     </select>
                   </div>
                   <div>
-                    <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Bank Name (Optional)</label>
+                    <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">Bank Name (Optional)</label>
                     <input value={form.bankName} onChange={(e) => setForm({ ...form, bankName: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm" placeholder="e.g. Sampath Bank" />
                   </div>
                   <div className="md:col-span-2">
-                    <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Account Number</label>
+                    <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">Account Number</label>
                     <input value={form.accountNumber} onChange={(e) => setForm({ ...form, accountNumber: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm font-mono" placeholder="XXXX-XXXX-XXXX" />
                   </div>
                   {!editingId && (
                     <div className="md:col-span-2">
-                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Initial Balance (Rs.)</label>
-                      <input type="number" step="0.01" value={form.balance} onChange={(e) => setForm({ ...form, balance: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-lg font-black text-brand-indigo focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm" />
+                      <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">Initial Balance (Rs.)</label>
+                      <input type="number" step="0.01" value={form.balance} onChange={(e) => setForm({ ...form, balance: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-lg font-bold text-brand-indigo focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm" />
                     </div>
                   )}
                   <div className="md:col-span-2">
-                    <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Store Assignment *</label>
+                    <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">Store Assignment *</label>
                     <select 
                       required 
                       disabled={selectedStoreId !== 'all'}
@@ -357,16 +340,16 @@ const AdminAccounts = ({ navItems: propNavItems }) => {
                   <div className="md:col-span-2">
                     <label className="flex items-center gap-3 cursor-pointer p-3 bg-white border border-slate-200 rounded-xl hover:border-brand-indigo transition-colors">
                       <input type="checkbox" checked={form.isDefault} onChange={(e) => setForm({ ...form, isDefault: e.target.checked })} className="w-4 h-4 rounded text-brand-indigo focus:ring-brand-indigo accent-brand-indigo" />
-                      <span className="text-xs font-black text-slate-700">Set as Default Account</span>
+                      <span className="text-xs font-bold text-slate-700">Set as Default Account</span>
                     </label>
                   </div>
                 </div>
 
                 <div className="flex gap-3 pt-4 border-t border-slate-100">
-                  <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-3 rounded-xl bg-slate-100 text-[11px] uppercase tracking-wider font-black hover:bg-slate-200 text-slate-700 transition-all">
+                  <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-3 rounded-xl bg-slate-100 text-xs uppercase tracking-wider font-bold hover:bg-slate-200 text-slate-700 transition-all">
                     Cancel
                   </button>
-                  <button type="submit" disabled={saving} className="flex-1 py-3 rounded-xl bg-brand-indigo hover:bg-indigo-700 text-white text-[11px] uppercase tracking-wider font-black shadow-lg shadow-brand-indigo/20 transition-all disabled:opacity-50">
+                  <button type="submit" disabled={saving} className="flex-1 py-3 rounded-xl bg-brand-indigo hover:bg-indigo-700 text-white text-xs uppercase tracking-wider font-bold shadow-lg shadow-brand-indigo/20 transition-all disabled:opacity-50">
                     {saving ? 'Saving...' : editingId ? 'Update Account' : 'Create Account'}
                   </button>
                 </div>
@@ -389,13 +372,13 @@ const AdminAccounts = ({ navItems: propNavItems }) => {
                     {viewingTransactions.type === 'Cash' ? <Wallet size={20} /> : <Landmark size={20} />}
                   </div>
                   <div>
-                    <h2 className="text-xl font-black text-slate-900 tracking-tight">{viewingTransactions.name}</h2>
-                    <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest">{viewingTransactions.type} Ledger</p>
+                    <h2 className="text-xl font-bold text-slate-900 tracking-tight">{viewingTransactions.name}</h2>
+                    <p className="text-xs text-slate-500 uppercase font-bold tracking-widest">{viewingTransactions.type} Ledger</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <button onClick={() => exportExcel(viewingTransactions)} className="bg-emerald-50 hover:bg-emerald-500 text-emerald-600 hover:text-white border border-emerald-100 hover:border-emerald-500 text-[10px] font-black uppercase tracking-wider px-4 py-2 rounded-xl transition-all shadow-sm">Export Excel</button>
-                  <button onClick={() => exportPDF(viewingTransactions)} className="bg-rose-50 hover:bg-rose-500 text-rose-600 hover:text-white border border-rose-100 hover:border-rose-500 text-[10px] font-black uppercase tracking-wider px-4 py-2 rounded-xl transition-all shadow-sm">Export PDF</button>
+                  <button onClick={() => exportExcel(viewingTransactions)} className="bg-emerald-50 hover:bg-emerald-500 text-emerald-600 hover:text-white border border-emerald-100 hover:border-emerald-500 text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-xl transition-all shadow-sm">Export Excel</button>
+                  <button onClick={() => exportPDF(viewingTransactions)} className="bg-rose-50 hover:bg-rose-500 text-rose-600 hover:text-white border border-rose-100 hover:border-rose-500 text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-xl transition-all shadow-sm">Export PDF</button>
                   <button onClick={() => setViewingTransactions(null)} className="p-2 rounded-xl hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors bg-slate-100"><X size={20} /></button>
                 </div>
               </div>
@@ -410,7 +393,7 @@ const AdminAccounts = ({ navItems: propNavItems }) => {
                   <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm text-left">
-                        <thead className="bg-slate-50 text-[10px] uppercase font-black tracking-wider text-slate-500 border-b border-slate-200">
+                        <thead className="bg-slate-50 text-xs uppercase font-bold tracking-wider text-slate-500 border-b border-slate-200">
                           <tr>
                             <th className="px-6 py-4">Date</th>
                             <th className="px-6 py-4">Reference</th>
@@ -423,19 +406,19 @@ const AdminAccounts = ({ navItems: propNavItems }) => {
                           {transactions.map((t) => (
                             <tr key={t._id} className="hover:bg-slate-50/50 transition-colors">
                               <td className="px-6 py-4 font-bold text-slate-600 text-xs">{new Date(t.date || t.createdAt).toLocaleDateString()}</td>
-                              <td className="px-6 py-4 font-mono text-[10px] font-black tracking-widest text-brand-indigo">{t.referenceNo || '—'}</td>
+                              <td className="px-6 py-4 font-mono text-xs font-bold tracking-widest text-brand-indigo">{t.referenceNo || '—'}</td>
                               <td className="px-6 py-4">
-                                 <div className="text-xs font-black text-slate-800">{t.category}</div>
-                                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">{t.description}</div>
+                                 <div className="text-xs font-bold text-slate-800">{t.category}</div>
+                                 <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-0.5">{t.description}</div>
                               </td>
                               <td className="px-6 py-4 text-center">
-                                 <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border ${
+                                 <span className={`text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg border ${
                                    t.type === 'income' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'
                                  }`}>
                                    {t.type}
                                  </span>
                               </td>
-                              <td className={`px-6 py-4 text-right text-base font-black tracking-tight ${t.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                              <td className={`px-6 py-4 text-right text-base font-bold tracking-tight ${t.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}`}>
                                 {t.type === 'income' ? '+' : '-'} <span className="text-xs">Rs.</span> {Number(t.amount).toLocaleString()}
                               </td>
                             </tr>

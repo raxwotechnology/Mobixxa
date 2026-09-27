@@ -59,14 +59,14 @@ const LegalPrivacy = () => {
         <div className="bg-slate-900 text-white rounded-3xl p-8 sm:p-10 relative overflow-hidden shadow-lg">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.15),transparent_60%)] pointer-events-none" />
           <div className="relative z-10 space-y-3">
-            <span className="inline-flex items-center gap-1.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest">
+            <span className="inline-flex items-center gap-1.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-widest">
               <ShieldCheck size={12} /> Privacy & Data Protection Policy
             </span>
-            <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight m-0">Privacy Policy</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight m-0">Privacy Policy</h1>
             <p className="text-slate-300 text-xs sm:text-sm font-semibold max-w-2xl m-0">
               At {brandName}, we prioritize your trust and are committed to safeguarding your personal data and privacy.
             </p>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider m-0 pt-2">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider m-0 pt-2">
               Last Updated: July 2026
             </p>
           </div>
@@ -82,7 +82,7 @@ const LegalPrivacy = () => {
                   <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-emerald-400 shrink-0 shadow-xs">
                     <Icon size={20} />
                   </div>
-                  <h2 className="text-lg font-black text-slate-900 m-0">{sec.title}</h2>
+                  <h2 className="text-lg font-bold text-slate-900 m-0">{sec.title}</h2>
                 </div>
                 <div className="text-slate-600 text-xs sm:text-sm font-medium leading-relaxed whitespace-pre-line pl-1 sm:pl-13">
                   {sec.content}
@@ -95,13 +95,13 @@ const LegalPrivacy = () => {
         {/* Contact DPO Card */}
         <div className="bg-white border border-slate-200/80 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xs">
           <div>
-            <h3 className="text-base font-black text-slate-900 m-0">Have questions about your data privacy?</h3>
+            <h3 className="text-base font-bold text-slate-900 m-0">Have questions about your data privacy?</h3>
             <p className="text-xs text-slate-500 font-semibold m-0 mt-1">Our Privacy & Data Protection team is ready to assist you.</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto shrink-0">
             <a
               href={`mailto:${brandEmail}`}
-              className="bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs px-5 py-3 rounded-xl transition-all text-center no-underline"
+              className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-5 py-3 rounded-xl transition-all text-center no-underline"
             >
               Email Privacy Team
             </a>

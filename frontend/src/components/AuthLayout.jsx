@@ -30,14 +30,14 @@ export default function AuthLayout({ children }) {
               <Smartphone className="w-4 h-4 text-[#1557bf]" />
             </div>
             <div className="flex flex-col leading-none">
-              <span className="font-black text-sm tracking-tight">Mobixa</span>
-              <span className="text-[8px] font-bold text-blue-200 tracking-wider">
+              <span className="font-bold text-sm tracking-tight">Mobixa</span>
+              <span className="text-xs font-bold text-blue-200 tracking-wider">
                 MOBILE SHOP ERP
               </span>
             </div>
           </div>
 
-          <h2 className="text-3xl font-extrabold leading-tight max-w-sm">
+          <h2 className="text-3xl font-bold leading-tight max-w-sm">
             Run your mobile shop the smart way.
           </h2>
           <p className="text-blue-100/80 text-sm mt-4 max-w-sm leading-relaxed">
@@ -58,7 +58,7 @@ export default function AuthLayout({ children }) {
           </ul>
         </div>
 
-        <div className="absolute bottom-8 left-14 right-14 z-10 flex items-center justify-between text-[11px] text-blue-200/70">
+        <div className="absolute bottom-8 left-14 right-14 z-10 flex items-center justify-between text-xs text-blue-200/70">
           <span>&copy; {new Date().getFullYear()} Mobixa</span>
           <div className="flex items-center gap-4">
             <a href="/help-center" className="hover:text-white transition-colors">

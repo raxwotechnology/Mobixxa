@@ -86,7 +86,7 @@ export default function CartDrawer() {
 
       {/* 2. Drawer Sheet Card (Figma Style Floating Panel) */}
       <div
-        className={`fixed top-3 bottom-3 right-3 w-full max-w-[440px] bg-white/95 backdrop-blur-xl rounded-[36px] shadow-2xl border border-blue-100/80 z-50 flex flex-col p-6 sm:p-8 overflow-hidden transition-all duration-300 ease-out ${
+        className={`fixed inset-y-0 right-0 sm:top-3 sm:bottom-3 sm:right-3 w-full sm:max-w-[440px] bg-white/95 backdrop-blur-xl sm:rounded-[36px] shadow-2xl border border-blue-100/80 z-50 flex flex-col p-4 sm:p-8 overflow-hidden transition-all duration-300 ease-out ${
           isCartOpen
             ? "translate-x-0 pointer-events-auto"
             : "translate-x-[110%] pointer-events-none"
@@ -110,7 +110,7 @@ export default function CartDrawer() {
             >
               <span>Cart</span>
               <span
-                className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                className={`text-xs px-1.5 py-0.2 rounded-full font-bold ${
                   activeTab === "cart"
                     ? "bg-blue-600 text-white"
                     : "bg-slate-200 text-slate-600"
@@ -176,7 +176,7 @@ export default function CartDrawer() {
           /* =============================================================== */
           <div className="flex-1 flex flex-col justify-start overflow-y-auto pt-2 px-1">
             {/* Empty Cart Headline */}
-            <h2 className="text-2xl sm:text-[26px] font-black text-slate-950 text-center mt-12 tracking-tight">
+            <h2 className="text-2xl sm:text-[26px] font-bold text-slate-950 text-center mt-12 tracking-tight">
               Your cart is currently empty.
             </h2>
 
@@ -225,7 +225,7 @@ export default function CartDrawer() {
                       }}
                     >
                       <div className="w-10 h-10 rounded-lg bg-slate-950 flex flex-col items-center justify-center shadow-xs text-white">
-                        <span className="text-[7px] font-black tracking-tighter">
+                        <span className="text-[7px] font-bold tracking-tighter">
                           {item.name?.split(" ")?.slice(0, 2)?.join(" ") || "DEVICE"}
                         </span>
                       </div>
@@ -236,7 +236,7 @@ export default function CartDrawer() {
                       <h4 className="text-xs sm:text-sm font-bold text-slate-900 truncate">
                         {item.name}
                       </h4>
-                      <div className="flex items-center gap-2 text-[11px] text-slate-500 mt-0.5">
+                      <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
                         {item.color && (
                           <span className="font-medium">{item.color}</span>
                         )}
@@ -303,13 +303,13 @@ export default function CartDrawer() {
               {/* Shipping */}
               <div className="flex items-center justify-between text-xs text-slate-600">
                 <span>Islandwide Shipping</span>
-                <span className="font-bold text-emerald-600 uppercase text-[11px]">
+                <span className="font-bold text-emerald-600 uppercase text-xs">
                   FREE
                 </span>
               </div>
 
               {/* Final Total */}
-              <div className="flex items-center justify-between text-sm font-extrabold text-slate-950 pt-2 border-t border-slate-100">
+              <div className="flex items-center justify-between text-sm font-bold text-slate-950 pt-2 border-t border-slate-100">
                 <span>Total</span>
                 <span className="text-base text-blue-600">Rs {cartTotal}</span>
               </div>

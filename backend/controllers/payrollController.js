@@ -66,9 +66,9 @@ const EPF_EMPLOYEE_RATE = 0.08; // 8% employee contribution
 const EPF_EMPLOYER_RATE = 0.12; // 12% employer contribution
 const ETF_RATE = 0.03;          // 3% employer contribution
 
-// @desc    Calculate salary for an employee
-// @route   POST /api/payroll/calculate
-// @access  Private/Manager/Admin
+// @desc Calculate salary for an employee
+// @route POST /api/payroll/calculate
+// @access Private/Manager/Admin
 const calculateSalary = async (req, res, next) => {
   try {
     const { employeeId, month, year, allowances = 0, deductions = 0, bonuses = 0 } = req.body;
@@ -147,9 +147,9 @@ const calculateSalary = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Process salary payment  
-// @route   POST /api/payroll/pay
-// @access  Private/Manager/Admin
+// @desc Process salary payment  
+// @route POST /api/payroll/pay
+// @access Private/Manager/Admin
 const processSalaryPayment = async (req, res, next) => {
   try {
     const { employeeId, month, year, allowances = 0, deductions = 0, bonuses = 0 } = req.body;
@@ -271,7 +271,7 @@ const processSalaryPayment = async (req, res, next) => {
       userId: employee._id,
       userEmail: employee.email,
       type: 'salary_credit',
-      title: '💰 Salary Credited',
+      title: 'Salary Credited',
       message: `Your salary of Rs.${netSalary.toLocaleString()} for ${month}/${year} has been processed${totalOTAmount > 0 ? ` (Includes OT: Rs.${totalOTAmount.toLocaleString()})` : ''}.`,
       link: '/employee/salary',
       emailContent,
@@ -281,9 +281,9 @@ const processSalaryPayment = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Get salary history for employee
-// @route   GET /api/payroll/history/:employeeId
-// @access  Private
+// @desc Get salary history for employee
+// @route GET /api/payroll/history/:employeeId
+// @access Private
 const getSalaryHistory = async (req, res, next) => {
   try {
     // Allow employees to see their own, managers/admins to see anyone's
@@ -301,9 +301,9 @@ const getSalaryHistory = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Get payroll report for a month
-// @route   GET /api/payroll/report
-// @access  Private/Manager/Admin
+// @desc Get payroll report for a month
+// @route GET /api/payroll/report
+// @access Private/Manager/Admin
 const getPayrollReport = async (req, res, next) => {
   try {
     const { month, year, role, employeeName, employeeIds } = req.query;
@@ -526,9 +526,9 @@ const downloadPaysheet = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Record salary advance for an employee
-// @route   POST /api/payroll/advances
-// @access  Private/Manager/Admin
+// @desc Record salary advance for an employee
+// @route POST /api/payroll/advances
+// @access Private/Manager/Admin
 const recordSalaryAdvance = async (req, res, next) => {
   try {
     const { employeeId, amount, reason, date, paymentMethod, bankAccountId } = req.body;
@@ -597,9 +597,9 @@ const recordSalaryAdvance = async (req, res, next) => {
   }
 };
 
-// @desc    Get salary advances
-// @route   GET /api/payroll/advances
-// @access  Private/Manager/Admin
+// @desc Get salary advances
+// @route GET /api/payroll/advances
+// @access Private/Manager/Admin
 const getSalaryAdvances = async (req, res, next) => {
   try {
     const { month, year, employeeId } = req.query;
@@ -619,9 +619,9 @@ const getSalaryAdvances = async (req, res, next) => {
   }
 };
 
-// @desc    Delete salary advance
-// @route   DELETE /api/payroll/advances/:id
-// @access  Private/Admin
+// @desc Delete salary advance
+// @route DELETE /api/payroll/advances/:id
+// @access Private/Admin
 const deleteSalaryAdvance = async (req, res, next) => {
   try {
     const advance = await SalaryAdvance.findById(req.params.id);
@@ -647,10 +647,10 @@ const deleteSalaryAdvance = async (req, res, next) => {
   }
 };
 
-// @desc    Log a correction against an already-finalized payslip without
+// @desc Log a correction against an already-finalized payslip without
 //          editing its original locked figures
-// @route   POST /api/payroll/:id/adjustments
-// @access  Private/Admin
+// @route POST /api/payroll/:id/adjustments
+// @access Private/Admin
 const addAdjustment = async (req, res, next) => {
   try {
     const { label, amount, note } = req.body;

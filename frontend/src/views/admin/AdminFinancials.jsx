@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { DollarSign, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, RefreshCw, FileText, Plus, Search } from 'lucide-react';
+import { DollarSign, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, RefreshCw, FileText, Plus, Search, Package, Clock, Monitor, ShoppingBag, Wallet } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
 import {
   getFinancialDashboard,
@@ -332,25 +332,18 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
 
   return (
     <DashboardLayout navItems={navItems} title="Financials">
-      <div>
+      <div className="ds-page">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm relative overflow-hidden mb-6">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-brand-indigo/10 to-brand-fuchsia/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
-          
-          <div className="relative">
-            <h1 className="text-2xl font-semibold text-slate-900 tracking-tight flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-brand-fuchsia/10 flex items-center justify-center text-brand-fuchsia">
-                <span className="text-lg">📊</span>
-              </div>
-              Store Financials & Accounts
-            </h1>
-            <p className="text-sm font-normal text-slate-500 mt-1">Manage overview analytics, petty cash flow, and tax reports</p>
+        <div className="ds-page-header">
+          <div>
+            <h1 className="ds-page-title">Store Financials & Accounts</h1>
+            <p className="ds-page-subtitle">Manage overview analytics, petty cash flow, and tax reports</p>
           </div>
 
-          <div className="relative z-10">
+          <div className="flex gap-2 flex-wrap items-center">
             {activeTab === 'overview' && (
               <div className="flex gap-2 flex-wrap items-center">
-                <select value={period} onChange={(e) => setPeriod(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-[11px] font-black uppercase tracking-wider text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 shadow-sm cursor-pointer">
+                <select value={period} onChange={(e) => setPeriod(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-xs font-bold uppercase tracking-wider text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 shadow-sm cursor-pointer">
                   <option value="daily">Daily</option>
                   <option value="monthly">Monthly</option>
                   <option value="yearly">Yearly</option>
@@ -365,7 +358,7 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
                     { label: 'Profit (Rs.)', accessor: (r) => r.profit?.toLocaleString() },
                   ];
                   exportToPDF(d.series || d.monthlyData || [], monthlyExportCols, 'Financial Report');
-                }} className="bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-black uppercase tracking-wider px-4 py-3 rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-slate-900/10">
+                }} className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold uppercase tracking-wider px-4 py-3 rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-slate-900/10">
                   <FileText size={14} strokeWidth={2.5} /> PDF
                 </button>
               </div>
@@ -385,7 +378,7 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
                     { label: 'Logged By', accessor: (r) => r.loggedBy?.name || 'System' }
                   ];
                   exportToPDF(pettyCashLogs, pettyCols, 'Petty Cash Log');
-                }} className="bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-black uppercase tracking-wider px-4 py-3 rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-slate-900/10">
+                }} className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold uppercase tracking-wider px-4 py-3 rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-slate-900/10">
                   <FileText size={14} strokeWidth={2.5} /> PDF
                 </button>
               </div>
@@ -404,7 +397,7 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
 
                   ];
                   exportToPDF(taxPayments, taxCols, 'Income Tax Payments');
-                }} className="bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-black uppercase tracking-wider px-4 py-3 rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-slate-900/10">
+                }} className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold uppercase tracking-wider px-4 py-3 rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-slate-900/10">
                   <FileText size={14} strokeWidth={2.5} /> PDF
                 </button>
               </div>
@@ -434,7 +427,7 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
                     { label: 'Amount', accessor: 'amount' },
                   ];
                   exportToPDF(rows, cols, `Balance Report - ${balanceDate}`);
-                }} className="bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-black uppercase tracking-wider px-4 py-3 rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-slate-900/10">
+                }} className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold uppercase tracking-wider px-4 py-3 rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-slate-900/10">
                   <FileText size={14} strokeWidth={2.5} /> PDF Export
                 </button>
               </div>
@@ -456,7 +449,7 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
                     { label: 'Margin', accessor: (r) => `${r.margin}%` }
                   ];
                   exportToPDF(profitData?.items || [], profitCols, 'Detailed Profit Report');
-                }} className="bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-black uppercase tracking-wider px-4 py-3 rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-slate-900/10">
+                }} className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold uppercase tracking-wider px-4 py-3 rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-slate-900/10">
                   <FileText size={14} strokeWidth={2.5} /> PDF
                 </button>
               </div>
@@ -465,36 +458,36 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
         </div>
 
         {/* Tab Selector */}
-        <div className="flex flex-wrap gap-2 bg-slate-100/50 p-1.5 rounded-2xl w-max mb-6">
+        <div className="ds-tab-bar mb-6">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`py-2.5 px-5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-2 ${activeTab === 'overview' ? 'bg-white text-brand-fuchsia shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 border border-transparent'}`}
+            className={`ds-tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
           >
-            📊 Financial Overview
+            Financial Overview
           </button>
           <button
             onClick={() => setActiveTab('balance-report')}
-            className={`py-2.5 px-5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-2 ${activeTab === 'balance-report' ? 'bg-white text-brand-fuchsia shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 border border-transparent'}`}
+            className={`ds-tab-btn ${activeTab === 'balance-report' ? 'active' : ''}`}
           >
-            📋 Balance Report
+            Balance Report
           </button>
           <button
             onClick={() => setActiveTab('profit')}
-            className={`py-2.5 px-5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-2 ${activeTab === 'profit' ? 'bg-white text-brand-fuchsia shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 border border-transparent'}`}
+            className={`ds-tab-btn ${activeTab === 'profit' ? 'active' : ''}`}
           >
-            📈 Profit Reports
+            Profit Reports
           </button>
           <button
             onClick={() => setActiveTab('petty-cash')}
-            className={`py-2.5 px-5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-2 ${activeTab === 'petty-cash' ? 'bg-white text-brand-fuchsia shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 border border-transparent'}`}
+            className={`ds-tab-btn ${activeTab === 'petty-cash' ? 'active' : ''}`}
           >
-            💰 Petty Cash Log
+            Petty Cash Log
           </button>
           <button
             onClick={() => setActiveTab('tax')}
-            className={`py-2.5 px-5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-2 ${activeTab === 'tax' ? 'bg-white text-brand-fuchsia shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 border border-transparent'}`}
+            className={`ds-tab-btn ${activeTab === 'tax' ? 'active' : ''}`}
           >
-            🏛️ Income Tax Management
+            Income Tax Management
           </button>
         </div>
 
@@ -502,58 +495,116 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
         {activeTab === 'overview' && (
           <div>
             {/* KPI Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-              <div className="glass-card rounded-2xl p-6 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-teal-50 rounded-bl-[100px] pointer-events-none -z-10 group-hover:scale-110 transition-transform"></div>
-                <div className="w-10 h-10 rounded-2xl bg-teal-100/50 flex items-center justify-center mb-4">
-                  <ArrowUpRight size={20} className="text-brand-fuchsia" strokeWidth={2.5} />
+            {/* KPI Cards matching enterprise reference layout */}
+            <div className="ds-stats mb-6">
+              <div className="ds-stat">
+                <div className="ds-stat-top">
+                  <div className="ds-stat-icon" style={{ background: '#f0fdf4', color: '#15803d' }}>
+                    <DollarSign size={18} />
+                  </div>
+                  <span className="ds-stat-change up">Gross</span>
                 </div>
-                <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">Total Revenue</p>
-                <p className="text-2xl font-black text-slate-900 tracking-tight">Rs. {(d.totalRevenue || 0).toLocaleString()}</p>
-              </div>
-              <div className="glass-card rounded-2xl p-6 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-rose-50 rounded-bl-[100px] pointer-events-none -z-10 group-hover:scale-110 transition-transform"></div>
-                <div className="w-10 h-10 rounded-2xl bg-rose-100/50 flex items-center justify-center mb-4">
-                  <ArrowDownRight size={20} className="text-rose-600" strokeWidth={2.5} />
+                <div className="ds-stat-bottom">
+                  <p className="ds-stat-label">Total Revenue</p>
+                  <p className="ds-stat-value text-emerald-600">Rs. {(d.totalRevenue || 0).toLocaleString()}</p>
                 </div>
-                <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">Total Expenses</p>
-                <p className="text-2xl font-black text-slate-900 tracking-tight">Rs. {(d.totalExpenses || 0).toLocaleString()}</p>
               </div>
-              <div className="glass-card rounded-2xl p-6 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-brand-cyan/5 rounded-bl-[100px] pointer-events-none -z-10 group-hover:scale-110 transition-transform"></div>
-                <div className="w-10 h-10 rounded-2xl bg-brand-cyan/10 flex items-center justify-center mb-4">
-                  <DollarSign size={20} className="text-brand-cyan" strokeWidth={2.5} />
+
+              <div className="ds-stat">
+                <div className="ds-stat-top">
+                  <div className="ds-stat-icon" style={{ background: '#fff1f2', color: '#be123c' }}>
+                    <TrendingDown size={18} />
+                  </div>
+                  <span className="ds-stat-change down">Expenses</span>
                 </div>
-                <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">Other Income</p>
-                <p className="text-2xl font-black text-slate-900 tracking-tight">Rs. {(d.totalAdditionalIncome || 0).toLocaleString()}</p>
-              </div>
-              <div className={`glass-card rounded-2xl p-6 relative overflow-hidden group border ${profitPositive ? 'border-teal-100/60' : 'border-rose-100/60'}`}>
-                <div className={`absolute top-0 right-0 w-32 h-32 rounded-bl-[100px] pointer-events-none -z-10 group-hover:scale-110 transition-transform ${profitPositive ? 'bg-teal-50' : 'bg-rose-50'}`}></div>
-                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center mb-4 ${profitPositive ? 'bg-teal-100/50' : 'bg-rose-100/50'}`}>
-                  {profitPositive ? <TrendingUp size={20} className="text-brand-fuchsia" strokeWidth={2.5} /> : <TrendingDown size={20} className="text-rose-600" strokeWidth={2.5} />}
+                <div className="ds-stat-bottom">
+                  <p className="ds-stat-label">Total Expenses</p>
+                  <p className="ds-stat-value text-rose-600">Rs. {(d.totalExpenses || 0).toLocaleString()}</p>
                 </div>
-                <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">Net {profitPositive ? 'Profit' : 'Loss'}</p>
-                <p className={`text-2xl font-black tracking-tight ${profitPositive ? 'text-brand-fuchsia' : 'text-rose-600'}`}>Rs. {Math.abs(d.netProfit || 0).toLocaleString()}</p>
               </div>
-              <div className="glass-card rounded-2xl p-6 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-50 rounded-bl-[100px] pointer-events-none -z-10 group-hover:scale-110 transition-transform"></div>
-                <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Pending Bills</p>
-                <p className="text-3xl font-black text-amber-600 tracking-tight mt-6">Rs. {(d.pendingExpenses || 0).toLocaleString()}</p>
+
+              <div className="ds-stat">
+                <div className="ds-stat-top">
+                  <div className="ds-stat-icon" style={{ background: '#eff6ff', color: '#0284c7' }}>
+                    <Wallet size={18} />
+                  </div>
+                  <span className="ds-stat-change blue">Secondary</span>
+                </div>
+                <div className="ds-stat-bottom">
+                  <p className="ds-stat-label">Other Income</p>
+                  <p className="ds-stat-value text-sky-600">Rs. {(d.totalAdditionalIncome || 0).toLocaleString()}</p>
+                </div>
+              </div>
+
+              <div className="ds-stat">
+                <div className="ds-stat-top">
+                  <div className="ds-stat-icon" style={{ background: profitPositive ? '#f0fdf4' : '#fff1f2', color: profitPositive ? '#15803d' : '#be123c' }}>
+                    <TrendingUp size={18} />
+                  </div>
+                  <span className={`ds-stat-change ${profitPositive ? 'up' : 'down'}`}>
+                    {profitPositive ? 'Profitable' : 'Deficit'}
+                  </span>
+                </div>
+                <div className="ds-stat-bottom">
+                  <p className="ds-stat-label">Net {profitPositive ? 'Profit' : 'Loss'}</p>
+                  <p className={`ds-stat-value ${profitPositive ? 'text-emerald-600' : 'text-rose-600'}`}>
+                    Rs. {Math.abs(d.netProfit || 0).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+
+              <div className="ds-stat">
+                <div className="ds-stat-top">
+                  <div className="ds-stat-icon" style={{ background: '#fffbeb', color: '#b45309' }}>
+                    <Clock size={18} />
+                  </div>
+                  <span className="ds-stat-change amber">Payable</span>
+                </div>
+                <div className="ds-stat-bottom">
+                  <p className="ds-stat-label">Pending Bills</p>
+                  <p className="ds-stat-value text-amber-600">Rs. {(d.pendingExpenses || 0).toLocaleString()}</p>
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-              <div className="glass-card rounded-2xl p-6">
-                <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">Items Sold</p>
-                <p className="text-2xl font-black text-slate-900 mt-1">{(d.totalItemsSold || 0).toLocaleString()}</p>
+            <div className="ds-stats mb-6">
+              <div className="ds-stat">
+                <div className="ds-stat-top">
+                  <div className="ds-stat-icon" style={{ background: '#f5f3ff', color: '#7c3aed' }}>
+                    <Package size={18} />
+                  </div>
+                  <span className="ds-stat-change neu">Invoiced</span>
+                </div>
+                <div className="ds-stat-bottom">
+                  <p className="ds-stat-label">Items Sold</p>
+                  <p className="ds-stat-value">{(d.totalItemsSold || 0).toLocaleString()}</p>
+                </div>
               </div>
-              <div className="glass-card rounded-2xl p-6">
-                <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">POS Revenue</p>
-                <p className="text-2xl font-black text-slate-900 mt-1">Rs. {(d.posRevenue || 0).toLocaleString()}</p>
+
+              <div className="ds-stat">
+                <div className="ds-stat-top">
+                  <div className="ds-stat-icon" style={{ background: '#eff6ff', color: '#1d4ed8' }}>
+                    <Monitor size={18} />
+                  </div>
+                  <span className="ds-stat-change blue">Walk-In</span>
+                </div>
+                <div className="ds-stat-bottom">
+                  <p className="ds-stat-label">POS Counter Sales</p>
+                  <p className="ds-stat-value text-blue-600">Rs. {(d.posRevenue || 0).toLocaleString()}</p>
+                </div>
               </div>
-              <div className="glass-card rounded-2xl p-6">
-                <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">Online Revenue</p>
-                <p className="text-2xl font-black text-slate-900 mt-1">Rs. {(d.onlineRevenue || 0).toLocaleString()}</p>
+
+              <div className="ds-stat">
+                <div className="ds-stat-top">
+                  <div className="ds-stat-icon" style={{ background: '#f0fdf4', color: '#15803d' }}>
+                    <ShoppingBag size={18} />
+                  </div>
+                  <span className="ds-stat-change up">Online</span>
+                </div>
+                <div className="ds-stat-bottom">
+                  <p className="ds-stat-label">Online Store Sales</p>
+                  <p className="ds-stat-value text-emerald-600">Rs. {(d.onlineRevenue || 0).toLocaleString()}</p>
+                </div>
               </div>
             </div>
 
@@ -562,8 +613,8 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
               {/* Product Segments Chart */}
               <div className="glass-card rounded-2xl p-6 lg:col-span-2 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-brand-fuchsia/5 rounded-bl-[100px] pointer-events-none -z-10"></div>
-                <h2 className="text-lg font-black text-slate-900 mb-1 flex items-center gap-2">📱 Mobiles vs Accessories gross margins</h2>
-                <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-6">Gross margins for product departments</p>
+                <h2 className="text-lg font-bold text-slate-900 mb-1 flex items-center gap-2"> Mobiles vs Accessories gross margins</h2>
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-6">Gross margins for product departments</p>
                 <div className="h-[260px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={segmentChartData} margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
@@ -585,7 +636,7 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
                   {/* Segment margin list */}
               <div className="glass-card rounded-2xl p-6 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-brand-fuchsia/5 rounded-bl-[100px] pointer-events-none -z-10"></div>
-                <h2 className="text-lg font-black text-slate-900 mb-4 flex items-center gap-2">📊 Department Stream Gross Margins</h2>
+                <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2"> Department Stream Gross Margins</h2>
                 <div className="space-y-3">
                   {['mobiles', 'accessories', 'repairs', 'reloads'].map((seg) => {
                     const rev = d.profitSegments?.[seg]?.revenue || 0;
@@ -593,19 +644,19 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
                     const marginPct = rev > 0 ? ((prof / rev) * 100).toFixed(1) : '0.0';
                     return (
                       <div key={seg} className="p-4 rounded-2xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors">
-                        <h3 className="capitalize font-black text-xs text-slate-900 mb-2">{seg}</h3>
+                        <h3 className="capitalize font-bold text-xs text-slate-900 mb-2">{seg}</h3>
                         <div className="grid grid-cols-2 gap-2 text-xs mb-2">
                           <div>
-                            <span className="text-[9px] font-black uppercase tracking-wider text-slate-500 block">Revenue</span>
+                            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block">Revenue</span>
                             <span className="font-bold text-slate-700">Rs. {rev.toLocaleString()}</span>
                           </div>
                           <div>
-                            <span className="text-[9px] font-black uppercase tracking-wider text-brand-fuchsia block">Profit</span>
+                            <span className="text-xs font-bold uppercase tracking-wider text-brand-fuchsia block">Profit</span>
                             <span className="font-bold text-brand-fuchsia">Rs. {prof.toLocaleString()}</span>
                           </div>
                         </div>
                         <div>
-                          <div className="flex justify-between text-[10px] mb-1 font-bold">
+                          <div className="flex justify-between text-xs mb-1 font-bold">
                             <span className="text-slate-500">Margin</span>
                             <span className="text-brand-fuchsia">{marginPct}%</span>
                           </div>
@@ -625,7 +676,7 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
               {/* Monthly Trend */}
               <div className="glass-card rounded-2xl p-6 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-brand-fuchsia/5 rounded-bl-[100px] pointer-events-none -z-10"></div>
-                <h2 className="text-lg font-black text-slate-900 mb-6 flex items-center gap-2">📈 Monthly Trend</h2>
+                <h2 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2"> Monthly Trend</h2>
                 {(d.series || d.monthlyData) && (
                   <div className="h-[280px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
@@ -651,7 +702,7 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
               {/* Expense Breakdown */}
               <div className="glass-card rounded-2xl p-6 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-brand-fuchsia/5 rounded-bl-[100px] pointer-events-none -z-10"></div>
-                <h2 className="text-lg font-black text-slate-900 mb-6 flex items-center gap-2">🥧 Expense Breakdown</h2>
+                <h2 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2"> Expense Breakdown</h2>
                 {pieData.length > 0 ? (
                   <div className="h-[280px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
@@ -669,7 +720,7 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
                     </ResponsiveContainer>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center h-[280px] text-[11px] font-black uppercase tracking-wider text-slate-400">No expense data</div>
+                  <div className="flex items-center justify-center h-[280px] text-xs font-bold uppercase tracking-wider text-slate-400">No expense data</div>
                 )}
               </div>
             </div>
@@ -678,7 +729,7 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
             {(d.series || d.monthlyData) && (
               <div className="glass-card rounded-2xl p-6 mb-8 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-teal-50 rounded-bl-[100px] pointer-events-none -z-10"></div>
-                <h2 className="text-lg font-black text-slate-900 mb-6 flex items-center gap-2">📉 Profit Trend</h2>
+                <h2 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2"> Profit Trend</h2>
                 <div className="h-[240px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={d.series || d.monthlyData} margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
@@ -705,7 +756,7 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
             <div className="bg-white rounded-3xl border border-slate-100 p-6 mb-6 shadow-sm">
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                 <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Category Type</label>
+                  <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">Category Type</label>
                   <div className="relative">
                     <select
                       value={profitCategory}
@@ -726,7 +777,7 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
                 </div>
 
                 <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Brand Filter</label>
+                  <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">Brand Filter</label>
                   <div className="relative">
                     <select
                       value={profitBrand}
@@ -745,7 +796,7 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
                 </div>
 
                 <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">From Date</label>
+                  <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">From Date</label>
                   <input
                     type="date"
                     value={profitStartDate}
@@ -755,7 +806,7 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
                 </div>
 
                 <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">To Date</label>
+                  <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">To Date</label>
                   <input
                     type="date"
                     value={profitEndDate}
@@ -771,23 +822,23 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm relative overflow-hidden group">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-bl-[100px] pointer-events-none -z-10 group-hover:scale-110 transition-transform"></div>
-                  <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">Total Revenue</p>
-                  <p className="text-2xl font-black text-slate-900 mt-2 tracking-tight">Rs. {profitData.summary.totalRevenue.toLocaleString()}</p>
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Total Revenue</p>
+                  <p className="text-2xl font-bold text-slate-900 mt-2 tracking-tight">Rs. {profitData.summary.totalRevenue.toLocaleString()}</p>
                 </div>
                 <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm relative overflow-hidden group">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-bl-[100px] pointer-events-none -z-10 group-hover:scale-110 transition-transform"></div>
-                  <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">Cost of Goods Sold</p>
-                  <p className="text-2xl font-black text-slate-900 mt-2 tracking-tight">Rs. {profitData.summary.totalCost.toLocaleString()}</p>
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Cost of Goods Sold</p>
+                  <p className="text-2xl font-bold text-slate-900 mt-2 tracking-tight">Rs. {profitData.summary.totalCost.toLocaleString()}</p>
                 </div>
                 <div className="bg-white rounded-3xl border border-emerald-100 p-6 shadow-sm relative overflow-hidden group">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-bl-[100px] pointer-events-none -z-10 group-hover:scale-110 transition-transform"></div>
-                  <p className="text-[10px] font-black uppercase tracking-wider text-emerald-600 mb-1">Total Gross Profit</p>
-                  <p className="text-2xl font-black text-emerald-600 mt-2 tracking-tight">Rs. {profitData.summary.totalProfit.toLocaleString()}</p>
+                  <p className="text-xs font-bold uppercase tracking-wider text-emerald-600 mb-1">Total Gross Profit</p>
+                  <p className="text-2xl font-bold text-emerald-600 mt-2 tracking-tight">Rs. {profitData.summary.totalProfit.toLocaleString()}</p>
                 </div>
                 <div className="bg-brand-indigo/5 rounded-3xl border border-brand-indigo/10 p-6 shadow-sm relative overflow-hidden group">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-brand-indigo/10 rounded-bl-[100px] pointer-events-none -z-10 group-hover:scale-110 transition-transform"></div>
-                  <p className="text-[10px] font-black uppercase tracking-wider text-brand-indigo mb-1">Gross profit margin</p>
-                  <p className="text-2xl font-black text-brand-indigo mt-2 tracking-tight">{profitData.summary.profitMargin}%</p>
+                  <p className="text-xs font-bold uppercase tracking-wider text-brand-indigo mb-1">Gross profit margin</p>
+                  <p className="text-2xl font-bold text-brand-indigo mt-2 tracking-tight">{profitData.summary.profitMargin}%</p>
                 </div>
               </div>
             )}
@@ -837,14 +888,14 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
 
             {/* Profit breakdown list */}
             <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm overflow-hidden">
-              <h2 className="text-lg font-black text-slate-900 mb-6 flex items-center justify-between">
-                <span className="flex items-center gap-2">📖 Detailed Items Profit breakdown</span>
-                {profitLoading && <span className="text-[10px] font-black uppercase tracking-wider text-brand-indigo animate-pulse">Refreshing...</span>}
+              <h2 className="text-lg font-bold text-slate-900 mb-6 flex items-center justify-between">
+                <span className="flex items-center gap-2"> Detailed Items Profit breakdown</span>
+                {profitLoading && <span className="text-xs font-bold uppercase tracking-wider text-brand-indigo animate-pulse">Refreshing...</span>}
               </h2>
 
               <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
-                  <thead className="bg-slate-50 text-[10px] uppercase font-black tracking-wider text-slate-500 border-b border-slate-200">
+                  <thead className="bg-slate-50 text-xs uppercase font-bold tracking-wider text-slate-500 border-b border-slate-200">
                     <tr>
                       <th className="px-6 py-5">Date</th>
                       <th className="px-4 py-5">Invoice</th>
@@ -861,25 +912,25 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
                   <tbody className="divide-y divide-slate-100">
                     {profitLoading ? (
                       <tr>
-                        <td colSpan="10" className="py-20 text-center text-[11px] font-black uppercase tracking-wider text-slate-400">Loading profit records...</td>
+                        <td colSpan="10" className="py-20 text-center text-xs font-bold uppercase tracking-wider text-slate-400">Loading profit records...</td>
                       </tr>
                     ) : !profitData?.items?.length ? (
                       <tr>
-                        <td colSpan="10" className="py-20 text-center text-[11px] font-black uppercase tracking-wider text-slate-400">No profit records matched selected criteria</td>
+                        <td colSpan="10" className="py-20 text-center text-xs font-bold uppercase tracking-wider text-slate-400">No profit records matched selected criteria</td>
                       </tr>
                     ) : (
                       profitData.items.map((item, idx) => (
                         <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
                           <td className="px-6 py-4 text-xs font-bold text-slate-600">{new Date(item.date).toLocaleDateString()}</td>
-                          <td className="px-4 py-4 text-xs font-black text-brand-indigo">#{item.invoiceNumber}</td>
-                          <td className="px-4 py-4 text-xs font-black text-slate-800">{item.name}</td>
+                          <td className="px-4 py-4 text-xs font-bold text-brand-indigo">#{item.invoiceNumber}</td>
+                          <td className="px-4 py-4 text-xs font-bold text-slate-800">{item.name}</td>
                           <td className="px-4 py-4 text-xs font-bold text-slate-500">{item.category}</td>
                           <td className="px-4 py-4 text-xs font-bold text-slate-500">{item.brand}</td>
                           <td className="px-4 py-4 text-right text-xs font-bold text-slate-600">Rs. {item.costPrice.toLocaleString()}</td>
-                          <td className="px-4 py-4 text-right text-xs font-black text-slate-900">Rs. {item.sellingPrice.toLocaleString()}</td>
-                          <td className="px-4 py-4 text-center text-xs font-black text-slate-900 bg-slate-50/50">{item.quantity}</td>
-                          <td className="px-4 py-4 text-right font-black text-emerald-600 text-sm tracking-tight">Rs. {item.profit.toLocaleString()}</td>
-                          <td className="px-6 py-4 text-right font-black text-brand-indigo text-xs">
+                          <td className="px-4 py-4 text-right text-xs font-bold text-slate-900">Rs. {item.sellingPrice.toLocaleString()}</td>
+                          <td className="px-4 py-4 text-center text-xs font-bold text-slate-900 bg-slate-50/50">{item.quantity}</td>
+                          <td className="px-4 py-4 text-right font-bold text-emerald-600 text-sm tracking-tight">Rs. {item.profit.toLocaleString()}</td>
+                          <td className="px-6 py-4 text-right font-bold text-brand-indigo text-xs">
                             <span className="bg-brand-indigo/10 text-brand-indigo px-2 py-1 rounded-md">{item.margin}%</span>
                           </td>
                         </tr>
@@ -898,17 +949,17 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
             {/* Petty Cash Form */}
             <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm h-fit relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-brand-indigo/5 rounded-bl-[100px] pointer-events-none -z-10"></div>
-              <h2 className="text-lg font-black text-slate-900 mb-2 flex items-center gap-2">
+              <h2 className="text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
                 <div className="w-8 h-8 rounded-xl bg-brand-indigo/10 flex items-center justify-center text-brand-indigo">
                   <Plus size={18} strokeWidth={2.5} />
                 </div>
                 Log Petty Cash
               </h2>
-              <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-6">Record standard cash expenses or cash draws from bank accounts</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-6">Record standard cash expenses or cash draws from bank accounts</p>
 
               <form onSubmit={handlePettySubmit} className="space-y-5">
                 <div>
-                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Transaction Type</label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">Transaction Type</label>
                   <select
                     value={pettyForm.type}
                     onChange={(e) => setPettyForm({ ...pettyForm, type: e.target.value })}
@@ -920,7 +971,7 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Amount (Rs.)</label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">Amount (Rs.)</label>
                   <input
                     type="number"
                     value={pettyForm.amount}
@@ -931,7 +982,7 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Description / Purpose</label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">Description / Purpose</label>
                   <input
                     type="text"
                     value={pettyForm.description}
@@ -942,7 +993,7 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Reference / Bill No</label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">Reference / Bill No</label>
                   <input
                     type="text"
                     value={pettyForm.referenceNo}
@@ -954,7 +1005,7 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
 
                 {pettyForm.type === 'in' && (
                   <div>
-                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Source Bank Account</label>
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">Source Bank Account</label>
                     <select
                       value={pettyForm.accountId}
                       onChange={(e) => setPettyForm({ ...pettyForm, accountId: e.target.value })}
@@ -965,12 +1016,12 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
                         <option key={acc._id} value={acc._id}>{acc.name} (Type: {acc.type})</option>
                       ))}
                     </select>
-                    <p className="text-[10px] font-bold text-brand-indigo bg-brand-indigo/5 p-2 rounded-lg border border-brand-indigo/10">This will automatically transfer funds from selected ledger bank account to the Cash account.</p>
+                    <p className="text-xs font-bold text-brand-indigo bg-brand-indigo/5 p-2 rounded-lg border border-brand-indigo/10">This will automatically transfer funds from selected ledger bank account to the Cash account.</p>
                   </div>
                 )}
 
                 <div>
-                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Date</label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">Date</label>
                   <input
                     type="date"
                     value={pettyForm.date}
@@ -981,7 +1032,7 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
 
                 <button
                   type="submit"
-                  className="w-full bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-black uppercase tracking-wider py-3.5 px-4 rounded-xl transition-all shadow-lg hover:shadow-xl mt-4"
+                  className="w-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold uppercase tracking-wider py-3.5 px-4 rounded-xl transition-all shadow-lg hover:shadow-xl mt-4"
                 >
                   Log Transaction
                 </button>
@@ -991,15 +1042,15 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
             {/* Petty Cash Table */}
             <div className="bg-white rounded-3xl border border-slate-100 shadow-sm lg:col-span-2 overflow-hidden flex flex-col h-full">
               <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
-                  📖 Petty Cash Ledger Logs
+                <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                   Petty Cash Ledger Logs
                 </h2>
-                {pettyLoading && <span className="text-[10px] font-black uppercase tracking-wider text-brand-indigo animate-pulse">Refreshing...</span>}
+                {pettyLoading && <span className="text-xs font-bold uppercase tracking-wider text-brand-indigo animate-pulse">Refreshing...</span>}
               </div>
 
               <div className="overflow-x-auto flex-1 p-0">
                 <table className="w-full text-sm text-left">
-                  <thead className="bg-slate-50 text-[10px] uppercase font-black tracking-wider text-slate-500 border-b border-slate-200">
+                  <thead className="bg-slate-50 text-xs uppercase font-bold tracking-wider text-slate-500 border-b border-slate-200">
                     <tr>
                       <th className="px-6 py-5">Date</th>
                       <th className="px-4 py-5">Type</th>
@@ -1013,26 +1064,26 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
                   <tbody className="divide-y divide-slate-100">
                     {pettyLoading ? (
                       <tr>
-                        <td colSpan="7" className="py-20 text-center text-[11px] font-black uppercase tracking-wider text-slate-400">Loading petty cash logs...</td>
+                        <td colSpan="7" className="py-20 text-center text-xs font-bold uppercase tracking-wider text-slate-400">Loading petty cash logs...</td>
                       </tr>
                     ) : pettyCashLogs.length === 0 ? (
                       <tr>
-                        <td colSpan="7" className="py-20 text-center text-[11px] font-black uppercase tracking-wider text-slate-400">No petty cash records registered</td>
+                        <td colSpan="7" className="py-20 text-center text-xs font-bold uppercase tracking-wider text-slate-400">No petty cash records registered</td>
                       </tr>
                     ) : (
                       pettyCashLogs.map((log) => (
                         <tr key={log._id} className="hover:bg-slate-50/50 transition-colors">
                           <td className="px-6 py-4 text-xs font-bold text-slate-600">{new Date(log.date || log.createdAt).toLocaleDateString()}</td>
                           <td className="px-4 py-4">
-                            <span className={`px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border ${log.type === 'in' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>
+                            <span className={`px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wider border ${log.type === 'in' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>
                               {log.type === 'in' ? 'Cash In' : 'Cash Out'}
                             </span>
                           </td>
                           <td className="px-4 py-4 text-xs font-bold text-slate-500">{log.referenceNo || '-'}</td>
-                          <td className="px-4 py-4 text-xs font-black text-slate-800">{log.description}</td>
+                          <td className="px-4 py-4 text-xs font-bold text-slate-800">{log.description}</td>
                           <td className="px-4 py-4 text-xs font-bold text-slate-500">{log.accountId?.name || 'Cash Account'}</td>
                           <td className="px-4 py-4 text-xs font-bold text-slate-600">{log.loggedBy?.name || 'System'}</td>
-                          <td className={`px-6 py-4 text-right font-black tracking-tight text-sm ${log.type === 'in' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                          <td className={`px-6 py-4 text-right font-bold tracking-tight text-sm ${log.type === 'in' ? 'text-emerald-600' : 'text-rose-600'}`}>
                             {log.type === 'in' ? '+' : '-'} Rs. {log.amount.toLocaleString()}
                           </td>
                         </tr>
@@ -1051,17 +1102,17 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
             {/* Tax Payment Form */}
             <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm h-fit relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-brand-indigo/5 rounded-bl-[100px] pointer-events-none -z-10"></div>
-              <h2 className="text-lg font-black text-slate-900 mb-2 flex items-center gap-2">
+              <h2 className="text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
                 <div className="w-8 h-8 rounded-xl bg-brand-indigo/10 flex items-center justify-center text-brand-indigo">
                   <Plus size={18} strokeWidth={2.5} />
                 </div>
                 Log Tax Payment
               </h2>
-              <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-6">Record state tax payouts and periodic government settlements</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-6">Record state tax payouts and periodic government settlements</p>
 
               <form onSubmit={handleTaxSubmit} className="space-y-5">
                 <div>
-                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Tax Year</label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">Tax Year</label>
                   <input
                     type="number"
                     value={taxForm.year}
@@ -1072,7 +1123,7 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Period</label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">Period</label>
                   <select
                     value={taxForm.period}
                     onChange={(e) => setTaxForm({ ...taxForm, period: e.target.value })}
@@ -1087,7 +1138,7 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Amount paid (Rs.)</label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">Amount paid (Rs.)</label>
                   <input
                     type="number"
                     value={taxForm.amount}
@@ -1098,7 +1149,7 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Challan / Receipt Reference No</label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">Challan / Receipt Reference No</label>
                   <input
                     type="text"
                     value={taxForm.referenceNo}
@@ -1109,7 +1160,7 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Notes / Internal Comments</label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">Notes / Internal Comments</label>
                   <input
                     type="text"
                     value={taxForm.notes}
@@ -1120,7 +1171,7 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Payment Date</label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">Payment Date</label>
                   <input
                     type="date"
                     value={taxForm.paymentDate}
@@ -1131,7 +1182,7 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
 
                 <button
                   type="submit"
-                  className="w-full bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-black uppercase tracking-wider py-3.5 px-4 rounded-xl transition-all shadow-lg hover:shadow-xl mt-4"
+                  className="w-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold uppercase tracking-wider py-3.5 px-4 rounded-xl transition-all shadow-lg hover:shadow-xl mt-4"
                 >
                   Save Tax Record
                 </button>
@@ -1141,15 +1192,15 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
             {/* Tax Payments Table */}
             <div className="bg-white rounded-3xl border border-slate-100 shadow-sm lg:col-span-2 overflow-hidden flex flex-col h-full">
               <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
-                  📖 Income Tax Payments Ledger
+                <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                   Income Tax Payments Ledger
                 </h2>
-                {taxLoading && <span className="text-[10px] font-black uppercase tracking-wider text-brand-indigo animate-pulse">Refreshing...</span>}
+                {taxLoading && <span className="text-xs font-bold uppercase tracking-wider text-brand-indigo animate-pulse">Refreshing...</span>}
               </div>
 
               <div className="overflow-x-auto flex-1 p-0">
                 <table className="w-full text-sm text-left">
-                  <thead className="bg-slate-50 text-[10px] uppercase font-black tracking-wider text-slate-500 border-b border-slate-200">
+                  <thead className="bg-slate-50 text-xs uppercase font-bold tracking-wider text-slate-500 border-b border-slate-200">
                     <tr>
                       <th className="px-6 py-5">Payment Date</th>
                       <th className="px-4 py-5">Year</th>
@@ -1163,26 +1214,26 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
                   <tbody className="divide-y divide-slate-100">
                     {taxLoading ? (
                       <tr>
-                        <td colSpan="7" className="py-20 text-center text-[11px] font-black uppercase tracking-wider text-slate-400">Loading tax payments...</td>
+                        <td colSpan="7" className="py-20 text-center text-xs font-bold uppercase tracking-wider text-slate-400">Loading tax payments...</td>
                       </tr>
                     ) : taxPayments.length === 0 ? (
                       <tr>
-                        <td colSpan="7" className="py-20 text-center text-[11px] font-black uppercase tracking-wider text-slate-400">No corporate tax records filed</td>
+                        <td colSpan="7" className="py-20 text-center text-xs font-bold uppercase tracking-wider text-slate-400">No corporate tax records filed</td>
                       </tr>
                     ) : (
                       taxPayments.map((tp) => (
                         <tr key={tp._id} className="hover:bg-slate-50/50 transition-colors">
                           <td className="px-6 py-4 text-xs font-bold text-slate-600">{new Date(tp.paymentDate).toLocaleDateString()}</td>
-                          <td className="px-4 py-4 text-xs font-black text-slate-900">{tp.year}</td>
+                          <td className="px-4 py-4 text-xs font-bold text-slate-900">{tp.year}</td>
                           <td className="px-4 py-4">
-                            <span className="bg-brand-indigo/10 text-brand-indigo border border-brand-indigo/20 px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider">
+                            <span className="bg-brand-indigo/10 text-brand-indigo border border-brand-indigo/20 px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wider">
                               {tp.period}
                             </span>
                           </td>
                           <td className="px-4 py-4 text-xs font-bold text-slate-500">{tp.referenceNo || '-'}</td>
                           <td className="px-4 py-4 text-xs font-bold text-slate-600">{tp.createdBy?.name || 'System'}</td>
                           <td className="px-4 py-4 text-xs text-slate-500 truncate max-w-[150px]">{tp.notes || '-'}</td>
-                          <td className="px-6 py-4 text-right font-black text-rose-600 text-sm tracking-tight">
+                          <td className="px-6 py-4 text-right font-bold text-rose-600 text-sm tracking-tight">
                             Rs. {tp.amount.toLocaleString()}
                           </td>
                         </tr>
@@ -1203,9 +1254,9 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
             {/* Header & Date Picker */}
             <div className="border-b border-slate-100 pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
               <div>
-                <h2 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
                   <div className="w-8 h-8 rounded-xl bg-brand-fuchsia/10 flex items-center justify-center text-brand-fuchsia">
-                    <span className="text-lg">📋</span>
+                    <span className="text-lg"></span>
                   </div>
                   BALANCE REPORT
                 </h2>
@@ -1215,7 +1266,7 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
               {/* Date Filter, Search & PDF Export */}
               <div className="flex items-center gap-3 flex-wrap">
                 <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-2xl border border-slate-200/80 shadow-sm">
-                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider pl-2">DATE</span>
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-2">DATE</span>
                   <input
                     type="date"
                     value={balanceDate}
@@ -1255,7 +1306,7 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
                     ];
                     exportToPDF(rows, cols, `Balance Report - ${balanceDate}`);
                   }}
-                  className="bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-black uppercase tracking-wider px-4 py-3 rounded-xl transition-all flex items-center gap-2 shadow-sm"
+                  className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold uppercase tracking-wider px-4 py-3 rounded-xl transition-all flex items-center gap-2 shadow-sm"
                 >
                   <FileText size={14} strokeWidth={2.5} /> Export PDF
                 </button>
@@ -1272,24 +1323,24 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
                 <div className="space-y-4">
                   {/* MOBILE INCOME */}
                   <div className="bg-slate-50/80 p-4.5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all">
-                    <div className="text-[10px] font-black uppercase text-slate-500 tracking-wider mb-1.5">MOBILE INCOME</div>
-                    <div className="text-lg font-black text-emerald-600">
+                    <div className="text-xs font-bold uppercase text-slate-500 tracking-wider mb-1.5">MOBILE INCOME</div>
+                    <div className="text-lg font-bold text-emerald-600">
                       Rs. {Number(balanceData?.mobileIncome || 0).toFixed(2)}
                     </div>
                   </div>
 
                   {/* ACCESSORIES INCOME */}
                   <div className="bg-slate-50/80 p-4.5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all">
-                    <div className="text-[10px] font-black uppercase text-slate-500 tracking-wider mb-1.5">ACCESSORIES INCOME</div>
-                    <div className="text-lg font-black text-emerald-600">
+                    <div className="text-xs font-bold uppercase text-slate-500 tracking-wider mb-1.5">ACCESSORIES INCOME</div>
+                    <div className="text-lg font-bold text-emerald-600">
                       Rs. {Number(balanceData?.accessoriesIncome || 0).toFixed(2)}
                     </div>
                   </div>
 
                   {/* WHOLESALE | ADVANCE INCOME */}
                   <div className="bg-slate-50/80 p-4.5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all">
-                    <div className="text-[10px] font-black uppercase text-slate-500 tracking-wider mb-1.5">WHOLESALE | ADVANCE INCOME</div>
-                    <div className="text-lg font-black text-emerald-600 flex items-center gap-4 flex-wrap">
+                    <div className="text-xs font-bold uppercase text-slate-500 tracking-wider mb-1.5">WHOLESALE | ADVANCE INCOME</div>
+                    <div className="text-lg font-bold text-emerald-600 flex items-center gap-4 flex-wrap">
                       <span>Rs. {Number(balanceData?.wholesaleIncome || 0).toFixed(2)}</span>
                       <span className="text-slate-300">|</span>
                       <span>Rs. {Number(balanceData?.advanceIncome || 0).toFixed(2)}</span>
@@ -1298,8 +1349,8 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
 
                   {/* REPAIRING INCOME (Normal | Company) */}
                   <div className="bg-slate-50/80 p-4.5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all">
-                    <div className="text-[10px] font-black uppercase text-slate-500 tracking-wider mb-1.5">REPAIRING INCOME (Normal | Company)</div>
-                    <div className="text-lg font-black text-emerald-600 flex items-center gap-4 flex-wrap">
+                    <div className="text-xs font-bold uppercase text-slate-500 tracking-wider mb-1.5">REPAIRING INCOME (Normal | Company)</div>
+                    <div className="text-lg font-bold text-emerald-600 flex items-center gap-4 flex-wrap">
                       <span>Rs. {Number(balanceData?.repairingIncomeNormal || 0).toFixed(2)}</span>
                       <span className="text-slate-300">|</span>
                       <span>Rs. {Number(balanceData?.repairingIncomeCompany || 0).toFixed(2)}</span>
@@ -1308,8 +1359,8 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
 
                   {/* PHONE CARD | SIM CARD INCOME */}
                   <div className="bg-slate-50/80 p-4.5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all">
-                    <div className="text-[10px] font-black uppercase text-slate-500 tracking-wider mb-1.5">PHONE CARD | SIM CARD INCOME</div>
-                    <div className="text-lg font-black text-emerald-600 flex items-center gap-4 flex-wrap">
+                    <div className="text-xs font-bold uppercase text-slate-500 tracking-wider mb-1.5">PHONE CARD | SIM CARD INCOME</div>
+                    <div className="text-lg font-bold text-emerald-600 flex items-center gap-4 flex-wrap">
                       <span>Rs. {Number(balanceData?.simCardIncome || 0).toFixed(2)}</span>
                       <span className="text-slate-300">|</span>
                       <span>Rs. 00.00</span>
@@ -1321,48 +1372,48 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
                 <div className="space-y-4">
                   {/* RELOAD INCOME */}
                   <div className="bg-slate-50/80 p-4.5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all">
-                    <div className="text-[10px] font-black uppercase text-slate-500 tracking-wider mb-1.5">RELOAD INCOME</div>
-                    <div className="text-lg font-black text-emerald-600">
+                    <div className="text-xs font-bold uppercase text-slate-500 tracking-wider mb-1.5">RELOAD INCOME</div>
+                    <div className="text-lg font-bold text-emerald-600">
                       Rs. {Number(balanceData?.reloadIncome || 0).toFixed(2)}
                     </div>
                   </div>
 
                   {/* SERVICE COST */}
                   <div className="bg-slate-50/80 p-4.5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all">
-                    <div className="text-[10px] font-black uppercase text-slate-500 tracking-wider mb-1.5">SERVICE COST</div>
-                    <div className="text-lg font-black text-rose-600">
+                    <div className="text-xs font-bold uppercase text-slate-500 tracking-wider mb-1.5">SERVICE COST</div>
+                    <div className="text-lg font-bold text-rose-600">
                       Rs. {Number(balanceData?.serviceCost || 0).toFixed(2)}
                     </div>
                   </div>
 
                   {/* SUPPLIER COST */}
                   <div className="bg-slate-50/80 p-4.5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all">
-                    <div className="text-[10px] font-black uppercase text-slate-500 tracking-wider mb-1.5">SUPPLIER COST</div>
-                    <div className="text-lg font-black text-rose-600">
+                    <div className="text-xs font-bold uppercase text-slate-500 tracking-wider mb-1.5">SUPPLIER COST</div>
+                    <div className="text-lg font-bold text-rose-600">
                       Rs. {Number(balanceData?.supplierCost || 0).toFixed(2)}
                     </div>
                   </div>
 
                   {/* TOTAL INCOME */}
                   <div className="bg-emerald-50/60 p-4.5 rounded-2xl border border-emerald-200/80 shadow-sm">
-                    <div className="text-[10px] font-black uppercase text-emerald-700 tracking-wider mb-1.5">TOTAL INCOME</div>
-                    <div className="text-xl font-black text-emerald-700">
+                    <div className="text-xs font-bold uppercase text-emerald-700 tracking-wider mb-1.5">TOTAL INCOME</div>
+                    <div className="text-xl font-bold text-emerald-700">
                       Rs. {Number(balanceData?.totalIncome || 0).toFixed(2)}
                     </div>
                   </div>
 
                   {/* TOTAL COST */}
                   <div className="bg-rose-50/60 p-4.5 rounded-2xl border border-rose-200/80 shadow-sm">
-                    <div className="text-[10px] font-black uppercase text-rose-700 tracking-wider mb-1.5">TOTAL COST</div>
-                    <div className="text-xl font-black text-rose-700">
+                    <div className="text-xs font-bold uppercase text-rose-700 tracking-wider mb-1.5">TOTAL COST</div>
+                    <div className="text-xl font-bold text-rose-700">
                       Rs. {Number(balanceData?.totalCost || 0).toFixed(2)}
                     </div>
                   </div>
 
                   {/* BALANCE AMOUNT */}
                   <div className="bg-brand-indigo/5 p-5 rounded-2xl border-2 border-brand-indigo/30 shadow-sm">
-                    <div className="text-[10px] font-black uppercase text-brand-indigo tracking-wider mb-1.5">BALANCE AMOUNT</div>
-                    <div className="text-2xl font-black text-brand-indigo">
+                    <div className="text-xs font-bold uppercase text-brand-indigo tracking-wider mb-1.5">BALANCE AMOUNT</div>
+                    <div className="text-2xl font-bold text-brand-indigo">
                       Rs. {Number(balanceData?.balanceAmount || 0).toFixed(2)}
                     </div>
                   </div>

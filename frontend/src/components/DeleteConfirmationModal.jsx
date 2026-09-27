@@ -56,8 +56,8 @@ const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm, itemName = 'this 
             <AlertTriangle size={20} />
           </div>
           <div className="flex-1">
-            <h3 className="font-extrabold text-slate-900 text-base">Security Verification</h3>
-            <p className="text-[11px] text-rose-700 font-medium mt-0.5">Confirm action to delete {itemName}</p>
+            <h3 className="font-bold text-slate-900 text-base">Security Verification</h3>
+            <p className="text-xs text-rose-700 font-medium mt-0.5">Confirm action to delete {itemName}</p>
           </div>
           <button 
             type="button" 
@@ -75,7 +75,7 @@ const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm, itemName = 'this 
           </div>
 
           <div className="relative">
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
               Enter Login Password
             </label>
             <div className="relative">
@@ -99,7 +99,7 @@ const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm, itemName = 'this 
             </div>
             {errorMsg && (
               <p className="text-xs font-semibold text-rose-600 mt-2 flex items-center gap-1.5 animate-pulse">
-                <span>⚠️</span> {errorMsg}
+                <AlertTriangle size={14} className="flex-shrink-0" /> {errorMsg}
               </p>
             )}
           </div>

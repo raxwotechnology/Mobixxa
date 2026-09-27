@@ -19,18 +19,25 @@ const API = axios.create({
   },
 });
 
-// Cookies carry authentication; retain the interceptor for malformed-storage cleanup.
+// Attach Bearer token from localStorage to support cross-origin and cookie-fallback environments
 API.interceptors.request.use((config) => {
   if (typeof window === 'undefined') return config;
   try {
     const userInfo = localStorage.getItem('userInfo');
+    let token = localStorage.getItem('token');
     if (userInfo) {
-      JSON.parse(userInfo);
+      const parsed = JSON.parse(userInfo);
+      if (parsed?.token) {
+        token = parsed.token;
+      }
+    }
+    if (token && !config.headers.Authorization) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
   } catch (e) {
-    // Invalid persisted data is cleared so cookie authentication can continue.
     console.warn('Corrupted auth data in localStorage, clearing...');
     localStorage.removeItem('userInfo');
+    localStorage.removeItem('token');
   }
   return config;
 });
@@ -51,6 +58,7 @@ API.interceptors.response.use(
       // Do NOT force logout or redirect if the 401 is simply an invalid password/PIN attempt
       if (!isAuthCheck && path !== '/login' && path !== '/cashier-login' && path !== '/register' && path !== '/pos') {
         localStorage.removeItem('userInfo');
+        localStorage.removeItem('token');
         sessionStorage.clear();
         window.location.href = '/login';
       }

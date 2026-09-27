@@ -101,7 +101,7 @@ export default function SearchDrawer() {
 
       {/* 2. Floating Drawer Sheet Card */}
       <div
-        className={`fixed top-3 bottom-3 right-3 w-full max-w-[440px] bg-white/95 backdrop-blur-xl rounded-[36px] shadow-2xl border border-blue-100/80 z-50 flex flex-col p-6 sm:p-8 overflow-hidden transition-all duration-300 ease-out ${
+        className={`fixed inset-y-0 right-0 sm:top-3 sm:bottom-3 sm:right-3 w-full sm:max-w-[440px] bg-white/95 backdrop-blur-xl sm:rounded-[36px] shadow-2xl border border-blue-100/80 z-50 flex flex-col p-4 sm:p-8 overflow-hidden transition-all duration-300 ease-out ${
           isSearchOpen
             ? "translate-x-0 pointer-events-auto"
             : "translate-x-[110%] pointer-events-none"
@@ -193,7 +193,7 @@ export default function SearchDrawer() {
                   {/* Thumbnail / Swatch Chip */}
                   <div className="w-12 h-12 rounded-xl border border-slate-200 bg-white flex items-center justify-center p-1 flex-shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
                     <div
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-[9px] font-black shadow-inner"
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold shadow-inner"
                       style={{
                         backgroundColor: product.swatches?.[0]?.color || "#0f172a",
                       }}
@@ -207,7 +207,7 @@ export default function SearchDrawer() {
                     <h4 className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate">
                       {product.title || product.name}
                     </h4>
-                    <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider block">
+                    <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block">
                       {product.category}
                     </span>
                     <span className="text-xs font-bold text-slate-900 mt-0.5 block">

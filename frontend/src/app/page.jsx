@@ -48,7 +48,7 @@ export default function HomePage() {
               <p className="text-blue-100 text-sm sm:text-base font-semibold tracking-wider uppercase">
                 Welcome to
               </p>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.1] text-white">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] text-white">
                 Mobixa <br />
                 <span className="text-white/95">Premium Tech &amp;</span> <br />
                 <span className="text-blue-200">SmartDevices.</span>
@@ -66,14 +66,14 @@ export default function HomePage() {
             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
               <Link
                 href="/shop"
-                className="bg-[#0a0f1d] hover:bg-black text-white px-7 py-3.5 rounded-full text-sm font-semibold inline-flex items-center gap-2 shadow-lg shadow-black/25 hover:scale-[1.02] active:scale-100 transition-all duration-200"
+                className="bg-white hover:bg-slate-50 text-blue-700 hover:text-blue-800 font-bold px-8 py-3.5 rounded-full text-sm inline-flex items-center gap-2.5 shadow-xl shadow-blue-950/20 hover:shadow-2xl hover:scale-[1.02] active:scale-100 transition-all duration-200"
               >
                 <span>Shop Now</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 text-blue-700" />
               </Link>
               <Link
                 href="/deals"
-                className="bg-white/20 hover:bg-white/30 backdrop-blur-md text-white px-7 py-3.5 rounded-full text-sm font-semibold border border-white/30 hover:border-white/50 transition-all duration-200"
+                className="bg-white/15 hover:bg-white/25 backdrop-blur-md text-white px-7 py-3.5 rounded-full text-sm font-semibold border border-white/30 hover:border-white/50 transition-all duration-200"
               >
                 Tech Deals
               </Link>
@@ -92,20 +92,26 @@ export default function HomePage() {
       {/* ========================================================================= */}
       <section className="mx-4 md:mx-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {featureBadges.map((badge) => {
+          {featureBadges.map((badge, idx) => {
             const IconComponent = iconMap[badge.icon] || ShieldCheck;
+            const badgeTheme = [
+              { bg: 'bg-blue-50/90', border: 'border-blue-100', text: 'text-blue-600', hoverBg: 'group-hover:bg-blue-600' },
+              { bg: 'bg-amber-50/90', border: 'border-amber-100', text: 'text-amber-600', hoverBg: 'group-hover:bg-amber-600' },
+              { bg: 'bg-emerald-50/90', border: 'border-emerald-100', text: 'text-emerald-600', hoverBg: 'group-hover:bg-emerald-600' },
+              { bg: 'bg-indigo-50/90', border: 'border-indigo-100', text: 'text-indigo-600', hoverBg: 'group-hover:bg-indigo-600' },
+            ][idx % 4];
             return (
               <div
                 key={badge.id}
-                className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-4 group"
+                className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:shadow-md transition-all duration-200 flex items-center gap-4 group hover:border-slate-300"
               >
-                {/* Icon inside dark blue circle */}
-                <div className="w-12 h-12 rounded-full bg-[#0a0f1d] flex items-center justify-center text-white flex-shrink-0 group-hover:bg-blue-600 transition-colors duration-200 shadow-md shadow-slate-900/10">
-                  <IconComponent className="w-5 h-5 text-blue-400 group-hover:text-white transition-colors" />
+                {/* Refined clean light icon badge */}
+                <div className={`w-12 h-12 rounded-2xl ${badgeTheme.bg} border ${badgeTheme.border} flex items-center justify-center ${badgeTheme.text} flex-shrink-0 ${badgeTheme.hoverBg} group-hover:text-white transition-all duration-200 shadow-xs`}>
+                  <IconComponent className="w-5 h-5 transition-colors" />
                 </div>
                 {/* Text info */}
                 <div className="flex flex-col">
-                  <h3 className="text-sm font-bold text-slate-900 leading-tight">
+                  <h3 className="text-sm font-bold text-slate-800 leading-tight">
                     {badge.title}
                   </h3>
                   <p className="text-xs text-slate-500 mt-1 leading-snug">
@@ -132,7 +138,7 @@ export default function HomePage() {
         <div className="space-y-8">
           {/* Header */}
           <div className="text-center space-y-2 max-w-xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
               What Our Customers Say
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 font-medium">
@@ -180,7 +186,7 @@ export default function HomePage() {
                     <span className="text-xs font-bold text-slate-900">
                       {item.name}
                     </span>
-                    <span className="text-[10px] text-emerald-600 font-medium flex items-center gap-1">
+                    <span className="text-xs text-emerald-600 font-medium flex items-center gap-1">
                       <CheckCircle2 className="w-3 h-3" />
                       Verified Buyer
                     </span>

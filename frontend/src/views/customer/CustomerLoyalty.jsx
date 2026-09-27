@@ -42,7 +42,7 @@ const CustomerLoyalty = () => {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-dark-navy mb-2">🎁 Loyalty & Rewards</h1>
+      <h1 className="text-2xl font-bold text-dark-navy mb-2"> Loyalty & Rewards</h1>
       <p className="text-muted-text text-sm mb-8">Earn points on every purchase and redeem for discounts</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
@@ -70,7 +70,7 @@ const CustomerLoyalty = () => {
       {tab === 'overview' && (
         <div className="grid lg:grid-cols-2 gap-6">
           <div className="bg-white rounded-2xl border border-card-border p-6 shadow-sm">
-            <h2 className="font-semibold text-dark-navy mb-4">💰 Redeem Points</h2>
+            <h2 className="font-semibold text-dark-navy mb-4"> Redeem Points</h2>
             <p className="text-sm text-muted-text mb-4">1 point = Rs. 1 discount. Minimum 10 points.</p>
             <div className="flex gap-3">
               <input type="number" value={redeemAmount} onChange={(e) => setRedeemAmount(e.target.value)} placeholder="Enter points" className="flex-1 border border-card-border rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" />
@@ -78,12 +78,12 @@ const CustomerLoyalty = () => {
             </div>
           </div>
           <div className="bg-white rounded-2xl border border-card-border p-6 shadow-sm">
-            <h2 className="font-semibold text-dark-navy mb-4">📋 How It Works</h2>
+            <h2 className="font-semibold text-dark-navy mb-4"> How It Works</h2>
             <div className="space-y-3 text-sm text-muted-text">
-              <p>✅ Earn <strong>1 point per Rs. 100</strong> spent</p>
-              <p>✅ Redeem points for instant discounts</p>
-              <p>✅ Use voucher codes for extra savings</p>
-              <p>✅ Points <strong>never expire</strong>!</p>
+              <p> Earn <strong>1 point per Rs. 100</strong> spent</p>
+              <p> Redeem points for instant discounts</p>
+              <p> Use voucher codes for extra savings</p>
+              <p> Points <strong>never expire</strong>!</p>
             </div>
           </div>
         </div>

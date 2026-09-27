@@ -184,11 +184,11 @@ const StoreProducts = () => {
       <div>
         <div className="flex gap-2 mb-6 flex-wrap">
           {[
-            { id: 'products', label: '📦 Products' },
-            { id: 'suppliers', label: '🏭 Suppliers' },
-            { id: 'receiving', label: '📋 Stock Receiving (GRN)' },
-            { id: 'supplierReturns', label: '🔄 Supplier Returns' },
-            { id: 'import', label: '📥 Import from Excel' },
+            { id: 'products', label: 'Products' },
+            { id: 'suppliers', label: 'Suppliers' },
+            { id: 'receiving', label: 'Stock Receiving (GRN)' },
+            { id: 'supplierReturns', label: 'Supplier Returns' },
+            { id: 'import', label: 'Import from Excel' },
           ].map((t) => (
             <button
               key={t.id}
@@ -236,10 +236,10 @@ const StoreProducts = () => {
                   </div>
                   <h1 className="text-2xl font-semibold text-slate-900 m-0">Products Catalog</h1>
                 </div>
-                <p className="text-[10px] font-normal uppercase tracking-wider text-slate-500 mt-2 m-0">{products.length} products in your store</p>
+                <p className="text-xs font-normal uppercase tracking-wider text-slate-500 mt-2 m-0">{products.length} products in your store</p>
               </div>
               <div className="flex flex-wrap gap-2.5">
-                <button onClick={openCreate} className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
+                <button onClick={openCreate} className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
                   <Plus size={14} /> Add Product
                 </button>
               </div>
@@ -249,7 +249,7 @@ const StoreProducts = () => {
             {products.filter(p => p.stock <= 10).length > 0 && (
               <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6">
                 <h3 className="font-semibold text-amber-800 text-sm mb-2 flex items-center gap-2">
-                  ⚠️ Low Stock Alerts ({products.filter(p => p.stock <= 10).length} items)
+                   Low Stock Alerts ({products.filter(p => p.stock <= 10).length} items)
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {products.filter(p => p.stock <= 10).map(p => (
@@ -258,7 +258,7 @@ const StoreProducts = () => {
                           p.stock <= 5 ? 'bg-orange-100 border-orange-200 text-orange-700 hover:bg-orange-200' :
                             'bg-amber-100 border-amber-200 text-amber-700 hover:bg-amber-200'
                         }`}>
-                      {p.stock === 0 ? '🔴' : p.stock <= 5 ? '🟠' : '🟡'} {p.name} — {p.stock} left
+                      {p.stock === 0 ? '' : p.stock <= 5 ? '' : ''} {p.name} — {p.stock} left
                     </button>
                   ))}
                 </div>
@@ -350,10 +350,10 @@ const StoreProducts = () => {
                         </td>
                         <td className="px-6 py-3.5">
                           <div className="flex flex-wrap gap-1.5">
-                            <span className={`text-[10px] font-semibold px-2 py-1 rounded-full ${product.allowKokoOnline !== false ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                            <span className={`text-xs font-semibold px-2 py-1 rounded-full ${product.allowKokoOnline !== false ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
                               Online {product.allowKokoOnline !== false ? 'ON' : 'OFF'}
                             </span>
-                            <span className={`text-[10px] font-semibold px-2 py-1 rounded-full ${product.allowKokoPos !== false ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                            <span className={`text-xs font-semibold px-2 py-1 rounded-full ${product.allowKokoPos !== false ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
                               POS {product.allowKokoPos !== false ? 'ON' : 'OFF'}
                             </span>
                           </div>
@@ -411,7 +411,7 @@ const StoreProducts = () => {
                         <datalist id="store-category-suggestions">
                           {categories.map((c) => <option key={c._id} value={c.name} />)}
                         </datalist>
-                        <p className="text-[10px] text-muted-text mt-1">If the category doesn't exist, it will be created automatically.</p>
+                        <p className="text-xs text-muted-text mt-1">If the category doesn't exist, it will be created automatically.</p>
                       </div>
 
                       <div>
@@ -462,7 +462,7 @@ const StoreProducts = () => {
                       <div className="sm:col-span-2">
                         <label className="block text-sm font-medium text-dark-navy mb-1">Image URLs <span className="text-muted-text font-normal">(comma separated)</span></label>
                         <input value={form.images || ''} onChange={(e) => setForm({ ...form, images: e.target.value })} className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" placeholder="https://example.com/image.jpg" />
-                        <p className="text-[10px] text-muted-text mt-1">Product Image URL (External Link). This will be the primary display image if provided.</p>
+                        <p className="text-xs text-muted-text mt-1">Product Image URL (External Link). This will be the primary display image if provided.</p>
                       </div>
                       <div className="sm:col-span-2 space-y-3">
                         <label className="block text-sm font-medium text-dark-navy mb-1 flex items-center gap-2">

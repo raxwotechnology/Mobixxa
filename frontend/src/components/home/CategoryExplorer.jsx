@@ -195,7 +195,7 @@ export default function CategoryExplorer() {
           {/* Header Row */}
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-slate-100">
             <div className="space-y-1">
-              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
                 Explore Categories
               </h2>
               <p className="text-xs sm:text-sm text-slate-500">
@@ -231,7 +231,7 @@ export default function CategoryExplorer() {
                 >
                   {category.badge && (
                     <span
-                      className={`absolute top-2 right-2 text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider ${badgeClasses(
+                      className={`absolute top-2 right-2 text-xs font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider ${badgeClasses(
                         category.badge
                       )}`}
                     >
@@ -256,7 +256,7 @@ export default function CategoryExplorer() {
                   >
                     {category.name}
                   </h3>
-                  <span className="text-[11px] text-slate-500 mt-1">
+                  <span className="text-xs text-slate-500 mt-1">
                     {count === undefined ? "…" : `${count} Product${count === 1 ? "" : "s"}`}
                   </span>
                 </button>
@@ -273,7 +273,7 @@ export default function CategoryExplorer() {
         <div className="bg-white rounded-[32px] p-6 sm:p-8 lg:p-10 border border-slate-200/80 shadow-sm space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-slate-100">
             <div className="space-y-1">
-              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
                 {headingTitle}
               </h2>
               <p className="text-xs sm:text-sm text-slate-500">

@@ -210,7 +210,7 @@ const StockReceivingPanel = ({ storeId, products }) => {
     }, 0);
 
     const html = `<!DOCTYPE html><html><head><title>GRN Voucher - ${receipt.grnNumber || ''}</title>
-    <style>body{font-family:'Segoe UI',sans-serif;padding:30px;max-width:800px;margin:0 auto}
+    <style>body{font-family:'Poppins',sans-serif;padding:30px;max-width:800px;margin:0 auto}
     .header{text-align:center;border-bottom:3px solid #d946a0;padding-bottom:15px;margin-bottom:20px}
     .header h1{margin:5px 0;color:#1f1f1f;font-size:22px}
     .header p{margin:2px 0;color:#666;font-size:13px}
@@ -259,7 +259,7 @@ const StockReceivingPanel = ({ storeId, products }) => {
 
   return (
     <div>
-      <h2 className="text-xl font-bold text-dark-navy mb-4">📦 GRN / Stock Receiving</h2>
+      <h2 className="text-xl font-bold text-dark-navy mb-4"> GRN / Stock Receiving</h2>
 
       {/* GRN Search Bar */}
       <div className="bg-white rounded-2xl border border-card-border p-4 shadow-sm mb-6">
@@ -366,7 +366,7 @@ const StockReceivingPanel = ({ storeId, products }) => {
                 </table>
               </div>
               <p className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2 mt-2">
-                💡 Adjust <strong>Print Qty</strong> to print a voucher with different quantities (e.g. partial delivery). The printed voucher will use these quantities.
+                 Adjust <strong>Print Qty</strong> to print a voucher with different quantities (e.g. partial delivery). The printed voucher will use these quantities.
               </p>
             </div>
           </div>
@@ -379,13 +379,13 @@ const StockReceivingPanel = ({ storeId, products }) => {
           onClick={() => { setActiveTab('entry'); setPrefillReturn(null); }}
           className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'entry' ? 'bg-primary-blue text-white shadow-md' : 'bg-white text-muted-text border border-card-border hover:bg-gray-50'}`}
         >
-          📋 New GRN Entry
+           New GRN Entry
         </button>
         {prefillReturn && (
           <button 
             className="px-4 py-2 rounded-xl text-sm font-bold bg-red-600 text-white shadow-md flex items-center gap-2"
           >
-            ↩️ Process Return for {prefillReturn.grnNumber}
+            ↩ Process Return for {prefillReturn.grnNumber}
           </button>
         )}
       </div>
@@ -436,7 +436,7 @@ const StockReceivingPanel = ({ storeId, products }) => {
             )}
             <div className={user?.role === 'admin' ? 'md:col-span-1' : 'md:col-span-2'}>
               <label className="block text-sm font-medium text-dark-navy mb-1">
-                Supplier * {loading && <span className="text-[10px] animate-pulse text-primary-blue ml-2">Loading...</span>}
+                Supplier * {loading && <span className="text-xs animate-pulse text-primary-blue ml-2">Loading...</span>}
               </label>
               <select value={supplierId} onChange={(e) => setSupplierId(e.target.value)} className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm bg-white focus:ring-2 focus:ring-primary-blue/20 outline-none">
                 <option value="">Select supplier</option>
@@ -468,13 +468,13 @@ const StockReceivingPanel = ({ storeId, products }) => {
                       <span className="flex items-center gap-2 font-bold text-primary-blue">
                         <Sparkles size={13} /> {nextGrn}
                       </span>
-                      <span className="text-[10px] bg-indigo-100 text-primary-blue font-bold px-2 py-0.5 rounded-full">Auto-Generate</span>
+                      <span className="text-xs bg-indigo-100 text-primary-blue font-bold px-2 py-0.5 rounded-full">Auto-Generate</span>
                     </button>
                   )}
                   {/* Past GRN suggestions */}
                   {grnSuggestions.length > 0 && (
                     <>
-                      <div className="px-3 py-1 text-[10px] font-bold text-muted-text uppercase tracking-wide bg-gray-50">Past GRN Numbers</div>
+                      <div className="px-3 py-1 text-xs font-bold text-muted-text uppercase tracking-wide bg-gray-50">Past GRN Numbers</div>
                       {grnSuggestions.map((s, i) => (
                         <button
                           key={i}
@@ -499,7 +499,7 @@ const StockReceivingPanel = ({ storeId, products }) => {
               <button
                 type="button"
                 onClick={() => setInvoiceNo(nextGrn)}
-                className="mt-1.5 flex items-center gap-1.5 text-[11px] font-semibold text-primary-blue hover:text-indigo-700 transition-colors"
+                className="mt-1.5 flex items-center gap-1.5 text-xs font-semibold text-primary-blue hover:text-indigo-700 transition-colors"
               >
                 <Sparkles size={11} /> Auto-use: <span className="font-mono">{nextGrn}</span>
               </button>
@@ -557,7 +557,7 @@ const StockReceivingPanel = ({ storeId, products }) => {
                 <div key={idx} className={`grid grid-cols-1 sm:grid-cols-12 gap-3 items-end p-3 rounded-xl ${hasPriceConflict ? 'bg-amber-50 border border-amber-200' : 'bg-transparent'}`}>
                   {hasPriceConflict && (
                     <div className="sm:col-span-12 text-xs font-semibold text-amber-700 flex items-center gap-1">
-                      ⚠️ Same product with different price — this will create a separate price row in stock
+                       Same product with different price — this will create a separate price row in stock
                     </div>
                   )}
                   <div className="sm:col-span-5">

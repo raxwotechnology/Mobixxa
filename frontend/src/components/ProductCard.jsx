@@ -80,12 +80,12 @@ const ProductCard = ({ product }) => {
           
           <div className="absolute top-2 left-2 sm:top-3 sm:left-3 flex flex-col gap-1.5 sm:gap-2 z-10">
             {product.discount > 0 && (
-              <span className="bg-rose-500 text-white text-[9px] sm:text-[10px] uppercase font-bold px-2.5 py-1 rounded-full shadow-xs tracking-wide">
+              <span className="bg-rose-500 text-white text-xs sm:text-xs uppercase font-bold px-2.5 py-1 rounded-full shadow-xs tracking-wide">
                 -{product.discount}% OFF
               </span>
             )}
             {product.isFeatured && (
-              <span className="bg-brand-indigo text-white text-[9px] sm:text-[10px] uppercase font-bold px-2.5 py-1 rounded-full shadow-xs tracking-wide">
+              <span className="bg-brand-indigo text-white text-xs sm:text-xs uppercase font-bold px-2.5 py-1 rounded-full shadow-xs tracking-wide">
                 Featured
               </span>
             )}
@@ -102,10 +102,10 @@ const ProductCard = ({ product }) => {
         
         <div className="p-3 sm:p-5 flex flex-col flex-1">
           <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-            <p className="text-[10px] sm:text-xs font-semibold text-brand-indigo m-0 uppercase tracking-wider">{product.categoryId?.name || 'Device'}</p>
+            <p className="text-xs sm:text-xs font-semibold text-brand-indigo m-0 uppercase tracking-wider">{product.categoryId?.name || 'Device'}</p>
             <div className="flex items-center gap-1 bg-amber-50 border border-amber-200/60 px-2 py-0.5 rounded-full">
               <Star size={11} className="fill-amber-400 text-amber-400" />
-              <span className="text-[10px] sm:text-[11px] font-bold text-amber-700">{product.averageRating || '4.8'}</span>
+              <span className="text-xs sm:text-xs font-bold text-amber-700">{product.averageRating || '4.8'}</span>
             </div>
           </div>
           
@@ -113,34 +113,34 @@ const ProductCard = ({ product }) => {
             {product.name}
           </h3>
           
-          <p className="text-[11px] sm:text-xs text-slate-500 mb-3 sm:mb-4 line-clamp-2 hidden sm:block font-normal">
+          <p className="text-xs sm:text-xs text-slate-500 mb-3 sm:mb-4 line-clamp-2 hidden sm:block font-normal">
             {product.description || 'Premium high-performance device with latest technology features.'}
           </p>
 
           {/* Quick Specs */}
           <div className="hidden sm:flex items-center gap-2 sm:gap-3 mb-2.5">
-            <div className="flex items-center gap-1 bg-slate-50 text-slate-600 text-[10px] font-medium px-2.5 py-1 rounded-lg border border-slate-200/60">
+            <div className="flex items-center gap-1 bg-slate-50 text-slate-600 text-xs font-medium px-2.5 py-1 rounded-lg border border-slate-200/60">
               <ShieldCheck size={12} className="text-brand-indigo" /> 1Yr Warranty
             </div>
-            <div className="flex items-center gap-1 bg-slate-50 text-slate-600 text-[10px] font-medium px-2.5 py-1 rounded-lg border border-slate-200/60">
+            <div className="flex items-center gap-1 bg-slate-50 text-slate-600 text-xs font-medium px-2.5 py-1 rounded-lg border border-slate-200/60">
               <Cpu size={12} className="text-brand-indigo" /> Genuine
             </div>
           </div>
 
           {/* Koko Payment Mention Badge */}
           {product.price > 0 && product.allowKokoOnline !== false && (
-            <div className="mb-2 sm:mb-3 py-1 px-2 rounded-lg bg-brand-indigo/5 border border-brand-indigo/15 flex items-center justify-between gap-1 text-[10px] sm:text-xs">
-              <div className="flex items-center gap-1.5 min-w-0">
-                <span className="w-4 h-4 rounded bg-brand-indigo text-white font-black text-[8px] flex items-center justify-center flex-shrink-0">
+            <div className="mb-2 sm:mb-3 py-1 px-2.5 rounded-lg bg-blue-50/70 border border-blue-200/60 flex items-center justify-between gap-1.5 text-xs sm:text-xs">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="px-1.5 py-0.5 rounded-md bg-[#0052FF] text-white font-bold text-xs leading-none tracking-tight flex items-center justify-center flex-shrink-0 shadow-xs">
                   koko
                 </span>
                 <span className="text-slate-700 font-medium truncate">
-                  Or 3 x <strong className="text-brand-indigo font-bold">
+                  Or 3 x <strong className="text-blue-600 font-bold">
                     {currency === 'USD' ? `$${(Math.ceil(product.price / 3) / exchangeRate).toFixed(2)}` : `Rs. ${Math.ceil(product.price / 3).toLocaleString()}`}
                   </strong> with Koko
                 </span>
               </div>
-              <span className="text-[9px] font-bold text-brand-indigo bg-brand-indigo/10 px-1.5 py-0.5 rounded-full uppercase tracking-wider flex-shrink-0">
+              <span className="text-xs font-bold text-blue-700 bg-blue-100/70 px-1.5 py-0.5 rounded-full uppercase tracking-wider flex-shrink-0">
                 3x Pay
               </span>
             </div>
@@ -148,7 +148,7 @@ const ProductCard = ({ product }) => {
 
           <div className="flex items-center justify-between mt-auto pt-2.5 sm:pt-3 border-t border-slate-100 gap-2">
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] sm:text-xs font-medium mb-0.5 m-0 flex items-center gap-1">
+              <p className="text-xs sm:text-xs font-medium mb-0.5 m-0 flex items-center gap-1">
                 {inStock ? (
                   <span className="text-emerald-600 font-semibold flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> In Stock</span>
                 ) : (
@@ -158,7 +158,7 @@ const ProductCard = ({ product }) => {
               <div className="flex items-baseline gap-1 sm:gap-2 flex-wrap">
                 <span className="text-sm sm:text-lg font-bold text-slate-900 truncate">{getProductPrice(product)}</span>
                 {product.mrp > product.price && (
-                  <span className="text-[10px] sm:text-xs font-medium text-slate-400 line-through">
+                  <span className="text-xs sm:text-xs font-medium text-slate-400 line-through">
                     {currency === 'USD' ? `$${(product.mrp / exchangeRate).toFixed(2)}` : `Rs. ${product.mrp.toFixed(2)}`}
                   </span>
                 )}

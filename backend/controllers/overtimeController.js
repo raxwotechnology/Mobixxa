@@ -3,9 +3,9 @@ const User = require('../models/User');
 const Account = require('../models/Account');
 const { recordTransaction } = require('../services/ledgerService');
 
-// @desc    Get all OT records (with optional employee filter)
-// @route   GET /api/overtime
-// @access  Private/Admin
+// @desc Get all OT records (with optional employee filter)
+// @route GET /api/overtime
+// @access Private/Admin
 const getOvertimeRecords = async (req, res, next) => {
   try {
     const { employeeId, status, startDate, endDate } = req.query;
@@ -27,9 +27,9 @@ const getOvertimeRecords = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Get OT summary per employee
-// @route   GET /api/overtime/summary
-// @access  Private/Admin
+// @desc Get OT summary per employee
+// @route GET /api/overtime/summary
+// @access Private/Admin
 const getOvertimeSummary = async (req, res, next) => {
   try {
     const { startDate, endDate } = req.query;
@@ -83,9 +83,9 @@ const getOvertimeSummary = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Create OT record
-// @route   POST /api/overtime
-// @access  Private/Admin
+// @desc Create OT record
+// @route POST /api/overtime
+// @access Private/Admin
 const createOvertimeRecord = async (req, res, next) => {
   try {
     const { employeeId, date, hours, ratePerHour, description } = req.body;
@@ -132,9 +132,9 @@ const createOvertimeRecord = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Mark OT record as paid
-// @route   PUT /api/overtime/:id/pay
-// @access  Private/Admin
+// @desc Mark OT record as paid
+// @route PUT /api/overtime/:id/pay
+// @access Private/Admin
 const markOvertimePaid = async (req, res, next) => {
   try {
     const record = await OvertimePay.findById(req.params.id);
@@ -178,7 +178,7 @@ const markOvertimePaid = async (req, res, next) => {
       userId: populated.employeeId._id,
       userEmail: populated.employeeId.email,
       type: 'ot_paid',
-      title: '🕒 Overtime Paid',
+      title: 'Overtime Paid',
       message: `Your overtime payment of Rs.${record.totalAmount.toLocaleString()} for ${record.hours} hours has been processed.`,
       link: '/employee/overtime',
     });
@@ -187,9 +187,9 @@ const markOvertimePaid = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Reject OT record
-// @route   PUT /api/overtime/:id/reject
-// @access  Private/Admin
+// @desc Reject OT record
+// @route PUT /api/overtime/:id/reject
+// @access Private/Admin
 const rejectOvertimeRecord = async (req, res, next) => {
   try {
     const record = await OvertimePay.findById(req.params.id);
@@ -210,7 +210,7 @@ const rejectOvertimeRecord = async (req, res, next) => {
       userId: populated.employeeId._id,
       userEmail: populated.employeeId.email,
       type: 'ot_rejected',
-      title: '❌ Overtime Rejected',
+      title: 'Overtime Rejected',
       message: `Your overtime request for ${new Date(record.date).toLocaleDateString()} has been rejected.`,
       link: '/employee/overtime',
     });
@@ -219,9 +219,9 @@ const rejectOvertimeRecord = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Delete OT record
-// @route   DELETE /api/overtime/:id
-// @access  Private/Admin
+// @desc Delete OT record
+// @route DELETE /api/overtime/:id
+// @access Private/Admin
 const deleteOvertimeRecord = async (req, res, next) => {
   try {
     const record = await OvertimePay.findById(req.params.id);
@@ -241,9 +241,9 @@ const deleteOvertimeRecord = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Get OT report for a specific employee
-// @route   GET /api/overtime/employee/:employeeId
-// @access  Private/Admin
+// @desc Get OT report for a specific employee
+// @route GET /api/overtime/employee/:employeeId
+// @access Private/Admin
 const getEmployeeOTReport = async (req, res, next) => {
   try {
     const { employeeId } = req.params;
@@ -274,9 +274,9 @@ const getEmployeeOTReport = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-// @desc    Get my OT records (employee self-service)
-// @route   GET /api/overtime/my
-// @access  Private (any authenticated user)
+// @desc Get my OT records (employee self-service)
+// @route GET /api/overtime/my
+// @access Private (any authenticated user)
 const getMyOvertime = async (req, res, next) => {
   try {
     const { startDate, endDate } = req.query;

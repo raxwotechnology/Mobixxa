@@ -9,10 +9,10 @@ import { getPromotions, createPromotion, deletePromotion, togglePromotion } from
 import { toast } from 'react-toastify';
 
 const PROMO_TYPES = [
-  { value: 'percentage', label: 'Percentage Off', icon: '🏷️' },
-  { value: 'fixed', label: 'Fixed Amount Off', icon: '💰' },
-  { value: 'bogo', label: 'Buy One Get One', icon: '🎁' },
-  { value: 'buy_x_get_y', label: 'Buy X Get Y Free', icon: '🛒' },
+  { value: 'percentage', label: 'Percentage Off', icon: '' },
+  { value: 'fixed', label: 'Fixed Amount Off', icon: '' },
+  { value: 'bogo', label: 'Buy One Get One', icon: '' },
+  { value: 'buy_x_get_y', label: 'Buy X Get Y Free', icon: '' },
 ];
 
 const AdminPromotions = () => {
@@ -95,8 +95,8 @@ const AdminPromotions = () => {
   if (loading) {
     return (
       <DashboardLayout navItems={navItems} title="Promotions">
-        <div className="flex items-center justify-center h-64">
-          <div className="w-10 h-10 border-4 border-primary-blue border-t-transparent rounded-full animate-spin" />
+        <div className="ds-page">
+          <div className="ds-loading"><div className="ds-spinner" /></div>
         </div>
       </DashboardLayout>
     );
@@ -107,155 +107,158 @@ const AdminPromotions = () => {
 
   return (
     <DashboardLayout navItems={navItems} title="Promotions">
-      <div>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
-          <div>
-            <h1 className="text-2xl font-bold text-dark-navy">🎉 Promotions</h1>
-            <p className="text-muted-text text-sm mt-1">{promotions.length} total • {activeCount} active • {expiredCount} expired</p>
+      <div className="ds-page">
+        <div className="ds-page-header">
+          <div className="ds-page-header-left">
+            <span className="ds-page-header-badge"><Gift size={11} /> Promotions</span>
+            <h1>Promotions & Discounts</h1>
+            <p>{promotions.length} total • {activeCount} active • {expiredCount} expired</p>
           </div>
-          <button onClick={() => setShowModal(true)} className="flex items-center gap-2 bg-primary-blue text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-emerald-600 shadow-lg shadow-emerald-200 text-sm">
-            <Plus size={18} /> New Promotion
-          </button>
+          <div className="ds-page-header-right">
+            <button onClick={() => setShowModal(true)} className="ds-btn ds-btn-primary">
+              <Plus size={18} /> New Promotion
+            </button>
+          </div>
         </div>
 
         {/* Promotions Grid */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
           {promotions.map(p => {
             const expired = isExpired(p.endDate);
             const upcoming = isUpcoming(p.startDate);
             const typeInfo = PROMO_TYPES.find(t => t.value === p.type) || PROMO_TYPES[0];
             return (
-              <div key={p._id} className={`bg-white rounded-2xl border p-5 shadow-sm transition-all ${expired ? 'opacity-60 border-gray-200' : p.isActive ? 'border-emerald-200' : 'border-card-border'}`}>
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl">{typeInfo.icon}</span>
+              <div key={p._id} className="ds-card" style={{ opacity: expired ? 0.6 : 1, borderColor: p.isActive && !expired ? 'var(--ds-primary)' : 'var(--ds-border)' }}>
+                <div className="ds-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <span style={{ fontSize: '1.5rem' }}>{typeInfo.icon}</span>
                     <div>
-                      <h3 className="font-semibold text-dark-navy">{p.name}</h3>
-                      <p className="text-xs text-muted-text">{typeInfo.label}</p>
+                      <div className="ds-card-title">{p.name}</div>
+                      <div style={{ fontSize: 'var(--ds-text-xs)', color: 'var(--ds-text-muted)' }}>{typeInfo.label}</div>
                     </div>
                   </div>
-                  <div className="flex gap-1">
-                    <button onClick={() => handleToggle(p._id)} title={p.isActive ? 'Deactivate' : 'Activate'} className="p-1.5 rounded-lg hover:bg-gray-100">
-                      {p.isActive ? <ToggleRight size={20} className="text-emerald-500" /> : <ToggleLeft size={20} className="text-gray-400" />}
+                  <div style={{ display: 'flex', gap: '0.25rem' }}>
+                    <button onClick={() => handleToggle(p._id)} className="ds-btn ds-btn-ghost ds-btn-icon ds-btn-sm" title={p.isActive ? 'Deactivate' : 'Activate'}>
+                      {p.isActive ? <ToggleRight size={20} style={{color: 'var(--ds-primary)'}} /> : <ToggleLeft size={20} style={{color: 'var(--ds-text-muted)'}} />}
                     </button>
-                    <button onClick={() => handleDeleteClick(p)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-400 hover:text-red-600">
+                    <button onClick={() => handleDeleteClick(p)} className="ds-btn ds-btn-danger ds-btn-icon ds-btn-sm">
                       <Trash2 size={16} />
                     </button>
                   </div>
                 </div>
 
-                {/* Value Display */}
-                <div className="bg-gray-50 rounded-xl p-3 mb-3">
-                  {p.type === 'percentage' && <span className="text-xl font-bold text-dark-navy">{p.discountValue}% OFF</span>}
-                  {p.type === 'fixed' && <span className="text-xl font-bold text-dark-navy">Rs. {p.discountValue} OFF</span>}
-                  {p.type === 'bogo' && <span className="text-xl font-bold text-dark-navy">Buy 1 Get 1 Free</span>}
-                  {p.type === 'buy_x_get_y' && <span className="text-xl font-bold text-dark-navy">Buy {p.buyQuantity} Get {p.getQuantity} Free</span>}
-                </div>
+                <div className="ds-card-body">
+                  <div style={{ background: 'var(--ds-border-soft)', padding: '1rem', borderRadius: 'var(--ds-r-md)', marginBottom: '1rem' }}>
+                    <span style={{ fontSize: '1.25rem', fontWeight: 600 }}>
+                      {p.type === 'percentage' && `${p.discountValue}% OFF`}
+                      {p.type === 'fixed' && `Rs. ${p.discountValue} OFF`}
+                      {p.type === 'bogo' && `Buy 1 Get 1 Free`}
+                      {p.type === 'buy_x_get_y' && `Buy ${p.buyQuantity} Get ${p.getQuantity} Free`}
+                    </span>
+                  </div>
 
-                {p.description && <p className="text-xs text-muted-text mb-2">{p.description}</p>}
+                  {p.description && <p style={{ fontSize: 'var(--ds-text-sm)', color: 'var(--ds-text-muted)', marginBottom: '0.5rem' }}>{p.description}</p>}
 
-                <div className="flex items-center gap-2 text-xs text-muted-text mb-2">
-                  <Calendar size={12} />
-                  <span>{new Date(p.startDate).toLocaleDateString()} — {new Date(p.endDate).toLocaleDateString()}</span>
-                </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: 'var(--ds-text-xs)', color: 'var(--ds-text-muted)', marginBottom: '1rem' }}>
+                    <Calendar size={12} />
+                    <span>{new Date(p.startDate).toLocaleDateString()} — {new Date(p.endDate).toLocaleDateString()}</span>
+                  </div>
 
-                <div className="flex items-center gap-2">
-                  {expired && <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700">Expired</span>}
-                  {upcoming && !expired && <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">Upcoming</span>}
-                  {!expired && !upcoming && p.isActive && <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Active</span>}
-                  {!p.isActive && <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">Disabled</span>}
-                  {p.conditions?.minOrderAmount > 0 && <span className="text-xs text-muted-text">Min: Rs.{p.conditions.minOrderAmount}</span>}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    {expired && <span className="ds-badge ds-badge-red">Expired</span>}
+                    {upcoming && !expired && <span className="ds-badge ds-badge-blue">Upcoming</span>}
+                    {!expired && !upcoming && p.isActive && <span className="ds-badge ds-badge-green">Active</span>}
+                    {!p.isActive && <span className="ds-badge ds-badge-slate">Disabled</span>}
+                    {p.conditions?.minOrderAmount > 0 && <span style={{ fontSize: 'var(--ds-text-xs)', color: 'var(--ds-text-muted)' }}>Min: Rs.{p.conditions.minOrderAmount}</span>}
+                  </div>
                 </div>
               </div>
             );
           })}
         </div>
-        {promotions.length === 0 && <div className="text-center py-16 text-muted-text"><Gift size={48} className="mx-auto mb-3 text-gray-300" /><p>No promotions yet</p></div>}
+        {promotions.length === 0 && (
+          <div className="ds-empty">
+            <Gift size={48} style={{ color: 'var(--ds-text-faint)', margin: '0 auto 1rem' }} />
+            <p>No promotions yet</p>
+          </div>
+        )}
       </div>
 
       {/* Create Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-card-border flex items-center justify-between sticky top-0 bg-white rounded-t-2xl">
-              <h2 className="text-lg font-bold text-dark-navy">New Promotion</h2>
-              <button onClick={() => setShowModal(false)} className="p-1.5 rounded-lg hover:bg-gray-100"><X size={20} /></button>
+        <div className="ds-modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="ds-modal ds-modal-lg" onClick={(e) => e.stopPropagation()}>
+            <div className="ds-modal-header">
+              <div className="ds-modal-title">New Promotion</div>
+              <button onClick={() => setShowModal(false)} className="ds-btn ds-btn-ghost ds-btn-icon"><X size={20} /></button>
             </div>
-            <form onSubmit={handleCreate} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-dark-navy mb-1">Name *</label>
-                <input type="text" required value={form.name} onChange={(e) => setForm({...form, name: e.target.value})}
-                  placeholder="e.g. Weekend Special" className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm" />
-              </div>
+            <div className="ds-modal-body">
+              <form onSubmit={handleCreate}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div className="ds-form-group">
+                    <label className="ds-label">Name *</label>
+                    <input type="text" required value={form.name} onChange={(e) => setForm({...form, name: e.target.value})} placeholder="e.g. Weekend Special" className="ds-input" />
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-dark-navy mb-1">Type *</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {PROMO_TYPES.map(t => (
-                    <button key={t.value} type="button"
-                      onClick={() => setForm({...form, type: t.value})}
-                      className={`p-3 rounded-xl border text-sm font-medium text-left flex items-center gap-2 transition-all ${
-                        form.type === t.value ? 'border-primary-blue bg-emerald-50 text-emerald-700' : 'border-card-border hover:border-emerald-200'
-                      }`}>
-                      <span>{t.icon}</span> {t.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-dark-navy mb-1">
-                    {form.type === 'percentage' ? 'Discount %' : form.type === 'fixed' ? 'Discount Amount (Rs.)' : 'Discount Value'} *
-                  </label>
-                  <input type="number" required min="0" value={form.discountValue} onChange={(e) => setForm({...form, discountValue: e.target.value})}
-                    className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm" />
-                </div>
-                {form.type === 'buy_x_get_y' && (
-                  <>
-                    <div>
-                      <label className="block text-sm font-medium text-dark-navy mb-1">Buy Qty</label>
-                      <input type="number" min="1" value={form.buyQuantity} onChange={(e) => setForm({...form, buyQuantity: e.target.value})}
-                        className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm" />
+                  <div className="ds-form-group">
+                    <label className="ds-label">Type *</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                      {PROMO_TYPES.map(t => (
+                        <button key={t.value} type="button" onClick={() => setForm({...form, type: t.value})} className={`ds-btn ${form.type === t.value ? 'ds-btn-primary' : 'ds-btn-secondary'}`} style={{ justifyContent: 'flex-start' }}>
+                          <span>{t.icon}</span> {t.label}
+                        </button>
+                      ))}
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-dark-navy mb-1">Get Qty Free</label>
-                      <input type="number" min="1" value={form.getQuantity} onChange={(e) => setForm({...form, getQuantity: e.target.value})}
-                        className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm" />
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="ds-form-group">
+                      <label className="ds-label">
+                        {form.type === 'percentage' ? 'Discount %' : form.type === 'fixed' ? 'Discount Amount (Rs.)' : 'Discount Value'} *
+                      </label>
+                      <input type="number" required min="0" value={form.discountValue} onChange={(e) => setForm({...form, discountValue: e.target.value})} className="ds-input" />
                     </div>
-                  </>
-                )}
-                <div>
-                  <label className="block text-sm font-medium text-dark-navy mb-1">Min Order (Rs.)</label>
-                  <input type="number" min="0" value={form.minOrderAmount} onChange={(e) => setForm({...form, minOrderAmount: e.target.value})}
-                    placeholder="0" className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm" />
-                </div>
-              </div>
+                    {form.type === 'buy_x_get_y' && (
+                      <>
+                        <div className="ds-form-group">
+                          <label className="ds-label">Buy Qty</label>
+                          <input type="number" min="1" value={form.buyQuantity} onChange={(e) => setForm({...form, buyQuantity: e.target.value})} className="ds-input" />
+                        </div>
+                        <div className="ds-form-group">
+                          <label className="ds-label">Get Qty Free</label>
+                          <input type="number" min="1" value={form.getQuantity} onChange={(e) => setForm({...form, getQuantity: e.target.value})} className="ds-input" />
+                        </div>
+                      </>
+                    )}
+                    <div className="ds-form-group">
+                      <label className="ds-label">Min Order (Rs.)</label>
+                      <input type="number" min="0" value={form.minOrderAmount} onChange={(e) => setForm({...form, minOrderAmount: e.target.value})} placeholder="0" className="ds-input" />
+                    </div>
+                  </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-dark-navy mb-1">Start Date *</label>
-                  <input type="date" required value={form.startDate} onChange={(e) => setForm({...form, startDate: e.target.value})}
-                    className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-dark-navy mb-1">End Date *</label>
-                  <input type="date" required value={form.endDate} onChange={(e) => setForm({...form, endDate: e.target.value})}
-                    className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm" />
-                </div>
-              </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="ds-form-group">
+                      <label className="ds-label">Start Date *</label>
+                      <input type="date" required value={form.startDate} onChange={(e) => setForm({...form, startDate: e.target.value})} className="ds-input" />
+                    </div>
+                    <div className="ds-form-group">
+                      <label className="ds-label">End Date *</label>
+                      <input type="date" required value={form.endDate} onChange={(e) => setForm({...form, endDate: e.target.value})} className="ds-input" />
+                    </div>
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-dark-navy mb-1">Description</label>
-                <textarea value={form.description} onChange={(e) => setForm({...form, description: e.target.value})}
-                  rows="2" placeholder="Optional description..." className="w-full border border-card-border rounded-xl py-2.5 px-4 text-sm resize-none" />
-              </div>
+                  <div className="ds-form-group">
+                    <label className="ds-label">Description</label>
+                    <textarea value={form.description} onChange={(e) => setForm({...form, description: e.target.value})} rows="2" placeholder="Optional description..." className="ds-input" style={{ resize: 'none' }} />
+                  </div>
+                </div>
 
-              <div className="flex gap-3 pt-2">
-                <button type="submit" className="flex-1 bg-primary-blue text-white py-2.5 rounded-xl font-semibold hover:bg-emerald-600 text-sm">Create Promotion</button>
-                <button type="button" onClick={() => setShowModal(false)} className="flex-1 border border-card-border py-2.5 rounded-xl text-muted-text hover:bg-gray-50 text-sm">Cancel</button>
-              </div>
-            </form>
+                <div className="ds-modal-footer" style={{ marginTop: '1.5rem' }}>
+                  <button type="button" onClick={() => setShowModal(false)} className="ds-btn ds-btn-ghost">Cancel</button>
+                  <button type="submit" className="ds-btn ds-btn-primary">Create Promotion</button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

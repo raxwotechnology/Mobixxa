@@ -8,14 +8,14 @@ import { approveCustomerReturn, createCustomerReturn, deleteCustomerReturn, expo
 import DeleteConfirmationModal from '../../components/DeleteConfirmationModal';
 import useAuthStore from '../../store/authStore';
 import { managerNavGroups } from '../storeOwner/managerNavItems';
-import { RotateCcw, Search } from 'lucide-react';
+import { RotateCcw, Search, AlertTriangle, CheckCircle, Package, XCircle } from 'lucide-react';
 
 const statusColors = {
-  requested: 'bg-amber-100 text-amber-700',
-  on_hold: 'bg-blue-100 text-blue-700',
-  approved: 'bg-emerald-100 text-emerald-700',
-  resolved: 'bg-emerald-100 text-emerald-700',
-  rejected: 'bg-red-100 text-red-700',
+  requested: 'ds-badge-amber',
+  on_hold: 'ds-badge-blue',
+  approved: 'ds-badge-green',
+  resolved: 'ds-badge-green',
+  rejected: 'ds-badge-red',
 };
 
 const AdminReturns = () => {
@@ -225,265 +225,272 @@ const AdminReturns = () => {
     }
   };
 
+  // Compute stats
+  const totalReturns = returns.length;
+  const pendingReturns = returns.filter(r => r.status === 'requested').length;
+  const approvedReturns = returns.filter(r => r.status === 'approved' || r.status === 'resolved').length;
+  const rejectedReturns = returns.filter(r => r.status === 'rejected').length;
+
   return (
     <DashboardLayout navItems={navItemsToUse} title="Returns">
-      <div className="animate-fade-in space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-indigo/5 rounded-full blur-3xl pointer-events-none -z-10"></div>
-          <div>
-            <div className="flex items-center gap-2.5 mb-1">
-              <span className="inline-flex items-center gap-1.5 bg-brand-indigo/10 text-brand-indigo text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg border border-brand-indigo/15">
-                Sales & Operations
-              </span>
-            </div>
-            <h1 className="text-2xl font-semibold text-slate-900 m-0">Customer Returns</h1>
-            <p className="text-[10px] font-normal uppercase tracking-wider text-slate-500 mt-2 m-0">Pending / Approved / Rejected return requests</p>
+      <div className="ds-page">
+        <div className="ds-page-header">
+          <div className="ds-page-header-left">
+            <span className="ds-page-header-badge">Sales &amp; Operations</span>
+            <h1 style={{ margin: '8px 0 0 0' }}>Returns &amp; Refunds</h1>
+            <p style={{ margin: '8px 0 0 0', color: 'var(--ds-text-muted)' }}>Pending / Approved / Rejected return requests</p>
           </div>
-          <div className="flex items-center gap-3 bg-white/40 backdrop-blur-sm border border-white/40 p-2 rounded-2xl shadow-sm">
-            <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="bg-white/80 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm" />
-            <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="bg-white/80 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm" />
-            <button onClick={handleExport} className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[10px] uppercase tracking-wider font-black transition-all shadow-md">Export PDF</button>
+          <div className="ds-page-header-right" style={{ display: 'flex', gap: '8px' }}>
+             <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="ds-input" style={{ width: 'auto' }} />
+             <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="ds-input" style={{ width: 'auto' }} />
+             <button onClick={handleExport} className="ds-btn ds-btn-secondary">Export PDF</button>
           </div>
         </div>
 
-        {/* Order Search & Return Request Creation */}
-        <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
-          <h2 className="text-sm font-black text-slate-800 mb-4 uppercase tracking-wider">Search Order & Create Return Request</h2>
-          <div className="flex flex-col sm:flex-row gap-3 items-end mb-4">
-            <div className="flex-1">
-              <label className="block text-xs font-semibold text-slate-500 mb-1">Order ID / Invoice Number *</label>
-              <input value={orderId} onChange={(e) => setOrderId(e.target.value)} placeholder="Enter Order ID or Invoice No..." className="w-full border border-slate-200 rounded-2xl py-3 px-4 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-all" />
+        <div className="ds-stats ds-stats-4">
+          <div className="ds-stat">
+            <div className="ds-stat-top">
+              <div className="ds-stat-icon" style={{ background: '#eff6ff', color: '#2563eb' }}>
+                <Package size={18} />
+              </div>
+              <span className="ds-stat-change pos">Tickets</span>
             </div>
-            <button onClick={lookupOrder} disabled={loadingOrder} className="bg-brand-indigo hover:bg-brand-violet text-white font-extrabold px-6 py-3 rounded-2xl text-xs uppercase tracking-wider transition-all shadow-md shadow-brand-indigo/20 disabled:opacity-50 cursor-pointer">
-              {loadingOrder ? 'Searching...' : 'Lookup Order'}
-            </button>
+            <div className="ds-stat-bottom">
+              <p className="ds-stat-label">Total Returns</p>
+              <p className="ds-stat-value">{totalReturns}</p>
+              <p className="ds-stat-sub">All RMA cases</p>
+            </div>
           </div>
 
-          {order && (
-            <form onSubmit={submitReturn} className="space-y-4 pt-4 border-t border-slate-100">
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-xs font-medium text-slate-700">
-                <p className="font-extrabold text-slate-900 m-0">Order Summary: #{String(order._id).slice(-8).toUpperCase()}</p>
-                <p className="m-0 text-slate-500 mt-1">Customer: {order.customerName || order.userId?.name || 'Walk-in'}</p>
+          <div className="ds-stat" style={{ borderColor: pendingReturns > 0 ? '#fde68a' : undefined }}>
+            <div className="ds-stat-top">
+              <div className="ds-stat-icon" style={{ background: '#fffbeb', color: '#b45309' }}>
+                <AlertTriangle size={18} />
               </div>
+              <span className="ds-stat-change amber">Review</span>
+            </div>
+            <div className="ds-stat-bottom">
+              <p className="ds-stat-label" style={{ color: '#b45309' }}>Pending Approval</p>
+              <p className="ds-stat-value" style={{ color: '#b45309' }}>{pendingReturns}</p>
+              <p className="ds-stat-sub" style={{ color: '#d97706' }}>Awaiting inspection</p>
+            </div>
+          </div>
 
-              <div className="space-y-3">
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Select Items to Return</label>
-                {items.map((it, idx) => (
-                  <div key={idx} className="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex flex-col md:flex-row gap-3 items-start md:items-center justify-between text-xs">
-                    <div className="font-bold text-slate-800 flex-1">{it.name} <span className="text-slate-400 font-medium">(Sold: {it.soldQty})</span></div>
-                    <div className="flex gap-2 items-center w-full md:w-auto">
-                      <input type="number" min="0" max={it.soldQty} value={it.qty} onChange={(e) => { const next = [...items]; next[idx].qty = e.target.value; setItems(next); }} className="w-20 border border-slate-200 rounded-xl p-2 font-bold text-center" placeholder="Qty" />
-                      <select value={it.condition} onChange={(e) => { const next = [...items]; next[idx].condition = e.target.value; setItems(next); }} className="border border-slate-200 rounded-xl p-2 font-bold">
+          <div className="ds-stat">
+            <div className="ds-stat-top">
+              <div className="ds-stat-icon" style={{ background: '#f0fdf4', color: '#15803d' }}>
+                <CheckCircle size={18} />
+              </div>
+              <span className="ds-stat-change up">Settled</span>
+            </div>
+            <div className="ds-stat-bottom">
+              <p className="ds-stat-label">Approved &amp; Resolved</p>
+              <p className="ds-stat-value text-emerald-600">{approvedReturns}</p>
+              <p className="ds-stat-sub">Restocked or refunded</p>
+            </div>
+          </div>
+
+          <div className="ds-stat">
+            <div className="ds-stat-top">
+              <div className="ds-stat-icon" style={{ background: '#fef2f2', color: '#dc2626' }}>
+                <XCircle size={18} />
+              </div>
+              <span className="ds-stat-change neg">Declined</span>
+            </div>
+            <div className="ds-stat-bottom">
+              <p className="ds-stat-label">Rejected</p>
+              <p className="ds-stat-value text-rose-600">{rejectedReturns}</p>
+              <p className="ds-stat-sub">Disallowed claims</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="ds-card">
+          <div className="ds-card-header">
+            <h2 className="ds-card-title">Search Order & Create Return Request</h2>
+          </div>
+          <div className="ds-card-body">
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end', marginBottom: '16px' }}>
+              <div className="ds-form-group" style={{ flex: 1, marginBottom: 0 }}>
+                <label className="ds-label">Order ID / Invoice Number *</label>
+                <input value={orderId} onChange={(e) => setOrderId(e.target.value)} placeholder="Enter Order ID or Invoice No..." className="ds-input" />
+              </div>
+              <button onClick={lookupOrder} disabled={loadingOrder} className="ds-btn ds-btn-primary">
+                {loadingOrder ? 'Searching...' : 'Lookup Order'}
+              </button>
+            </div>
+
+            {order && (
+              <form onSubmit={submitReturn} style={{ borderTop: '1px solid var(--ds-border-soft)', paddingTop: '16px' }}>
+                <div style={{ padding: '12px', backgroundColor: 'var(--ds-border-soft)', borderRadius: 'var(--ds-r-md)', marginBottom: '16px' }}>
+                  <p style={{ margin: 0, fontWeight: 'bold' }}>Order Summary: #{String(order._id).slice(-8).toUpperCase()}</p>
+                  <p style={{ margin: '4px 0 0 0', color: 'var(--ds-text-muted)' }}>Customer: {order.customerName || order.userId?.name || 'Walk-in'}</p>
+                </div>
+
+                <div className="ds-form-group">
+                  <label className="ds-label">Select Items to Return</label>
+                  {items.map((it, idx) => (
+                    <div key={idx} style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '8px' }}>
+                      <div style={{ flex: 1, fontWeight: 'bold' }}>{it.name} <span style={{ color: 'var(--ds-text-muted)' }}>(Sold: {it.soldQty})</span></div>
+                      <input type="number" min="0" max={it.soldQty} value={it.qty} onChange={(e) => { const next = [...items]; next[idx].qty = e.target.value; setItems(next); }} className="ds-input" placeholder="Qty" style={{ width: '80px' }} />
+                      <select value={it.condition} onChange={(e) => { const next = [...items]; next[idx].condition = e.target.value; setItems(next); }} className="ds-select" style={{ width: 'auto' }}>
                         <option value="good">Good Condition</option>
                         <option value="damaged">Damaged</option>
                         <option value="defective">Defective</option>
                       </select>
-                      <input type="text" value={it.reason} onChange={(e) => { const next = [...items]; next[idx].reason = e.target.value; setItems(next); }} placeholder="Reason..." className="border border-slate-200 rounded-xl p-2 flex-1 md:w-48 font-medium" />
+                      <input type="text" value={it.reason} onChange={(e) => { const next = [...items]; next[idx].reason = e.target.value; setItems(next); }} placeholder="Reason..." className="ds-input" style={{ flex: 1 }} />
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Additional Notes</label>
-                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Add any extra details..." className="w-full border border-slate-200 rounded-2xl p-3 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-brand-indigo" rows={2} />
-              </div>
+                <div className="ds-form-group">
+                  <label className="ds-label">Additional Notes</label>
+                  <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Add any extra details..." className="ds-input" rows={2} style={{ resize: 'none' }} />
+                </div>
 
-              <button type="submit" disabled={createSubmitting} className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-6 py-3 rounded-2xl text-xs uppercase tracking-wider transition-all shadow-md cursor-pointer">
-                {createSubmitting ? 'Submitting...' : 'Submit Return Request'}
-              </button>
-            </form>
-          )}
+                <button type="submit" disabled={createSubmitting} className="ds-btn ds-btn-primary" style={{ backgroundColor: '#059669', borderColor: '#059669' }}>
+                  {createSubmitting ? 'Submitting...' : 'Submit Return Request'}
+                </button>
+              </form>
+            )}
+          </div>
         </div>
 
-        <div className="flex gap-2 flex-wrap mb-6 bg-white/40 backdrop-blur-sm p-2 rounded-2xl border border-white/40 shadow-sm w-fit">
-          {['all', 'requested', 'approved', 'rejected', 'on_hold', 'resolved'].map((s) => (
-            <button
-              key={s}
-              onClick={() => setFilter(s)}
-              className={`px-4 py-2.5 text-[10px] uppercase font-black tracking-wider rounded-xl transition-all ${
-                filter === s ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-white hover:text-slate-900'
-              }`}
-            >
-              {s.replaceAll('_', ' ')}
-            </button>
-          ))}
+        <div className="ds-card">
+          <div className="ds-filter-bar" style={{ padding: '16px' }}>
+             <select className="ds-select" style={{ width: 'auto' }} value={filter} onChange={(e) => setFilter(e.target.value)}>
+                {['all', 'requested', 'approved', 'rejected', 'on_hold', 'resolved'].map((s) => (
+                  <option key={s} value={s}>{s.replaceAll('_', ' ').toUpperCase()}</option>
+                ))}
+             </select>
+          </div>
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="w-10 h-10 border-4 border-brand-indigo border-t-transparent rounded-full animate-spin" />
-          </div>
+          <div className="ds-loading"><div className="ds-spinner" /></div>
         ) : (
-          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-slate-50 border-b border-slate-100">
-                    <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">RMA</th>
-                    <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Order</th>
-                    <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Customer</th>
-                    <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Order Details</th>
-                    <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Return Reason</th>
-                    <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Status</th>
-                    <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {filtered.map((r) => (
-                    <tr key={r._id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4 font-black text-slate-800">{r.holdBillNo}</td>
-                      <td className="px-6 py-4 font-mono text-xs font-bold text-slate-500">#{String(r.orderId?._id || r.orderId).slice(-8).toUpperCase()}</td>
-                      <td className="px-6 py-4 font-bold text-slate-800">{r.customerId?.name || '—'}</td>
-                      <td className="px-6 py-4 font-bold text-slate-600">
-                        {(r.items || []).map((it) => `${it.orderItemName} x${it.qty}`).join(', ') || '—'}
-                      </td>
-                      <td className="px-6 py-4 text-slate-600 font-medium">
-                        {(r.items || []).map((it) => it.reason).filter(Boolean).join(', ') || r.notes || '—'}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`text-[9px] uppercase tracking-wider font-black px-2.5 py-1 rounded-full ${statusColors[r.status] || 'bg-slate-100 text-slate-600'}`}>
-                          {r.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          {['requested', 'approved', 'on_hold'].includes(r.status) && (
-                            <>
-                              <button
-                                type="button"
-                                onClick={() => openApproveModal(r)}
-                                className="px-3 py-1.5 rounded-lg text-[9px] uppercase tracking-wider font-black bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-all"
-                              >
-                                Approve
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => openRejectModal(r)}
-                                className="px-3 py-1.5 rounded-lg text-[9px] uppercase tracking-wider font-black bg-rose-50 text-rose-700 hover:bg-rose-100 transition-all"
-                              >
-                                Reject
-                              </button>
-                            </>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => openDeleteModal(r)}
-                            className="px-3 py-1.5 rounded-lg text-[9px] uppercase tracking-wider font-black bg-slate-100 text-rose-600 hover:bg-rose-50 transition-all"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {filtered.length === 0 && (
+          <div className="ds-card">
+            <div className="ds-card-body" style={{ padding: 0 }}>
+              <div className="ds-table-wrap">
+                <table className="ds-table">
+                  <thead>
                     <tr>
-                      <td colSpan={7} className="px-6 py-12 text-center font-black text-[11px] uppercase tracking-wider text-slate-400">No returns found</td>
+                      <th>RMA</th>
+                      <th>Order</th>
+                      <th>Customer</th>
+                      <th>Order Details</th>
+                      <th>Return Reason</th>
+                      <th>Status</th>
+                      <th>Actions</th>
                     </tr>
-                  )}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {filtered.length === 0 ? (
+                      <tr>
+                        <td colSpan={7}>
+                          <div className="ds-empty">No returns found</div>
+                        </td>
+                      </tr>
+                    ) : (
+                      filtered.map((r) => (
+                        <tr key={r._id}>
+                          <td style={{ fontWeight: 'bold' }}>{r.holdBillNo}</td>
+                          <td style={{ fontFamily: 'monospace' }}>#{String(r.orderId?._id || r.orderId).slice(-8).toUpperCase()}</td>
+                          <td>{r.customerId?.name || '—'}</td>
+                          <td>{(r.items || []).map((it) => `${it.orderItemName} x${it.qty}`).join(', ') || '—'}</td>
+                          <td>{(r.items || []).map((it) => it.reason).filter(Boolean).join(', ') || r.notes || '—'}</td>
+                          <td>
+                            <span className={`ds-badge ${statusColors[r.status] || 'ds-badge-slate'}`}>
+                              {r.status}
+                            </span>
+                          </td>
+                          <td>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              {['requested', 'approved', 'on_hold'].includes(r.status) && (
+                                <>
+                                  <button type="button" onClick={() => openApproveModal(r)} className="ds-btn ds-btn-sm" style={{ backgroundColor: '#ecfdf5', color: '#059669', border: 'none' }}>
+                                    Approve
+                                  </button>
+                                  <button type="button" onClick={() => openRejectModal(r)} className="ds-btn ds-btn-sm" style={{ backgroundColor: '#fff1f2', color: '#e11d48', border: 'none' }}>
+                                    Reject
+                                  </button>
+                                </>
+                              )}
+                              <button type="button" onClick={() => openDeleteModal(r)} className="ds-btn ds-btn-danger ds-btn-sm">
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}
+
       </div>
 
       {/* Approve Resolution Modal */}
       {modalType === 'approve' && activeReturn && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => { setActiveReturn(null); setModalType(''); }}>
-          <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col border border-slate-100" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-6 border-b border-slate-100 flex flex-col items-center justify-center text-center bg-white/80 backdrop-blur-md">
-              <div className="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-4 text-xl border border-emerald-100 shadow-sm">
-                ✓
+        <div className="ds-modal-overlay" onClick={() => { setActiveReturn(null); setModalType(''); }}>
+          <div className="ds-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="ds-modal-header" style={{ flexDirection: 'column', alignItems: 'center' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+                <CheckCircle color="#10b981" />
               </div>
-              <h3 className="font-black text-slate-900 text-xl">Approve Return Request</h3>
-              <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mt-2">
-                Resolution for <span className="text-slate-800">{activeReturn.holdBillNo}</span> ({activeReturn.customerId?.name || 'Customer'})
+              <h3 className="ds-modal-title">Approve Return Request</h3>
+              <p style={{ margin: '8px 0 0 0', color: 'var(--ds-text-muted)', fontSize: '0.85em', textTransform: 'uppercase' }}>
+                Resolution for <span style={{ color: 'var(--ds-text-head)' }}>{activeReturn.holdBillNo}</span> ({activeReturn.customerId?.name || 'Customer'})
               </p>
             </div>
 
-            <div className="p-6 bg-slate-50/50">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2">
-                    Resolution Method
-                  </label>
-                  <select
-                    value={resolution}
-                    onChange={(e) => setResolution(e.target.value)}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo font-bold text-slate-800 transition-all shadow-sm cursor-pointer"
-                  >
-                    <option value="exchange">Exchange Product (Default)</option>
-                    <option value="store_credit">Store Credit</option>
-                    <option value="upgrade">Upgrade Product</option>
-                    <option value="refund">Refund Money Back</option>
-                  </select>
-                </div>
+            <div className="ds-modal-body">
+              <div className="ds-form-group">
+                <label className="ds-label">Resolution Method</label>
+                <select value={resolution} onChange={(e) => setResolution(e.target.value)} className="ds-select">
+                  <option value="exchange">Exchange Product (Default)</option>
+                  <option value="store_credit">Store Credit</option>
+                  <option value="upgrade">Upgrade Product</option>
+                  <option value="refund">Refund Money Back</option>
+                </select>
+              </div>
 
-                {resolution === 'refund' && (
-                  <div className="space-y-3 bg-white border border-slate-200 rounded-2xl p-4">
-                    <div>
-                      <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2">
-                        Refund Amount (Rs.)
-                      </label>
-                      <input
-                        type="number" min="0" step="0.01"
-                        value={refundAmount}
-                        onChange={(e) => setRefundAmount(e.target.value)}
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2">
-                        Refund Method
-                      </label>
-                      <select
-                        value={refundMethod}
-                        onChange={(e) => setRefundMethod(e.target.value)}
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 cursor-pointer focus:outline-none"
-                      >
-                        <option value="Cash">Cash</option>
-                        <option value="Bank Transfer">Bank Transfer</option>
-                        <option value="Cheque">Cheque</option>
-                        <option value="Card">Card</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2">
-                        Refund From Account
-                      </label>
-                      <select
-                        value={refundAccountId}
-                        onChange={(e) => setRefundAccountId(e.target.value)}
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 cursor-pointer focus:outline-none"
-                      >
-                        <option value="">Select account...</option>
-                        {accounts.map(a => <option key={a._id} value={a._id}>{a.name} ({a.type})</option>)}
-                      </select>
-                    </div>
+              {resolution === 'refund' && (
+                <div style={{ padding: '16px', border: '1px solid var(--ds-border)', borderRadius: 'var(--ds-r-md)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div className="ds-form-group" style={{ marginBottom: 0 }}>
+                    <label className="ds-label">Refund Amount (Rs.)</label>
+                    <input type="number" min="0" step="0.01" value={refundAmount} onChange={(e) => setRefundAmount(e.target.value)} className="ds-input" />
                   </div>
-                )}
-              </div>
+                  <div className="ds-form-group" style={{ marginBottom: 0 }}>
+                    <label className="ds-label">Refund Method</label>
+                    <select value={refundMethod} onChange={(e) => setRefundMethod(e.target.value)} className="ds-select">
+                      <option value="Cash">Cash</option>
+                      <option value="Bank Transfer">Bank Transfer</option>
+                      <option value="Cheque">Cheque</option>
+                      <option value="Card">Card</option>
+                    </select>
+                  </div>
+                  <div className="ds-form-group" style={{ marginBottom: 0 }}>
+                    <label className="ds-label">Refund From Account</label>
+                    <select value={refundAccountId} onChange={(e) => setRefundAccountId(e.target.value)} className="ds-select">
+                      <option value="">Select account...</option>
+                      {accounts.map(a => <option key={a._id} value={a._id}>{a.name} ({a.type})</option>)}
+                    </select>
+                  </div>
+                </div>
+              )}
+            </div>
 
-              <div className="flex gap-3 justify-center pt-8">
-                <button
-                  type="button"
-                  disabled={submitting}
-                  onClick={() => { setActiveReturn(null); setModalType(''); }}
-                  className="flex-1 py-3 rounded-xl bg-slate-100 text-[10px] uppercase tracking-wider font-black hover:bg-slate-200 text-slate-700 transition-all disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  disabled={submitting}
-                  onClick={submitApprove}
-                  className="flex-1 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[10px] uppercase tracking-wider font-black shadow-lg shadow-slate-900/20 transition-all disabled:opacity-50"
-                >
-                  {submitting ? 'Approving...' : 'Approve Return'}
-                </button>
-              </div>
+            <div className="ds-modal-footer">
+              <button type="button" disabled={submitting} onClick={() => { setActiveReturn(null); setModalType(''); }} className="ds-btn ds-btn-secondary">
+                Cancel
+              </button>
+              <button type="button" disabled={submitting} onClick={submitApprove} className="ds-btn ds-btn-primary">
+                {submitting ? 'Approving...' : 'Approve Return'}
+              </button>
             </div>
           </div>
         </div>
@@ -491,53 +498,32 @@ const AdminReturns = () => {
 
       {/* Reject Reason Modal */}
       {modalType === 'reject' && activeReturn && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => { setActiveReturn(null); setModalType(''); }}>
-          <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col border border-slate-100" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-6 border-b border-slate-100 flex flex-col items-center justify-center text-center bg-white/80 backdrop-blur-md">
-              <div className="w-12 h-12 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mb-4 text-xl border border-rose-100 shadow-sm">
-                ✕
+        <div className="ds-modal-overlay" onClick={() => { setActiveReturn(null); setModalType(''); }}>
+          <div className="ds-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="ds-modal-header" style={{ flexDirection: 'column', alignItems: 'center' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: '#fff1f2', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+                 <AlertTriangle color="#e11d48" />
               </div>
-              <h3 className="font-black text-slate-900 text-xl">Reject Return Request</h3>
-              <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mt-2">
-                Reason for rejecting <span className="text-slate-800">{activeReturn.holdBillNo}</span>
+              <h3 className="ds-modal-title">Reject Return Request</h3>
+              <p style={{ margin: '8px 0 0 0', color: 'var(--ds-text-muted)', fontSize: '0.85em', textTransform: 'uppercase' }}>
+                Reason for rejecting <span style={{ color: 'var(--ds-text-head)' }}>{activeReturn.holdBillNo}</span>
               </p>
             </div>
 
-            <div className="p-6 bg-slate-50/50">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2">
-                    Rejection Reason
-                  </label>
-                  <textarea
-                    required
-                    rows={3}
-                    value={rejectReason}
-                    onChange={(e) => setRejectReason(e.target.value)}
-                    placeholder="Provide a clear reason..."
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 font-bold text-slate-800 transition-all shadow-sm resize-none"
-                  />
-                </div>
+            <div className="ds-modal-body">
+              <div className="ds-form-group">
+                <label className="ds-label">Rejection Reason</label>
+                <textarea required rows={3} value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} placeholder="Provide a clear reason..." className="ds-input" style={{ resize: 'none' }} />
               </div>
+            </div>
 
-              <div className="flex gap-3 justify-center pt-8">
-                <button
-                  type="button"
-                  disabled={submitting}
-                  onClick={() => { setActiveReturn(null); setModalType(''); }}
-                  className="flex-1 py-3 rounded-xl bg-slate-100 text-[10px] uppercase tracking-wider font-black hover:bg-slate-200 text-slate-700 transition-all disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  disabled={submitting}
-                  onClick={submitReject}
-                  className="flex-1 py-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-[10px] uppercase tracking-wider font-black shadow-lg shadow-rose-500/20 transition-all disabled:opacity-50"
-                >
-                  {submitting ? 'Rejecting...' : 'Confirm Reject'}
-                </button>
-              </div>
+            <div className="ds-modal-footer">
+              <button type="button" disabled={submitting} onClick={() => { setActiveReturn(null); setModalType(''); }} className="ds-btn ds-btn-secondary">
+                Cancel
+              </button>
+              <button type="button" disabled={submitting} onClick={submitReject} className="ds-btn ds-btn-danger">
+                {submitting ? 'Rejecting...' : 'Confirm Reject'}
+              </button>
             </div>
           </div>
         </div>
@@ -554,4 +540,3 @@ const AdminReturns = () => {
 };
 
 export default AdminReturns;
-

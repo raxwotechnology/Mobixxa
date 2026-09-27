@@ -9,8 +9,6 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { toast } from 'react-toastify';
 import { managerNavGroups } from './managerNavItems';
 
-
-
 const now = new Date();
 
 const ManagerPayroll = ({ navItems = managerNavGroups, title = 'Manager Dashboard' }) => {
@@ -60,7 +58,6 @@ const ManagerPayroll = ({ navItems = managerNavGroups, title = 'Manager Dashboar
     catch { toast.error('Failed to fetch report'); }
   };
 
-  // Chart data from report
   const chartData = report?.payrolls?.map(p => ({
     name: (p.employeeId?.name || 'Unknown').split(' ')[0],
     gross: p.grossSalary,
@@ -95,184 +92,187 @@ const ManagerPayroll = ({ navItems = managerNavGroups, title = 'Manager Dashboar
     }
   };
 
-  if (loading) return <DashboardLayout navItems={navItems} title={title}><div className="flex items-center justify-center h-64"><div className="w-10 h-10 border-4 border-primary-blue border-t-transparent rounded-full animate-spin" /></div></DashboardLayout>;
+  if (loading) return (
+    <DashboardLayout navItems={navItems} title={title}>
+      <div className="ds-page">
+        <div className="flex items-center justify-center h-64">
+          <div className="ds-spinner"></div>
+        </div>
+      </div>
+    </DashboardLayout>
+  );
 
   return (
     <DashboardLayout navItems={navItems} title={title}>
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/80 backdrop-blur-md p-6 rounded-3xl border border-slate-100 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-brand-indigo/10 to-brand-violet/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
-          
-          <div className="relative">
-            <h1 className="text-2xl font-semibold text-slate-900 tracking-tight flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-brand-indigo/10 flex items-center justify-center text-brand-indigo">
-                <span className="text-lg">💰</span>
-              </div>
-              Payroll Management
-            </h1>
-            <p className="text-sm font-normal text-slate-500 mt-1">Process salaries with Sri Lankan EPF/ETF compliance</p>
+      <div className="ds-page">
+        <div className="ds-page-header">
+          <div className="ds-page-header-left">
+            <span className="ds-page-header-badge">Payroll</span>
+            <h1>Staff Payroll</h1>
+            <p>Process salaries with Sri Lankan EPF/ETF compliance</p>
+          </div>
+          <div className="ds-page-header-right">
+             <button onClick={exportCSV} className="ds-btn ds-btn-sm ds-btn-secondary">
+               <Download size={14} /> Export CSV
+             </button>
+          </div>
+        </div>
+
+        {/* Global Filter Bar wrapped in ds-card as per rules */}
+        <div className="ds-card mb-6">
+          <div className="ds-filter-bar p-4 flex flex-col sm:flex-row gap-4 items-center">
+             <div className="flex-1 w-full">
+                {/* using EmployeeSelector as ds-search equivalent */}
+                <EmployeeSelector
+                  multiple={false}
+                  employees={employees}
+                  value={selected ? [selected] : []}
+                  onChange={([id]) => setSelected(id || '')}
+                  placeholder="Search employee..."
+                  className="ds-search"
+                />
+             </div>
+             <div className="flex gap-4 w-full sm:w-auto">
+               <select value={month} onChange={(e) => setMonth(Number(e.target.value))} className="ds-select flex-1">
+                  {Array.from({length: 12}, (_, i) => <option key={i+1} value={i+1}>{new Date(2000, i).toLocaleString('en', {month: 'long'})}</option>)}
+               </select>
+               <input type="number" value={year} onChange={(e) => setYear(Number(e.target.value))} className="ds-select w-24" />
+             </div>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 bg-slate-100/50 p-1.5 rounded-2xl w-max">
-          <button onClick={() => setTab('process')} className={`flex items-center gap-2 px-6 py-2.5 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all duration-300 ${tab === 'process' ? 'bg-white text-brand-indigo shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 transparent border border-transparent'}`}><Calculator size={14} strokeWidth={2.5} /> Process Salary</button>
-          <button onClick={() => { setTab('report'); handleFetchReport(); }} className={`flex items-center gap-2 px-6 py-2.5 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all duration-300 ${tab === 'report' ? 'bg-white text-brand-indigo shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 transparent border border-transparent'}`}><FileText size={14} strokeWidth={2.5} /> Monthly Report</button>
-          <button onClick={() => { setTab('epf'); handleFetchReport(); }} className={`flex items-center gap-2 px-6 py-2.5 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all duration-300 ${tab === 'epf' ? 'bg-white text-brand-indigo shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 transparent border border-transparent'}`}><CreditCard size={14} strokeWidth={2.5} /> EPF/ETF Summary</button>
+        <div className="flex gap-2 mb-6">
+          <button onClick={() => setTab('process')} className={`ds-btn ds-btn-sm ${tab === 'process' ? 'ds-btn-primary' : 'ds-btn-ghost'}`}><Calculator size={14} /> Process Salary</button>
+          <button onClick={() => { setTab('report'); handleFetchReport(); }} className={`ds-btn ds-btn-sm ${tab === 'report' ? 'ds-btn-primary' : 'ds-btn-ghost'}`}><FileText size={14} /> Monthly Report</button>
+          <button onClick={() => { setTab('epf'); handleFetchReport(); }} className={`ds-btn ds-btn-sm ${tab === 'epf' ? 'ds-btn-primary' : 'ds-btn-ghost'}`}><CreditCard size={14} /> EPF/ETF Summary</button>
         </div>
 
         {tab === 'process' && (
           <div className="grid lg:grid-cols-2 gap-6">
-            {/* Salary Form */}
-            <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm">
-              <h2 className="text-lg font-black text-slate-900 mb-5 flex items-center gap-2">
-                <Calculator size={18} className="text-brand-indigo" strokeWidth={2.5} /> Calculate Salary
-              </h2>
-              <div className="space-y-5">
-                <div className="relative text-left">
-                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Employee</label>
-                  <EmployeeSelector
-                    multiple={false}
-                    employees={employees}
-                    value={selected ? [selected] : []}
-                    onChange={([id]) => setSelected(id || '')}
-                    placeholder="Search and select employee..."
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Month</label>
-                    <select value={month} onChange={(e) => setMonth(Number(e.target.value))} className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo shadow-sm cursor-pointer">
-                      {Array.from({length: 12}, (_, i) => <option key={i+1} value={i+1}>{new Date(2000, i).toLocaleString('en', {month: 'long'})}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Year</label>
-                    <input type="number" value={year} onChange={(e) => setYear(Number(e.target.value))} className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo shadow-sm" />
-                  </div>
-                </div>
+            <div className="ds-card">
+              <div className="ds-card-header">
+                <h2 className="ds-card-title"><Calculator size={18} /> Calculate Salary</h2>
+              </div>
+              <div className="ds-card-body space-y-4">
                 <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Allowances</label>
-                    <input type="number" value={allowances} onChange={(e) => setAllowances(Number(e.target.value))} className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo shadow-sm" />
+                  <div className="ds-form-group">
+                    <label className="ds-label">Allowances</label>
+                    <input type="number" value={allowances} onChange={(e) => setAllowances(Number(e.target.value))} className="ds-input" />
                   </div>
-                  <div>
-                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Bonuses</label>
-                    <input type="number" value={bonuses} onChange={(e) => setBonuses(Number(e.target.value))} className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo shadow-sm" />
+                  <div className="ds-form-group">
+                    <label className="ds-label">Bonuses</label>
+                    <input type="number" value={bonuses} onChange={(e) => setBonuses(Number(e.target.value))} className="ds-input" />
                   </div>
-                  <div>
-                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-2">Deductions</label>
-                    <input type="number" value={deductions} onChange={(e) => setDeductions(Number(e.target.value))} className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo shadow-sm" />
+                  <div className="ds-form-group">
+                    <label className="ds-label">Deductions</label>
+                    <input type="number" value={deductions} onChange={(e) => setDeductions(Number(e.target.value))} className="ds-input" />
                   </div>
                 </div>
-                <button onClick={handleCalculate} className="w-full bg-slate-900 hover:bg-slate-800 text-white text-[11px] uppercase tracking-wider font-black py-3 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 group mt-2">
-                  <Calculator size={14} className="group-hover:rotate-12 transition-transform" /> Calculate Preview
+                <button onClick={handleCalculate} className="ds-btn ds-btn-secondary w-full mt-2">
+                  <Calculator size={14} /> Calculate Preview
                 </button>
               </div>
             </div>
 
-            {/* Preview Card */}
-            <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-brand-indigo/5 rounded-bl-[100px] pointer-events-none -z-10"></div>
-              <h2 className="text-lg font-black text-slate-900 mb-5 relative z-10 flex items-center gap-2">
-                 Salary Preview
-              </h2>
-              {!preview ? (
-                <div className="text-center py-16 text-slate-400 relative z-10">
-                  <CreditCard size={48} strokeWidth={1} className="mx-auto mb-4 text-slate-200" />
-                  <p className="text-sm font-bold">Select an employee and calculate to see preview</p>
-                </div>
-              ) : (
-                <div className="space-y-4 relative z-10">
-                  <div className="bg-emerald-50 rounded-2xl p-5 border border-emerald-100 mb-2">
-                    <p className="text-[10px] font-black uppercase tracking-wider text-emerald-600 mb-1">Employee</p>
-                    <p className="font-black text-slate-900 text-xl">{preview.employeeName}</p>
-                    <p className="text-[10px] font-bold text-emerald-700 font-mono tracking-widest">{month}/{year}</p>
+            <div className="ds-card">
+              <div className="ds-card-header">
+                <h2 className="ds-card-title">Salary Preview</h2>
+              </div>
+              <div className="ds-card-body">
+                {!preview ? (
+                  <div className="ds-empty">
+                    <CreditCard size={48} className="mx-auto mb-4 text-slate-200" />
+                    <p>Select an employee and calculate to see preview</p>
                   </div>
-                  <div className="space-y-3 text-sm bg-slate-50/50 rounded-2xl p-5 border border-slate-100">
-                    <div className="flex justify-between items-center"><span className="text-[11px] font-black uppercase tracking-wider text-slate-500">Basic Salary</span><span className="font-black text-slate-900 text-base">Rs. {preview.basicSalary.toLocaleString()}</span></div>
-                    {preview.allowances > 0 && <div className="flex justify-between items-center"><span className="text-[11px] font-black uppercase tracking-wider text-slate-500">Allowances</span><span className="font-black text-emerald-600">+ Rs. {preview.allowances.toLocaleString()}</span></div>}
-                    {preview.overtimePay > 0 && <div className="flex justify-between items-center"><span className="text-[11px] font-black uppercase tracking-wider text-slate-500">Overtime</span><span className="font-black text-emerald-600">+ Rs. {preview.overtimePay.toLocaleString()}</span></div>}
-                    {preview.targetBonus > 0 && <div className="flex justify-between items-center"><span className="text-[11px] font-black uppercase tracking-wider text-slate-500">Target Incentive (Auto)</span><span className="font-black text-emerald-600">+ Rs. {preview.targetBonus.toLocaleString()}</span></div>}
-                    {preview.bonuses > 0 && <div className="flex justify-between items-center"><span className="text-[11px] font-black uppercase tracking-wider text-slate-500">Custom Bonuses</span><span className="font-black text-emerald-600">+ Rs. {preview.bonuses.toLocaleString()}</span></div>}
-                    <div className="h-px bg-slate-200 w-full my-2"></div>
-                    <div className="flex justify-between items-center"><span className="text-[11px] font-black uppercase tracking-wider text-slate-500">Gross Salary</span><span className="font-black text-slate-900 text-base">Rs. {preview.grossSalary.toLocaleString()}</span></div>
-                    <div className="h-px bg-slate-200 w-full my-2"></div>
-                    <div className="flex justify-between items-center"><span className="text-[11px] font-black uppercase tracking-wider text-slate-500">EPF Employee (8%)</span><span className="font-black text-rose-500">- Rs. {preview.epfEmployee.toLocaleString()}</span></div>
-                    {preview.otherDeductions > 0 && <div className="flex justify-between items-center"><span className="text-[11px] font-black uppercase tracking-wider text-slate-500">Other Deductions</span><span className="font-black text-rose-500">- Rs. {preview.otherDeductions.toLocaleString()}</span></div>}
-                    {preview.attendanceDeductions > 0 && <div className="flex justify-between items-center"><span className="text-[11px] font-black uppercase tracking-wider text-slate-500">Attendance Deductions</span><span className="font-black text-rose-500">- Rs. {preview.attendanceDeductions.toLocaleString()}</span></div>}
-                    {preview.cashierRecoveryDeduction > 0 && <div className="flex justify-between items-center"><span className="text-[11px] font-black uppercase tracking-wider text-slate-500">Cashier Shortage Recovery</span><span className="font-black text-rose-500">- Rs. {preview.cashierRecoveryDeduction.toLocaleString()}</span></div>}
-                    {preview.advanceDeduction > 0 && <div className="flex justify-between items-center"><span className="text-[11px] font-black uppercase tracking-wider text-slate-500">Salary Advances</span><span className="font-black text-rose-500">- Rs. {preview.advanceDeduction.toLocaleString()}</span></div>}
-                    <div className="h-px bg-slate-200 w-full my-2"></div>
-                    <div className="flex justify-between items-end mt-4"><span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Net Salary</span><span className="text-3xl font-black tracking-tight text-emerald-600">Rs. {preview.netSalary.toLocaleString()}</span></div>
-                    
-                    {/* EPF/ETF Breakdown */}
-                    <div className="bg-amber-50/50 rounded-xl p-4 mt-6 border border-amber-100/50">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-amber-700 mb-3 flex items-center gap-1.5"><Landmark size={12} /> Statutory Contributions (Employer)</p>
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center"><span className="text-[10px] font-black tracking-wider text-amber-600 uppercase">EPF Employer (12%)</span><span className="font-black text-amber-800">Rs. {preview.epfEmployer.toLocaleString()}</span></div>
-                        <div className="flex justify-between items-center"><span className="text-[10px] font-black tracking-wider text-amber-600 uppercase">ETF Employer (3%)</span><span className="font-black text-amber-800">Rs. {preview.etfEmployer.toLocaleString()}</span></div>
-                      </div>
-                      <div className="h-px bg-amber-200/50 w-full my-3"></div>
-                      <div className="flex justify-between items-center"><span className="text-[11px] font-black tracking-wider text-amber-800 uppercase">Total Employer Cost</span><span className="font-black text-amber-900 text-base">Rs. {(preview.grossSalary + preview.epfEmployer + preview.etfEmployer).toLocaleString()}</span></div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="bg-slate-50 rounded-lg p-4 mb-2">
+                      <p className="text-sm font-bold text-slate-500 mb-1">Employee</p>
+                      <p className="font-bold text-xl">{preview.employeeName}</p>
+                      <p className="text-xs font-mono">{month}/{year}</p>
                     </div>
+                    <div className="space-y-2 text-sm border-t pt-4">
+                      <div className="flex justify-between"><span>Basic Salary</span><span className="font-bold">Rs. {preview.basicSalary.toLocaleString()}</span></div>
+                      {preview.allowances > 0 && <div className="flex justify-between"><span>Allowances</span><span className="font-bold text-emerald-600">+ Rs. {preview.allowances.toLocaleString()}</span></div>}
+                      {preview.overtimePay > 0 && <div className="flex justify-between"><span>Overtime</span><span className="font-bold text-emerald-600">+ Rs. {preview.overtimePay.toLocaleString()}</span></div>}
+                      {preview.targetBonus > 0 && <div className="flex justify-between"><span>Target Incentive</span><span className="font-bold text-emerald-600">+ Rs. {preview.targetBonus.toLocaleString()}</span></div>}
+                      {preview.bonuses > 0 && <div className="flex justify-between"><span>Custom Bonuses</span><span className="font-bold text-emerald-600">+ Rs. {preview.bonuses.toLocaleString()}</span></div>}
+                      <div className="h-px bg-slate-200 w-full my-2"></div>
+                      <div className="flex justify-between"><span>Gross Salary</span><span className="font-bold">Rs. {preview.grossSalary.toLocaleString()}</span></div>
+                      <div className="h-px bg-slate-200 w-full my-2"></div>
+                      <div className="flex justify-between"><span>EPF Employee (8%)</span><span className="font-bold text-rose-500">- Rs. {preview.epfEmployee.toLocaleString()}</span></div>
+                      {preview.otherDeductions > 0 && <div className="flex justify-between"><span>Other Deductions</span><span className="font-bold text-rose-500">- Rs. {preview.otherDeductions.toLocaleString()}</span></div>}
+                      {preview.attendanceDeductions > 0 && <div className="flex justify-between"><span>Attendance Deductions</span><span className="font-bold text-rose-500">- Rs. {preview.attendanceDeductions.toLocaleString()}</span></div>}
+                      {preview.cashierRecoveryDeduction > 0 && <div className="flex justify-between"><span>Cashier Shortage Recovery</span><span className="font-bold text-rose-500">- Rs. {preview.cashierRecoveryDeduction.toLocaleString()}</span></div>}
+                      {preview.advanceDeduction > 0 && <div className="flex justify-between"><span>Salary Advances</span><span className="font-bold text-rose-500">- Rs. {preview.advanceDeduction.toLocaleString()}</span></div>}
+                      <div className="h-px bg-slate-200 w-full my-2"></div>
+                      <div className="flex justify-between items-end mt-4"><span>Net Salary</span><span className="text-2xl font-bold text-emerald-600">Rs. {preview.netSalary.toLocaleString()}</span></div>
+                      
+                      {/* EPF/ETF Breakdown */}
+                      <div className="bg-amber-50 rounded-lg p-4 mt-4">
+                        <p className="text-xs font-bold text-amber-700 mb-2">Statutory Contributions (Employer)</p>
+                        <div className="flex justify-between text-xs"><span>EPF Employer (12%)</span><span className="font-bold">Rs. {preview.epfEmployer.toLocaleString()}</span></div>
+                        <div className="flex justify-between text-xs mt-1"><span>ETF Employer (3%)</span><span className="font-bold">Rs. {preview.etfEmployer.toLocaleString()}</span></div>
+                      </div>
+                    </div>
+                    <button onClick={handleProcess} className="ds-btn ds-btn-primary w-full mt-4"><Send size={14} /> Process & Send Notification</button>
                   </div>
-                  <button onClick={handleProcess} className="w-full bg-brand-indigo hover:bg-indigo-700 text-white text-[11px] uppercase tracking-wider font-black py-4 rounded-xl transition-all shadow-lg shadow-brand-indigo/20 flex items-center justify-center gap-2 mt-4 hover:shadow-xl hover:-translate-y-0.5"><Send size={14} /> Process & Send Notification</button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         )}
 
         {tab === 'report' && (
-          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-              <div>
-                <h2 className="text-lg font-black text-slate-900 tracking-tight">Payroll Report — {month}/{year}</h2>
-                {report && <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 mt-1 block">{report.count} records generated</span>}
-              </div>
-              {report?.payrolls?.length > 0 && <button onClick={exportCSV} className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-[11px] uppercase tracking-wider font-black px-4 py-2.5 rounded-xl transition-all shadow-md hover:shadow-lg"><Download size={14} strokeWidth={2.5} /> Export CSV</button>}
+          <div className="ds-card">
+            <div className="ds-card-header">
+              <h2 className="ds-card-title">Payroll Report — {month}/{year}</h2>
+              {report && <span className="text-xs text-slate-500 ml-4">{report.count} records generated</span>}
             </div>
+            
             {!report || report.payrolls.length === 0 ? (
-              <div className="text-center py-20 text-slate-400">
-                <FileText size={48} strokeWidth={1} className="mx-auto mb-4 text-slate-200" />
-                <p className="text-sm font-bold">No payroll records for this month</p>
+              <div className="ds-card-body">
+                <div className="ds-empty">
+                  <FileText size={48} className="mx-auto mb-4 text-slate-200" />
+                  <p>No payroll records for this month</p>
+                </div>
               </div>
             ) : (
               <>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left">
-                    <thead className="bg-slate-50 text-[10px] uppercase font-black tracking-wider text-slate-500 border-b border-slate-200">
+                <div className="ds-table-wrap">
+                  <table className="ds-table">
+                    <thead>
                       <tr>
-                        <th className="px-6 py-5">Employee</th>
-                        <th className="px-4 py-5 text-right">Basic</th>
-                        <th className="px-4 py-5 text-right">Gross</th>
-                        <th className="px-4 py-5 text-right text-rose-500">EPF 8%</th>
-                        <th className="px-4 py-5 text-right text-amber-600">EPF 12%</th>
-                        <th className="px-4 py-5 text-right text-amber-600">ETF 3%</th>
-                        <th className="px-4 py-5 text-right text-brand-indigo">Net</th>
-                        <th className="px-4 py-5 text-center">Status</th>
-                        <th className="px-6 py-5 text-right">Paysheet</th>
+                        <th>Employee</th>
+                        <th className="text-right">Basic</th>
+                        <th className="text-right">Gross</th>
+                        <th className="text-right">EPF 8%</th>
+                        <th className="text-right">EPF 12%</th>
+                        <th className="text-right">ETF 3%</th>
+                        <th className="text-right">Net</th>
+                        <th className="text-center">Status</th>
+                        <th className="text-right">Paysheet</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody>
                       {report.payrolls.map(p => (
-                        <tr key={p._id} className="hover:bg-slate-50/50 transition-colors">
-                          <td className="px-6 py-4 font-black text-slate-800">{p.employeeId?.name}</td>
-                          <td className="px-4 py-4 text-right font-bold text-slate-600">Rs. {p.basicSalary?.toLocaleString()}</td>
-                          <td className="px-4 py-4 text-right font-black text-slate-900">Rs. {p.grossSalary?.toLocaleString()}</td>
-                          <td className="px-4 py-4 text-right font-bold text-rose-500">Rs. {p.epfEmployee?.toLocaleString()}</td>
-                          <td className="px-4 py-4 text-right font-bold text-amber-600">Rs. {p.epfEmployer?.toLocaleString()}</td>
-                          <td className="px-4 py-4 text-right font-bold text-amber-600">Rs. {p.etfEmployer?.toLocaleString()}</td>
-                          <td className="px-4 py-4 text-right font-black text-emerald-600 tracking-tight text-base">Rs. {p.netSalary?.toLocaleString()}</td>
-                          <td className="px-4 py-4 text-center">
-                            <span className="text-[10px] uppercase font-black tracking-wider px-3 py-1.5 rounded-lg border bg-emerald-50 text-emerald-600 border-emerald-100">
+                        <tr key={p._id}>
+                          <td className="font-bold">{p.employeeId?.name}</td>
+                          <td className="text-right">Rs. {p.basicSalary?.toLocaleString()}</td>
+                          <td className="text-right font-bold">Rs. {p.grossSalary?.toLocaleString()}</td>
+                          <td className="text-right text-rose-500">Rs. {p.epfEmployee?.toLocaleString()}</td>
+                          <td className="text-right text-amber-600">Rs. {p.epfEmployer?.toLocaleString()}</td>
+                          <td className="text-right text-amber-600">Rs. {p.etfEmployer?.toLocaleString()}</td>
+                          <td className="text-right font-bold text-emerald-600">Rs. {p.netSalary?.toLocaleString()}</td>
+                          <td className="text-center">
+                            <span className="ds-badge ds-badge-green">
                               {p.status}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-right">
-                            <button onClick={() => handleDownloadPaysheet(p)} className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-[10px] uppercase tracking-wider font-black transition-colors border border-slate-200/50">
-                              <Download size={12} strokeWidth={2.5} /> PDF
+                          <td className="text-right">
+                            <button onClick={() => handleDownloadPaysheet(p)} className="ds-btn ds-btn-sm ds-btn-ghost">
+                              <Download size={12} /> PDF
                             </button>
                           </td>
                         </tr>
@@ -280,13 +280,30 @@ const ManagerPayroll = ({ navItems = managerNavGroups, title = 'Manager Dashboar
                     </tbody>
                   </table>
                 </div>
-                {/* Totals */}
-                <div className="px-6 py-5 border-t border-slate-100 bg-slate-50/50 grid grid-cols-2 sm:grid-cols-5 gap-4">
-                  <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm"><p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">Total Gross</p><p className="font-black text-slate-900 text-lg tracking-tight">Rs. {report.totals.totalGross.toLocaleString()}</p></div>
-                  <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm"><p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">Total Net</p><p className="font-black text-emerald-600 text-lg tracking-tight">Rs. {report.totals.totalNet.toLocaleString()}</p></div>
-                  <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm"><p className="text-[10px] font-black uppercase tracking-wider text-rose-500 mb-1">EPF Employee</p><p className="font-black text-rose-600 text-lg tracking-tight">Rs. {report.totals.totalEPFEmployee.toLocaleString()}</p></div>
-                  <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm"><p className="text-[10px] font-black uppercase tracking-wider text-amber-600 mb-1">EPF Employer</p><p className="font-black text-amber-600 text-lg tracking-tight">Rs. {report.totals.totalEPFEmployer.toLocaleString()}</p></div>
-                  <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm"><p className="text-[10px] font-black uppercase tracking-wider text-amber-600 mb-1">ETF Employer</p><p className="font-black text-amber-600 text-lg tracking-tight">Rs. {report.totals.totalETF.toLocaleString()}</p></div>
+                
+                <div className="ds-card-body border-t bg-slate-50">
+                  <div className="ds-stats grid grid-cols-2 sm:grid-cols-5 gap-4">
+                    <div className="ds-stat">
+                      <div className="ds-stat-label">Total Gross</div>
+                      <div className="ds-stat-value">Rs. {report.totals.totalGross.toLocaleString()}</div>
+                    </div>
+                    <div className="ds-stat">
+                      <div className="ds-stat-label">Total Net</div>
+                      <div className="ds-stat-value text-emerald-600">Rs. {report.totals.totalNet.toLocaleString()}</div>
+                    </div>
+                    <div className="ds-stat">
+                      <div className="ds-stat-label">EPF Employee</div>
+                      <div className="ds-stat-value text-rose-500">Rs. {report.totals.totalEPFEmployee.toLocaleString()}</div>
+                    </div>
+                    <div className="ds-stat">
+                      <div className="ds-stat-label">EPF Employer</div>
+                      <div className="ds-stat-value text-amber-600">Rs. {report.totals.totalEPFEmployer.toLocaleString()}</div>
+                    </div>
+                    <div className="ds-stat">
+                      <div className="ds-stat-label">ETF Employer</div>
+                      <div className="ds-stat-value text-amber-600">Rs. {report.totals.totalETF.toLocaleString()}</div>
+                    </div>
+                  </div>
                 </div>
               </>
             )}
@@ -295,60 +312,56 @@ const ManagerPayroll = ({ navItems = managerNavGroups, title = 'Manager Dashboar
 
         {tab === 'epf' && (
           <div className="space-y-6">
-            {/* EPF/ETF Info Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-rose-50 rounded-bl-[100px] pointer-events-none -z-10 group-hover:scale-110 transition-transform"></div>
-                <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">EPF Employee (8%)</p>
-                <p className="text-3xl font-black text-slate-900 tracking-tight">Rs. {(report?.totals?.totalEPFEmployee || 0).toLocaleString()}</p>
-                <p className="text-[10px] font-bold text-rose-500 mt-3 uppercase tracking-wider bg-rose-50 w-max px-2 py-1 rounded-md">Deducted from employee salary</p>
+            <div className="ds-stats grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <div className="ds-stat bg-white p-6 rounded-lg border shadow-sm">
+                <div className="ds-stat-label text-slate-500">EPF Employee (8%)</div>
+                <div className="ds-stat-value text-3xl font-bold">Rs. {(report?.totals?.totalEPFEmployee || 0).toLocaleString()}</div>
+                <div className="ds-stat-sub text-rose-500 mt-2">Deducted from employee salary</div>
               </div>
-              <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-50 rounded-bl-[100px] pointer-events-none -z-10 group-hover:scale-110 transition-transform"></div>
-                <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">EPF Employer (12%)</p>
-                <p className="text-3xl font-black text-slate-900 tracking-tight">Rs. {(report?.totals?.totalEPFEmployer || 0).toLocaleString()}</p>
-                <p className="text-[10px] font-bold text-amber-600 mt-3 uppercase tracking-wider bg-amber-50 w-max px-2 py-1 rounded-md">Contributed by employer</p>
+              <div className="ds-stat bg-white p-6 rounded-lg border shadow-sm">
+                <div className="ds-stat-label text-slate-500">EPF Employer (12%)</div>
+                <div className="ds-stat-value text-3xl font-bold">Rs. {(report?.totals?.totalEPFEmployer || 0).toLocaleString()}</div>
+                <div className="ds-stat-sub text-amber-600 mt-2">Contributed by employer</div>
               </div>
-              <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-bl-[100px] pointer-events-none -z-10 group-hover:scale-110 transition-transform"></div>
-                <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">ETF Employer (3%)</p>
-                <p className="text-3xl font-black text-slate-900 tracking-tight">Rs. {(report?.totals?.totalETF || 0).toLocaleString()}</p>
-                <p className="text-[10px] font-bold text-emerald-600 mt-3 uppercase tracking-wider bg-emerald-50 w-max px-2 py-1 rounded-md">Employment Trust Fund</p>
+              <div className="ds-stat bg-white p-6 rounded-lg border shadow-sm">
+                <div className="ds-stat-label text-slate-500">ETF Employer (3%)</div>
+                <div className="ds-stat-value text-3xl font-bold">Rs. {(report?.totals?.totalETF || 0).toLocaleString()}</div>
+                <div className="ds-stat-sub text-emerald-600 mt-2">Employment Trust Fund</div>
               </div>
             </div>
 
-            {/* Total Employer Liability */}
-            <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm">
-              <h2 className="text-lg font-black text-slate-900 mb-5 flex items-center gap-2">
-                 📊 Total Employer Liability
-              </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100">
-                  <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">Total Gross</p>
-                  <p className="text-xl font-black text-slate-900 tracking-tight">Rs. {(report?.totals?.totalGross || 0).toLocaleString()}</p>
-                </div>
-                <div className="bg-amber-50 rounded-2xl p-5 border border-amber-100">
-                  <p className="text-[10px] font-black uppercase tracking-wider text-amber-600 mb-1">EPF (8%+12%)</p>
-                  <p className="text-xl font-black text-amber-900 tracking-tight">Rs. {((report?.totals?.totalEPFEmployee || 0) + (report?.totals?.totalEPFEmployer || 0)).toLocaleString()}</p>
-                </div>
-                <div className="bg-emerald-50 rounded-2xl p-5 border border-emerald-100">
-                  <p className="text-[10px] font-black uppercase tracking-wider text-emerald-600 mb-1">ETF (3%)</p>
-                  <p className="text-xl font-black text-emerald-900 tracking-tight">Rs. {(report?.totals?.totalETF || 0).toLocaleString()}</p>
-                </div>
-                <div className="bg-brand-indigo/5 rounded-2xl p-5 border border-brand-indigo/10">
-                  <p className="text-[10px] font-black uppercase tracking-wider text-brand-indigo mb-1">Total Cost to Company</p>
-                  <p className="text-xl font-black text-indigo-900 tracking-tight">Rs. {((report?.totals?.totalGross || 0) + (report?.totals?.totalEPFEmployer || 0) + (report?.totals?.totalETF || 0)).toLocaleString()}</p>
+            <div className="ds-card">
+              <div className="ds-card-header">
+                <h2 className="ds-card-title">Total Employer Liability</h2>
+              </div>
+              <div className="ds-card-body">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div className="bg-slate-50 p-4 rounded-lg">
+                    <p className="text-xs font-bold text-slate-500">Total Gross</p>
+                    <p className="font-bold text-lg">Rs. {(report?.totals?.totalGross || 0).toLocaleString()}</p>
+                  </div>
+                  <div className="bg-amber-50 p-4 rounded-lg">
+                    <p className="text-xs font-bold text-amber-600">EPF (8%+12%)</p>
+                    <p className="font-bold text-lg text-amber-900">Rs. {((report?.totals?.totalEPFEmployee || 0) + (report?.totals?.totalEPFEmployer || 0)).toLocaleString()}</p>
+                  </div>
+                  <div className="bg-emerald-50 p-4 rounded-lg">
+                    <p className="text-xs font-bold text-emerald-600">ETF (3%)</p>
+                    <p className="font-bold text-lg text-emerald-900">Rs. {(report?.totals?.totalETF || 0).toLocaleString()}</p>
+                  </div>
+                  <div className="bg-indigo-50 p-4 rounded-lg">
+                    <p className="text-xs font-bold text-indigo-600">Total Cost to Company</p>
+                    <p className="font-bold text-lg text-indigo-900">Rs. {((report?.totals?.totalGross || 0) + (report?.totals?.totalEPFEmployer || 0) + (report?.totals?.totalETF || 0)).toLocaleString()}</p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Chart */}
             {chartData.length > 0 && (
-              <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm">
-                <h2 className="text-lg font-black text-slate-900 mb-5 flex items-center gap-2">
-                  📈 Salary & Contributions Breakdown
-                </h2>
-                <div className="h-[350px] w-full mt-4">
+              <div className="ds-card">
+                <div className="ds-card-header">
+                  <h2 className="ds-card-title">Salary & Contributions Breakdown</h2>
+                </div>
+                <div className="ds-card-body h-[350px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
@@ -369,33 +382,6 @@ const ManagerPayroll = ({ navItems = managerNavGroups, title = 'Manager Dashboar
                 </div>
               </div>
             )}
-
-            {/* Sri Lankan Compliance Info */}
-            <div className="bg-brand-indigo/5 rounded-3xl p-6 border border-brand-indigo/10 relative overflow-hidden">
-              <div className="absolute -right-4 -bottom-4 opacity-5 pointer-events-none">
-                <Landmark size={150} />
-              </div>
-              <h3 className="text-sm font-black text-brand-indigo mb-4 uppercase tracking-wider flex items-center gap-2">🇱🇰 Sri Lankan Statutory Compliance</h3>
-              <div className="grid sm:grid-cols-3 gap-6 relative z-10">
-                <div className="bg-white/60 backdrop-blur-sm p-4 rounded-2xl border border-white">
-                  <p className="font-black text-slate-800 mb-2">EPF (Employees' Provident Fund)</p>
-                  <p className="text-xs font-bold text-slate-600 mb-1">Employee: <span className="text-rose-500">8%</span> of gross salary</p>
-                  <p className="text-xs font-bold text-slate-600 mb-2">Employer: <span className="text-amber-600">12%</span> of gross salary</p>
-                  <p className="text-[10px] font-black uppercase tracking-wider mt-2 text-brand-indigo bg-brand-indigo/10 px-2 py-1 rounded w-max">Total: 20% goes to EPF</p>
-                </div>
-                <div className="bg-white/60 backdrop-blur-sm p-4 rounded-2xl border border-white">
-                  <p className="font-black text-slate-800 mb-2">ETF (Employees' Trust Fund)</p>
-                  <p className="text-xs font-bold text-slate-600 mb-2">Employer: <span className="text-emerald-600">3%</span> of gross salary</p>
-                  <p className="text-[10px] font-black uppercase tracking-wider mt-2 text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-1 rounded w-max">Entirely employer-borne</p>
-                </div>
-                <div className="bg-white/60 backdrop-blur-sm p-4 rounded-2xl border border-white">
-                  <p className="font-black text-slate-800 mb-2">Payment Deadlines</p>
-                  <p className="text-xs font-bold text-slate-600 mb-1">EPF: Before 15th of next month</p>
-                  <p className="text-xs font-bold text-slate-600 mb-2">ETF: Before 15th of next month</p>
-                  <p className="text-[10px] font-black uppercase tracking-wider mt-2 text-rose-500 bg-rose-50 border border-rose-100 px-2 py-1 rounded w-max">Penalties for late payments apply</p>
-                </div>
-              </div>
-            </div>
           </div>
         )}
       </div>

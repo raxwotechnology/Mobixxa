@@ -49,9 +49,9 @@ const StoreDetail = () => {
     return (
       <div className="base-container py-20 text-center">
         <div className="w-16 h-16 bg-slate-50 border border-slate-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-          <span className="text-2xl">🏪</span>
+          
         </div>
-        <h2 className="text-2xl font-black text-slate-800 mb-2">Store Not Found</h2>
+        <h2 className="text-2xl font-bold text-slate-800 mb-2">Store Not Found</h2>
         <Link to="/stores" className="text-brand-indigo font-bold hover:underline">Back to Stores</Link>
       </div>
     );
@@ -73,7 +73,7 @@ const StoreDetail = () => {
               <img src={getImageUrl(store.logo) || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&auto=format&fit=crop&q=60'} alt="" className="w-full h-full object-cover rounded-xl" />
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-black text-white mt-0 mb-1 drop-shadow-md">{store.name}</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-white mt-0 mb-1 drop-shadow-md">{store.name}</h1>
               <div className="flex items-center gap-4 text-white/80 text-xs font-bold uppercase tracking-wider flex-wrap">
                 {store.city && (
                   <span className="flex items-center gap-1"><MapPin size={13} className="text-brand-indigo" /> {store.city}</span>
@@ -82,7 +82,7 @@ const StoreDetail = () => {
                   <span className="flex items-center gap-1"><Clock size={13} className="text-brand-indigo" /> {store.operatingHours.open} - {store.operatingHours.close}</span>
                 )}
                 {store.isActive && (
-                  <span className="bg-emerald-600 text-white text-[10px] font-black px-2.5 py-1 rounded-xl">Open Now</span>
+                  <span className="bg-emerald-600 text-white text-xs font-bold px-2.5 py-1 rounded-xl">Open Now</span>
                 )}
               </div>
             </div>
@@ -100,11 +100,11 @@ const StoreDetail = () => {
         >
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-2">
-              <h3 className="font-extrabold text-slate-800 text-sm uppercase tracking-wider mt-0 mb-3 border-b border-slate-100 pb-2">About the Showroom</h3>
+              <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wider mt-0 mb-3 border-b border-slate-100 pb-2">About the Showroom</h3>
               <p className="text-xs font-semibold text-slate-400 leading-relaxed m-0">{store.description}</p>
             </div>
             <div>
-              <h3 className="font-extrabold text-slate-800 text-sm uppercase tracking-wider mt-0 mb-3 border-b border-slate-100 pb-2">Contact Details</h3>
+              <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wider mt-0 mb-3 border-b border-slate-100 pb-2">Contact Details</h3>
               <div className="space-y-3">
                 {store.phone && (
                   <p className="text-xs font-bold text-slate-650 m-0 flex items-center gap-2">
@@ -128,7 +128,7 @@ const StoreDetail = () => {
 
         {/* Store Products */}
         <div>
-          <h2 className="text-xl md:text-2xl font-black text-slate-850 mb-6 mt-0">Products from {store.name}</h2>
+          <h2 className="text-xl md:text-2xl font-bold text-slate-850 mb-6 mt-0">Products from {store.name}</h2>
           {products.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {products.map((product, i) => (
@@ -145,9 +145,9 @@ const StoreDetail = () => {
           ) : (
             <div className="bg-white border border-slate-200/60 rounded-[2rem] p-12 text-center shadow-sm">
               <div className="w-16 h-16 bg-slate-50 border border-slate-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <span className="text-2xl">📦</span>
+                
               </div>
-              <h3 className="text-lg font-black text-slate-800 m-0">No Products Yet</h3>
+              <h3 className="text-lg font-bold text-slate-800 m-0">No Products Yet</h3>
               <p className="text-slate-400 text-sm font-semibold mt-1 mb-0">This store hasn't added any products.</p>
             </div>
           )}

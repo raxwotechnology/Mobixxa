@@ -24,7 +24,7 @@ export default function StoreCard({ store }) {
 
         {/* Top-Right Badge: OPEN SHOWROOM */}
         <div className="absolute top-4 right-4 z-20">
-          <span className="bg-[#2080f0]/90 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm">
+          <span className="bg-[#2080f0]/90 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm">
             <span className="w-2 h-2 rounded-full bg-cyan-300 animate-pulse" />
             <span>{store.status}</span>
           </span>
@@ -32,7 +32,7 @@ export default function StoreCard({ store }) {
 
         {/* Top-Left Subtle City Tag */}
         <div className="absolute top-4 left-4 z-20">
-          <span className="bg-black/50 backdrop-blur-md text-white/90 text-[10px] font-semibold px-2.5 py-1 rounded-full border border-white/20">
+          <span className="bg-black/50 backdrop-blur-md text-white/90 text-xs font-semibold px-2.5 py-1 rounded-full border border-white/20">
             {store.city}
           </span>
         </div>
@@ -43,7 +43,7 @@ export default function StoreCard({ store }) {
             <Building2 className="w-4 h-4 text-blue-400 flex-shrink-0" />
             <span>{store.name}</span>
             {store.subtitle && (
-              <span className="text-[9px] text-blue-300 font-semibold tracking-wider bg-blue-900/60 px-2 py-0.5 rounded-full border border-blue-500/30">
+              <span className="text-xs text-blue-300 font-semibold tracking-wider bg-blue-900/60 px-2 py-0.5 rounded-full border border-blue-500/30">
                 {store.subtitle}
               </span>
             )}
@@ -69,7 +69,7 @@ export default function StoreCard({ store }) {
         {/* Info Row (Hours + Phone) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           {/* Left Pill: Hours */}
-          <div className="border border-slate-200 rounded-xl px-3 py-1.5 text-[11px] text-slate-600 font-semibold flex items-center gap-1.5 bg-white">
+          <div className="border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-600 font-semibold flex items-center gap-1.5 bg-white">
             <Clock className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
             <span>{store.hours}</span>
           </div>
@@ -77,7 +77,7 @@ export default function StoreCard({ store }) {
           {/* Right Pill: Phone */}
           <a
             href={`tel:${store.phone.replace(/\s+/g, "")}`}
-            className="border border-slate-200 rounded-xl px-3 py-1.5 text-[11px] text-slate-600 font-semibold flex items-center gap-1.5 bg-white hover:text-blue-600 hover:border-blue-300 transition-colors"
+            className="border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-600 font-semibold flex items-center gap-1.5 bg-white hover:text-blue-600 hover:border-blue-300 transition-colors"
           >
             <Phone className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
             <span>{store.phone}</span>
@@ -133,10 +133,10 @@ function ShowroomInteriorGraphic({ type }) {
       <div className="absolute inset-x-8 top-16 h-28 border border-slate-800/90 rounded-xl bg-slate-900/80 p-2.5 flex justify-between items-center shadow-inner">
         {/* Digital Banner Display */}
         <div className="w-1/3 h-full rounded-lg bg-gradient-to-r from-blue-900/60 to-indigo-900/60 border border-blue-500/30 p-2 flex flex-col justify-between">
-          <span className="text-[8px] font-bold text-blue-300 flex items-center gap-1">
+          <span className="text-xs font-bold text-blue-300 flex items-center gap-1">
             <Sparkles className="w-2 h-2" /> {isFlagship ? "MOBIXA FLAGSHIP" : "PREMIUM LOUNGE"}
           </span>
-          <span className="text-[10px] font-extrabold text-white">4K Retina Wall</span>
+          <span className="text-xs font-bold text-white">4K Retina Wall</span>
         </div>
 
         {/* Shelving with Gadget Silhouettes */}

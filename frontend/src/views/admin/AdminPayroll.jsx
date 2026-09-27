@@ -154,42 +154,39 @@ const AdminPayroll = () => {
 
   return (
     <DashboardLayout title="Payroll Management">
-      <div className="space-y-6">
+      <div className="ds-page">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
-          <div>
-            <h1 className="text-2xl font-semibold text-slate-900 flex items-center gap-2 m-0">
-              <Landmark size={24} className="text-brand-indigo" /> Monthly Payroll Engine
-            </h1>
-            <p className="text-xs font-normal text-slate-500 mt-1 m-0">
-              Generate for Employee • Target bonuses & attendance OTs are auto-included in live payroll calculation
-            </p>
+        <div className="ds-page-header">
+          <div className="ds-page-header-left">
+            <span className="ds-page-header-badge"><Landmark size={12} /> Staff Payroll</span>
+            <h1>Monthly Payroll Engine</h1>
+            <p>Target bonuses, sales incentives &amp; attendance OTs are automatically calculated in real time</p>
           </div>
-          <div className="flex bg-slate-100 p-1 rounded-2xl">
-            <button
-              onClick={() => setTab('process')}
-              className={`px-4 py-2 rounded-xl text-xs font-black transition-all border-0 cursor-pointer ${
-                tab === 'process' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Generate Payroll
-            </button>
-            <button
-              onClick={() => { setTab('report'); handleFetchReport(); }}
-              className={`px-4 py-2 rounded-xl text-xs font-black transition-all border-0 cursor-pointer ${
-                tab === 'report' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Monthly Summary Report
-            </button>
+          <div className="ds-page-header-right">
+            <div className="ds-card" style={{ padding: '0.25rem' }}>
+              <div style={{ display: 'flex', gap: '0.25rem' }}>
+                <button
+                  onClick={() => setTab('process')}
+                  className={`ds-btn ds-btn-sm ${tab === 'process' ? 'ds-btn-primary' : 'ds-btn-ghost'}`}
+                >
+                  Generate Payroll
+                </button>
+                <button
+                  onClick={() => { setTab('report'); handleFetchReport(); }}
+                  className={`ds-btn ds-btn-sm ${tab === 'report' ? 'ds-btn-primary' : 'ds-btn-ghost'}`}
+                >
+                  Monthly Summary Report
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
         {tab === 'process' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Left Selection Form */}
-            <div className="lg:col-span-5 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-4">
-              <h3 className="text-base font-black text-slate-900 m-0">Select Employee & Period</h3>
+            <div className="lg:col-span-5 ds-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <h3 className="ds-card-title">Select Employee &amp; Period</h3>
               
               <div>
                 <label className="text-xs font-bold text-slate-700 block mb-1">Search & Choose Employee *</label>
@@ -232,7 +229,7 @@ const AdminPayroll = () => {
               </div>
 
               <div className="border-t border-slate-100 pt-3 space-y-3">
-                <p className="text-xs font-black uppercase text-slate-400 tracking-wider m-0">Manual Adjustments (Optional)</p>
+                <p className="text-xs font-bold uppercase text-slate-400 tracking-wider m-0">Manual Adjustments (Optional)</p>
                 <div>
                   <label className="text-xs font-bold text-slate-700 block mb-1">Custom Allowances (LKR)</label>
                   <input
@@ -267,18 +264,18 @@ const AdminPayroll = () => {
 
               <button
                 onClick={handleCalculate}
-                className="w-full bg-brand-indigo hover:bg-brand-violet text-white font-black py-3 rounded-2xl text-xs uppercase tracking-wider transition-all cursor-pointer border-0 shadow-md flex items-center justify-center gap-2"
+                className="w-full bg-brand-indigo hover:bg-brand-violet text-white font-bold py-3 rounded-2xl text-xs uppercase tracking-wider transition-all cursor-pointer border-0 shadow-md flex items-center justify-center gap-2"
               >
                 <Calculator size={16} /> Live Calculate Salary
               </button>
             </div>
 
-            {/* Right Raxwo Style Live Preview Card */}
-            <div className="lg:col-span-7 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
-              <h3 className="text-base font-black text-slate-900 m-0 border-b border-slate-100 pb-3 flex items-center justify-between">
+            {/* Right Live Preview Card */}
+            <div className="lg:col-span-7 ds-card" style={{ padding: '1.5rem' }}>
+              <h3 className="ds-card-title" style={{ justifyContent: 'space-between', borderBottom: '1px solid var(--ds-border-soft)', paddingBottom: '0.75rem' }}>
                 <span>Live Payroll Preview</span>
                 {preview && (
-                  <span className="text-emerald-600 font-black text-sm">
+                  <span className="ds-badge ds-badge-green" style={{ fontSize: 'var(--ds-text-sm)' }}>
                     LKR {Number(preview.netSalary || 0).toLocaleString()} Net
                   </span>
                 )}
@@ -297,14 +294,14 @@ const AdminPayroll = () => {
                   {/* Employee Banner */}
                   <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/60 flex items-center justify-between">
                     <div>
-                      <h4 className="text-sm font-black text-slate-900 m-0">{selectedEmployee?.name}</h4>
-                      <p className="text-[10px] text-slate-500 font-semibold m-0 mt-0.5">
+                      <h4 className="text-sm font-bold text-slate-900 m-0">{selectedEmployee?.name}</h4>
+                      <p className="text-xs text-slate-500 font-semibold m-0 mt-0.5">
                         {selectedEmployee?.role?.toUpperCase()} • {selectedEmployee?.employeeInfo?.department || 'Sales'}
                       </p>
                     </div>
                     <div className="text-right">
-                      <span className="text-[10px] font-black text-slate-400 uppercase block">Period</span>
-                      <span className="font-extrabold text-slate-800">{month}/{year}</span>
+                      <span className="text-xs font-bold text-slate-400 uppercase block">Period</span>
+                      <span className="font-bold text-slate-800">{month}/{year}</span>
                     </div>
                   </div>
 
@@ -331,7 +328,7 @@ const AdminPayroll = () => {
                         <span className="font-bold">+ LKR {Number(preview.targetBonus || 0).toLocaleString()}</span>
                       </div>
                       {detailsOpen === 'targets' && (
-                        <div className="ml-2 pl-3 border-l-2 border-emerald-100 py-1 space-y-1 text-[11px] text-slate-500">
+                        <div className="ml-2 pl-3 border-l-2 border-emerald-100 py-1 space-y-1 text-xs text-slate-500">
                           {targetDetails.length === 0 && <p>No targets assigned for this period.</p>}
                           {targetDetails.map(t => (
                             <div key={t._id} className="flex justify-between">
@@ -369,7 +366,7 @@ const AdminPayroll = () => {
                         <span className="font-bold">- LKR {Number(preview.cashierRecoveryDeduction || 0).toLocaleString()}</span>
                       </div>
                       {detailsOpen === 'recovery' && (
-                        <div className="ml-2 pl-3 border-l-2 border-rose-100 py-1 space-y-1 text-[11px] text-slate-500">
+                        <div className="ml-2 pl-3 border-l-2 border-rose-100 py-1 space-y-1 text-xs text-slate-500">
                           {recoveryDetails.length === 0 && <p>No recoveries logged for this period.</p>}
                           {recoveryDetails.map(r => (
                             <div key={r._id} className="flex justify-between">
@@ -386,7 +383,7 @@ const AdminPayroll = () => {
                       <span className="font-bold">- LKR {Number(preview.attendanceDeductions || 0).toLocaleString()}</span>
                     </div>
                     {preview.attendanceBreakdown && (
-                      <div className="ml-2 pl-3 border-l-2 border-rose-100 py-1 space-y-0.5 text-[11px] text-slate-500">
+                      <div className="ml-2 pl-3 border-l-2 border-rose-100 py-1 space-y-0.5 text-xs text-slate-500">
                         <div className="flex justify-between"><span>Unapproved absences</span><span>{preview.attendanceBreakdown.unapprovedAbsences || 0} day(s)</span></div>
                         <div className="flex justify-between"><span>Extra off-days this month</span><span>{preview.attendanceBreakdown.extraOffDaysThisMonth || 0} day(s)</span></div>
                         <div className="flex justify-between"><span>Unpaid leave days</span><span>{preview.attendanceBreakdown.unpaidLeaveDays || 0} day(s)</span></div>
@@ -409,12 +406,12 @@ const AdminPayroll = () => {
                   {/* Total Net Payable */}
                   <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-4 rounded-2xl flex items-center justify-between shadow-md">
                     <div>
-                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-300 block">Total Net Payable Salary</span>
-                      <h2 className="text-xl font-black m-0 mt-0.5">LKR {Number(preview.netSalary || 0).toLocaleString()}</h2>
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-300 block">Total Net Payable Salary</span>
+                      <h2 className="text-xl font-bold m-0 mt-0.5">LKR {Number(preview.netSalary || 0).toLocaleString()}</h2>
                     </div>
                     <button
                       onClick={handleProcess}
-                      className="bg-emerald-500 hover:bg-emerald-600 text-white font-black px-5 py-3 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer border-0 shadow-sm flex items-center gap-2"
+                      className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-5 py-3 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer border-0 shadow-sm flex items-center gap-2"
                     >
                       <Send size={15} /> Finalize & Process Payroll
                     </button>
@@ -427,30 +424,28 @@ const AdminPayroll = () => {
 
         {/* Report Tab */}
         {tab === 'report' && (
-          <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-4">
-            <h3 className="text-base font-black text-slate-900 m-0">Monthly Payroll Summary Report ({month}/{year})</h3>
+          <div className="ds-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <h3 className="ds-card-title">Monthly Payroll Summary Report ({month}/{year})</h3>
             {!report ? (
-              <div className="text-center py-12 text-slate-400 font-bold text-xs uppercase tracking-wider">
-                Loading payroll summary report...
-              </div>
+              <div className="ds-loading"><div className="ds-spinner" /></div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
+              <div className="ds-table-wrap">
+                <table className="ds-table">
                   <thead>
-                    <tr className="bg-slate-50 border-b border-slate-100 text-slate-500 font-black uppercase tracking-wider">
-                      <th className="px-5 py-4">Employee</th>
-                      <th className="px-5 py-4">Basic Salary</th>
-                      <th className="px-5 py-4">OT & Bonuses</th>
-                      <th className="px-5 py-4">Recovery</th>
-                      <th className="px-5 py-4">Advance</th>
-                      <th className="px-5 py-4">Deductions</th>
-                      <th className="px-5 py-4">Net Salary</th>
-                      <th className="px-5 py-4">Status</th>
-                      <th className="px-5 py-4 text-center">Paysheet</th>
-                      <th className="px-5 py-4 text-center">Adjust</th>
+                    <tr>
+                      <th>Employee</th>
+                      <th>Basic Salary</th>
+                      <th>OT &amp; Bonuses</th>
+                      <th>Recovery</th>
+                      <th>Advance</th>
+                      <th>Deductions</th>
+                      <th>Net Salary</th>
+                      <th>Status</th>
+                      <th style={{ textAlign: 'center' }}>Paysheet</th>
+                      <th style={{ textAlign: 'center' }}>Adjust</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
+                  <tbody>
                     {(report.payrolls || []).map(p => {
                       const adjustmentsTotal = (p.adjustments || []).reduce((s, a) => s + (a.amount || 0), 0);
                       return (
@@ -462,31 +457,31 @@ const AdminPayroll = () => {
                         <td className="px-5 py-4 text-rose-600">LKR {Number(p.advanceDeduction || 0).toLocaleString()}</td>
                         <td className="px-5 py-4 text-rose-600">LKR {Number(p.totalDeductions || 0).toLocaleString()}</td>
                         <td className="px-5 py-4">
-                          <div className="font-black text-slate-900">LKR {Number(p.netSalary || 0).toLocaleString()}</div>
+                          <div className="font-bold text-slate-900">LKR {Number(p.netSalary || 0).toLocaleString()}</div>
                           {adjustmentsTotal !== 0 && (
-                            <div className="text-[10px] font-bold text-amber-600 mt-0.5">
+                            <div className="text-xs font-bold text-amber-600 mt-0.5">
                               + {adjustmentsTotal.toLocaleString()} adj = {(Number(p.netSalary || 0) + adjustmentsTotal).toLocaleString()}
                             </div>
                           )}
                         </td>
                         <td className="px-5 py-4">
-                          <span className={`inline-block text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${p.paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                          <span className={`inline-block text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${p.paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
                             {p.paymentStatus || 'pending'}
                           </span>
                         </td>
-                        <td className="px-5 py-4 text-center">
+                        <td style={{ textAlign: 'center' }}>
                           <button
                             onClick={() => handleDownloadPaysheet(p._id)}
-                            className="p-2 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all cursor-pointer border-0"
+                            className="ds-btn ds-btn-ghost ds-btn-icon ds-btn-sm"
                             title="Download PDF Paysheet"
                           >
                             <Download size={14} />
                           </button>
                         </td>
-                        <td className="px-5 py-4 text-center">
+                        <td style={{ textAlign: 'center' }}>
                           <button
                             onClick={() => openAdjustmentModal(p)}
-                            className="p-2 rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-600 hover:text-white transition-all cursor-pointer border-0"
+                            className="ds-btn ds-btn-ghost ds-btn-icon ds-btn-sm"
                             title="Log a post-finalization adjustment"
                           >
                             <Plus size={14} />
@@ -504,35 +499,39 @@ const AdminPayroll = () => {
       </div>
 
       {adjustmentRow && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-100 flex items-center justify-center p-4" onClick={() => setAdjustmentRow(null)}>
-          <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-100" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-5 border-b border-slate-100">
-              <h3 className="font-black text-slate-900 text-lg m-0">Log Adjustment</h3>
-              <p className="text-xs font-bold text-slate-500 mt-1 m-0">
-                {adjustmentRow.employeeId?.name} — {adjustmentRow.month}/{adjustmentRow.year}. This is layered on top of the finalized net salary, never edits it.
-              </p>
+        <div className="ds-modal-overlay" onClick={() => setAdjustmentRow(null)}>
+          <div className="ds-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="ds-modal-header">
+              <div>
+                <h3 className="ds-modal-title">Log Adjustment</h3>
+                <p className="ds-card-subtitle">
+                  {adjustmentRow.employeeId?.name} — {adjustmentRow.month}/{adjustmentRow.year}
+                </p>
+              </div>
             </div>
-            <form onSubmit={submitAdjustment} className="p-6 bg-slate-50/50 space-y-4">
-              <div>
-                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Label *</label>
-                <input required value={adjustmentForm.label} onChange={(e) => setAdjustmentForm({ ...adjustmentForm, label: e.target.value })}
-                  placeholder="e.g. Correction for missed OT" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800" />
+            <form onSubmit={submitAdjustment}>
+              <div className="ds-modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
+                <div className="ds-form-group">
+                  <label className="ds-label">Label *</label>
+                  <input required value={adjustmentForm.label} onChange={(e) => setAdjustmentForm({ ...adjustmentForm, label: e.target.value })}
+                    placeholder="e.g. Correction for missed OT" className="ds-input" />
+                </div>
+                <div className="ds-form-group">
+                  <label className="ds-label">Amount (LKR, use negative for deduction) *</label>
+                  <input required type="number" value={adjustmentForm.amount} onChange={(e) => setAdjustmentForm({ ...adjustmentForm, amount: e.target.value })}
+                    className="ds-input" />
+                </div>
+                <div className="ds-form-group">
+                  <label className="ds-label">Note (optional)</label>
+                  <textarea value={adjustmentForm.note} onChange={(e) => setAdjustmentForm({ ...adjustmentForm, note: e.target.value })}
+                    rows="2" className="ds-input" style={{ resize: 'none' }} />
+                </div>
               </div>
-              <div>
-                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Amount (LKR, use negative for a deduction) *</label>
-                <input required type="number" value={adjustmentForm.amount} onChange={(e) => setAdjustmentForm({ ...adjustmentForm, amount: e.target.value })}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800" />
-              </div>
-              <div>
-                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Note (optional)</label>
-                <textarea value={adjustmentForm.note} onChange={(e) => setAdjustmentForm({ ...adjustmentForm, note: e.target.value })}
-                  rows="2" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 resize-none" />
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setAdjustmentRow(null)} className="flex-1 py-3 rounded-xl bg-slate-100 text-[11px] uppercase tracking-wider font-black hover:bg-slate-200 text-slate-700">
+              <div className="ds-modal-footer">
+                <button type="button" onClick={() => setAdjustmentRow(null)} className="ds-btn ds-btn-secondary">
                   Cancel
                 </button>
-                <button type="submit" className="flex-1 py-3 rounded-xl bg-brand-indigo hover:bg-indigo-700 text-white text-[11px] uppercase tracking-wider font-black shadow-lg shadow-brand-indigo/20">
+                <button type="submit" className="ds-btn ds-btn-primary">
                   Log Adjustment
                 </button>
               </div>

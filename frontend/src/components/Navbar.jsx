@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from '../utils/navigation';
-import { ShoppingCart, User, Search, MapPin, Menu, X, ChevronDown, RefreshCw, Home, ShoppingBag, Heart, Package, LayoutDashboard, Tag, Settings } from 'lucide-react';
+import { ShoppingCart, User, Search, MapPin, Menu, X, ChevronDown, ChevronRight, RefreshCw, Home, ShoppingBag, Heart, Package, LayoutDashboard, Tag, Settings, Gift, LogOut, Phone, Sparkles } from 'lucide-react';
 import useAuthStore from '../store/authStore';
 import { getImageUrl, handleImageError } from '../utils/imageHelper';
 import useCartStore from '../store/cartStore';
@@ -172,11 +172,11 @@ const Navbar = () => {
   const getDashboardLink = () => {
     if (!user) return null;
     switch (user.role) {
-      case 'admin': return { path: '/admin', label: 'Admin Panel', emoji: '🛡️' };
-      case 'manager': return { path: '/manager', label: 'Dashboard', emoji: '📊' };
-      case 'cashier': return { path: '/employee', label: 'My Portal', emoji: '👤' };
-      case 'deliveryGuy': return { path: '/employee', label: 'My Portal', emoji: '👤' };
-      case 'stockEmployee': return { path: '/employee', label: 'My Portal', emoji: '👤' };
+      case 'admin': return { path: '/admin', label: 'Admin Panel' };
+      case 'manager': return { path: '/manager', label: 'Dashboard' };
+      case 'cashier': return { path: '/employee', label: 'My Portal' };
+      case 'deliveryGuy': return { path: '/employee', label: 'My Portal' };
+      case 'stockEmployee': return { path: '/employee', label: 'My Portal' };
       default: return null;
     }
   };
@@ -187,20 +187,20 @@ const Navbar = () => {
   return (
     <header className="bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-sm sticky top-0 z-50">
       {/* Top Utility Bar */}
-      <div className="bg-gradient-to-r from-brand-indigo via-brand-violet to-brand-fuchsia text-white text-[11px] font-semibold tracking-wide">
+      <div className="bg-gradient-to-r from-brand-indigo via-brand-violet to-brand-fuchsia text-white text-xs font-semibold tracking-wide">
         <div className="base-container py-2 flex items-center justify-between">
-          <span className="hidden sm:inline">✨ {brandName} — Next-Gen Technology & Accessories Store</span>
-          <span className="sm:hidden">✨ {brandName}</span>
+          <span className="hidden sm:inline flex items-center gap-1.5"><Sparkles size={12} className="inline" /> {brandName} — Next-Gen Technology & Accessories Store</span>
+          <span className="sm:hidden flex items-center gap-1.5"><Sparkles size={12} className="inline" /> {brandName}</span>
           <div className="flex items-center gap-3">
-            <span className="hidden md:inline">📞 {brandPhone}</span>
+            <span className="hidden md:inline flex items-center gap-1"><Phone size={12} className="inline" /> {brandPhone}</span>
             {/* Currency Toggle */}
             <button
               onClick={toggleCurrency}
-              className="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 rounded-full px-3 py-1 transition-all backdrop-blur-sm text-[10px] font-bold shadow-sm"
+              className="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 rounded-full px-3 py-1 transition-all backdrop-blur-sm text-xs font-bold shadow-sm"
               title="Toggle currency"
             >
               <RefreshCw size={10} className="animate-spin-slow" />
-              <span>{currency === 'LKR' ? 'LKR 🇱🇰' : 'USD 🇺🇸'}</span>
+              <span>{currency === 'LKR' ? 'LKR' : 'USD'}</span>
             </button>
           </div>
         </div>
@@ -209,7 +209,7 @@ const Navbar = () => {
       {/* Main Nav */}
       <div className="base-container py-3 flex items-center justify-between gap-2 sm:gap-4">
         {/* Logo */}
-        <Link to="/" className="text-xl sm:text-2xl font-black text-slate-900 flex-shrink-0 flex items-center gap-2 sm:gap-3 group max-w-[180px] xs:max-w-[240px] sm:max-w-none">
+        <Link to="/" className="text-xl sm:text-2xl font-bold text-slate-900 flex-shrink-0 flex items-center gap-2 sm:gap-3 group max-w-[180px] xs:max-w-[240px] sm:max-w-none">
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-brand-indigo via-brand-violet to-brand-fuchsia p-[2px] shadow-[0_8px_20px_-4px_rgba(99,102,241,0.4)] group-hover:scale-105 transition-transform duration-300 flex-shrink-0">
             <img
               src={brandLogoUrl}
@@ -218,7 +218,7 @@ const Navbar = () => {
               onError={(e) => { e.target.onerror = null; e.target.src = '/logo.png'; }}
             />
           </div>
-          <span className="tracking-tight font-black text-sm xs:text-base sm:text-xl md:text-2xl bg-gradient-to-r from-brand-indigo via-brand-violet to-brand-fuchsia bg-clip-text text-transparent truncate drop-shadow-sm">
+          <span className="tracking-tight font-bold text-sm xs:text-base sm:text-xl md:text-2xl bg-gradient-to-r from-brand-indigo via-brand-violet to-brand-fuchsia bg-clip-text text-transparent truncate drop-shadow-sm">
             {brandName}
           </span>
         </Link>
@@ -229,7 +229,7 @@ const Navbar = () => {
             <Link
               key={link.path}
               to={link.path}
-              className={`text-xs font-black uppercase tracking-wider transition-all py-1.5 border-b-2 ${
+              className={`text-xs font-bold uppercase tracking-wider transition-all py-1.5 border-b-2 ${
                 isActive(link.path)
                   ? 'text-blue-600 border-blue-600'
                   : 'text-slate-600 hover:text-blue-600 border-transparent'
@@ -241,13 +241,13 @@ const Navbar = () => {
           {dashLink && (
             <Link
               to={dashLink.path}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
                 isActive(dashLink.path)
                   ? 'text-blue-700 bg-blue-100 shadow-xs'
                   : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
               }`}
             >
-              {dashLink.emoji} {dashLink.label}
+              {dashLink.label}
             </Link>
           )}
         </nav>
@@ -274,7 +274,7 @@ const Navbar = () => {
             {showSearchResults && (featureResults.length > 0 || searchResults.length > 0) && (
               <div className="absolute top-full mt-2 w-full bg-white border border-card-border rounded-xl shadow-xl z-50 overflow-hidden">
                 {featureResults.length > 0 && (
-                  <div className="px-4 py-2 text-[11px] font-bold uppercase tracking-wide text-muted-text bg-gray-50 border-b border-card-border">
+                  <div className="px-4 py-2 text-xs font-bold uppercase tracking-wide text-muted-text bg-gray-50 border-b border-card-border">
                     Pages & Features
                   </div>
                 )}
@@ -298,7 +298,7 @@ const Navbar = () => {
                 ))}
 
                 {searchResults.length > 0 && (
-                  <div className="px-4 py-2 text-[11px] font-bold uppercase tracking-wide text-muted-text bg-gray-50 border-b border-card-border">
+                  <div className="px-4 py-2 text-xs font-bold uppercase tracking-wide text-muted-text bg-gray-50 border-b border-card-border">
                     Products
                   </div>
                 )}
@@ -352,7 +352,7 @@ const Navbar = () => {
             <Link to="/cart" className="relative text-slate-700 hover:text-brand-indigo hover:bg-brand-indigo/10 transition-all p-2.5 rounded-xl border border-slate-200/60 shadow-sm" title="Cart">
               <ShoppingCart size={18} />
               {cartCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-gradient-to-r from-rose-500 to-amber-500 text-white text-[10px] font-black rounded-full h-4 w-4 min-w-[20px] h-[20px] flex items-center justify-center shadow-md animate-bounce">
+                <span className="absolute -top-1.5 -right-1.5 bg-gradient-to-r from-rose-500 to-amber-500 text-white text-xs font-bold rounded-full h-4 w-4 min-w-[20px] h-[20px] flex items-center justify-center shadow-md animate-bounce">
                   {cartCount > 99 ? '99+' : cartCount}
                 </span>
               )}
@@ -370,22 +370,22 @@ const Navbar = () => {
                     className="w-8 h-8 rounded-full object-cover border border-brand-indigo/30 shadow-sm"
                   />
                 ) : (
-                  <div className="w-8 h-8 bg-gradient-to-br from-brand-indigo to-brand-violet rounded-full flex items-center justify-center text-white font-black text-xs shadow-sm">
+                  <div className="w-8 h-8 bg-gradient-to-br from-brand-indigo to-brand-violet rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm">
                     {user.name.charAt(0).toUpperCase()}
                   </div>
                 )}
                 <div className="hidden md:block">
-                  <p className="text-[10px] text-slate-400 m-0 leading-tight">Hello, {user.name.split(' ')[0]}</p>
-                  <p className="text-xs font-black text-slate-800 m-0 leading-tight flex items-center gap-0.5">Account <ChevronDown size={12} /></p>
+                  <p className="text-xs text-slate-400 m-0 leading-tight">Hello, {user.name.split(' ')[0]}</p>
+                  <p className="text-xs font-bold text-slate-800 m-0 leading-tight flex items-center gap-0.5">Account <ChevronDown size={12} /></p>
                 </div>
               </div>
 
               {/* Dropdown */}
               <div className="absolute top-full right-0 mt-2 w-56 bg-white border border-slate-200/80 rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 py-1 overflow-hidden">
                 <div className="px-4 py-3 bg-gradient-to-r from-brand-indigo/10 to-brand-violet/10 border-b border-slate-100">
-                  <p className="text-sm font-black text-slate-800 m-0">{user.name}</p>
-                  <p className="text-[11px] text-slate-500 m-0 truncate">{user.email}</p>
-                  <span className="inline-block mt-1.5 text-[9px] font-black uppercase tracking-wider bg-brand-indigo text-white px-2.5 py-0.5 rounded-full shadow-sm">{user.role}</span>
+                  <p className="text-sm font-bold text-slate-800 m-0">{user.name}</p>
+                  <p className="text-xs text-slate-500 m-0 truncate">{user.email}</p>
+                  <span className="inline-block mt-1.5 text-xs font-bold uppercase tracking-wider bg-brand-indigo text-white px-2.5 py-0.5 rounded-full shadow-sm">{user.role}</span>
                 </div>
                 <Link to="/profile" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-brand-indigo transition-colors font-medium">
                   <User size={14} className="text-slate-400" /> My Profile
@@ -399,7 +399,7 @@ const Navbar = () => {
                       <Heart size={14} className="text-slate-400" /> Wishlist
                     </Link>
                     <Link to="/loyalty" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-amber-50 hover:text-amber-600 transition-colors font-medium">
-                      🎁 <span>Loyalty & Rewards</span>
+                      <Gift size={14} className="text-amber-500" /> <span>Loyalty & Rewards</span>
                     </Link>
                   </>
                 )}
@@ -411,8 +411,8 @@ const Navbar = () => {
                 {dashLink && (
                   <>
                     <hr className="my-1 border-slate-100" />
-                    <Link to={dashLink.path} className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-brand-violet hover:bg-brand-violet/5 font-black transition-colors">
-                      <LayoutDashboard size={14} /> {dashLink.emoji} {dashLink.label}
+                    <Link to={dashLink.path} className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-brand-violet hover:bg-brand-violet/5 font-bold transition-colors">
+                      <LayoutDashboard size={14} /> {dashLink.label}
                     </Link>
                   </>
                 )}
@@ -421,7 +421,7 @@ const Navbar = () => {
                   onClick={handleLogout}
                   className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors flex items-center gap-2.5 font-bold"
                 >
-                  ↪ Logout
+                  <LogOut size={14} /> Logout
                 </button>
               </div>
             </div>
@@ -492,7 +492,7 @@ const Navbar = () => {
               >
                 <div className="flex items-center gap-2.5">
                   <LayoutDashboard size={18} />
-                  <span>{dashLink.emoji} {dashLink.label}</span>
+                  <span>{dashLink.label}</span>
                 </div>
                 <ChevronRight size={16} />
               </Link>
@@ -508,7 +508,7 @@ const Navbar = () => {
                   <Heart size={16} className="text-slate-400" /> Wishlist
                 </Link>
                 <Link to="/loyalty" className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-slate-700 hover:bg-white transition-all">
-                  🎁 Loyalty & Rewards
+                  <Gift size={16} className="text-amber-500" /> Loyalty & Rewards
                 </Link>
               </div>
             )}
@@ -523,7 +523,7 @@ const Navbar = () => {
                   <RefreshCw size={14} className="text-slate-400" />
                   <span>Currency: {currency}</span>
                 </div>
-                <span className="text-[10px] text-brand-indigo uppercase">Switch to {currency === 'LKR' ? 'USD' : 'LKR'}</span>
+                <span className="text-xs text-brand-indigo uppercase">Switch to {currency === 'LKR' ? 'USD' : 'LKR'}</span>
               </button>
             </div>
 
@@ -551,7 +551,7 @@ const Navbar = () => {
                   onClick={handleLogout}
                   className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-red-50 text-red-600 text-xs font-bold hover:bg-red-100 transition-all"
                 >
-                  ↪ Logout Account
+                  <LogOut size={14} /> Logout Account
                 </button>
               </div>
             ) : (

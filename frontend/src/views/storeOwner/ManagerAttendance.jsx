@@ -57,7 +57,7 @@ const ManagerAttendance = () => {
   const handleCheckInAction = async () => {
     try {
       await checkIn();
-      toast.success('Successfully Clocked In! ⚡');
+      toast.success('Successfully Clocked In!');
       fetchData();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to Clock In');
@@ -67,7 +67,7 @@ const ManagerAttendance = () => {
   const handleCheckOutAction = async () => {
     try {
       await checkOut();
-      toast.success('Successfully Clocked Out! 🚪');
+      toast.success('Successfully Clocked Out!');
       fetchData();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to Clock Out');
@@ -78,7 +78,7 @@ const ManagerAttendance = () => {
     try {
       const res = await startBreak();
       setActiveBreak(res.data || true);
-      toast.info('Break Started ☕');
+      toast.info('Break Started');
       fetchData();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to start break');
@@ -89,7 +89,7 @@ const ManagerAttendance = () => {
     try {
       await endBreak();
       setActiveBreak(null);
-      toast.success('Break Ended ⚡');
+      toast.success('Break Ended');
       fetchData();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to end break');
@@ -188,30 +188,41 @@ const ManagerAttendance = () => {
     toast.success('PDF downloaded');
   };
 
+  const totalPresent = summaryData.reduce((sum, curr) => sum + curr.present, 0);
+  const totalAbsent = summaryData.reduce((sum, curr) => sum + curr.absent, 0);
+  const totalLate = summaryData.reduce((sum, curr) => sum + curr.late, 0);
+
   return (
     <DashboardLayout navItems={navItems} title="Manager Portal">
-      <div className="space-y-6">
-        {/* Navigation Tabs */}
-        <div className="flex border-b border-slate-200 gap-4">
+      <div className="ds-page">
+        <div className="ds-page-header">
+          <div className="ds-page-header-left">
+            <span className="ds-page-header-badge">Attendance</span>
+            <h1>Team Attendance</h1>
+            <p>Manage and view team attendance records</p>
+          </div>
+        </div>
+
+        <div className="flex border-b border-slate-200 gap-4 mb-6">
           <button
             onClick={() => setActiveTab('my-attendance')}
-            className={`py-3 px-4 text-xs font-black uppercase tracking-wider transition-all border-b-2 cursor-pointer border-x-0 border-t-0 bg-transparent ${
+            className={`py-3 px-4 text-xs font-bold uppercase tracking-wider transition-all border-b-2 cursor-pointer border-x-0 border-t-0 bg-transparent ${
               activeTab === 'my-attendance'
                 ? 'border-blue-600 text-blue-600'
                 : 'border-transparent text-slate-400 hover:text-slate-700'
             }`}
           >
-            <UserCheck size={15} className="inline mr-2" /> My Attendance & Clocking
+            <UserCheck size={15} className="inline mr-2" /> My Attendance
           </button>
           <button
             onClick={() => setActiveTab('team-report')}
-            className={`py-3 px-4 text-xs font-black uppercase tracking-wider transition-all border-b-2 cursor-pointer border-x-0 border-t-0 bg-transparent ${
+            className={`py-3 px-4 text-xs font-bold uppercase tracking-wider transition-all border-b-2 cursor-pointer border-x-0 border-t-0 bg-transparent ${
               activeTab === 'team-report'
                 ? 'border-blue-600 text-blue-600'
                 : 'border-transparent text-slate-400 hover:text-slate-700'
             }`}
           >
-            <Users size={15} className="inline mr-2" /> Team Attendance Summary ({employees.length})
+            <Users size={15} className="inline mr-2" /> Team Summary ({employees.length})
           </button>
         </div>
 
@@ -235,73 +246,129 @@ const ManagerAttendance = () => {
           />
         ) : (
           <div className="space-y-6">
+            <div className="ds-stats">
+              <div className="ds-stat">
+                <div className="ds-stat-top">
+                  <div className="ds-stat-icon" style={{ background: '#eff6ff', color: '#1d4ed8' }}>
+                    <Users size={18} />
+                  </div>
+                  <span className="ds-stat-change blue">Team</span>
+                </div>
+                <div className="ds-stat-bottom">
+                  <p className="ds-stat-label">Total Staff</p>
+                  <p className="ds-stat-value">{summaryData.length}</p>
+                </div>
+              </div>
+
+              <div className="ds-stat">
+                <div className="ds-stat-top">
+                  <div className="ds-stat-icon" style={{ background: '#f0fdf4', color: '#15803d' }}>
+                    <CheckCircle size={18} />
+                  </div>
+                  <span className="ds-stat-change up">Present</span>
+                </div>
+                <div className="ds-stat-bottom">
+                  <p className="ds-stat-label">Total Present</p>
+                  <p className="ds-stat-value text-emerald-600">{totalPresent}</p>
+                </div>
+              </div>
+
+              <div className="ds-stat">
+                <div className="ds-stat-top">
+                  <div className="ds-stat-icon" style={{ background: '#fff1f2', color: '#be123c' }}>
+                    <X size={18} />
+                  </div>
+                  <span className="ds-stat-change down">Absent</span>
+                </div>
+                <div className="ds-stat-bottom">
+                  <p className="ds-stat-label">Total Absent</p>
+                  <p className="ds-stat-value text-rose-600">{totalAbsent}</p>
+                </div>
+              </div>
+
+              <div className="ds-stat">
+                <div className="ds-stat-top">
+                  <div className="ds-stat-icon" style={{ background: '#fffbeb', color: '#b45309' }}>
+                    <Clock size={18} />
+                  </div>
+                  <span className="ds-stat-change amber">Late</span>
+                </div>
+                <div className="ds-stat-bottom">
+                  <p className="ds-stat-label">Total Late</p>
+                  <p className="ds-stat-value text-amber-600">{totalLate}</p>
+                </div>
+              </div>
+            </div>
+
             {/* Filters */}
-            <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs flex flex-wrap gap-4 items-end">
-              <div>
-                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Month</label>
-                <select value={month} onChange={e => setMonth(Number(e.target.value))} className="bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-800 cursor-pointer">
-                  {Array.from({ length: 12 }, (_, i) => <option key={i + 1} value={i + 1}>{new Date(2000, i).toLocaleString('en', { month: 'long' })}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Year</label>
-                <input type="number" value={year} onChange={e => setYear(Number(e.target.value))} className="w-20 bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs font-bold text-slate-800" />
-              </div>
-              <div>
-                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Department</label>
-                <select value={selectedDepartment} onChange={e => setSelectedDepartment(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-800 cursor-pointer">
-                  {departments.map(d => <option key={d} value={d}>{d}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Role</label>
-                <select value={selectedRole} onChange={e => setSelectedRole(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-800 cursor-pointer">
-                  {roles.map(r => <option key={r} value={r}>{r}</option>)}
-                </select>
+            <div className="ds-card">
+              <div className="ds-filter-bar">
+                <div className="ds-form-group">
+                  <label className="ds-label">Month</label>
+                  <select value={month} onChange={e => setMonth(Number(e.target.value))} className="ds-select">
+                    {Array.from({ length: 12 }, (_, i) => <option key={i + 1} value={i + 1}>{new Date(2000, i).toLocaleString('en', { month: 'long' })}</option>)}
+                  </select>
+                </div>
+                <div className="ds-form-group">
+                  <label className="ds-label">Year</label>
+                  <input type="number" value={year} onChange={e => setYear(Number(e.target.value))} className="ds-input w-24" />
+                </div>
+                <div className="ds-form-group">
+                  <label className="ds-label">Department</label>
+                  <select value={selectedDepartment} onChange={e => setSelectedDepartment(e.target.value)} className="ds-select">
+                    {departments.map(d => <option key={d} value={d}>{d}</option>)}
+                  </select>
+                </div>
+                <div className="ds-form-group">
+                  <label className="ds-label">Role</label>
+                  <select value={selectedRole} onChange={e => setSelectedRole(e.target.value)} className="ds-select">
+                    {roles.map(r => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                </div>
               </div>
             </div>
 
             {/* Summary Table */}
-            <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
-              <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                <h3 className="font-black text-slate-900 text-xs uppercase tracking-wider m-0">Employee Team Performance</h3>
+            <div className="ds-card">
+              <div className="ds-card-header">
+                <h3 className="ds-card-title">Employee Team Performance</h3>
                 <div className="flex items-center gap-2">
-                  <button onClick={() => setShowAttModal(true)} className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-black px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 border-0 cursor-pointer"><Clock size={14} /> Mark Attendance</button>
-                  <button onClick={exportExcel} className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-bold px-3 py-2 rounded-xl border border-emerald-200 transition-all cursor-pointer"><FileSpreadsheet size={14} /></button>
-                  <button onClick={exportPDF} className="bg-rose-50 text-rose-700 hover:bg-rose-100 text-xs font-bold px-3 py-2 rounded-xl border border-rose-200 transition-all cursor-pointer"><FileText size={14} /></button>
+                  <button onClick={() => setShowAttModal(true)} className="ds-btn ds-btn-primary ds-btn-sm"><Clock size={14} /> Mark Attendance</button>
+                  <button onClick={exportExcel} className="ds-btn ds-btn-secondary ds-btn-sm ds-btn-icon"><FileSpreadsheet size={14} /></button>
+                  <button onClick={exportPDF} className="ds-btn ds-btn-secondary ds-btn-sm ds-btn-icon"><FileText size={14} /></button>
                 </div>
               </div>
-              <div className="overflow-x-auto w-full">
-                <table className="w-full text-xs text-left">
-                  <thead>
-                    <tr className="bg-slate-50 border-b border-slate-200/80">
-                      <th className="px-6 py-3.5 font-black uppercase text-slate-500">Employee</th>
-                      <th className="px-6 py-3.5 font-black uppercase text-slate-500 text-center">Role / Dept</th>
-                      <th className="px-6 py-3.5 font-black uppercase text-emerald-600 text-center">Present</th>
-                      <th className="px-6 py-3.5 font-black uppercase text-purple-600 text-center">Leave</th>
-                      <th className="px-6 py-3.5 font-black uppercase text-rose-500 text-center">Absent</th>
-                      <th className="px-6 py-3.5 font-black uppercase text-orange-500 text-center">Late</th>
-                      <th className="px-6 py-3.5 font-black uppercase text-blue-600 text-center">Hours</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {summaryData.length === 0 ? (
-                      <tr><td colSpan={7} className="text-center py-10 font-bold text-slate-400">No team attendance records found</td></tr>
-                    ) : summaryData.map(e => (
-                      <tr key={e.id} className="hover:bg-slate-50/70 transition-colors">
-                        <td className="px-6 py-4 font-black text-slate-900">{e.name}</td>
-                        <td className="px-6 py-4 text-center">
-                          <span className="text-[10px] uppercase font-black text-slate-500">{e.role}</span>
-                        </td>
-                        <td className="px-6 py-4 text-center font-black text-emerald-600">{e.present}</td>
-                        <td className="px-6 py-4 text-center font-black text-purple-600">{e.leave}</td>
-                        <td className="px-6 py-4 text-center font-black text-rose-500">{e.absent}</td>
-                        <td className="px-6 py-4 text-center font-black text-orange-500">{e.late}</td>
-                        <td className="px-6 py-4 text-center font-black text-blue-600">{e.totalHours.toFixed(1)}h</td>
+              <div className="ds-card-body p-0">
+                <div className="ds-table-wrap">
+                  <table className="ds-table">
+                    <thead>
+                      <tr>
+                        <th>Employee</th>
+                        <th>Role / Dept</th>
+                        <th className="text-center">Present</th>
+                        <th className="text-center">Leave</th>
+                        <th className="text-center">Absent</th>
+                        <th className="text-center">Late</th>
+                        <th className="text-center">Hours</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {summaryData.length === 0 ? (
+                        <tr><td colSpan={7} className="ds-empty">No team attendance records found</td></tr>
+                      ) : summaryData.map(e => (
+                        <tr key={e.id}>
+                          <td className="font-bold">{e.name}</td>
+                          <td><span className="ds-badge ds-badge-slate">{e.role}</span></td>
+                          <td className="text-center"><span className="ds-badge ds-badge-green">{e.present}</span></td>
+                          <td className="text-center"><span className="ds-badge ds-badge-blue">{e.leave}</span></td>
+                          <td className="text-center"><span className="ds-badge ds-badge-red">{e.absent}</span></td>
+                          <td className="text-center"><span className="ds-badge ds-badge-amber">{e.late}</span></td>
+                          <td className="text-center font-bold text-blue-600">{e.totalHours.toFixed(1)}h</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
@@ -310,22 +377,21 @@ const ManagerAttendance = () => {
 
       {/* Mark Attendance Modal */}
       {showAttModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center p-4 z-50 animate-fade-in">
-          <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-slate-100">
-            <div className="p-6 bg-slate-900 text-white relative">
-              <button onClick={() => setShowAttModal(false)} className="absolute right-4 top-4 p-2 rounded-full hover:bg-white/10 text-white/70 transition-colors border-0 bg-transparent cursor-pointer">
+        <div className="ds-modal-overlay">
+          <div className="ds-modal">
+            <div className="ds-modal-header">
+              <div>
+                <h3 className="ds-modal-title">Mark Attendance</h3>
+                <p className="text-xs text-slate-500 mt-1">Record attendance for team members</p>
+              </div>
+              <button onClick={() => setShowAttModal(false)} className="ds-btn ds-btn-ghost ds-btn-icon">
                 <X size={16} />
               </button>
-              <div className="w-10 h-10 bg-white/10 text-white rounded-xl flex items-center justify-center mb-3">
-                <Clock size={20} />
-              </div>
-              <h3 className="font-black text-lg m-0">Mark Attendance</h3>
-              <p className="text-xs text-slate-300 mt-1 m-0">Record attendance for team members</p>
             </div>
 
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Employee *</label>
+            <div className="ds-modal-body space-y-4">
+              <div className="ds-form-group">
+                <label className="ds-label">Employee *</label>
                 <EmployeeSelector
                   multiple={false}
                   employees={employees}
@@ -335,13 +401,13 @@ const ManagerAttendance = () => {
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Date</label>
-                  <input type="date" value={attForm.date} onChange={(e) => setAttForm({ ...attForm, date: e.target.value })} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-800" />
+                <div className="ds-form-group">
+                  <label className="ds-label">Date</label>
+                  <input type="date" value={attForm.date} onChange={(e) => setAttForm({ ...attForm, date: e.target.value })} className="ds-input" />
                 </div>
-                <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Status</label>
-                  <select value={attForm.status} onChange={(e) => setAttForm({ ...attForm, status: e.target.value })} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-800 bg-white cursor-pointer">
+                <div className="ds-form-group">
+                  <label className="ds-label">Status</label>
+                  <select value={attForm.status} onChange={(e) => setAttForm({ ...attForm, status: e.target.value })} className="ds-select">
                     <option value="present">Present</option>
                     <option value="absent">Absent</option>
                     <option value="half-day">Half Day</option>
@@ -351,23 +417,23 @@ const ManagerAttendance = () => {
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Check In</label>
-                  <input type="time" value={attForm.checkInTime} onChange={(e) => setAttForm({ ...attForm, checkInTime: e.target.value })} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-800" />
+                <div className="ds-form-group">
+                  <label className="ds-label">Check In</label>
+                  <input type="time" value={attForm.checkInTime} onChange={(e) => setAttForm({ ...attForm, checkInTime: e.target.value })} className="ds-input" />
                 </div>
-                <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Check Out</label>
-                  <input type="time" value={attForm.checkOutTime} onChange={(e) => setAttForm({ ...attForm, checkOutTime: e.target.value })} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-800" />
+                <div className="ds-form-group">
+                  <label className="ds-label">Check Out</label>
+                  <input type="time" value={attForm.checkOutTime} onChange={(e) => setAttForm({ ...attForm, checkOutTime: e.target.value })} className="ds-input" />
                 </div>
               </div>
-              <div>
-                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Notes</label>
-                <input value={attForm.notes} onChange={(e) => setAttForm({ ...attForm, notes: e.target.value })} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-semibold text-slate-800" placeholder="Optional notes" />
+              <div className="ds-form-group">
+                <label className="ds-label">Notes</label>
+                <input value={attForm.notes} onChange={(e) => setAttForm({ ...attForm, notes: e.target.value })} className="ds-input" placeholder="Optional notes" />
               </div>
-              <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setShowAttModal(false)} className="flex-1 py-3 rounded-xl bg-slate-100 text-xs font-bold hover:bg-slate-200 text-slate-700 transition-all border-0 cursor-pointer">Cancel</button>
-                <button onClick={handleMarkAtt} className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black shadow-md transition-all flex items-center justify-center gap-2 border-0 cursor-pointer"><CheckCircle size={15} /> Submit</button>
-              </div>
+            </div>
+            <div className="ds-modal-footer">
+              <button type="button" onClick={() => setShowAttModal(false)} className="ds-btn ds-btn-secondary">Cancel</button>
+              <button onClick={handleMarkAtt} className="ds-btn ds-btn-primary"><CheckCircle size={15} /> Submit</button>
             </div>
           </div>
         </div>

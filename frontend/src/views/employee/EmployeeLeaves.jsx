@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Calendar, Plus, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { FileDown, Calendar, AlertCircle, Plus, CheckCircle, XCircle } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
 import useAuthStore from '../../store/authStore';
 import { getEmployeeNavGroups } from './employeeNav';
@@ -10,9 +10,9 @@ import { toast } from 'react-toastify';
 import EmployeePageHeader, { EmployeeStatCard, EmployeeLoading } from './EmployeePageHeader';
 
 const statusColors = {
-  pending: 'bg-amber-100 text-amber-700',
-  approved: 'bg-emerald-100 text-emerald-700',
-  rejected: 'bg-red-100 text-red-700',
+  pending: 'ds-badge ds-badge-amber',
+  approved: 'ds-badge ds-badge-green',
+  rejected: 'ds-badge ds-badge-red',
 };
 
 const statusIcons = {
@@ -62,7 +62,7 @@ const EmployeeLeaves = () => {
     setSubmitting(true);
     try {
       await API.post('/hr/leaves', form);
-      toast.success('Leave request submitted! 📋');
+      toast.success('Leave request submitted!');
       setShowForm(false);
       setForm({ type: 'casual', startDate: '', endDate: '', reason: '' });
       fetchLeaves();
@@ -89,23 +89,26 @@ const EmployeeLeaves = () => {
 
   return (
     <DashboardLayout navItems={getEmployeeNavGroups(user?.role)} title="Employee Portal">
-      <div className="animate-fade-in space-y-6">
-        <EmployeePageHeader
-          badge="LEAVE MANAGEMENT"
-          title="Leave Requests"
-          subtitle="Apply for time off and track request statuses"
-          icon={Calendar}
-          actions={
+      <div className="ds-page">
+        <div className="ds-page-header">
+          <div className="ds-page-header-left">
+            <span className="ds-page-header-badge">
+              <Calendar size={11} /> LEAVE MANAGEMENT
+            </span>
+            <h1>Leave Requests</h1>
+            <p>Apply for time off and track request statuses</p>
+          </div>
+          <div className="ds-page-header-right">
             <button
               onClick={() => setShowForm(!showForm)}
-              className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-black text-[10px] uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all shadow-md border-0 cursor-pointer"
+              className="ds-btn ds-btn-primary"
             >
               <Plus size={14} /> Request Leave
             </button>
-          }
-        />
+          </div>
+        </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="ds-stats grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
           <EmployeeStatCard label="Allowance (This Period)" value={`${allowedLeaves} Days`} icon={Calendar} />
           <EmployeeStatCard label="Remaining" value={`${remainingDays} Days`} color="text-emerald-600" icon={CheckCircle} iconBg="bg-emerald-50 border-emerald-100/60" iconColor="text-emerald-600" />
           <EmployeeStatCard label="Used" value={`${usedDays} Days`} color="text-brand-indigo" icon={Calendar} />
@@ -114,86 +117,98 @@ const EmployeeLeaves = () => {
 
         {/* Leave Request Form */}
         {showForm && (
-          <div className="bg-white/60 backdrop-blur-md rounded-3xl border border-white/40 p-6 shadow-sm">
-            <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 m-0 mb-4 pb-2 border-b border-slate-100">New Leave Request</h3>
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1.5">Leave Type</label>
-                <select value={form.type} onChange={(e) => setForm({...form, type: e.target.value})}
-                  className="w-full border border-slate-250 rounded-xl px-3.5 py-2.5 text-xs font-semibold bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/35 cursor-pointer">
-                  <option value="casual">Casual Leave</option>
-                  <option value="sick">Sick Leave</option>
-                  <option value="annual">Annual Leave</option>
-                  <option value="maternity">Maternity Leave</option>
-                  <option value="paternity">Paternity Leave</option>
-                  <option value="unpaid">Unpaid Leave</option>
-                </select>
-              </div>
-              <div />
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1.5">Start Date</label>
-                <input type="date" value={form.startDate} onChange={(e) => setForm({...form, startDate: e.target.value})}
-                  className="w-full border border-slate-250 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/35" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1.5">End Date</label>
-                <input type="date" value={form.endDate} onChange={(e) => setForm({...form, endDate: e.target.value})}
-                  className="w-full border border-slate-250 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/35" />
-              </div>
-              <div className="sm:col-span-2">
-                <label className="block text-xs font-semibold text-slate-500 mb-1.5">Reason</label>
-                <textarea rows={3} value={form.reason} onChange={(e) => setForm({...form, reason: e.target.value})}
-                  className="w-full border border-slate-250 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/35 resize-none placeholder:text-slate-400" placeholder="Explain your reason..." />
-              </div>
-              <div className="sm:col-span-2 flex justify-end gap-3 pt-3 border-t border-slate-100">
-                <button type="button" onClick={() => setShowForm(false)} className="px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-slate-700 cursor-pointer border-0 bg-transparent">Cancel</button>
-                <button type="submit" disabled={submitting}
-                  className="bg-gradient-to-r from-brand-indigo to-brand-violet hover:opacity-95 text-white font-black text-[10px] uppercase tracking-wider px-6 py-3 rounded-xl transition-all shadow-md disabled:opacity-50 cursor-pointer">
-                  {submitting ? 'Submitting...' : 'Submit Request'}
-                </button>
-              </div>
-            </form>
+          <div className="ds-card mb-6">
+            <div className="ds-card-header">
+              <h3 className="ds-card-title">New Leave Request</h3>
+            </div>
+            <div className="ds-card-body">
+              <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="ds-form-group">
+                  <label className="ds-label">Leave Type</label>
+                  <select value={form.type} onChange={(e) => setForm({...form, type: e.target.value})} className="ds-select w-full">
+                    <option value="casual">Casual Leave</option>
+                    <option value="sick">Sick Leave</option>
+                    <option value="annual">Annual Leave</option>
+                    <option value="maternity">Maternity Leave</option>
+                    <option value="paternity">Paternity Leave</option>
+                    <option value="unpaid">Unpaid Leave</option>
+                  </select>
+                </div>
+                <div />
+                <div className="ds-form-group">
+                  <label className="ds-label">Start Date</label>
+                  <input type="date" value={form.startDate} onChange={(e) => setForm({...form, startDate: e.target.value})} className="ds-input" />
+                </div>
+                <div className="ds-form-group">
+                  <label className="ds-label">End Date</label>
+                  <input type="date" value={form.endDate} onChange={(e) => setForm({...form, endDate: e.target.value})} className="ds-input" />
+                </div>
+                <div className="ds-form-group sm:col-span-2">
+                  <label className="ds-label">Reason</label>
+                  <textarea rows={3} value={form.reason} onChange={(e) => setForm({...form, reason: e.target.value})} className="ds-input resize-none" placeholder="Explain your reason..." />
+                </div>
+                <div className="sm:col-span-2 flex justify-end gap-3 pt-4 border-t border-slate-100">
+                  <button type="button" onClick={() => setShowForm(false)} className="ds-btn ds-btn-ghost">Cancel</button>
+                  <button type="submit" disabled={submitting} className="ds-btn ds-btn-primary">
+                    {submitting ? 'Submitting...' : 'Submit Request'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         )}
 
-        <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-100">
-            <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 m-0">Leave History</h3>
+        <div className="ds-card">
+          <div className="ds-card-header">
+            <h3 className="ds-card-title">Leave History</h3>
           </div>
-          <div className="p-6">
-            {leaves.length === 0 ? (
-              <p className="text-center text-slate-400 text-[11px] font-black uppercase tracking-wider py-12 m-0">No leave requests yet</p>
-            ) : (
-              <div className="space-y-3">
-                {leaves.map((leave) => {
-                  const Icon = statusIcons[leave.status] || AlertCircle;
-                  return (
-                    <div key={leave._id} className="flex items-start gap-4 p-4 rounded-2xl bg-slate-50/80 border border-slate-100 hover:bg-slate-50 transition-colors">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${statusColors[leave.status] || 'bg-gray-100 text-gray-700'}`}>
-                        <Icon size={18} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2.5 flex-wrap">
-                          <span className="font-extrabold text-sm text-slate-900 capitalize">{leave.leaveType || leave.type} Leave</span>
-                          <span className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full ${statusColors[leave.status] || 'bg-gray-100 text-gray-700'}`}>
-                            {leave.status}
-                          </span>
-                        </div>
-                        <p className="text-[10px] font-bold text-slate-400 mt-1.5 mb-1 uppercase tracking-wide">
-                          {new Date(leave.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} — {new Date(leave.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} · ({leave.totalDays} day{leave.totalDays > 1 ? 's' : ''})
-                        </p>
-                        <p className="text-xs text-slate-600 font-semibold m-0">{leave.reason}</p>
-                        {leave.rejectionReason && (
-                          <p className="text-xs text-rose-500 font-bold m-0 mt-2">
-                            Rejection: {leave.rejectionReason}
+          <div className="ds-table-wrap">
+            <table className="ds-table w-full">
+              <thead>
+                <tr>
+                  <th>Type & Status</th>
+                  <th>Dates & Duration</th>
+                  <th>Reason</th>
+                </tr>
+              </thead>
+              <tbody>
+                {leaves.length === 0 ? (
+                  <tr>
+                    <td colSpan="3" className="ds-empty">No leave requests yet</td>
+                  </tr>
+                ) : (
+                  leaves.map((leave) => {
+                    const Icon = statusIcons[leave.status] || AlertCircle;
+                    return (
+                      <tr key={leave._id}>
+                        <td>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-sm text-slate-900 capitalize">{leave.leaveType || leave.type} Leave</span>
+                            <span className={statusColors[leave.status] || 'ds-badge ds-badge-slate'}>
+                              {leave.status}
+                            </span>
+                          </div>
+                        </td>
+                        <td>
+                          <p className="text-xs font-bold text-slate-500 m-0">
+                            {new Date(leave.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} — {new Date(leave.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                           </p>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+                          <p className="text-xs text-slate-400 m-0">({leave.totalDays} day{leave.totalDays > 1 ? 's' : ''})</p>
+                        </td>
+                        <td>
+                          <p className="text-xs text-slate-600 font-semibold m-0">{leave.reason}</p>
+                          {leave.rejectionReason && (
+                            <p className="text-xs text-rose-500 font-bold m-0 mt-1">
+                              Rejection: {leave.rejectionReason}
+                            </p>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

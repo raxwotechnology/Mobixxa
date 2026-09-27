@@ -65,7 +65,7 @@ const ManagerPerformance = () => {
               </div>
               <h1 className="text-2xl font-semibold text-slate-900 m-0">Employee Performance</h1>
             </div>
-            <p className="text-[10px] font-normal uppercase tracking-wider text-slate-500 mt-2 m-0">Current month performance overview</p>
+            <p className="text-xs font-normal uppercase tracking-wider text-slate-500 mt-2 m-0">Current month performance overview</p>
           </div>
         </div>
 
@@ -156,7 +156,7 @@ const ManagerPerformance = () => {
                 <p className="text-3xl font-bold text-dark-navy">{performance.targets.completed}/{performance.targets.total}</p>
                 <p className="text-xs text-muted-text mt-1">met this month</p>
                 {performance.targets.totalBonusEarned > 0 && (
-                  <p className="text-xs text-emerald-600 font-semibold mt-1">🎁 Rs. {performance.targets.totalBonusEarned.toLocaleString()} bonus</p>
+                  <p className="text-xs text-emerald-600 font-semibold mt-1"> Rs. {performance.targets.totalBonusEarned.toLocaleString()} bonus</p>
                 )}
               </div>
             </div>

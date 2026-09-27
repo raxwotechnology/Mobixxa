@@ -13,85 +13,85 @@ import useAuthStore from '../../store/authStore';
 
 
 const roleColors = {
-  customer: 'bg-sky-50 text-sky-700 border border-sky-200',
-  manager: 'bg-amber-50 text-amber-700 border border-amber-200',
-  admin: 'bg-violet-50 text-violet-700 border border-violet-200',
-  cashier: 'bg-teal-50 text-teal-700 border border-teal-200',
-  deliveryGuy: 'bg-blue-50 text-blue-700 border border-blue-200',
-  stockEmployee: 'bg-orange-50 text-orange-700 border border-orange-200',
+  customer: 'ds-badge ds-badge-slate',
+  manager: 'ds-badge ds-badge-blue',
+  admin: 'ds-badge ds-badge-violet',
+  cashier: 'ds-badge ds-badge-amber',
+  deliveryGuy: 'ds-badge ds-badge-blue',
+  stockEmployee: 'ds-badge ds-badge-slate',
 };
 
 export const ALL_PERMISSION_CATEGORIES = [
   {
     category: 'HR & Staff Management',
     items: [
-      { key: 'employees', label: 'Employees Directory', icon: '👥' },
-      { key: 'users', label: 'User Access & Permissions', icon: '🛡️' },
-      { key: 'attendance', label: 'Attendance Management', icon: '⏰' },
-      { key: 'leaves', label: 'Leaves & Holidays', icon: '📅' },
-      { key: 'payroll', label: 'Salary & Payroll Processing', icon: '💵' },
-      { key: 'salaryAdvances', label: 'Salary Advances', icon: '💸' },
-      { key: 'letters', label: 'Letters & Documents', icon: '📄' },
-      { key: 'targets', label: 'Staff Targets', icon: '🎯' },
+      { key: 'employees', label: 'Employees Directory' },
+      { key: 'users', label: 'User Access & Permissions' },
+      { key: 'attendance', label: 'Attendance Management' },
+      { key: 'leaves', label: 'Leaves & Holidays' },
+      { key: 'payroll', label: 'Salary & Payroll Processing' },
+      { key: 'salaryAdvances', label: 'Salary Advances' },
+      { key: 'letters', label: 'Letters & Documents' },
+      { key: 'targets', label: 'Staff Targets' },
     ]
   },
   {
     category: 'Business & Inventory Management',
     items: [
-      { key: 'stores', label: 'Store Branches', icon: '🏬' },
-      { key: 'categories', label: 'Product Categories', icon: '🏷️' },
-      { key: 'products', label: 'Products & Accessories', icon: '📦' },
-      { key: 'phones', label: 'Mobile Phones Catalog', icon: '📱' },
-      { key: 'inventory', label: 'Stock Reports & Transfers', icon: '📊' },
+      { key: 'stores', label: 'Store Branches' },
+      { key: 'categories', label: 'Product Categories' },
+      { key: 'products', label: 'Products & Accessories' },
+      { key: 'phones', label: 'Mobile Phones Catalog' },
+      { key: 'inventory', label: 'Stock Reports & Transfers' },
     ]
   },
   {
     category: 'Sales, POS & Operations',
     items: [
-      { key: 'orders', label: 'Orders & Invoices', icon: '🛍️' },
-      { key: 'warranty', label: 'IMEI & Device Warranty', icon: '🛡️' },
-      { key: 'returns', label: 'Returns & RMA Management', icon: '🔄' },
-      { key: 'pos', label: 'POS Terminal Cashiering', icon: '🖥️' },
-      { key: 'repairs', label: 'Device Repair Jobs', icon: '🔧' },
-      { key: 'reloads', label: 'Mobile Reloads & Card Stock', icon: '💳' },
-      { key: 'salesTracking', label: 'Live Sales Tracking', icon: '📈' },
+      { key: 'orders', label: 'Orders & Invoices' },
+      { key: 'warranty', label: 'IMEI & Device Warranty' },
+      { key: 'returns', label: 'Returns & RMA Management' },
+      { key: 'pos', label: 'POS Terminal Cashiering' },
+      { key: 'repairs', label: 'Device Repair Jobs' },
+      { key: 'reloads', label: 'Mobile Reloads & Card Stock' },
+      { key: 'salesTracking', label: 'Live Sales Tracking' },
     ]
   },
   {
     category: 'Trade-In, Barcodes & Marketing',
     items: [
-      { key: 'tradeIn', label: 'Phone Trade-In & Pre-Owned', icon: '🔄' },
-      { key: 'vouchers', label: 'Discount Vouchers & Coupons', icon: '🎟️' },
-      { key: 'promotions', label: 'Promotions, Banners & Deals', icon: '🎁' },
-      { key: 'barcodes', label: 'Barcode Management & Generator', icon: '🏷️' },
+      { key: 'tradeIn', label: 'Phone Trade-In & Pre-Owned' },
+      { key: 'vouchers', label: 'Discount Vouchers & Coupons' },
+      { key: 'promotions', label: 'Promotions, Banners & Deals' },
+      { key: 'barcodes', label: 'Barcode Management & Generator' },
     ]
   },
   {
     category: 'Suppliers & Purchasing',
     items: [
-      { key: 'suppliers', label: 'Suppliers Directory', icon: '🚚' },
-      { key: 'supplierPayments', label: 'Supplier Payments & Invoices', icon: '💰' },
+      { key: 'suppliers', label: 'Suppliers Directory' },
+      { key: 'supplierPayments', label: 'Supplier Payments & Invoices' },
     ]
   },
   {
     category: 'Financial Management & Accounts',
     items: [
-      { key: 'accounts', label: 'Manage Bank Accounts', icon: '🏦' },
-      { key: 'cheques', label: 'Cheque Management & Clearance', icon: '📑' },
-      { key: 'hp', label: 'Hire Purchase & Installments', icon: '💳' },
-      { key: 'expenses', label: 'Expenses & Income Ledger', icon: '💸' },
-      { key: 'financials', label: 'Financials & P&L Statement', icon: '📊' },
-      { key: 'profitReports', label: 'Profit & Margins Reports', icon: '📈' },
-      { key: 'overtime', label: 'Overtime Pay Records', icon: '⏱️' },
+      { key: 'accounts', label: 'Manage Bank Accounts' },
+      { key: 'cheques', label: 'Cheque Management & Clearance' },
+      { key: 'hp', label: 'Hire Purchase & Installments' },
+      { key: 'expenses', label: 'Expenses & Income Ledger' },
+      { key: 'financials', label: 'Financials & P&L Statement' },
+      { key: 'profitReports', label: 'Profit & Margins Reports' },
+      { key: 'overtime', label: 'Overtime Pay Records' },
     ]
   },
   {
     category: 'Analytics & System Settings',
     items: [
-      { key: 'reports', label: 'Executive Reports & Analytics', icon: '📊' },
-      { key: 'customerHistory', label: 'Customer Purchase History', icon: '👤' },
-      { key: 'predictions', label: 'AI Demand Predictions', icon: '🤖' },
-      { key: 'settings', label: 'Store Settings & Customizer', icon: '⚙️' },
+      { key: 'reports', label: 'Executive Reports & Analytics' },
+      { key: 'customerHistory', label: 'Customer Purchase History' },
+      { key: 'predictions', label: 'AI Demand Predictions' },
+      { key: 'settings', label: 'Store Settings & Customizer' },
     ]
   },
 ];
@@ -244,341 +244,345 @@ const AdminUsers = () => {
 
   return (
     <DashboardLayout navItems={navItems} title="Users">
-      <div className="pb-10 max-w-7xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
-          <div>
-            <div className="flex items-center gap-2.5 mb-1">
-              <span className="inline-flex items-center gap-1.5 bg-brand-indigo/10 text-brand-indigo text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg border border-brand-indigo/15">
-                <Users size={11} /> User & Employee Management
-              </span>
-            </div>
+      <div className="ds-page">
+        <div className="ds-page-header">
+          <div className="ds-page-header-left">
+            <span className="ds-page-header-badge">
+              <Users size={11} /> User & Employee Management
+            </span>
             <h1 className="text-2xl font-semibold text-slate-900 m-0">Team Directory</h1>
             <p className="text-slate-400 text-xs font-normal mt-1 m-0">{users.length} total accounts · {activeCount} active members</p>
           </div>
-          <button onClick={() => handleOpenModal()} className="bg-gradient-to-r from-brand-indigo to-brand-violet hover:opacity-95 text-white font-black text-xs uppercase tracking-wider py-3 px-6 rounded-xl flex items-center gap-2 shadow-lg shadow-brand-indigo/20 transition-all cursor-pointer">
-            <ShieldCheck size={16} /> Manage Access
-          </button>
+          <div className="ds-page-header-right">
+            <button onClick={() => handleOpenModal()} className="ds-btn ds-btn-primary">
+              <ShieldCheck size={16} /> Manage Access
+            </button>
+          </div>
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-6 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
-          <div className="relative flex-1">
-            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input placeholder="Search by name or email..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-xs font-bold focus:outline-none focus:border-brand-indigo focus:ring-2 focus:ring-brand-indigo/10 focus:bg-white transition-all" />
+        <div className="ds-card">
+          <div className="ds-filter-bar">
+            <div className="relative flex-1">
+              <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input placeholder="Search by name or email..." value={search} onChange={(e) => setSearch(e.target.value)} className="ds-search pl-10" />
+            </div>
+            <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="ds-select">
+              <option value="all">All Roles</option>
+              <option value="customer">Customer</option>
+              <option value="manager">Manager</option>
+              <option value="admin">Admin</option>
+              <option value="cashier">Cashier</option>
+              <option value="deliveryGuy">Delivery</option>
+            </select>
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="ds-select">
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Deactivated</option>
+            </select>
           </div>
-          <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-xs font-bold focus:outline-none focus:border-brand-indigo cursor-pointer">
-            <option value="all">All Roles</option>
-            <option value="customer">Customer</option>
-            <option value="manager">Manager</option>
-            <option value="admin">Admin</option>
-            <option value="cashier">Cashier</option>
-            <option value="deliveryGuy">Delivery</option>
-          </select>
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-xs font-bold focus:outline-none focus:border-brand-indigo cursor-pointer">
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Deactivated</option>
-          </select>
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-20"><div className="w-10 h-10 border-4 border-slate-200 border-t-brand-indigo rounded-full animate-spin" /></div>
-
+          <div className="ds-loading"><div className="ds-spinner" /></div>
         ) : (
-          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-slate-50/80 border-b border-slate-100">
-                    <th className="text-left px-6 py-3.5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Employee / User</th>
-                    <th className="text-left px-6 py-3.5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Contact</th>
-                    <th className="text-left px-6 py-3.5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Role</th>
-                    <th className="text-left px-6 py-3.5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Module Permissions</th>
-                    <th className="text-left px-6 py-3.5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Status</th>
-                    <th className="text-right px-6 py-3.5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {filtered.map((user) => (
-                    <tr key={user._id} className="hover:bg-slate-50/60 transition-colors group">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3.5">
-                          {user.avatar ? (
-                            <img src={getImageUrl(user.avatar)} alt={user.name} className="w-10 h-10 rounded-xl object-cover border border-slate-200 shadow-xs" />
-                          ) : (
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-indigo to-brand-violet flex items-center justify-center text-white text-xs font-black shadow-sm">
-                              {user.name?.charAt(0)?.toUpperCase()}
-                            </div>
-                          )}
-                          <div>
-                            <p className="font-extrabold text-slate-800 text-sm m-0">{user.name}</p>
-                            {user.employeeInfo?.nic && <p className="text-[10px] text-slate-400 font-mono mt-0.5 m-0">NIC: {user.employeeInfo.nic}</p>}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <p className="font-bold text-slate-700 text-xs m-0">{user.email}</p>
-                        <p className="text-[10px] text-slate-400 mt-0.5 m-0">{user.phone || 'No phone'}</p>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`text-xs font-bold px-3 py-1 rounded-full ${roleColors[user.role] || 'bg-slate-100 text-slate-700'}`}>
-                          {user.role.toUpperCase()}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        {user.role === 'admin' ? (
-                          <span className="text-[11px] font-bold text-violet-700 bg-violet-50 px-2.5 py-1 rounded-lg border border-violet-200">
-                            Full Admin Access
-                          </span>
+          <div className="ds-table-wrap mt-6">
+            <table className="ds-table">
+              <thead>
+                <tr>
+                  <th>Employee / User</th>
+                  <th>Contact</th>
+                  <th>Role</th>
+                  <th>Module Permissions</th>
+                  <th>Status</th>
+                  <th className="text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((user) => (
+                  <tr key={user._id}>
+                    <td>
+                      <div className="flex items-center gap-3.5">
+                        {user.avatar ? (
+                          <img src={getImageUrl(user.avatar)} alt={user.name} className="w-10 h-10 rounded-xl object-cover border border-slate-200 shadow-xs" />
                         ) : (
-                          <button
-                            onClick={() => handleOpenModal(user)}
-                            className="inline-flex items-center gap-1.5 text-[11px] font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg border border-indigo-200 transition-colors cursor-pointer"
-                            title="Click to edit module permissions"
-                          >
-                            <ShieldCheck size={12} className="text-indigo-600" />
-                            {Object.values(user.permissions || {}).filter(Boolean).length} / {ALL_PERMISSION_KEYS.length} Modules Enabled
-                          </button>
+                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-indigo to-brand-violet flex items-center justify-center text-white text-xs font-bold shadow-sm">
+                            {user.name?.charAt(0)?.toUpperCase()}
+                          </div>
                         )}
-                      </td>
-                      <td className="px-6 py-4">
-                        <select
-                          value={user.isActive !== false ? 'active' : 'inactive'}
-                          onChange={() => handleToggleStatus(user._id, user.name, user.isActive !== false)}
-                          className={`text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-lg border focus:outline-none outline-none cursor-pointer transition-all ${
-                            user.isActive !== false 
-                              ? 'bg-emerald-50 border-emerald-200 text-emerald-700' 
-                              : 'bg-rose-50 border-rose-200 text-rose-700'
-                          }`}
-                        >
-                          <option value="active">Active</option>
-                          <option value="inactive">Inactive</option>
-                        </select>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => handleOpenModal(user)}
-                            className="px-3 py-1.5 bg-brand-indigo/10 text-brand-indigo font-bold text-xs rounded-xl hover:bg-brand-indigo hover:text-white flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
-                            title="Edit User & Set Permissions"
-                          >
-                            <ShieldCheck size={14} /> Edit Permissions
-                          </button>
-                          <button onClick={() => handleDeleteClick(user)} className="p-2 bg-rose-50 text-rose-500 rounded-lg hover:bg-rose-100 hover:text-rose-600 transition-all cursor-pointer" title="Delete Account"><Trash2 size={15} /></button>
+                        <div>
+                          <p className="font-bold text-slate-800 text-sm m-0">{user.name}</p>
+                          {user.employeeInfo?.nic && <p className="text-xs text-slate-400 font-mono mt-0.5 m-0">NIC: {user.employeeInfo.nic}</p>}
                         </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {filtered.length === 0 && <div className="text-center py-16 text-slate-400 font-bold text-sm">No users found matching your filters.</div>}
-            </div>
+                      </div>
+                    </td>
+                    <td>
+                      <p className="font-bold text-slate-700 text-xs m-0">{user.email}</p>
+                      <p className="text-xs text-slate-400 mt-0.5 m-0">{user.phone || 'No phone'}</p>
+                    </td>
+                    <td>
+                      <span className={roleColors[user.role] || 'ds-badge ds-badge-slate'}>
+                        {user.role.toUpperCase()}
+                      </span>
+                    </td>
+                    <td>
+                      {user.role === 'admin' ? (
+                        <span className="ds-badge ds-badge-primary">
+                          Full Admin Access
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => handleOpenModal(user)}
+                          className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg border border-indigo-200 transition-colors cursor-pointer"
+                          title="Click to edit module permissions"
+                        >
+                          <ShieldCheck size={12} className="text-indigo-600" />
+                          {Object.values(user.permissions || {}).filter(Boolean).length} / {ALL_PERMISSION_KEYS.length} Modules Enabled
+                        </button>
+                      )}
+                    </td>
+                    <td>
+                      <select
+                        value={user.isActive !== false ? 'active' : 'inactive'}
+                        onChange={() => handleToggleStatus(user._id, user.name, user.isActive !== false)}
+                        className={`ds-select text-xs w-auto py-1 ${user.isActive !== false ? 'border-emerald-200 text-emerald-700 bg-emerald-50' : 'border-rose-200 text-rose-700 bg-rose-50'}`}
+                      >
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                      </select>
+                    </td>
+                    <td className="text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => handleOpenModal(user)}
+                          className="ds-btn ds-btn-sm ds-btn-ghost"
+                          title="Edit User & Set Permissions"
+                        >
+                          <ShieldCheck size={14} /> Edit Permissions
+                        </button>
+                        <button onClick={() => handleDeleteClick(user)} className="ds-btn ds-btn-sm ds-btn-icon ds-btn-danger" title="Delete Account">
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {filtered.length === 0 && (
+                  <tr>
+                    <td colSpan="6" className="ds-empty">
+                      No users found matching your filters.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         )}
 
         {/* Modal for Add/Edit Employee */}
         {isModalOpen && (
-          <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-[2px] z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200/80">
-              <div className="sticky top-0 bg-white/90 backdrop-blur-md border-b border-slate-200/80 px-8 py-5 flex items-center justify-between z-10">
-                <h2 className="text-xl font-black text-slate-900 m-0">{editingUser ? `Manage Access — ${editingUser.name}` : 'Select Employee'}</h2>
-                <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"><X size={20} className="text-slate-400" /></button>
+          <div className="ds-modal-overlay">
+            <div className="ds-modal w-full max-w-4xl">
+              <div className="ds-modal-header">
+                <h2 className="ds-modal-title">{editingUser ? `Manage Access — ${editingUser.name}` : 'Select Employee'}</h2>
+                <button onClick={() => setIsModalOpen(false)} className="ds-btn ds-btn-icon ds-btn-ghost"><X size={20} /></button>
               </div>
               
-              <form onSubmit={handleSaveUser} className="p-8 space-y-8">
-
-                {/* Existing Employee Search & Select */}
-                {!editingUser && (
-                  <div className="bg-indigo-50/60 border border-indigo-200/80 rounded-2xl p-5 space-y-2 relative">
-                    <label className="block text-sm font-bold text-slate-700">Already an employee? Search &amp; select instead of creating a duplicate</label>
-                    <div className="relative">
-                      <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                      <input
-                        value={employeePickerQuery}
-                        onChange={(e) => { setEmployeePickerQuery(e.target.value); setEmployeePickerOpen(true); }}
-                        onFocus={() => setEmployeePickerOpen(true)}
-                        onBlur={() => setTimeout(() => setEmployeePickerOpen(false), 150)}
-                        placeholder="Search employee by name or email..."
-                        className="w-full border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm"
-                      />
-                      {employeePickerOpen && employeePickerQuery.trim() !== '' && (
-                        <div className="absolute z-20 mt-1.5 w-full max-h-56 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-lg">
-                          {users
-                            .filter((u) => u.role !== 'customer' && (
+              <div className="ds-modal-body">
+                <form id="user-form" onSubmit={handleSaveUser} className="space-y-8">
+                  {/* Existing Employee Search & Select */}
+                  {!editingUser && (
+                    <div className="bg-indigo-50/60 border border-indigo-200/80 rounded-2xl p-5 space-y-2 relative">
+                      <label className="ds-label">Already an employee? Search &amp; select instead of creating a duplicate</label>
+                      <div className="relative">
+                        <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <input
+                          value={employeePickerQuery}
+                          onChange={(e) => { setEmployeePickerQuery(e.target.value); setEmployeePickerOpen(true); }}
+                          onFocus={() => setEmployeePickerOpen(true)}
+                          onBlur={() => setTimeout(() => setEmployeePickerOpen(false), 150)}
+                          placeholder="Search employee by name or email..."
+                          className="ds-input pl-10"
+                        />
+                        {employeePickerOpen && employeePickerQuery.trim() !== '' && (
+                          <div className="absolute z-20 mt-1.5 w-full max-h-56 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-lg">
+                            {users
+                              .filter((u) => u.role !== 'customer' && (
+                                u.name?.toLowerCase().includes(employeePickerQuery.toLowerCase()) ||
+                                u.email?.toLowerCase().includes(employeePickerQuery.toLowerCase())
+                              ))
+                              .slice(0, 8)
+                              .map((u) => (
+                                <button
+                                  type="button"
+                                  key={u._id}
+                                  onMouseDown={() => handleOpenModal(u)}
+                                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 text-left cursor-pointer border-b border-slate-100 last:border-0"
+                                >
+                                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-indigo to-brand-violet flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                                    {u.name?.charAt(0)?.toUpperCase()}
+                                  </div>
+                                  <div className="min-w-0">
+                                    <p className="text-xs font-bold text-slate-800 m-0 truncate">{u.name}</p>
+                                    <p className="text-xs text-slate-400 m-0 truncate">{u.email}</p>
+                                  </div>
+                                </button>
+                              ))}
+                            {users.filter((u) => u.role !== 'customer' && (
                               u.name?.toLowerCase().includes(employeePickerQuery.toLowerCase()) ||
                               u.email?.toLowerCase().includes(employeePickerQuery.toLowerCase())
-                            ))
-                            .slice(0, 8)
-                            .map((u) => (
-                              <button
-                                type="button"
-                                key={u._id}
-                                onMouseDown={() => handleOpenModal(u)}
-                                className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 text-left cursor-pointer border-b border-slate-100 last:border-0"
-                              >
-                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-indigo to-brand-violet flex items-center justify-center text-white text-[10px] font-black flex-shrink-0">
-                                  {u.name?.charAt(0)?.toUpperCase()}
-                                </div>
-                                <div className="min-w-0">
-                                  <p className="text-xs font-bold text-slate-800 m-0 truncate">{u.name}</p>
-                                  <p className="text-[10px] text-slate-400 m-0 truncate">{u.email}</p>
-                                </div>
-                              </button>
-                            ))}
-                          {users.filter((u) => u.role !== 'customer' && (
-                            u.name?.toLowerCase().includes(employeePickerQuery.toLowerCase()) ||
-                            u.email?.toLowerCase().includes(employeePickerQuery.toLowerCase())
-                          )).length === 0 && (
-                            <p className="px-4 py-3 text-xs text-slate-400 font-medium">No matching employee. New staff are added first in Employees Directory.</p>
-                          )}
+                            )).length === 0 && (
+                              <p className="px-4 py-3 text-xs text-slate-400 font-medium">No matching employee. New staff are added first in Employees Directory.</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Selected Employee Identity (read-only — edit full profile in Employees Directory) */}
+                  {editingUser && (
+                    <div className="flex items-center gap-4 bg-slate-50 border border-slate-200 rounded-2xl p-5">
+                      {formData.avatar ? (
+                        <img src={getImageUrl(formData.avatar)} alt={formData.name} className="w-14 h-14 rounded-2xl object-cover shadow-sm flex-shrink-0" />
+                      ) : (
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-indigo to-brand-violet flex items-center justify-center text-white text-lg font-bold shadow-sm flex-shrink-0">
+                          {formData.name?.charAt(0)?.toUpperCase()}
                         </div>
                       )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Selected Employee Identity (read-only — edit full profile in Employees Directory) */}
-                {editingUser && (
-                  <div className="flex items-center gap-4 bg-slate-50 border border-slate-200 rounded-2xl p-5">
-                    {formData.avatar ? (
-                      <img src={getImageUrl(formData.avatar)} alt={formData.name} className="w-14 h-14 rounded-2xl object-cover shadow-sm flex-shrink-0" />
-                    ) : (
-                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-indigo to-brand-violet flex items-center justify-center text-white text-lg font-black shadow-sm flex-shrink-0">
-                        {formData.name?.charAt(0)?.toUpperCase()}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-slate-900 m-0 truncate">{formData.name}</p>
+                        <p className="text-xs text-slate-500 font-semibold m-0 truncate">{formData.email}</p>
+                        <p className="text-xs text-slate-400 font-bold uppercase tracking-wide mt-1 m-0">
+                          {formData.role}{formData.employeeInfo.nic ? ` · NIC ${formData.employeeInfo.nic}` : ''}
+                        </p>
                       </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-black text-slate-900 m-0 truncate">{formData.name}</p>
-                      <p className="text-xs text-slate-500 font-semibold m-0 truncate">{formData.email}</p>
-                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wide mt-1 m-0">
-                        {formData.role}{formData.employeeInfo.nic ? ` · NIC ${formData.employeeInfo.nic}` : ''}
-                      </p>
+                      <span className="text-xs font-bold text-slate-500 bg-white border border-slate-200 px-3 py-1.5 rounded-lg flex-shrink-0 text-right">
+                        Edit profile, salary &amp; documents in Employees Directory
+                      </span>
                     </div>
-                    <span className="text-[10px] font-bold text-slate-500 bg-white border border-slate-200 px-3 py-1.5 rounded-lg flex-shrink-0 text-right">
-                      Edit profile, salary &amp; documents in Employees Directory
-                    </span>
-                  </div>
-                )}
+                  )}
 
-                {/* Granular Permissions Categorized */}
-                {editingUser && (
-                <div className="bg-slate-50/80 p-5 rounded-2xl border border-slate-200/80 space-y-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200/80 pb-3 gap-3">
-                    <div>
+                  {/* Granular Permissions Categorized */}
+                  {editingUser && (
+                  <div className="bg-slate-50/80 p-5 rounded-2xl border border-slate-200/80 space-y-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200/80 pb-3 gap-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <ShieldCheck size={18} className="text-brand-indigo" />
+                          <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider m-0">Module Access Permissions</h3>
+                          <span className="text-xs font-bold bg-brand-indigo/10 text-brand-indigo px-2.5 py-0.5 rounded-full">
+                            {Object.values(formData.permissions || {}).filter(Boolean).length} / {ALL_PERMISSION_KEYS.length} Active
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500 font-medium mt-1 m-0">Select exact features and modules this staff member can access across the system</p>
+                      </div>
                       <div className="flex items-center gap-2">
-                        <ShieldCheck size={18} className="text-brand-indigo" />
-                        <h3 className="text-sm font-black text-slate-800 uppercase tracking-wider m-0">Module Access Permissions</h3>
-                        <span className="text-[10px] font-black bg-brand-indigo/10 text-brand-indigo px-2.5 py-0.5 rounded-full">
-                          {Object.values(formData.permissions || {}).filter(Boolean).length} / {ALL_PERMISSION_KEYS.length} Active
-                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const allTrue = {};
+                            ALL_PERMISSION_KEYS.forEach(k => allTrue[k] = true);
+                            setFormData(prev => ({ ...prev, permissions: allTrue }));
+                          }}
+                          className="text-xs font-bold text-brand-indigo hover:text-indigo-800 bg-brand-indigo/10 px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-2xs"
+                        >
+                          Select All ({ALL_PERMISSION_KEYS.length})
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const allFalse = {};
+                            ALL_PERMISSION_KEYS.forEach(k => allFalse[k] = false);
+                            setFormData(prev => ({ ...prev, permissions: allFalse }));
+                          }}
+                          className="text-xs font-bold text-slate-600 hover:text-slate-800 bg-slate-200/80 px-3 py-1.5 rounded-xl transition-colors cursor-pointer"
+                        >
+                          Clear All
+                        </button>
                       </div>
-                      <p className="text-xs text-slate-500 font-medium mt-1 m-0">Select exact features and modules this staff member can access across the system</p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const allTrue = {};
-                          ALL_PERMISSION_KEYS.forEach(k => allTrue[k] = true);
-                          setFormData(prev => ({ ...prev, permissions: allTrue }));
-                        }}
-                        className="text-[11px] font-bold text-brand-indigo hover:text-indigo-800 bg-brand-indigo/10 px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-2xs"
-                      >
-                        ✓ Select All ({ALL_PERMISSION_KEYS.length})
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const allFalse = {};
-                          ALL_PERMISSION_KEYS.forEach(k => allFalse[k] = false);
-                          setFormData(prev => ({ ...prev, permissions: allFalse }));
-                        }}
-                        className="text-[11px] font-bold text-slate-600 hover:text-slate-800 bg-slate-200/80 px-3 py-1.5 rounded-xl transition-colors cursor-pointer"
-                      >
-                        ✕ Clear All
-                      </button>
-                    </div>
-                  </div>
 
-                  {/* Categorized Permission Groups */}
-                  <div className="space-y-5">
-                    {ALL_PERMISSION_CATEGORIES.map((cat, ci) => {
-                      const groupKeys = cat.items.map(i => i.key);
-                      const isAllGroupSelected = groupKeys.every(k => formData.permissions[k]);
-                      
-                      return (
-                        <div key={ci} className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs space-y-3">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-black text-slate-800 uppercase tracking-wide flex items-center gap-2">
-                              <span className="w-2 h-2 rounded-full bg-brand-indigo" />
-                              {cat.category}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const newPerms = { ...formData.permissions };
-                                groupKeys.forEach(k => {
-                                  newPerms[k] = !isAllGroupSelected;
-                                });
-                                setFormData(prev => ({ ...prev, permissions: newPerms }));
-                              }}
-                              className="text-[10px] font-bold text-slate-500 hover:text-brand-indigo transition-colors cursor-pointer"
-                            >
-                              {isAllGroupSelected ? 'Deselect Group' : 'Select Group'}
-                            </button>
-                          </div>
+                    {/* Categorized Permission Groups */}
+                    <div className="space-y-5">
+                      {ALL_PERMISSION_CATEGORIES.map((cat, ci) => {
+                        const groupKeys = cat.items.map(i => i.key);
+                        const isAllGroupSelected = groupKeys.every(k => formData.permissions[k]);
+                        
+                        return (
+                          <div key={ci} className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-bold text-slate-800 uppercase tracking-wide flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-brand-indigo" />
+                                {cat.category}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const newPerms = { ...formData.permissions };
+                                  groupKeys.forEach(k => {
+                                    newPerms[k] = !isAllGroupSelected;
+                                  });
+                                  setFormData(prev => ({ ...prev, permissions: newPerms }));
+                                }}
+                                className="text-xs font-bold text-slate-500 hover:text-brand-indigo transition-colors cursor-pointer"
+                              >
+                                {isAllGroupSelected ? 'Deselect Group' : 'Select Group'}
+                              </button>
+                            </div>
 
-                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
-                            {cat.items.map((mod) => {
-                              const isChecked = formData.permissions[mod.key] || false;
-                              return (
-                                <label
-                                  key={mod.key}
-                                  className={`flex items-center gap-2.5 p-2.5 rounded-xl border transition-all cursor-pointer select-none ${
-                                    isChecked
-                                      ? 'bg-brand-indigo/5 border-brand-indigo/50 text-brand-indigo shadow-2xs'
-                                      : 'bg-slate-50/50 border-slate-200/70 text-slate-700 hover:border-slate-300'
-                                  }`}
-                                >
-                                  <div
-                                    className={`w-4 h-4 rounded-md flex items-center justify-center border transition-colors flex-shrink-0 ${
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
+                              {cat.items.map((mod) => {
+                                const isChecked = formData.permissions[mod.key] || false;
+                                return (
+                                  <label
+                                    key={mod.key}
+                                    className={`flex items-center gap-2.5 p-2.5 rounded-xl border transition-all cursor-pointer select-none ${
                                       isChecked
-                                        ? 'bg-brand-indigo border-brand-indigo text-white'
-                                        : 'bg-white border-slate-300'
+                                        ? 'bg-brand-indigo/5 border-brand-indigo/50 text-brand-indigo shadow-2xs'
+                                        : 'bg-slate-50/50 border-slate-200/70 text-slate-700 hover:border-slate-300'
                                     }`}
                                   >
-                                    {isChecked && <CheckCircle size={12} className="text-white" />}
-                                  </div>
-                                  <span className="text-[11px] font-bold truncate">
-                                    {mod.icon} {mod.label}
-                                  </span>
-                                  <input
-                                    type="checkbox"
-                                    className="hidden"
-                                    checked={isChecked}
-                                    onChange={() => handlePermissionChange(mod.key)}
-                                  />
-                                </label>
-                              );
-                            })}
+                                    <div
+                                      className={`w-4 h-4 rounded-md flex items-center justify-center border transition-colors flex-shrink-0 ${
+                                        isChecked
+                                          ? 'bg-brand-indigo border-brand-indigo text-white'
+                                          : 'bg-white border-slate-300'
+                                      }`}
+                                    >
+                                      {isChecked && <CheckCircle size={12} className="text-white" />}
+                                    </div>
+                                    <span className="text-xs font-bold truncate">
+                                      {mod.label}
+                                    </span>
+                                    <input
+                                      type="checkbox"
+                                      className="hidden"
+                                      checked={isChecked}
+                                      onChange={() => handlePermissionChange(mod.key)}
+                                    />
+                                  </label>
+                                );
+                              })}
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-                )}
-
-                {/* Actions */}
-                <div className="flex justify-end gap-3 pt-6 border-t border-slate-100">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-all cursor-pointer">Cancel</button>
-                  {editingUser && (
-                    <button type="submit" className="px-8 py-2.5 bg-gradient-to-r from-brand-indigo to-brand-violet hover:opacity-95 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-brand-indigo/20 transition-all cursor-pointer">
-                      Save Permissions
-                    </button>
                   )}
-                </div>
-              </form>
+                </form>
+              </div>
+
+              {/* Actions */}
+              <div className="ds-modal-footer">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="ds-btn ds-btn-ghost">Cancel</button>
+                {editingUser && (
+                  <button type="submit" form="user-form" className="ds-btn ds-btn-primary">
+                    Save Permissions
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -594,36 +598,35 @@ const AdminUsers = () => {
 
       {/* Toggle Status Confirmation Modal */}
       {toggleModalOpen && userToToggle && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-50 flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-100 transform transition-all duration-300 scale-100 p-6" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center gap-3 mb-4">
-              <div className={`p-3 rounded-2xl ${userToToggle.action === 'deactivate' ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'}`}>
-                <AlertCircle size={24} />
+        <div className="ds-modal-overlay">
+          <div className="ds-modal w-full max-w-md">
+            <div className="ds-modal-body pt-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className={`p-3 rounded-2xl ${userToToggle.action === 'deactivate' ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'}`}>
+                  <AlertCircle size={24} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 text-lg capitalize">{userToToggle.action} User</h3>
+                  <p className="text-xs text-slate-500 font-medium">Confirm status change</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-extrabold text-slate-900 text-lg capitalize">{userToToggle.action} User</h3>
-                <p className="text-xs text-slate-500 font-medium">Confirm status change</p>
-              </div>
+              
+              <p className="text-sm text-slate-600 font-medium mb-6">
+                Are you sure you want to <span className="font-bold text-slate-800">{userToToggle.action}</span> the employee account for <span className="font-bold text-dark-navy">"{userToToggle.name}"</span>?
+              </p>
             </div>
-            
-            <p className="text-sm text-slate-600 font-medium mb-6">
-              Are you sure you want to <span className="font-bold text-slate-800">{userToToggle.action}</span> the employee account for <span className="font-bold text-dark-navy">"{userToToggle.name}"</span>?
-            </p>
-            
-            <div className="flex justify-end gap-3">
+            <div className="ds-modal-footer">
               <button 
                 type="button" 
                 onClick={() => { setToggleModalOpen(false); setUserToToggle(null); }} 
-                className="px-5 py-2.5 font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-all text-sm"
+                className="ds-btn ds-btn-ghost"
               >
                 Cancel
               </button>
               <button 
                 type="button" 
                 onClick={handleToggleConfirm} 
-                className={`px-6 py-2.5 text-white font-bold rounded-xl shadow-md transition-all text-sm ${
-                  userToToggle.action === 'deactivate' ? 'bg-amber-600 hover:bg-amber-700 shadow-amber-200' : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200'
-                }`}
+                className={`ds-btn ${userToToggle.action === 'deactivate' ? 'ds-btn-danger' : 'ds-btn-primary'}`}
               >
                 Yes, Confirm
               </button>

@@ -57,7 +57,7 @@ const OrderConfirmation = () => {
         <div className="w-20 h-20 bg-brand-indigo/5 border border-brand-indigo/10 rounded-full mx-auto mb-5 flex items-center justify-center shadow-sm">
           <CheckCircle size={36} className="text-brand-indigo" />
         </div>
-        <h1 className="text-2xl md:text-3xl font-black text-slate-800 mt-0 mb-2 tracking-tight">Order Confirmed!</h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mt-0 mb-2 tracking-tight">Order Confirmed!</h1>
         <p className="text-slate-400 text-sm font-medium m-0">Thank you for your order. We will start preparing it right away.</p>
       </motion.div>
 
@@ -67,11 +67,11 @@ const OrderConfirmation = () => {
       >
         <div className="flex items-center justify-between mb-5 pb-5 border-b border-slate-100">
           <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider m-0">Order Identifier</p>
-            <p className="font-extrabold text-slate-850 m-0 text-xs sm:text-sm font-mono mt-0.5">#{order._id.slice(-8).toUpperCase()}</p>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider m-0">Order Identifier</p>
+            <p className="font-bold text-slate-850 m-0 text-xs sm:text-sm font-mono mt-0.5">#{order._id.slice(-8).toUpperCase()}</p>
           </div>
           <div className="text-right">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider m-0">Date Placed</p>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider m-0">Date Placed</p>
             <p className="font-bold text-slate-700 m-0 text-xs sm:text-sm mt-0.5">
               {new Date(order.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
             </p>
@@ -80,7 +80,7 @@ const OrderConfirmation = () => {
 
         {/* Status Badges */}
         <div className="flex flex-wrap gap-2.5 mb-6">
-          <span className={`text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-xl border ${
+          <span className={`text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-xl border ${
             order.orderStatus === 'pending' ? 'bg-yellow-50/50 border-yellow-100 text-yellow-700' :
             order.orderStatus === 'confirmed' ? 'bg-brand-indigo/5 border-brand-indigo/15 text-brand-indigo' :
             order.orderStatus === 'delivered' ? 'bg-emerald-50 border-emerald-150 text-emerald-700' :
@@ -88,7 +88,7 @@ const OrderConfirmation = () => {
           }`}>
             Status: {order.orderStatus}
           </span>
-          <span className={`text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-xl border ${
+          <span className={`text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-xl border ${
             order.paymentStatus === 'completed' ? 'bg-emerald-50 border-emerald-150 text-emerald-700' :
             order.paymentStatus === 'pending' ? 'bg-yellow-50/50 border-yellow-100 text-yellow-700' :
             'bg-rose-50 border-rose-150 text-rose-600'
@@ -112,9 +112,9 @@ const OrderConfirmation = () => {
               />
               <div className="flex-1">
                 <p className="text-xs font-bold text-slate-850 m-0 leading-tight">{item.name}</p>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Quantity: {item.quantity}</p>
+                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-0.5">Quantity: {item.quantity}</p>
               </div>
-              <span className="text-xs font-extrabold text-slate-750">{formatPrice(convertPrice(item.price * item.quantity))}</span>
+              <span className="text-xs font-bold text-slate-750">{formatPrice(convertPrice(item.price * item.quantity))}</span>
             </div>
           ))}
         </div>
@@ -123,7 +123,7 @@ const OrderConfirmation = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           {order.deliveryAddress && (
             <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider m-0 mb-1.5 flex items-center gap-1"><MapPin size={11} className="text-brand-indigo" /> Delivery Address</p>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider m-0 mb-1.5 flex items-center gap-1"><MapPin size={11} className="text-brand-indigo" /> Delivery Address</p>
               <p className="text-xs font-bold text-slate-700 m-0 leading-relaxed">
                 {order.deliveryAddress.street}, {order.deliveryAddress.city}, {order.deliveryAddress.state} {order.deliveryAddress.zipCode}
               </p>
@@ -131,7 +131,7 @@ const OrderConfirmation = () => {
           )}
           {order.deliverySlot && (
             <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider m-0 mb-1.5 flex items-center gap-1"><Clock size={11} className="text-brand-indigo" /> Delivery Schedule</p>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider m-0 mb-1.5 flex items-center gap-1"><Clock size={11} className="text-brand-indigo" /> Delivery Schedule</p>
               <p className="text-xs font-bold text-slate-700 m-0 leading-relaxed">
                 {new Date(order.deliverySlot.date).toLocaleDateString()} — {order.deliverySlot.timeSlot}
               </p>
@@ -144,15 +144,15 @@ const OrderConfirmation = () => {
           <div className="mb-6 bg-gradient-to-br from-brand-indigo/5 via-sky-50/40 to-slate-50 border border-brand-indigo/20 rounded-2xl p-5 shadow-xs">
             <div className="flex items-center justify-between border-b border-brand-indigo/15 pb-3 mb-4">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-brand-indigo text-white font-black text-xs flex items-center justify-center shadow-xs">
+                <div className="w-8 h-8 rounded-xl bg-brand-indigo text-white font-bold text-xs flex items-center justify-center shadow-xs">
                   koko
                 </div>
                 <div>
-                  <h4 className="font-extrabold text-slate-900 text-xs uppercase tracking-wider m-0">Koko 3x Installment Schedule</h4>
-                  <p className="text-[10px] text-slate-500 font-medium m-0">Ref: {order.kokoDetails?.transactionId || `KOKO-TXN-${order._id.slice(-6).toUpperCase()}`}</p>
+                  <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider m-0">Koko 3x Installment Schedule</h4>
+                  <p className="text-xs text-slate-500 font-medium m-0">Ref: {order.kokoDetails?.transactionId || `KOKO-TXN-${order._id.slice(-6).toUpperCase()}`}</p>
                 </div>
               </div>
-              <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-100/80 px-2.5 py-1 rounded-full uppercase tracking-wider">
+              <span className="text-xs font-bold text-emerald-700 bg-emerald-100/80 px-2.5 py-1 rounded-full uppercase tracking-wider">
                 1/3 Paid Today
               </span>
             </div>
@@ -162,7 +162,7 @@ const OrderConfirmation = () => {
                 <span className="text-xs font-bold text-emerald-800 flex items-center gap-2">
                   <CheckCircle size={14} className="text-emerald-600" /> Installment 1 (Paid Today)
                 </span>
-                <span className="text-xs font-extrabold text-slate-900">
+                <span className="text-xs font-bold text-slate-900">
                   Rs. {Math.ceil(order.totalAmount / 3).toLocaleString()}
                 </span>
               </div>
@@ -194,15 +194,15 @@ const OrderConfirmation = () => {
           </div>
           <div className="flex justify-between text-xs font-bold uppercase tracking-wider text-slate-400">
             <span>Delivery Fee</span>
-            <span className="text-slate-700 font-extrabold">{formatPrice(convertPrice(order.deliveryFee || 0))}</span>
+            <span className="text-slate-700 font-bold">{formatPrice(convertPrice(order.deliveryFee || 0))}</span>
           </div>
           <div className="flex justify-between text-xs font-bold uppercase tracking-wider text-slate-400">
             <span>Tax</span>
-            <span className="text-slate-700 font-extrabold">{formatPrice(convertPrice(order.tax || 0))}</span>
+            <span className="text-slate-700 font-bold">{formatPrice(convertPrice(order.tax || 0))}</span>
           </div>
           <div className="flex justify-between items-baseline pt-4 border-t border-slate-100">
-            <span className="font-black text-slate-800 text-lg">Total Amount</span>
-            <span className="font-black text-brand-indigo text-xl tracking-tight">{formatPrice(convertPrice(order.totalAmount))}</span>
+            <span className="font-bold text-slate-800 text-lg">Total Amount</span>
+            <span className="font-bold text-brand-indigo text-xl tracking-tight">{formatPrice(convertPrice(order.totalAmount))}</span>
           </div>
         </div>
       </motion.div>
@@ -255,7 +255,7 @@ const OrderConfirmation = () => {
               <XCircle size={24} />
             </div>
             <div className="space-y-1">
-              <h3 className="text-base font-black text-slate-800 m-0">Confirm Cancellation</h3>
+              <h3 className="text-base font-bold text-slate-800 m-0">Confirm Cancellation</h3>
               <p className="text-xs text-slate-500 m-0 font-medium">Are you sure you want to cancel this order? This action cannot be undone.</p>
             </div>
             <div className="flex gap-2">
@@ -270,7 +270,7 @@ const OrderConfirmation = () => {
                   try {
                     setShowCancelConfirm(false);
                     await cancelMyOrder(order._id, { reason: 'Cancelled by customer' });
-                    toast.success('Your order has been cancelled successfully! 🛑');
+                    toast.success('Your order has been cancelled successfully!');
                     const { data } = await getOrderById(id);
                     setOrder(data);
                   } catch (err) {

@@ -110,7 +110,7 @@ const AdminReloads = ({ navItems: propNavItems }) => {
         date: selectedDate,
         storeId: selectedStoreId !== 'all' ? selectedStoreId : undefined
       });
-      toast.success('Reload stock updated successfully! ✅');
+      toast.success('Reload stock updated successfully!');
       setIsAddStockOpen(false);
       setAddStockForm({ operator: 'Dialog', cardValue: 100, openingStock: 0, addedStock: 0, notes: '' });
       fetchStocks();
@@ -133,13 +133,13 @@ const AdminReloads = ({ navItems: propNavItems }) => {
           newValue: Number(closingStockInput),
           reason: 'Evening count correction via Admin panel',
         });
-        toast.success('Evening balance corrected & logged! ✅');
+        toast.success('Evening balance corrected & logged!');
       } else {
         await closeReloadStock({
           stockId: selectedStockItem._id,
           closingStock: Number(closingStockInput)
         });
-        toast.success('Evening balance updated & Sales Income posted to accounts! ✅');
+        toast.success('Evening balance updated & Sales Income posted to accounts!');
       }
       setIsCloseStockOpen(false);
       setSelectedStockItem(null);
@@ -160,7 +160,7 @@ const AdminReloads = ({ navItems: propNavItems }) => {
         ...supplierForm,
         storeId: selectedStoreId !== 'all' ? selectedStoreId : undefined
       });
-      toast.success('Supplier Float Payment recorded & Expense logged! 💸');
+      toast.success('Supplier Float Payment recorded & Expense logged!');
       setSupplierForm({
         supplierName: 'Dialog Distributor',
         operator: 'Dialog',
@@ -205,37 +205,40 @@ const AdminReloads = ({ navItems: propNavItems }) => {
 
   return (
     <DashboardLayout navItems={navItems} title="Reloads & Card Stock">
-      <div className="space-y-6">
+      <div className="ds-page">
         {/* Header Title */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold text-slate-900 flex items-center gap-2">
-              📱 Reloads & Card Stock Management
-            </h1>
-            <p className="text-slate-500 text-xs font-normal mt-1">
-              Manage physical card stocks, daily e-reload floats, end-of-day balances, and distributor payments.
-            </p>
+        <div className="ds-page-header">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700">
+              <Smartphone size={20} strokeWidth={2} />
+            </div>
+            <div>
+              <h1 className="ds-page-title">Reloads & Card Stock</h1>
+              <p className="ds-page-subtitle">
+                Manage physical card stocks, daily e-reload floats, end-of-day balances, and distributor payments.
+              </p>
+            </div>
           </div>
 
           {/* Navigation Tabs */}
-          <div className="flex flex-wrap items-center gap-2 bg-slate-100 p-1.5 rounded-2xl border border-slate-200">
+          <div className="ds-tab-bar">
             <button 
-              className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${activeTab === 'stocks' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+              className={`ds-tab-btn ${activeTab === 'stocks' ? 'active' : ''}`}
               onClick={() => setActiveTab('stocks')}
             >
-              📊 Daily Stock & Sell-Out
+              Daily Stock & Sell-Out
             </button>
             <button 
-              className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${activeTab === 'supplier' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+              className={`ds-tab-btn ${activeTab === 'supplier' ? 'active' : ''}`}
               onClick={() => setActiveTab('supplier')}
             >
-              💸 Supplier Payments
+              Supplier Payments
             </button>
             <button 
-              className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${activeTab === 'history' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+              className={`ds-tab-btn ${activeTab === 'history' ? 'active' : ''}`}
               onClick={() => setActiveTab('history')}
             >
-              📑 Reload Transactions
+              Reload Transactions
             </button>
           </div>
         </div>
@@ -244,14 +247,14 @@ const AdminReloads = ({ navItems: propNavItems }) => {
         {activeTab === 'stocks' && (
           <>
             {/* Top Date Bar & Add Button */}
-            <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="ds-card flex flex-col md:flex-row justify-between items-center gap-4">
               <div className="flex items-center gap-3 w-full md:w-auto">
-                <span className="text-xs font-black uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                  <Calendar size={16} className="text-indigo-600" /> Select Date:
+                <span className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
+                  <Calendar size={15} className="text-slate-700" /> Select Date:
                 </span>
                 <input 
                   type="date"
-                  className="px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:bg-white focus:border-indigo-600 outline-none transition-all"
+                  className="ds-input py-1.5 px-3 text-xs w-auto"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
                 />
@@ -260,50 +263,41 @@ const AdminReloads = ({ navItems: propNavItems }) => {
               <div className="flex items-center gap-3 w-full md:w-auto justify-end">
                 <button
                   onClick={() => setIsAddStockOpen(true)}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-95 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
+                  className="ds-btn ds-btn-primary"
                 >
-                  <Plus size={16} /> Add Card Stock / Float
+                  <Plus size={15} /> Add Card Stock / Float
                 </button>
               </div>
             </div>
 
             {/* Daily Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="bg-gradient-to-br from-indigo-600 to-violet-700 text-white p-5 rounded-2xl shadow-md">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-black text-indigo-100 uppercase tracking-widest">Total Available Stock</span>
-                  <div className="p-2 bg-white/20 rounded-xl"><Layers size={18} /></div>
-                </div>
-                <h3 className="text-2xl font-black">{totalAvailableStock.toLocaleString()}</h3>
-                <p className="text-[11px] text-indigo-100 mt-1 font-medium">Opening Stock + Added Stock</p>
+              <div className="ds-stat">
+                <span className="ds-stat-label">Total Available Stock</span>
+                <div className="ds-stat-value text-slate-900">{totalAvailableStock.toLocaleString()}</div>
+                <p className="ds-stat-sub">Opening Stock + Added Stock</p>
               </div>
 
-              <div className="bg-gradient-to-br from-emerald-600 to-teal-700 text-white p-5 rounded-2xl shadow-md">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-black text-emerald-100 uppercase tracking-widest">Daily Sales Income (Sell-Out)</span>
-                  <div className="p-2 bg-white/20 rounded-xl"><DollarSign size={18} /></div>
-                </div>
-                <h3 className="text-2xl font-black">Rs. {totalStockSellOutValue.toLocaleString()}</h3>
-                <p className="text-[11px] text-emerald-100 mt-1 font-medium">Auto-posted to shop income ledger</p>
+              <div className="ds-stat">
+                <span className="ds-stat-label text-emerald-600">Daily Sales Income (Sell-Out)</span>
+                <div className="ds-stat-value text-emerald-600">Rs. {totalStockSellOutValue.toLocaleString()}</div>
+                <p className="ds-stat-sub">Auto-posted to shop income ledger</p>
               </div>
 
-              <div className="bg-gradient-to-br from-slate-800 to-slate-950 text-white p-5 rounded-2xl shadow-md">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Evening In-Hand Balance</span>
-                  <div className="p-2 bg-white/20 rounded-xl"><Calculator size={18} /></div>
-                </div>
-                <h3 className="text-2xl font-black">{totalRemainingStock.toLocaleString()}</h3>
-                <p className="text-[11px] text-slate-300 mt-1 font-medium">Physical cards count in shop</p>
+              <div className="ds-stat">
+                <span className="ds-stat-label text-slate-600">Evening In-Hand Balance</span>
+                <div className="ds-stat-value text-slate-900">{totalRemainingStock.toLocaleString()}</div>
+                <p className="ds-stat-sub">Physical cards count in shop</p>
               </div>
             </div>
 
             {/* Reload Stock Table */}
-            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+            <div className="ds-table-wrap">
               <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
-                <h3 className="text-sm font-black text-slate-800 flex items-center gap-2 m-0">
-                  📋 Daily Card Stock & E-Reload Sheet ({selectedDate})
+                <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2 m-0">
+                   Daily Card Stock & E-Reload Sheet ({selectedDate})
                 </h3>
-                <span className="text-[11px] font-bold text-slate-500 bg-white px-3 py-1 rounded-lg border border-slate-200">
+                <span className="text-xs font-bold text-slate-500 bg-white px-3 py-1 rounded-lg border border-slate-200">
                   Auto Opening Stock from Previous Date
                 </span>
               </div>
@@ -312,14 +306,14 @@ const AdminReloads = ({ navItems: propNavItems }) => {
                 <table className="w-full text-sm text-left">
                   <thead>
                     <tr className="bg-slate-100/80 border-b border-slate-200">
-                      <th className="px-6 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-widest">Operator</th>
-                      <th className="px-6 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-widest">Card / Float Type</th>
-                      <th className="px-6 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">Opening Stock</th>
-                      <th className="px-6 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">+ Added Stock</th>
-                      <th className="px-6 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">Total Available</th>
-                      <th className="px-6 py-3.5 text-[10px] font-black text-amber-800 uppercase tracking-widest text-center">Evening In-Hand Count</th>
-                      <th className="px-6 py-3.5 text-[10px] font-black text-emerald-700 uppercase tracking-widest text-right">Daily Sell-Out Sales</th>
-                      <th className="px-6 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">Actions</th>
+                      <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-widest">Operator</th>
+                      <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-widest">Card / Float Type</th>
+                      <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">Opening Stock</th>
+                      <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">+ Added Stock</th>
+                      <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">Total Available</th>
+                      <th className="px-6 py-3.5 text-xs font-bold text-amber-800 uppercase tracking-widest text-center">Evening In-Hand Count</th>
+                      <th className="px-6 py-3.5 text-xs font-bold text-emerald-700 uppercase tracking-widest text-right">Daily Sell-Out Sales</th>
+                      <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -337,7 +331,7 @@ const AdminReloads = ({ navItems: propNavItems }) => {
                             <p className="font-bold text-slate-600 text-sm">No stock records found for {selectedDate}</p>
                             <button
                               onClick={() => setIsAddStockOpen(true)}
-                              className="mt-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-xs font-black uppercase tracking-wider hover:bg-indigo-700 transition-all shadow-md cursor-pointer"
+                              className="mt-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-indigo-700 transition-all shadow-md cursor-pointer"
                             >
                               + Add Initial Card Stock / Float
                             </button>
@@ -348,34 +342,34 @@ const AdminReloads = ({ navItems: propNavItems }) => {
                       stocks.map((item) => (
                         <tr key={item._id} className="hover:bg-slate-50/80 transition-colors">
                           <td className="px-6 py-4 font-bold">
-                            <span className={`px-3 py-1 rounded-full text-xs font-black border ${getOperatorColor(item.operator)}`}>
+                            <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getOperatorColor(item.operator)}`}>
                               {item.operator}
                             </span>
                           </td>
                           <td className="px-6 py-4 text-slate-800 font-bold text-xs">
                             {item.cardValue === 1 ? (
                               <span className="inline-flex items-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-200 px-2.5 py-1 rounded-lg">
-                                📱 E-Reload Machine Float
+                                 E-Reload Machine Float
                               </span>
                             ) : (
                               <span className="inline-flex items-center gap-1.5 bg-slate-100 text-slate-800 px-2.5 py-1 rounded-lg">
-                                🎴 Rs. {item.cardValue} Scratch Cards
+                                 Rs. {item.cardValue} Scratch Cards
                               </span>
                             )}
                           </td>
                           <td className="px-6 py-4 text-center font-bold text-slate-600">{item.openingStock}</td>
-                          <td className="px-6 py-4 text-center font-black text-indigo-600">+{item.addedStock}</td>
-                          <td className="px-6 py-4 text-center font-black text-slate-900 bg-slate-50">{item.totalStock}</td>
+                          <td className="px-6 py-4 text-center font-bold text-indigo-600">+{item.addedStock}</td>
+                          <td className="px-6 py-4 text-center font-bold text-slate-900 bg-slate-50">{item.totalStock}</td>
                           <td className="px-6 py-4 text-center">
-                            <span className="px-3.5 py-1.5 bg-amber-50 text-amber-900 border border-amber-200 rounded-xl font-black text-sm shadow-xs">
+                            <span className="px-3.5 py-1.5 bg-amber-50 text-amber-900 border border-amber-200 rounded-xl font-bold text-sm shadow-xs">
                               {item.closingStock}
                             </span>
                           </td>
                           <td className="px-6 py-4 text-right bg-emerald-50/60">
-                            <div className="text-emerald-800 font-black text-base">
+                            <div className="text-emerald-800 font-bold text-base">
                               Rs. {(item.sellOutValue || 0).toLocaleString()}
                             </div>
-                            <div className="text-[11px] text-emerald-600 font-bold">
+                            <div className="text-xs text-emerald-600 font-bold">
                               ({item.sellOutAmount} sold)
                             </div>
                           </td>
@@ -386,9 +380,9 @@ const AdminReloads = ({ navItems: propNavItems }) => {
                                 setClosingStockInput(item.closingStock || 0);
                                 setIsCloseStockOpen(true);
                               }}
-                              className="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-black rounded-xl shadow-xs transition-all cursor-pointer flex items-center gap-1.5 mx-auto"
+                              className="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer flex items-center gap-1.5 mx-auto"
                             >
-                              ⚙️ Enter Evening Count
+                               Enter Evening Count
                             </button>
                           </td>
                         </tr>
@@ -408,7 +402,7 @@ const AdminReloads = ({ navItems: propNavItems }) => {
             <div className="lg:col-span-1 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
               <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
                 <Wallet className="text-indigo-600" size={20} />
-                <h3 className="text-base font-black text-slate-900 m-0">Reload Supplier Payment</h3>
+                <h3 className="text-base font-bold text-slate-900 m-0">Reload Supplier Payment</h3>
               </div>
               <p className="text-slate-500 text-xs font-semibold">
                 Record payment made to Dialog/Mobitel/Hutch reload distributor for float top-up or physical cards.
@@ -416,7 +410,7 @@ const AdminReloads = ({ navItems: propNavItems }) => {
 
               <form onSubmit={handleSupplierSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Distributor / Supplier Name *</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Distributor / Supplier Name *</label>
                   <input
                     type="text"
                     required
@@ -428,7 +422,7 @@ const AdminReloads = ({ navItems: propNavItems }) => {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Operator *</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Operator *</label>
                   <select
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-indigo-600 focus:bg-white transition-all cursor-pointer"
                     value={supplierForm.operator}
@@ -444,20 +438,20 @@ const AdminReloads = ({ navItems: propNavItems }) => {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Payment Amount (Rs.) *</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Payment Amount (Rs.) *</label>
                   <input
                     type="number"
                     min="1"
                     required
                     placeholder="e.g. 50000"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-black text-slate-900 outline-none focus:border-indigo-600 focus:bg-white transition-all"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-900 outline-none focus:border-indigo-600 focus:bg-white transition-all"
                     value={supplierForm.amount}
                     onChange={(e) => setSupplierForm({ ...supplierForm, amount: e.target.value })}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Payment Method *</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Payment Method *</label>
                   <select
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-indigo-600 focus:bg-white transition-all cursor-pointer"
                     value={supplierForm.paymentMethod}
@@ -470,7 +464,7 @@ const AdminReloads = ({ navItems: propNavItems }) => {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Notes (Optional)</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Notes (Optional)</label>
                   <input
                     type="text"
                     placeholder="e.g. Purchased 500 Dialog Rs. 100 cards"
@@ -483,9 +477,9 @@ const AdminReloads = ({ navItems: propNavItems }) => {
                 <button
                   type="submit"
                   disabled={supplierSubmitting}
-                  className="w-full py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:opacity-95 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-md shadow-indigo-600/20 transition-all cursor-pointer"
+                  className="w-full py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:opacity-95 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md shadow-indigo-600/20 transition-all cursor-pointer"
                 >
-                  {supplierSubmitting ? 'Recording...' : '💸 Record Supplier Payment'}
+                  {supplierSubmitting ? 'Recording...' : 'Record Supplier Payment'}
                 </button>
               </form>
             </div>
@@ -493,10 +487,10 @@ const AdminReloads = ({ navItems: propNavItems }) => {
             {/* Information Banner */}
             <div className="lg:col-span-2 bg-gradient-to-br from-slate-900 to-indigo-950 text-white p-8 rounded-2xl shadow-md flex flex-col justify-between">
               <div>
-                <div className="inline-flex items-center gap-2 bg-indigo-500/20 text-indigo-300 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg border border-indigo-400/20 mb-4">
+                <div className="inline-flex items-center gap-2 bg-indigo-500/20 text-indigo-300 text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-lg border border-indigo-400/20 mb-4">
                   <Building2 size={14} /> Reload Distributor Accounting Integration
                 </div>
-                <h2 className="text-xl font-black text-white mb-2">Automated Supplier Expense Logging</h2>
+                <h2 className="text-xl font-bold text-white mb-2">Automated Supplier Expense Logging</h2>
                 <p className="text-slate-300 text-xs leading-relaxed font-medium">
                   When you make a payment to a Reload Distributor for physical scratch cards or E-Reload float deposits, entering it here automatically logs an <strong>Expense Transaction</strong> under your shop's Financial Ledger.
                 </p>
@@ -504,11 +498,11 @@ const AdminReloads = ({ navItems: propNavItems }) => {
 
               <div className="mt-6 pt-6 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="bg-white/5 p-4 rounded-xl border border-white/10">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest m-0">Auto Financial Categorization</p>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest m-0">Auto Financial Categorization</p>
                   <p className="text-xs font-bold text-white mt-1 m-0">Categorized as "Reload Supplier Cost"</p>
                 </div>
                 <div className="bg-white/5 p-4 rounded-xl border border-white/10">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest m-0">Ledger Compatibility</p>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest m-0">Ledger Compatibility</p>
                   <p className="text-xs font-bold text-white mt-1 m-0">Appears in Financial Statements & Expenses</p>
                 </div>
               </div>
@@ -521,44 +515,36 @@ const AdminReloads = ({ navItems: propNavItems }) => {
           <>
             {/* Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl"><Smartphone size={20} /></div>
-                </div>
-                <h3 className="text-2xl font-black text-slate-900">{stats.total}</h3>
-                <p className="text-xs text-slate-500 font-semibold">Total Reload Entries</p>
+              <div className="ds-stat">
+                <span className="ds-stat-label">Total Reload Entries</span>
+                <div className="ds-stat-value text-slate-900">{stats.total}</div>
+                <p className="ds-stat-sub">Lifetime transactions</p>
               </div>
-              <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl"><ArrowUpRight size={20} /></div>
-                </div>
-                <h3 className="text-2xl font-black text-slate-900">Rs. {stats.amount.toLocaleString()}</h3>
-                <p className="text-xs text-slate-500 font-semibold">Total Reload Volume</p>
+              <div className="ds-stat">
+                <span className="ds-stat-label text-emerald-600">Total Reload Volume</span>
+                <div className="ds-stat-value text-emerald-600">Rs. {stats.amount.toLocaleString()}</div>
+                <p className="ds-stat-sub">Processed volume</p>
               </div>
-              <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="p-2 bg-amber-50 text-amber-600 rounded-xl"><Calendar size={20} /></div>
-                </div>
-                <h3 className="text-2xl font-black text-slate-900">{stats.today}</h3>
-                <p className="text-xs text-slate-500 font-semibold">Today's Reload Entries</p>
+              <div className="ds-stat">
+                <span className="ds-stat-label text-amber-600">Today's Entries</span>
+                <div className="ds-stat-value text-amber-600">{stats.today}</div>
+                <p className="ds-stat-sub">Today's reloads</p>
               </div>
-              <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="p-2 bg-rose-50 text-rose-600 rounded-xl"><ArrowUpRight size={20} /></div>
-                </div>
-                <h3 className="text-2xl font-black text-slate-900">Rs. {stats.todayAmount.toLocaleString()}</h3>
-                <p className="text-xs text-slate-500 font-semibold">Today's Volume</p>
+              <div className="ds-stat">
+                <span className="ds-stat-label text-rose-600">Today's Volume</span>
+                <div className="ds-stat-value text-rose-600">Rs. {stats.todayAmount.toLocaleString()}</div>
+                <p className="ds-stat-sub">Volume for {new Date().toLocaleDateString()}</p>
               </div>
             </div>
 
             {/* Filters & Search */}
-            <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col lg:flex-row gap-4">
+            <div className="ds-card flex flex-col lg:flex-row gap-4">
               <div className="relative flex-1">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
                 <input 
                   type="text" 
                   placeholder="Search number, operator, or cashier..."
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-600 transition-all text-xs font-bold bg-slate-50 focus:bg-white"
+                  className="ds-input pl-10"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -603,12 +589,12 @@ const AdminReloads = ({ navItems: propNavItems }) => {
                 <table className="w-full text-sm text-left">
                   <thead>
                     <tr className="bg-slate-50 border-b border-slate-200">
-                      <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Date & Time</th>
-                      <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Mobile Number / Title</th>
-                      <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Operator</th>
-                      <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Type</th>
-                      <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Recorded By</th>
-                      <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest text-right">Amount</th>
+                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Date & Time</th>
+                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Mobile Number / Title</th>
+                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Operator</th>
+                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Type</th>
+                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Recorded By</th>
+                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-right">Amount</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -632,7 +618,7 @@ const AdminReloads = ({ navItems: propNavItems }) => {
                         <tr key={reload._id} className="hover:bg-slate-50/80 transition-colors">
                           <td className="px-6 py-4">
                             <div className="text-slate-800 font-bold text-xs">{new Date(reload.createdAt).toLocaleDateString()}</div>
-                            <div className="text-[10px] text-slate-400 font-black uppercase">{new Date(reload.createdAt).toLocaleTimeString()}</div>
+                            <div className="text-xs text-slate-400 font-bold uppercase">{new Date(reload.createdAt).toLocaleTimeString()}</div>
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-2">
@@ -641,7 +627,7 @@ const AdminReloads = ({ navItems: propNavItems }) => {
                             </div>
                           </td>
                           <td className="px-6 py-4">
-                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${getOperatorColor(reload.operator)}`}>
+                            <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase ${getOperatorColor(reload.operator)}`}>
                               {reload.operator}
                             </span>
                           </td>
@@ -655,8 +641,8 @@ const AdminReloads = ({ navItems: propNavItems }) => {
                             </div>
                           </td>
                           <td className="px-6 py-4 text-right">
-                            <div className="text-indigo-700 font-black text-sm">Rs. {reload.amount.toLocaleString()}</div>
-                            <div className="text-[10px] text-slate-400 font-bold">{reload.paymentMethod}</div>
+                            <div className="text-indigo-700 font-bold text-sm">Rs. {reload.amount.toLocaleString()}</div>
+                            <div className="text-xs text-slate-400 font-bold">{reload.paymentMethod}</div>
                           </td>
                         </tr>
                       ))
@@ -672,11 +658,11 @@ const AdminReloads = ({ navItems: propNavItems }) => {
         {isAddStockOpen && (
           <div className="fixed inset-0 z-50 bg-slate-950/50 backdrop-blur-[2px] flex items-center justify-center p-4">
             <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 space-y-4 border border-slate-200">
-              <h3 className="text-lg font-black text-slate-900 m-0">📦 Add Card Stock / E-Reload Float</h3>
+              <h3 className="text-lg font-bold text-slate-900 m-0"> Add Card Stock / E-Reload Float</h3>
 
               <form onSubmit={handleSaveStock} className="space-y-4">
                 <div>
-                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Operator *</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Operator *</label>
                   <select
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-indigo-600 cursor-pointer"
                     value={addStockForm.operator}
@@ -692,9 +678,9 @@ const AdminReloads = ({ navItems: propNavItems }) => {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Card Denomination / Float Value (Rs.) *</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Card Denomination / Float Value (Rs.) *</label>
                   <div className="relative">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400">Rs.</span>
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Rs.</span>
                     <input
                       type="number"
                       min="1"
@@ -706,19 +692,19 @@ const AdminReloads = ({ navItems: propNavItems }) => {
                     />
                   </div>
                   <div className="flex flex-wrap gap-1.5 mt-2">
-                    <button type="button" onClick={() => setAddStockForm({ ...addStockForm, cardValue: 1 })} className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${addStockForm.cardValue === 1 ? 'bg-purple-600 text-white border-purple-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'}`}>📱 E-Reload Float (1)</button>
-                    <button type="button" onClick={() => setAddStockForm({ ...addStockForm, cardValue: 50 })} className={`px-2 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${addStockForm.cardValue === 50 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'}`}>Rs. 50</button>
-                    <button type="button" onClick={() => setAddStockForm({ ...addStockForm, cardValue: 100 })} className={`px-2 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${addStockForm.cardValue === 100 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'}`}>Rs. 100</button>
-                    <button type="button" onClick={() => setAddStockForm({ ...addStockForm, cardValue: 199 })} className={`px-2 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${addStockForm.cardValue === 199 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'}`}>Rs. 199</button>
-                    <button type="button" onClick={() => setAddStockForm({ ...addStockForm, cardValue: 350 })} className={`px-2 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${addStockForm.cardValue === 350 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'}`}>Rs. 350</button>
-                    <button type="button" onClick={() => setAddStockForm({ ...addStockForm, cardValue: 500 })} className={`px-2 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${addStockForm.cardValue === 500 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'}`}>Rs. 500</button>
-                    <button type="button" onClick={() => setAddStockForm({ ...addStockForm, cardValue: 1000 })} className={`px-2 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${addStockForm.cardValue === 1000 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'}`}>Rs. 1000</button>
+                    <button type="button" onClick={() => setAddStockForm({ ...addStockForm, cardValue: 1 })} className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition-all cursor-pointer ${addStockForm.cardValue === 1 ? 'bg-purple-600 text-white border-purple-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'}`}> E-Reload Float (1)</button>
+                    <button type="button" onClick={() => setAddStockForm({ ...addStockForm, cardValue: 50 })} className={`px-2 py-1 rounded-lg text-xs font-bold border transition-all cursor-pointer ${addStockForm.cardValue === 50 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'}`}>Rs. 50</button>
+                    <button type="button" onClick={() => setAddStockForm({ ...addStockForm, cardValue: 100 })} className={`px-2 py-1 rounded-lg text-xs font-bold border transition-all cursor-pointer ${addStockForm.cardValue === 100 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'}`}>Rs. 100</button>
+                    <button type="button" onClick={() => setAddStockForm({ ...addStockForm, cardValue: 199 })} className={`px-2 py-1 rounded-lg text-xs font-bold border transition-all cursor-pointer ${addStockForm.cardValue === 199 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'}`}>Rs. 199</button>
+                    <button type="button" onClick={() => setAddStockForm({ ...addStockForm, cardValue: 350 })} className={`px-2 py-1 rounded-lg text-xs font-bold border transition-all cursor-pointer ${addStockForm.cardValue === 350 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'}`}>Rs. 350</button>
+                    <button type="button" onClick={() => setAddStockForm({ ...addStockForm, cardValue: 500 })} className={`px-2 py-1 rounded-lg text-xs font-bold border transition-all cursor-pointer ${addStockForm.cardValue === 500 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'}`}>Rs. 500</button>
+                    <button type="button" onClick={() => setAddStockForm({ ...addStockForm, cardValue: 1000 })} className={`px-2 py-1 rounded-lg text-xs font-bold border transition-all cursor-pointer ${addStockForm.cardValue === 1000 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'}`}>Rs. 1000</button>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Opening Stock</label>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Opening Stock</label>
                     <input
                       type="number"
                       min="0"
@@ -728,7 +714,7 @@ const AdminReloads = ({ navItems: propNavItems }) => {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">+ Added Stock</label>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">+ Added Stock</label>
                     <input
                       type="number"
                       min="0"
@@ -740,7 +726,7 @@ const AdminReloads = ({ navItems: propNavItems }) => {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Notes (Optional)</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Notes (Optional)</label>
                   <input
                     type="text"
                     placeholder="e.g. Received new Rs. 100 cards packet"
@@ -760,7 +746,7 @@ const AdminReloads = ({ navItems: propNavItems }) => {
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:opacity-95 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-md shadow-indigo-600/20 transition-all cursor-pointer"
+                    className="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:opacity-95 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md shadow-indigo-600/20 transition-all cursor-pointer"
                   >
                     Save Stock
                   </button>
@@ -774,24 +760,24 @@ const AdminReloads = ({ navItems: propNavItems }) => {
         {isCloseStockOpen && selectedStockItem && (
           <div className="fixed inset-0 z-50 bg-slate-950/50 backdrop-blur-[2px] flex items-center justify-center p-4">
             <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 space-y-4 border border-slate-200">
-              <h3 className="text-lg font-black text-slate-900 m-0">⚙️ Enter Evening In-Hand Balance</h3>
+              <h3 className="text-lg font-bold text-slate-900 m-0"> Enter Evening In-Hand Balance</h3>
               <p className="text-xs font-semibold text-slate-500">
                 Operator: <strong className="text-indigo-600">{selectedStockItem.operator}</strong> | Total Available: <strong>{selectedStockItem.totalStock}</strong>
               </p>
 
               <form onSubmit={handleCloseStock} className="space-y-4">
                 <div>
-                  <label className="block text-[10px] font-black text-amber-800 uppercase tracking-widest mb-1">Remaining In-Hand Stock Count *</label>
+                  <label className="block text-xs font-bold text-amber-800 uppercase tracking-widest mb-1">Remaining In-Hand Stock Count *</label>
                   <input
                     type="number"
                     min="0"
                     max={selectedStockItem.totalStock}
                     required
-                    className="w-full px-4 py-3 bg-amber-50 border border-amber-300 focus:ring-2 focus:ring-amber-500 rounded-xl text-xl font-black text-amber-900 outline-none"
+                    className="w-full px-4 py-3 bg-amber-50 border border-amber-300 focus:ring-2 focus:ring-amber-500 rounded-xl text-xl font-bold text-amber-900 outline-none"
                     value={closingStockInput}
                     onChange={(e) => setClosingStockInput(e.target.value)}
                   />
-                  <p className="text-[11px] text-slate-400 font-medium mt-1">Enter physical cards remaining in shop at shift close.</p>
+                  <p className="text-xs text-slate-400 font-medium mt-1">Enter physical cards remaining in shop at shift close.</p>
                 </div>
 
                 <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs space-y-1.5">
@@ -799,7 +785,7 @@ const AdminReloads = ({ navItems: propNavItems }) => {
                     <span>Calculated Sold Quantity:</span>
                     <span>{Math.max(0, selectedStockItem.totalStock - Number(closingStockInput))}</span>
                   </div>
-                  <div className="flex justify-between font-black text-emerald-950 text-sm pt-1 border-t border-emerald-200">
+                  <div className="flex justify-between font-bold text-emerald-950 text-sm pt-1 border-t border-emerald-200">
                     <span>Total Calculated Sales Revenue:</span>
                     <span>Rs. {(Math.max(0, selectedStockItem.totalStock - Number(closingStockInput)) * selectedStockItem.cardValue).toLocaleString()}</span>
                   </div>
@@ -815,7 +801,7 @@ const AdminReloads = ({ navItems: propNavItems }) => {
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-95 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
+                    className="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-95 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
                   >
                     Calculate & Post Sales Income
                   </button>

@@ -237,6 +237,10 @@ const usePosStore = create((set, get) => ({
     return parseFloat(Math.max(0, subtotal - totalDiscount + tax).toFixed(2));
   },
 
+  getTotal: () => {
+    return get().getGrandTotal();
+  },
+
   getChange: () => {
     const { tenderedAmount } = get();
     const total = get().getGrandTotal();

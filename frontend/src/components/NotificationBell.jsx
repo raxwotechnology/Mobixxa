@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Bell, CheckCheck } from 'lucide-react';
+import { Bell, CheckCheck, Package, Truck, ClipboardList, Coins, Sparkles, Star, Calendar, AlertTriangle, CalendarCheck } from 'lucide-react';
 import { useNavigate } from '../utils/navigation';
 import useNotificationStore from '../store/notificationStore';
 import useAuthStore from '../store/authStore';
@@ -47,17 +47,20 @@ const NotificationBell = () => {
     if (!open) fetchNotifications();
   };
 
-  const typeIcons = {
-    order_update: '📦',
-    delivery_update: '🚚',
-    delivery_assignment: '📋',
-    salary_credit: '💰',
-    promotion: '🎉',
-    loyalty_points: '⭐',
-    leave_update: '📅',
-    low_stock: '⚠️',
-    system: '🔔',
-    attendance: '🗓️',
+  const renderNotificationIcon = (type) => {
+    const iconClass = "w-4 h-4 text-blue-600";
+    switch (type) {
+      case 'order_update': return <Package className={iconClass} />;
+      case 'delivery_update': return <Truck className={iconClass} />;
+      case 'delivery_assignment': return <ClipboardList className={iconClass} />;
+      case 'salary_credit': return <Coins className={iconClass} />;
+      case 'promotion': return <Sparkles className={iconClass} />;
+      case 'loyalty_points': return <Star className={iconClass} />;
+      case 'leave_update': return <Calendar className={iconClass} />;
+      case 'low_stock': return <AlertTriangle className="w-4 h-4 text-amber-500" />;
+      case 'attendance': return <CalendarCheck className={iconClass} />;
+      default: return <Bell className={iconClass} />;
+    }
   };
 
   const timeAgo = (date) => {
@@ -80,7 +83,7 @@ const NotificationBell = () => {
       >
         <Bell size={20} />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center animate-pulse">
+          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center animate-pulse">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -122,13 +125,15 @@ const NotificationBell = () => {
                   }`}
                 >
                   <div className="flex items-start gap-3">
-                    <span className="text-lg flex-shrink-0 mt-0.5">{typeIcons[n.type] || '🔔'}</span>
+                    <div className="p-1 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      {renderNotificationIcon(n.type)}
+                    </div>
                     <div className="flex-1 min-w-0">
                       <p className={`text-sm m-0 leading-snug ${!n.isRead ? 'font-semibold text-slate-900' : 'text-slate-500'}`}>
                         {n.title}
                       </p>
                       <p className="text-xs text-slate-500 m-0 mt-0.5 truncate">{n.message}</p>
-                      <p className="text-[10px] text-slate-400 m-0 mt-1">{timeAgo(n.createdAt)}</p>
+                      <p className="text-xs text-slate-400 m-0 mt-1">{timeAgo(n.createdAt)}</p>
                     </div>
                     {!n.isRead && <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1.5" />}
                   </div>

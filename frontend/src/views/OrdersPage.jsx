@@ -75,7 +75,7 @@ const OrdersPage = () => {
     if (!cancelOrderId) return;
     try {
       await cancelMyOrder(cancelOrderId, { reason: 'Cancelled by customer' });
-      toast.success('Your order has been cancelled successfully! 🛑');
+      toast.success('Your order has been cancelled successfully!');
       setCancelOrderId(null);
       fetchOrders();
     } catch (err) {
@@ -86,8 +86,8 @@ const OrdersPage = () => {
   const downloadBill = (order) => {
     const lines = [
       '═══════════════════════════════════════',
-      '           ZAGE FASHION CORNER',
-      '            PURCHASE RECEIPT',
+      '         SR MOBILE MOBIXXA',
+      '          PURCHASE RECEIPT',
       '═══════════════════════════════════════',
       '',
       `Order ID: #${order._id.slice(-8).toUpperCase()}`,
@@ -185,7 +185,7 @@ const OrdersPage = () => {
     return (
       <div className="base-container py-20 text-center">
         <Package size={48} className="text-slate-350 mx-auto mb-4" />
-        <h2 className="text-2xl font-black text-slate-800 mb-2 mt-0">Sign In to View Orders</h2>
+        <h2 className="text-2xl font-bold text-slate-800 mb-2 mt-0">Sign In to View Orders</h2>
         <Link to="/login" className="text-brand-indigo font-bold hover:underline">Sign In</Link>
       </div>
     );
@@ -194,7 +194,7 @@ const OrdersPage = () => {
   if (loading) {
     return (
       <div className="base-container py-10">
-        <h1 className="text-2xl font-black text-slate-800 mt-0 mb-8 border-b border-slate-100 pb-4">My Orders</h1>
+        <h1 className="text-2xl font-bold text-slate-800 mt-0 mb-8 border-b border-slate-100 pb-4">My Orders</h1>
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
             <div key={i} className="bg-white border border-slate-200/60 rounded-[2rem] p-6 animate-pulse">
@@ -219,7 +219,7 @@ const OrdersPage = () => {
           <div className="w-20 h-20 bg-brand-indigo/5 border border-brand-indigo/10 rounded-full mx-auto mb-6 flex items-center justify-center">
             <ShoppingBag size={32} className="text-brand-indigo" />
           </div>
-          <h2 className="text-2xl font-black text-slate-800 mb-2 mt-0">No Orders Yet</h2>
+          <h2 className="text-2xl font-bold text-slate-800 mb-2 mt-0">No Orders Yet</h2>
           <p className="text-slate-400 text-sm mb-6 font-medium">Looks like you haven't placed any orders.</p>
           <Link to="/shop" className="bg-gradient-to-r from-brand-indigo to-brand-violet hover:opacity-95 text-white text-xs font-bold py-3.5 px-8 rounded-xl transition-all shadow-[0_4px_12px_rgba(99,102,241,0.2)] inline-block cursor-pointer">
             Start Shopping
@@ -230,10 +230,16 @@ const OrdersPage = () => {
   }
 
   return (
-    <div className="base-container py-10">
-      <h1 className="text-2xl md:text-3xl font-black text-slate-800 mt-0 mb-8 border-b border-slate-100 pb-4">My Orders</h1>
+    <div className="base-container py-10" style={{ maxWidth: '1000px', margin: '0 auto', padding: '1.5rem 1rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+        <div>
+          <h1 style={{ fontSize: 'var(--ds-text-xl)', fontWeight: 700, color: 'var(--ds-text-head)', margin: 0 }}>My Orders</h1>
+          <p style={{ fontSize: 'var(--ds-text-xs)', color: 'var(--ds-text-muted)', margin: '0.25rem 0 0' }}>Track, download receipts, and manage your purchases</p>
+        </div>
+        <span className="ds-badge ds-badge-slate">{orders.length} orders</span>
+      </div>
 
-      <div className="space-y-5">
+      <div style={{ display: 'grid', gap: '1rem' }}>
         {orders.map((order, i) => (
           <motion.div
             key={order._id}
@@ -241,94 +247,106 @@ const OrdersPage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05, duration: 0.3 }}
           >
-            <Link to={`/order-confirmation/${order._id}`} className="block bg-white border border-slate-200/60 rounded-[2rem] p-6 hover:shadow-lg hover:border-brand-indigo/40 transition-all group">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-brand-indigo/5 border border-brand-indigo/10 rounded-2xl flex items-center justify-center flex-shrink-0">
-                    <Package size={20} className="text-brand-indigo" />
+            <div className="ds-card" style={{ padding: '1.25rem' }}>
+              <Link to={`/order-confirmation/${order._id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
+                    <div style={{
+                      width: '2.5rem', height: '2.5rem', borderRadius: 'var(--ds-r-md)',
+                      background: 'linear-gradient(135deg, var(--ds-primary) 0%, #7c3aed 100%)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', flexShrink: 0
+                    }}>
+                      <Package size={18} />
+                    </div>
+                    <div>
+                      <p style={{ fontWeight: 600, color: 'var(--ds-text-head)', margin: 0, fontSize: 'var(--ds-text-sm)' }}>
+                        Order #{order._id.slice(-8).toUpperCase()}
+                      </p>
+                      <p style={{ fontSize: 'var(--ds-text-xs)', color: 'var(--ds-text-muted)', margin: '0.15rem 0 0' }}>
+                        {new Date(order.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                        {' · '}{order.items.length} item{order.items.length > 1 ? 's' : ''}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-extrabold text-slate-800 m-0 text-sm">Order #{order._id.slice(-8).toUpperCase()}</p>
-                    <p className="text-xs text-slate-400 font-bold tracking-wide mt-0.5">
-                      {new Date(order.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
-                      {' · '}{order.items.length} item{order.items.length > 1 ? 's' : ''}
-                    </p>
-                  </div>
-                </div>
 
-                <div className="flex items-center justify-between md:justify-end gap-3.5 w-full md:w-auto pt-3 md:pt-0 border-t md:border-t-0 border-slate-100 mt-1 md:mt-0">
-                  {order.paymentMethod === 'koko' && (
-                    <span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-xl border bg-brand-indigo/10 text-brand-indigo border-brand-indigo/20 flex items-center gap-1">
-                      <span className="font-black text-[9px] bg-brand-indigo text-white px-1.5 py-0.5 rounded-md">koko</span> 3x Pay (1/3 Paid)
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                    {order.paymentMethod === 'koko' && (
+                      <span className="ds-badge ds-badge-violet">
+                        koko 3x Pay
+                      </span>
+                    )}
+                    <span className={`ds-badge ${
+                      ['delivered', 'completed'].includes(order.orderStatus) ? 'ds-badge-green' :
+                      ['cancelled', 'rejected'].includes(order.orderStatus) ? 'ds-badge-red' :
+                      ['shipped', 'out_for_delivery', 'packed'].includes(order.orderStatus) ? 'ds-badge-blue' :
+                      'ds-badge-amber'
+                    }`}>
+                      {order.orderStatus.replace('_', ' ')}
                     </span>
-                  )}
-                  <span className={`text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-xl border capitalize ${statusColor(order.orderStatus)}`}>
-                    {order.orderStatus.replace('_', ' ')}
-                  </span>
-                  <span className="font-extrabold text-slate-800">{formatPrice(convertPrice(order.totalAmount))}</span>
-                  <ChevronRight size={16} className="text-slate-400 group-hover:text-brand-indigo transition-colors" />
+                    <span style={{ fontWeight: 700, color: 'var(--ds-text-head)', fontSize: 'var(--ds-text-sm)' }}>
+                      {formatPrice(convertPrice(order.totalAmount))}
+                    </span>
+                    <ChevronRight size={16} style={{ color: 'var(--ds-text-faint)' }} />
+                  </div>
                 </div>
-              </div>
+              </Link>
 
               {/* Item previews */}
-              <div className="flex gap-2.5 mt-4 overflow-x-auto pb-1 scrollbar-hide border-b border-slate-100 pb-4 mb-4">
-                {order.items.slice(0, 4).map((item, j) => (
+              <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', padding: '0.75rem 0', margin: '0.75rem 0 0.5rem', borderTop: '1px solid var(--ds-border-soft)' }}>
+                {order.items.slice(0, 5).map((item, j) => (
                   <img 
                     key={j} 
                     src={getImageUrl(item.image) || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&auto=format&fit=crop&q=60'} 
                     alt="" 
-                    className="w-10 h-10 rounded-xl object-cover flex-shrink-0 border border-slate-150 p-0.5" 
+                    style={{ width: '2.5rem', height: '2.5rem', borderRadius: 'var(--ds-r-sm)', objectFit: 'cover', border: '1px solid var(--ds-border-soft)' }}
                     onError={(e) => handleImageError(e, 'Product')}
                   />
                 ))}
-                {order.items.length > 4 && (
-                  <div className="w-10 h-10 bg-slate-50 border border-slate-200/60 rounded-xl flex items-center justify-center text-xs text-slate-450 font-bold">
-                    +{order.items.length - 4}
+                {order.items.length > 5 && (
+                  <div style={{
+                    width: '2.5rem', height: '2.5rem', borderRadius: 'var(--ds-r-sm)',
+                    background: 'var(--ds-border-soft)', display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', fontSize: 'var(--ds-text-xs)', color: 'var(--ds-text-muted)', fontWeight: 600
+                  }}>
+                    +{order.items.length - 5}
                   </div>
                 )}
               </div>
-              <div className="flex items-center gap-2.5 flex-wrap">
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', borderTop: '1px solid var(--ds-border-soft)', paddingTop: '0.75rem' }}>
                 {isCancellable(order) && (
                   <button
                     type="button"
-                    onClick={(e) => { e.preventDefault(); setCancelOrderId(order._id); }}
-                    className="text-[10px] font-bold uppercase tracking-wide px-3.5 py-2.5 rounded-xl bg-rose-50 border border-rose-100 text-rose-600 hover:bg-rose-100 flex items-center gap-1.5 cursor-pointer transition-colors"
+                    onClick={() => setCancelOrderId(order._id)}
+                    className="ds-btn ds-btn-danger ds-btn-sm"
                   >
-                    <XCircle size={13} /> Cancel Order
-                    <span className="text-[10px] text-rose-450 font-normal lowercase tracking-normal flex items-center gap-0.5"><Clock size={10} />{getCancelTimeLeft(order)}</span>
+                    <XCircle size={13} /> Cancel Order ({getCancelTimeLeft(order)})
                   </button>
                 )}
                 <button
                   type="button"
-                  onClick={(e) => { e.preventDefault(); downloadBill(order); }}
-                  className="text-[10px] font-bold uppercase tracking-wide px-3.5 py-2.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200/70 flex items-center gap-1.5 cursor-pointer transition-colors"
+                  onClick={() => downloadBill(order)}
+                  className="ds-btn ds-btn-secondary ds-btn-sm"
                 >
                   <Download size={13} /> Download Receipt
                 </button>
                 <button
                   type="button"
-                  onClick={(e) => { e.preventDefault(); if (isReturnEligible(order)) openReturnModal(order); }}
+                  onClick={() => { if (isReturnEligible(order)) openReturnModal(order); }}
                   disabled={!isReturnEligible(order)}
-                  className={`text-[10px] font-bold uppercase tracking-wide px-3.5 py-2.5 rounded-xl border transition-colors cursor-pointer ${
-                    isReturnEligible(order)
-                      ? 'bg-amber-50 border-amber-100 text-amber-700 hover:bg-amber-100'
-                      : 'bg-slate-50 border-slate-100 text-slate-400 cursor-not-allowed'
-                  }`}
-                  title={
-                    isReturnEligible(order)
-                      ? 'Request return'
-                      : 'Returns available only for delivered/completed orders within 7 days'
-                  }
+                  className={`ds-btn ds-btn-sm ${isReturnEligible(order) ? 'ds-btn-secondary' : 'ds-btn-ghost'}`}
+                  style={{ opacity: isReturnEligible(order) ? 1 : 0.5 }}
                 >
                   Request Return
                 </button>
                 {order.returnStatus && order.returnStatus !== 'none' && (
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-xl border bg-slate-50 border-slate-200 text-slate-500">
+                  <span className="ds-badge ds-badge-slate">
                     Return: {order.returnStatus.replaceAll('_', ' ')}
                   </span>
                 )}
               </div>
-            </Link>
+            </div>
           </motion.div>
         ))}
       </div>
@@ -336,7 +354,7 @@ const OrdersPage = () => {
         <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-[2rem] w-full max-w-lg shadow-2xl relative border border-slate-200/60 overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
-              <h3 className="text-lg font-black text-slate-800 m-0">Request Product Return</h3>
+              <h3 className="text-lg font-bold text-slate-800 m-0">Request Product Return</h3>
             </div>
             <form onSubmit={submitReturnRequest} className="p-6 space-y-4">
               <div>
@@ -395,7 +413,7 @@ const OrdersPage = () => {
               <XCircle size={24} />
             </div>
             <div className="space-y-1">
-              <h3 className="text-base font-black text-slate-800 m-0">Confirm Cancellation</h3>
+              <h3 className="text-base font-bold text-slate-800 m-0">Confirm Cancellation</h3>
               <p className="text-xs text-slate-500 m-0 font-medium">Are you sure you want to cancel this order? This action cannot be undone.</p>
             </div>
             <div className="flex gap-2">

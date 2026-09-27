@@ -229,21 +229,23 @@ const AdminHP = ({ navItems: propNavItems }) => {
 
   return (
     <DashboardLayout navItems={navItems} title="Hire Purchase">
-      <div className="p-6 max-w-[1600px] mx-auto space-y-8">
+      <div className="ds-page">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold text-dark-navy flex items-center gap-2">
-              <Clock className="text-primary-blue" />
-              Credit Sales & Installments (HP)
-            </h1>
-            <p className="text-slate-500 text-sm">Monitor credit customer registry, billing installments, and cash receipts history</p>
+        <div className="ds-page-header">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700">
+              <Clock size={20} strokeWidth={2} />
+            </div>
+            <div>
+              <h1 className="ds-page-title">Credit Sales & Installments (HP)</h1>
+              <p className="ds-page-subtitle">Monitor credit customer registry, billing installments, and cash receipts history</p>
+            </div>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button 
               onClick={fetchData} 
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-card-border rounded-xl text-sm font-medium hover:bg-slate-50 transition-all"
+              className="ds-btn ds-btn-secondary"
             >
               Refresh List
             </button>
@@ -251,57 +253,61 @@ const AdminHP = ({ navItems: propNavItems }) => {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {[
-            { label: 'Active Credit Sales', value: records.filter(r => r.status === 'Active').length, icon: Clock, color: 'text-primary-blue', bg: 'bg-indigo-50' },
-            { label: 'Total Outstanding Balance', value: `Rs. ${records.reduce((s, r) => s + (r.balanceAmount), 0).toLocaleString()}`, icon: CreditCard, color: 'text-amber-600', bg: 'bg-amber-50' },
-            { label: 'Completed Agreements', value: records.filter(r => r.status === 'Completed').length, icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-            { label: 'Overdue Payments', value: records.filter(r => r.status === 'Overdue').length, icon: AlertCircle, color: 'text-rose-600', bg: 'bg-rose-50' },
-          ].map((stat, i) => (
-            <div key={i} className="bg-white p-6 rounded-2xl border border-card-border shadow-sm flex items-center gap-4 hover:shadow-md transition-all">
-              <div className={`p-3 rounded-xl ${stat.bg} ${stat.color}`}>
-                <stat.icon size={24} />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{stat.label}</p>
-                <h3 className="text-xl font-bold text-dark-navy mt-0.5">{stat.value}</h3>
-              </div>
-            </div>
-          ))}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="ds-stat">
+            <div className="ds-stat-label">Active Credit Sales</div>
+            <div className="ds-stat-value text-slate-900">{records.filter(r => r.status === 'Active').length}</div>
+            <p className="ds-stat-sub">Active agreements</p>
+          </div>
+          <div className="ds-stat">
+            <div className="ds-stat-label text-amber-600">Outstanding Balance</div>
+            <div className="ds-stat-value text-amber-600">Rs. {records.reduce((s, r) => s + (r.balanceAmount), 0).toLocaleString()}</div>
+            <p className="ds-stat-sub">Pending collection</p>
+          </div>
+          <div className="ds-stat">
+            <div className="ds-stat-label text-emerald-600">Completed Agreements</div>
+            <div className="ds-stat-value text-emerald-600">{records.filter(r => r.status === 'Completed').length}</div>
+            <p className="ds-stat-sub">Fully settled</p>
+          </div>
+          <div className="ds-stat">
+            <div className="ds-stat-label text-rose-600">Overdue Payments</div>
+            <div className="ds-stat-value text-rose-600">{records.filter(r => r.status === 'Overdue').length}</div>
+            <p className="ds-stat-sub">Requires follow-up</p>
+          </div>
         </div>
 
         {/* Filters & Table */}
-        <div className="bg-white rounded-3xl border border-card-border shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-card-border flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-slate-50/50">
+        <div className="ds-table-wrap">
+          <div className="p-4 border-b border-slate-100 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-slate-50/50">
             {/* Tab filter buttons */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
+            <div className="ds-tab-bar">
               <button
                 onClick={() => setStatusFilter('all')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${statusFilter === 'all' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'}`}
+                className={`ds-tab-btn ${statusFilter === 'all' ? 'active' : ''}`}
               >
-                📋 All HP ({records.length})
+                All HP ({records.length})
               </button>
               <button
                 onClick={() => setStatusFilter('outstanding')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${statusFilter === 'outstanding' ? 'bg-amber-600 text-white shadow-sm' : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-50'}`}
+                className={`ds-tab-btn ${statusFilter === 'outstanding' ? 'active' : ''}`}
               >
-                ⏳ Outstanding HP ({records.filter(r => r.status === 'Active' || r.status === 'Overdue').length})
+                Outstanding ({records.filter(r => r.status === 'Active' || r.status === 'Overdue').length})
               </button>
               <button
                 onClick={() => setStatusFilter('completed')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${statusFilter === 'completed' ? 'bg-emerald-600 text-white shadow-sm' : 'bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50'}`}
+                className={`ds-tab-btn ${statusFilter === 'completed' ? 'active' : ''}`}
               >
-                ✅ Completed HP ({records.filter(r => r.status === 'Completed').length})
+                Completed ({records.filter(r => r.status === 'Completed').length})
               </button>
             </div>
 
-            <div className="flex items-center gap-3 flex-1 max-w-lg">
+            <div className="flex items-center gap-2 flex-1 max-w-md">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
                 <input 
                   type="text" 
-                  placeholder="Search by Invoice No, Code, Customer Name, Phone, NIC..."
-                  className="w-full pl-10 pr-4 py-2 bg-white border border-card-border rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary-blue/20"
+                  placeholder="Search invoice, customer, phone, NIC..."
+                  className="ds-input pl-10"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && fetchData()}
@@ -309,7 +315,7 @@ const AdminHP = ({ navItems: propNavItems }) => {
               </div>
               <button
                 onClick={fetchData}
-                className="px-3 py-2 bg-indigo-50 text-indigo-600 font-bold text-xs rounded-xl hover:bg-indigo-100 transition-all"
+                className="ds-btn ds-btn-primary"
               >
                 Search
               </button>
@@ -317,23 +323,23 @@ const AdminHP = ({ navItems: propNavItems }) => {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse" style={{ minWidth: '1350px' }}>
+            <table className="ds-table">
               <thead>
-                <tr className="bg-slate-50/50 border-b border-card-border">
-                  <th className="px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Invoice / Code</th>
-                  <th className="px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Customer</th>
-                  <th className="px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Product Sold</th>
-                  <th className="px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Original Price</th>
-                  <th className="px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Advance Paid</th>
-                  <th className="px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Total Payable</th>
-                  <th className="px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Total Paid</th>
-                  <th className="px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Installment</th>
-                  <th className="px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Next Due</th>
-                  <th className="px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Outstanding</th>
-                  <th className="px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Action</th>
+                <tr>
+                  <th>Invoice / Code</th>
+                  <th>Customer</th>
+                  <th>Product Sold</th>
+                  <th>Original Price</th>
+                  <th>Advance Paid</th>
+                  <th>Total Payable</th>
+                  <th>Total Paid</th>
+                  <th>Installment</th>
+                  <th>Next Due</th>
+                  <th>Outstanding</th>
+                  <th className="text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-card-border">
+              <tbody>
                 {loading ? (
                   <tr><td colSpan="11" className="py-20 text-center"><span className="pos-spinner-sm" /></td></tr>
                 ) : records.length === 0 ? (
@@ -343,17 +349,17 @@ const AdminHP = ({ navItems: propNavItems }) => {
                   return (
                     <tr key={record._id} className="hover:bg-slate-50/50 transition-all group">
                       <td className="px-4 py-4">
-                        <span className="inline-block px-2.5 py-1 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-black tracking-wide">
+                        <span className="inline-block px-2.5 py-1 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-bold tracking-wide">
                           #{invoiceDisplay}
                         </span>
-                        <p className="text-[10px] text-slate-400 font-medium mt-1">
+                        <p className="text-xs text-slate-400 font-medium mt-1">
                           Date: {new Date(record.startDate || record.createdAt).toLocaleDateString()}
                         </p>
                       </td>
                       <td className="px-4 py-4">
                         <div>
                           <p className="text-xs font-bold text-dark-navy">{record.customer.name}</p>
-                          <p className="text-[10px] text-slate-500 font-medium">{record.customer.phone} | {record.customer.nic}</p>
+                          <p className="text-xs text-slate-500 font-medium">{record.customer.phone} | {record.customer.nic}</p>
                         </div>
                       </td>
                       <td className="px-4 py-4 text-xs text-slate-600 max-w-[160px] truncate" title={record.orderId?.items?.map(i => `${i.name} (x${i.quantity})`).join(', ')}>
@@ -373,16 +379,16 @@ const AdminHP = ({ navItems: propNavItems }) => {
                       </td>
                       <td className="px-4 py-4 text-xs">
                         <p className="font-semibold text-dark-navy">Rs. {record.installmentAmount.toLocaleString()}/mo</p>
-                        <p className="text-[9px] text-slate-400 font-medium">{record.numberOfInstallments} installments ({record.installmentType})</p>
+                        <p className="text-xs text-slate-400 font-medium">{record.numberOfInstallments} installments ({record.installmentType})</p>
                       </td>
                       <td className="px-4 py-4 text-xs text-slate-600">
                         {record.nextDueDate ? new Date(record.nextDueDate).toLocaleDateString() : 'N/A'}
                       </td>
                       <td className="px-4 py-4">
-                        <span className={`text-xs font-extrabold block ${record.balanceAmount > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                        <span className={`text-xs font-bold block ${record.balanceAmount > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
                           Rs. {record.balanceAmount.toLocaleString()}
                         </span>
-                        <span className={`inline-block px-2 py-0.5 mt-1 rounded-full text-[9px] font-bold border ${getStatusColor(record.status)}`}>
+                        <span className={`inline-block px-2 py-0.5 mt-1 rounded-full text-xs font-bold border ${getStatusColor(record.status)}`}>
                           {record.status.toUpperCase()}
                         </span>
                       </td>
@@ -390,14 +396,14 @@ const AdminHP = ({ navItems: propNavItems }) => {
                         <div className="flex items-center justify-end gap-1.5">
                           <button 
                             onClick={() => handleOpenDetails(record._id)}
-                            className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-dark-navy rounded-lg text-[11px] font-bold transition-all"
+                            className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-dark-navy rounded-lg text-xs font-bold transition-all"
                           >
                             Details
                           </button>
                           <button 
                             onClick={() => { setSelectedHP(record); setPayForm({ ...payForm, amount: record.installmentAmount }); setShowPayModal(true); }}
                             disabled={record.status === 'Completed'}
-                            className="px-2.5 py-1 bg-primary-blue text-white rounded-lg text-[11px] font-bold hover:bg-blue-600 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-2.5 py-1 bg-primary-blue text-white rounded-lg text-xs font-bold hover:bg-blue-600 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             Pay
                           </button>
@@ -435,13 +441,13 @@ const AdminHP = ({ navItems: propNavItems }) => {
                 <div className="flex items-center gap-2">
                   <h3 className="text-lg font-bold text-dark-navy">Credit Sale Agreement Details</h3>
                   {selectedHPDetails && (
-                    <span className="px-2.5 py-0.5 bg-indigo-600 text-white rounded-lg text-xs font-black">
+                    <span className="px-2.5 py-0.5 bg-indigo-600 text-white rounded-lg text-xs font-bold">
                       #{selectedHPDetails.invoiceNo || selectedHPDetails.orderId?.invoiceNo || selectedHPDetails.orderId?.orderNumber || `HP-${selectedHPDetails._id.slice(-6).toUpperCase()}`}
                     </span>
                   )}
                 </div>
                 {selectedHPDetails && (
-                  <span className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${getStatusColor(selectedHPDetails.status)}`}>
+                  <span className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-bold border ${getStatusColor(selectedHPDetails.status)}`}>
                     {selectedHPDetails.status.toUpperCase()}
                   </span>
                 )}
@@ -475,8 +481,8 @@ const AdminHP = ({ navItems: propNavItems }) => {
                         {selectedHPDetails.customer.guarantors.map((g, idx) => (
                           <div key={idx} className="border-t border-slate-200/60 first:border-0 pt-2 first:pt-0 mt-2 first:mt-0">
                             <p className="text-xs font-bold text-dark-navy">{g.name}</p>
-                            <p className="text-[10px] text-slate-600">Phone: {g.phone} | NIC: {g.nic}</p>
-                            {g.address && <p className="text-[10px] text-slate-500">Address: {g.address}</p>}
+                            <p className="text-xs text-slate-600">Phone: {g.phone} | NIC: {g.nic}</p>
+                            {g.address && <p className="text-xs text-slate-500">Address: {g.address}</p>}
                           </div>
                         ))}
                       </div>
@@ -515,7 +521,7 @@ const AdminHP = ({ navItems: propNavItems }) => {
                       </div>
                       <div className="flex justify-between pt-1 border-t border-slate-200">
                         <span className="font-bold text-slate-700">Total Payable Amount:</span>
-                        <span className="font-extrabold text-slate-900">Rs. {selectedHPDetails.netTotal.toLocaleString()}</span>
+                        <span className="font-bold text-slate-900">Rs. {selectedHPDetails.netTotal.toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-500">Installment Plan:</span>
@@ -527,13 +533,13 @@ const AdminHP = ({ navItems: propNavItems }) => {
                       </div>
                       <div className="flex justify-between pt-1 border-t border-slate-200">
                         <span className="font-bold text-slate-700">Current Outstanding Balance:</span>
-                        <span className="font-extrabold text-rose-600">Rs. {selectedHPDetails.balanceAmount.toLocaleString()}</span>
+                        <span className="font-bold text-rose-600">Rs. {selectedHPDetails.balanceAmount.toLocaleString()}</span>
                       </div>
-                      <div className="flex justify-between text-[11px] text-slate-500 pt-1">
+                      <div className="flex justify-between text-xs text-slate-500 pt-1">
                         <span>Agreement Date:</span>
                         <span className="font-semibold text-slate-700">{new Date(selectedHPDetails.startDate || selectedHPDetails.createdAt).toLocaleDateString()}</span>
                       </div>
-                      <div className="flex justify-between text-[11px] text-slate-500">
+                      <div className="flex justify-between text-xs text-slate-500">
 
                         <span>Original Cashier:</span>
                         <span>{selectedHPDetails.createdBy?.name || 'System'}</span>
@@ -648,7 +654,7 @@ const AdminHP = ({ navItems: propNavItems }) => {
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={() => setShowEditModal(false)}>
           <div className="bg-white rounded-3xl border border-slate-100 shadow-2xl w-full max-w-2xl p-6 text-left max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-              <h3 className="font-black text-slate-900 text-base flex items-center gap-2 m-0 text-amber-600">
+              <h3 className="font-bold text-slate-900 text-base flex items-center gap-2 m-0 text-amber-600">
                 <Edit size={18} /> Edit Installment Agreement & Invoice Details
               </h3>
               <button onClick={() => setShowEditModal(false)} className="p-1 text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full border-0 cursor-pointer">
@@ -685,10 +691,10 @@ const AdminHP = ({ navItems: propNavItems }) => {
 
               {/* Customer Details */}
               <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/60 space-y-3">
-                <h4 className="font-extrabold text-slate-800 m-0 uppercase tracking-wider text-[11px]">Customer Details</h4>
+                <h4 className="font-bold text-slate-800 m-0 uppercase tracking-wider text-xs">Customer Details</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[11px] font-bold text-slate-600 block mb-1">Customer Name</label>
+                    <label className="text-xs font-bold text-slate-600 block mb-1">Customer Name</label>
                     <input
                       type="text"
                       value={editForm.customerName}
@@ -697,7 +703,7 @@ const AdminHP = ({ navItems: propNavItems }) => {
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] font-bold text-slate-600 block mb-1">Phone Number</label>
+                    <label className="text-xs font-bold text-slate-600 block mb-1">Phone Number</label>
                     <input
                       type="text"
                       value={editForm.customerPhone}
@@ -706,7 +712,7 @@ const AdminHP = ({ navItems: propNavItems }) => {
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] font-bold text-slate-600 block mb-1">NIC Number</label>
+                    <label className="text-xs font-bold text-slate-600 block mb-1">NIC Number</label>
                     <input
                       type="text"
                       value={editForm.customerNic}
@@ -715,7 +721,7 @@ const AdminHP = ({ navItems: propNavItems }) => {
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] font-bold text-slate-600 block mb-1">Address</label>
+                    <label className="text-xs font-bold text-slate-600 block mb-1">Address</label>
                     <input
                       type="text"
                       value={editForm.customerAddress}
@@ -728,10 +734,10 @@ const AdminHP = ({ navItems: propNavItems }) => {
 
               {/* Financial Terms */}
               <div className="bg-amber-50/60 p-4 rounded-2xl border border-amber-200/60 space-y-3">
-                <h4 className="font-extrabold text-amber-900 m-0 uppercase tracking-wider text-[11px]">Financial Agreement Terms</h4>
+                <h4 className="font-bold text-amber-900 m-0 uppercase tracking-wider text-xs">Financial Agreement Terms</h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div>
-                    <label className="text-[11px] font-bold text-slate-700 block mb-1">Total Agreement Price (Rs.)</label>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Total Agreement Price (Rs.)</label>
                     <input
                       type="number"
                       value={editForm.totalAmount}
@@ -740,7 +746,7 @@ const AdminHP = ({ navItems: propNavItems }) => {
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] font-bold text-slate-700 block mb-1">Down Payment (Rs.)</label>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Down Payment (Rs.)</label>
                     <input
                       type="number"
                       value={editForm.downPayment}
@@ -749,7 +755,7 @@ const AdminHP = ({ navItems: propNavItems }) => {
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] font-bold text-slate-700 block mb-1">Monthly Installment (Rs.)</label>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Monthly Installment (Rs.)</label>
                     <input
                       type="number"
                       value={editForm.monthlyInstallment}
@@ -762,10 +768,10 @@ const AdminHP = ({ navItems: propNavItems }) => {
 
               {/* Guarantors Info */}
               <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/60 space-y-3">
-                <h4 className="font-extrabold text-slate-800 m-0 uppercase tracking-wider text-[11px]">Guarantor Information</h4>
+                <h4 className="font-bold text-slate-800 m-0 uppercase tracking-wider text-xs">Guarantor Information</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <span className="font-bold text-slate-700 text-[10px] uppercase">Guarantor 1</span>
+                    <span className="font-bold text-slate-700 text-xs uppercase">Guarantor 1</span>
                     <input
                       type="text"
                       value={editForm.guarantor1Name}
@@ -782,7 +788,7 @@ const AdminHP = ({ navItems: propNavItems }) => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <span className="font-bold text-slate-700 text-[10px] uppercase">Guarantor 2</span>
+                    <span className="font-bold text-slate-700 text-xs uppercase">Guarantor 2</span>
                     <input
                       type="text"
                       value={editForm.guarantor2Name}
@@ -811,7 +817,7 @@ const AdminHP = ({ navItems: propNavItems }) => {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-amber-600 hover:bg-amber-700 text-white py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all border-0 cursor-pointer shadow-md"
+                  className="flex-1 bg-amber-600 hover:bg-amber-700 text-white py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all border-0 cursor-pointer shadow-md"
                 >
                   Save Changes
                 </button>
@@ -826,7 +832,7 @@ const AdminHP = ({ navItems: propNavItems }) => {
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={() => setDeleteModalOpen(false)}>
           <div className="bg-white rounded-3xl border border-slate-100 shadow-2xl w-full max-w-md p-6 text-left" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-              <h3 className="font-black text-slate-900 text-base flex items-center gap-2 m-0 text-rose-600">
+              <h3 className="font-bold text-slate-900 text-base flex items-center gap-2 m-0 text-rose-600">
                 <Lock size={18} /> Confirm HP Invoice Deletion
               </h3>
               <button onClick={() => setDeleteModalOpen(false)} className="p-1 text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full border-0 cursor-pointer">
@@ -863,7 +869,7 @@ const AdminHP = ({ navItems: propNavItems }) => {
               <button
                 type="button"
                 onClick={handleDeleteConfirm}
-                className="flex-1 bg-rose-600 hover:bg-rose-700 text-white py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all border-0 cursor-pointer shadow-md"
+                className="flex-1 bg-rose-600 hover:bg-rose-700 text-white py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all border-0 cursor-pointer shadow-md"
               >
                 Delete Invoice
               </button>

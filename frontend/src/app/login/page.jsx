@@ -62,6 +62,9 @@ export default function LoginPage() {
           loggedInAt: new Date().toISOString(),
         })
       );
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+      }
       sessionStorage.setItem("just_logged_in", "true");
       window.dispatchEvent(new Event("authChange"));
 
@@ -69,8 +72,8 @@ export default function LoginPage() {
 
       const destination = STAFF_REDIRECT_MAP[data.role] || "/";
       setTimeout(() => {
-        router.push(destination);
-      }, 500);
+        window.location.href = destination;
+      }, 300);
     } catch (err) {
       setErrorMsg(
         err.response?.data?.message || "Invalid email or password."
@@ -92,10 +95,10 @@ export default function LoginPage() {
               <Smartphone className="w-3.5 h-3.5 text-white" />
             </div>
             <div className="flex flex-col">
-              <span className="font-black text-sm tracking-tight text-[#1557bf] leading-none">
+              <span className="font-bold text-sm tracking-tight text-[#1557bf] leading-none">
                 Mobixa
               </span>
-              <span className="text-[8px] font-bold text-slate-400 tracking-wider">
+              <span className="text-xs font-bold text-slate-400 tracking-wider">
                 MOBILE SHOP ERP
               </span>
             </div>
@@ -104,7 +107,7 @@ export default function LoginPage() {
 
         {/* Header Typography */}
         <div className="text-center mt-5 mb-6">
-          <h1 className="text-2xl sm:text-[28px] font-extrabold tracking-tight text-slate-900 uppercase">
+          <h1 className="text-2xl sm:text-[28px] font-bold tracking-tight text-slate-900 uppercase">
             WELCOME BACK
           </h1>
           <p className="text-slate-500 text-xs mt-2 leading-relaxed max-w-[280px] mx-auto">
@@ -132,7 +135,7 @@ export default function LoginPage() {
           <div>
             <label
               htmlFor="loginEmail"
-              className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-2"
+              className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2"
             >
               EMAIL ADDRESS
             </label>
@@ -152,7 +155,7 @@ export default function LoginPage() {
             <div className="flex items-center justify-between mb-2 mt-4">
               <label
                 htmlFor="loginPassword"
-                className="text-[11px] font-bold text-slate-500 uppercase tracking-wider"
+                className="text-xs font-bold text-slate-500 uppercase tracking-wider"
               >
                 PASSWORD
               </label>
@@ -192,7 +195,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#1557bf] hover:bg-[#123e91] text-white font-extrabold py-4 rounded-full text-base shadow-lg shadow-blue-600/25 transition-all transform active:scale-[0.99] mt-8 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full bg-[#1557bf] hover:bg-[#123e91] text-white font-bold py-4 rounded-full text-base shadow-lg shadow-blue-600/25 transition-all transform active:scale-[0.99] mt-8 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading ? (
               <span className="inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />

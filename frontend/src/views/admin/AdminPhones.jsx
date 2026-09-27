@@ -146,7 +146,7 @@ const AdminPhones = () => {
     if (!url) return;
     const converted = convertExternalUrl(url);
     if (converted && converted !== url) {
-      toast.info('External link auto-converted ✅');
+      toast.info('External link auto-converted');
     }
     setUploadedImages(prev => [...prev, converted].filter(Boolean));
     toast.success('Image URL added!');
@@ -265,7 +265,7 @@ const AdminPhones = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
           <div>
             <div className="flex items-center gap-2.5 mb-1">
-              <span className="inline-flex items-center gap-1.5 bg-brand-indigo/10 text-brand-indigo text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg border border-brand-indigo/15">
+              <span className="inline-flex items-center gap-1.5 bg-brand-indigo/10 text-brand-indigo text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-lg border border-brand-indigo/15">
                 <Smartphone size={11} /> Business Management
               </span>
             </div>
@@ -275,16 +275,16 @@ const AdminPhones = () => {
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
             <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide max-w-full">
               {[
-                { id: 'phones', label: '📱 Phones' }, 
-                { id: 'suppliers', label: '🏭 Suppliers' },
-                { id: 'receiving', label: '📋 Stock Receiving (GRN)' },
-                { id: 'supplierReturns', label: '🔄 Returns' },
-                { id: 'import', label: '📥 Import CSV' }
+                { id: 'phones', label: 'Phones' }, 
+                { id: 'suppliers', label: 'Suppliers' },
+                { id: 'receiving', label: 'Stock Receiving (GRN)' },
+                { id: 'supplierReturns', label: 'Returns' },
+                { id: 'import', label: 'Import CSV' }
               ].map((t) => (
                 <button
                   key={t.id}
                   onClick={() => setActiveTab(t.id)}
-                  className={`px-4 py-2.5 text-[10px] uppercase tracking-wider font-black rounded-xl transition-all whitespace-nowrap ${
+                  className={`px-4 py-2.5 text-xs uppercase tracking-wider font-bold rounded-xl transition-all whitespace-nowrap ${
                     activeTab === t.id ? 'bg-slate-800 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700'
                   }`}
                 >
@@ -293,7 +293,7 @@ const AdminPhones = () => {
               ))}
             </div>
             {activeTab === 'phones' && (
-              <button onClick={openCreate} className="flex shrink-0 items-center gap-2 bg-gradient-to-r from-brand-indigo to-brand-violet text-white px-5 py-2.5 rounded-xl font-black text-[11px] uppercase tracking-wider hover:opacity-95 shadow-lg shadow-brand-indigo/20 transition-all">
+              <button onClick={openCreate} className="flex shrink-0 items-center gap-2 bg-gradient-to-r from-brand-indigo to-brand-violet text-white px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider hover:opacity-95 shadow-lg shadow-brand-indigo/20 transition-all">
                 <Plus size={16} /> Add New Phone
               </button>
             )}
@@ -349,7 +349,7 @@ const AdminPhones = () => {
               <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
                 <button
                   onClick={() => setBrandFilter('all')}
-                  className={`px-5 py-3 text-[10px] uppercase tracking-wider font-black rounded-xl whitespace-nowrap transition-all ${
+                  className={`px-5 py-3 text-xs uppercase tracking-wider font-bold rounded-xl whitespace-nowrap transition-all ${
                     brandFilter === 'all' ? 'bg-slate-800 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700'
                   }`}
                 >
@@ -359,7 +359,7 @@ const AdminPhones = () => {
                   <button
                     key={brand}
                     onClick={() => setBrandFilter(brand)}
-                    className={`px-5 py-3 text-[10px] uppercase tracking-wider font-black rounded-xl whitespace-nowrap transition-all ${
+                    className={`px-5 py-3 text-xs uppercase tracking-wider font-bold rounded-xl whitespace-nowrap transition-all ${
                       brandFilter === brand ? 'bg-slate-800 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700'
                     }`}
                   >
@@ -374,12 +374,12 @@ const AdminPhones = () => {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-100">
-                  <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Device Details</th>
-                  <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Specs</th>
-                  <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Price & Stock</th>
-                  <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Supplier</th>
-                  <th className="text-left px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Status</th>
-                  <th className="text-right px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500">Actions</th>
+                  <th className="text-left px-6 py-4 text-xs uppercase font-bold tracking-wider text-slate-500">Device Details</th>
+                  <th className="text-left px-6 py-4 text-xs uppercase font-bold tracking-wider text-slate-500">Specs</th>
+                  <th className="text-left px-6 py-4 text-xs uppercase font-bold tracking-wider text-slate-500">Price & Stock</th>
+                  <th className="text-left px-6 py-4 text-xs uppercase font-bold tracking-wider text-slate-500">Supplier</th>
+                  <th className="text-left px-6 py-4 text-xs uppercase font-bold tracking-wider text-slate-500">Status</th>
+                  <th className="text-right px-6 py-4 text-xs uppercase font-bold tracking-wider text-slate-500">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -407,36 +407,36 @@ const AdminPhones = () => {
                               ) : <Smartphone size={20} />}
                             </div>
                             <div>
-                              <div className="font-extrabold text-slate-800 text-sm mb-1">{product.name}</div>
+                              <div className="font-bold text-slate-800 text-sm mb-1">{product.name}</div>
                               <div className="flex flex-wrap items-center gap-2">
-                                <span className="bg-slate-100 border border-slate-200/60 text-slate-600 px-2 py-0.5 rounded-md text-[10px] uppercase font-black tracking-wider">{product.brand || 'No Brand'}</span>
-                                <span className="text-[11px] font-bold text-slate-400">{product.modelNumber || '-'}</span>
+                                <span className="bg-slate-100 border border-slate-200/60 text-slate-600 px-2 py-0.5 rounded-md text-xs uppercase font-bold tracking-wider">{product.brand || 'No Brand'}</span>
+                                <span className="text-xs font-bold text-slate-400">{product.modelNumber || '-'}</span>
                               </div>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex flex-wrap gap-2">
-                            {product.ram && <span className="bg-brand-indigo/10 border border-brand-indigo/20 text-brand-indigo text-[10px] uppercase tracking-wider font-black px-2 py-1 rounded-md flex items-center gap-1.5"><Cpu size={10} /> {product.ram}</span>}
-                            {product.storage && <span className="bg-brand-indigo/10 border border-brand-indigo/20 text-brand-indigo text-[10px] uppercase tracking-wider font-black px-2 py-1 rounded-md flex items-center gap-1.5"><HardDrive size={10} /> {product.storage}</span>}
-                            {product.condition && <span className={`text-[10px] uppercase tracking-wider font-black px-2 py-1 rounded-md border ${product.condition === 'new' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-amber-50 text-amber-600 border-amber-200'}`}>{product.condition}</span>}
+                            {product.ram && <span className="bg-brand-indigo/10 border border-brand-indigo/20 text-brand-indigo text-xs uppercase tracking-wider font-bold px-2 py-1 rounded-md flex items-center gap-1.5"><Cpu size={10} /> {product.ram}</span>}
+                            {product.storage && <span className="bg-brand-indigo/10 border border-brand-indigo/20 text-brand-indigo text-xs uppercase tracking-wider font-bold px-2 py-1 rounded-md flex items-center gap-1.5"><HardDrive size={10} /> {product.storage}</span>}
+                            {product.condition && <span className={`text-xs uppercase tracking-wider font-bold px-2 py-1 rounded-md border ${product.condition === 'new' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-amber-50 text-amber-600 border-amber-200'}`}>{product.condition}</span>}
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="font-extrabold text-slate-800 mb-1">Rs. {Number(product.price || 0).toLocaleString()}</div>
+                          <div className="font-bold text-slate-800 mb-1">Rs. {Number(product.price || 0).toLocaleString()}</div>
                           {Number(product.minPrice || 0) > 0 && (
-                            <div className="text-[9px] uppercase tracking-wider font-black text-rose-600 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-md mb-1 inline-block">
+                            <div className="text-xs uppercase tracking-wider font-bold text-rose-600 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-md mb-1 inline-block">
                               Min Rs. {Number(product.minPrice || 0).toLocaleString()}
                             </div>
                           )}
-                          <div className="text-[11px] font-bold text-slate-400">Stock: <span className={`font-black ${product.stock <= 5 ? 'text-rose-500' : 'text-emerald-500'}`}>{product.stock}</span></div>
+                          <div className="text-xs font-bold text-slate-400">Stock: <span className={`font-bold ${product.stock <= 5 ? 'text-rose-500' : 'text-emerald-500'}`}>{product.stock}</span></div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="font-bold text-slate-700 text-xs mb-0.5">{product.supplierId?.name || '—'}</div>
-                          <div className="text-[10px] font-bold text-slate-400">{product.supplierId?.company || ''}</div>
+                          <div className="text-xs font-bold text-slate-400">{product.supplierId?.company || ''}</div>
                         </td>
                         <td className="px-6 py-4">
-                          <span className={`text-[9px] uppercase tracking-wider font-black px-2.5 py-1 rounded-lg border ${product.status === 'active' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>{product.status}</span>
+                          <span className={`text-xs uppercase tracking-wider font-bold px-2.5 py-1 rounded-lg border ${product.status === 'active' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>{product.status}</span>
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-2">
@@ -451,34 +451,34 @@ const AdminPhones = () => {
                             <div className="absolute left-0 top-0 bottom-0 w-1 bg-brand-indigo/20"></div>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                               <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                                <h4 className="font-black text-slate-400 uppercase tracking-widest mb-4 text-[10px] flex items-center gap-2"><Cpu size={12} className="text-brand-indigo"/> Hardware & Specs</h4>
+                                <h4 className="font-bold text-slate-400 uppercase tracking-widest mb-4 text-xs flex items-center gap-2"><Cpu size={12} className="text-brand-indigo"/> Hardware & Specs</h4>
                                 <div className="space-y-3">
-                                  <div className="flex justify-between items-center"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">RAM</span> <span className="font-extrabold text-slate-800">{product.ram || '-'}</span></div>
-                                  <div className="flex justify-between items-center"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Storage</span> <span className="font-extrabold text-slate-800">{product.storage || '-'}</span></div>
-                                  <div className="flex justify-between items-center"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Color</span> <span className="font-extrabold text-slate-800">{product.color || '-'}</span></div>
-                                  <div className="flex justify-between items-center"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Condition</span> <span className="font-black uppercase text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 text-[10px] tracking-wider">{product.condition}</span></div>
+                                  <div className="flex justify-between items-center"><span className="text-xs font-bold text-slate-400 uppercase tracking-wider">RAM</span> <span className="font-bold text-slate-800">{product.ram || '-'}</span></div>
+                                  <div className="flex justify-between items-center"><span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Storage</span> <span className="font-bold text-slate-800">{product.storage || '-'}</span></div>
+                                  <div className="flex justify-between items-center"><span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Color</span> <span className="font-bold text-slate-800">{product.color || '-'}</span></div>
+                                  <div className="flex justify-between items-center"><span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Condition</span> <span className="font-bold uppercase text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 text-xs tracking-wider">{product.condition}</span></div>
                                 </div>
                               </div>
                               <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                                <h4 className="font-black text-slate-400 uppercase tracking-widest mb-4 text-[10px] flex items-center gap-2"><ShieldCheck size={12} className="text-brand-indigo"/> Warranty & Identity</h4>
+                                <h4 className="font-bold text-slate-400 uppercase tracking-widest mb-4 text-xs flex items-center gap-2"><ShieldCheck size={12} className="text-brand-indigo"/> Warranty & Identity</h4>
                                 <div className="space-y-3">
-                                  <div className="flex justify-between items-center"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Warranty</span> <span className="font-extrabold text-slate-800">{product.warranty || '-'}</span></div>
-                                  <div className="flex justify-between items-center"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">IMEI(s)</span> <span className="font-mono text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">{product.imei?.join(', ') || '-'}</span></div>
-                                  <div className="flex justify-between items-center"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Model No</span> <span className="font-extrabold text-slate-800">{product.modelNumber || '-'}</span></div>
-                                  {product.sku && <div className="flex justify-between items-center"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">SKU</span> <span className="font-mono font-bold bg-brand-indigo/10 text-brand-indigo px-2 py-0.5 rounded border border-brand-indigo/20">{product.sku}</span></div>}
-                                  {product.barcode && <div className="flex justify-between items-center"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Barcode</span> <span className="font-mono text-[10px] font-bold text-slate-500">{product.barcode}</span></div>}
+                                  <div className="flex justify-between items-center"><span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Warranty</span> <span className="font-bold text-slate-800">{product.warranty || '-'}</span></div>
+                                  <div className="flex justify-between items-center"><span className="text-xs font-bold text-slate-400 uppercase tracking-wider">IMEI(s)</span> <span className="font-mono text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">{product.imei?.join(', ') || '-'}</span></div>
+                                  <div className="flex justify-between items-center"><span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Model No</span> <span className="font-bold text-slate-800">{product.modelNumber || '-'}</span></div>
+                                  {product.sku && <div className="flex justify-between items-center"><span className="text-xs font-bold text-slate-400 uppercase tracking-wider">SKU</span> <span className="font-mono font-bold bg-brand-indigo/10 text-brand-indigo px-2 py-0.5 rounded border border-brand-indigo/20">{product.sku}</span></div>}
+                                  {product.barcode && <div className="flex justify-between items-center"><span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Barcode</span> <span className="font-mono text-xs font-bold text-slate-500">{product.barcode}</span></div>}
                                 </div>
                               </div>
                               <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                                <h4 className="font-black text-slate-400 uppercase tracking-widest mb-4 text-[10px] flex items-center gap-2"><Tag size={12} className="text-brand-indigo"/> Commercial Info</h4>
+                                <h4 className="font-bold text-slate-400 uppercase tracking-widest mb-4 text-xs flex items-center gap-2"><Tag size={12} className="text-brand-indigo"/> Commercial Info</h4>
                                 <div className="space-y-3">
-                                  <div className="flex justify-between items-center"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Purchase Price</span> <span className="font-extrabold text-slate-800">Rs. {Number(product.avgCost || 0).toLocaleString()}</span></div>
-                                  <div className="flex justify-between items-center"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Profit Est</span> <span className="font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Rs. {(product.price - (product.avgCost || 0)).toLocaleString()}</span></div>
-                                  <div className="flex justify-between items-center"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Store</span> <span className="font-extrabold text-slate-800">{product.storeId?.name || '-'}</span></div>
+                                  <div className="flex justify-between items-center"><span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Purchase Price</span> <span className="font-bold text-slate-800">Rs. {Number(product.avgCost || 0).toLocaleString()}</span></div>
+                                  <div className="flex justify-between items-center"><span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Profit Est</span> <span className="font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Rs. {(product.price - (product.avgCost || 0)).toLocaleString()}</span></div>
+                                  <div className="flex justify-between items-center"><span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Store</span> <span className="font-bold text-slate-800">{product.storeId?.name || '-'}</span></div>
                                   {product.productLink && (
                                     <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-100">
-                                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Link</span> 
-                                      <a href={product.productLink} target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase font-black tracking-wider text-brand-indigo hover:text-brand-violet transition-colors truncate max-w-[150px]">
+                                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Link</span> 
+                                      <a href={product.productLink} target="_blank" rel="noopener noreferrer" className="text-xs uppercase font-bold tracking-wider text-brand-indigo hover:text-brand-violet transition-colors truncate max-w-[150px]">
                                         View External
                                       </a>
                                     </div>
@@ -505,7 +505,7 @@ const AdminPhones = () => {
             <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[92vh] overflow-hidden shadow-2xl flex flex-col border border-slate-100" onClick={(e) => e.stopPropagation()}>
               <div className="px-8 py-5 border-b border-slate-100 flex items-center justify-between bg-white/80 backdrop-blur-md">
                 <div>
-                  <h2 className="text-xl font-black text-slate-900">{editingId ? 'Edit Mobile Device' : 'Register New Mobile Device'}</h2>
+                  <h2 className="text-xl font-bold text-slate-900">{editingId ? 'Edit Mobile Device' : 'Register New Mobile Device'}</h2>
                   <p className="text-xs font-bold text-slate-400 mt-0.5">Enter technical specifications and stock details</p>
                 </div>
                 <button onClick={() => setShowModal(false)} className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"><X size={22} /></button>
@@ -514,16 +514,16 @@ const AdminPhones = () => {
               <form onSubmit={handleSubmit} className="p-8 overflow-y-auto space-y-8">
                 {/* Section 1: Basic Identity */}
                 <div className="space-y-5">
-                  <h3 className="text-xs font-black text-brand-indigo uppercase tracking-widest flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <h3 className="text-xs font-bold text-brand-indigo uppercase tracking-widest flex items-center gap-2 border-b border-slate-100 pb-3">
                     <Smartphone size={16} /> Basic Identity
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="md:col-span-2">
-                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Product Display Name *</label>
+                      <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-1.5">Product Display Name *</label>
                       <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" placeholder="e.g. Samsung Galaxy S24 Ultra" />
                     </div>
                     <div>
-                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Brand / Manufacturer *</label>
+                      <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-1.5">Brand / Manufacturer *</label>
                       <select 
                         required 
                         value={['Apple', 'Samsung', 'Xiaomi', 'Google Pixel', 'OnePlus', 'Vivo', 'Oppo', 'Realme', 'Infinix', 'Huawei', 'Tecno', 'ZTE', 'Nokia', 'Honor', 'Sony', 'HTC', 'LG'].includes(form.brand) ? form.brand : (form.brand ? 'Other' : '')} 
@@ -568,15 +568,15 @@ const AdminPhones = () => {
                       )}
                     </div>
                     <div>
-                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Model Number</label>
+                      <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-1.5">Model Number</label>
                       <input value={form.modelNumber} onChange={(e) => setForm({ ...form, modelNumber: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" placeholder="e.g. SM-S928B" />
                     </div>
                     <div>
-                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Barcode / SKU</label>
+                      <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-1.5">Barcode / SKU</label>
                       <input value={form.barcode} onChange={(e) => setForm({ ...form, barcode: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" placeholder="Scan or type Barcode" />
                     </div>
                     <div>
-                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Category *</label>
+                      <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-1.5">Category *</label>
                       <input 
                         list="category-suggestions"
                         required
@@ -599,18 +599,18 @@ const AdminPhones = () => {
                     </div>
                     {!editingId && autoSku && (
                       <div>
-                        <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Auto SKU / Item Code</label>
+                        <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-1.5">Auto SKU / Item Code</label>
                         <div className="flex items-center gap-2">
-                          <div className="flex-1 bg-brand-indigo/10 border border-brand-indigo/20 rounded-xl py-2.5 px-4 text-sm font-black text-brand-indigo tracking-wider">
+                          <div className="flex-1 bg-brand-indigo/10 border border-brand-indigo/20 rounded-xl py-2.5 px-4 text-sm font-bold text-brand-indigo tracking-wider">
                             {autoSku}
                           </div>
-                          <span className="text-[10px] bg-emerald-50 text-emerald-600 border border-emerald-200 px-2.5 py-1.5 rounded-lg font-black uppercase tracking-wider">✓ Auto</span>
+                          <span className="text-xs bg-emerald-50 text-emerald-600 border border-emerald-200 px-2.5 py-1.5 rounded-lg font-bold uppercase tracking-wider"> Auto</span>
                         </div>
-                        <p className="text-[10px] font-bold text-slate-400 mt-1">Auto-assigned on save</p>
+                        <p className="text-xs font-bold text-slate-400 mt-1">Auto-assigned on save</p>
                       </div>
                     )}
                     <div>
-                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Store Assignment *</label>
+                      <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-1.5">Store Assignment *</label>
                       <input 
                         list="store-suggestions"
                         required
@@ -628,11 +628,11 @@ const AdminPhones = () => {
                         {stores.map((s) => <option key={s._id} value={s.name} />)}
                       </datalist>
                       {selectedStoreId === 'all' && !form.storeId && (
-                        <p className="text-[10px] font-bold text-rose-500 mt-1">Please select a store to register this device</p>
+                        <p className="text-xs font-bold text-rose-500 mt-1">Please select a store to register this device</p>
                       )}
                     </div>
                     <div className="md:col-span-3">
-                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Primary Product Image URL (External Link) *</label>
+                      <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-1.5">Primary Product Image URL (External Link) *</label>
                       <div className="flex gap-4">
                         <div className="flex-1">
                           <input 
@@ -644,7 +644,7 @@ const AdminPhones = () => {
                                 const converted = convertExternalUrl(val);
                                 if (converted && converted !== val) {
                                   val = converted;
-                                  toast.info('External link auto-converted to direct image URL ✅');
+                                  toast.info('External link auto-converted to direct image URL');
                                 }
                                 setForm({ ...form, productLink: val });
                             }}
@@ -653,19 +653,19 @@ const AdminPhones = () => {
                           />
                           {form.productLink && !isDirectImageUrl(form.productLink) ? (
                             <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mt-2 space-y-2">
-                              <p className="text-[11px] text-amber-700 font-black uppercase tracking-wider flex items-center gap-1">
-                                ⚠️ Not a Direct Image Link
+                              <p className="text-xs text-amber-700 font-bold uppercase tracking-wider flex items-center gap-1">
+                                 Not a Direct Image Link
                               </p>
-                              <p className="text-[10px] font-bold text-amber-600 leading-relaxed">
+                              <p className="text-xs font-bold text-amber-600 leading-relaxed">
                                 This link leads to a <strong>web page</strong>, not an image file. To fix this:
                               </p>
-                              <ul className="text-[10px] font-bold text-amber-600 list-disc ml-4 space-y-1">
+                              <ul className="text-xs font-bold text-amber-600 list-disc ml-4 space-y-1">
                                 <li><strong>For Unsplash/Websites:</strong> Right-click the image on the site and select <strong>"Copy image address"</strong>.</li>
                                 <li><strong>For Google Drive:</strong> Use: Share → Change to "Anyone with link" → Copy link.</li>
                               </ul>
                             </div>
                           ) : (
-                            <p className="text-[10px] font-bold text-slate-400 mt-1.5">This link will be used as the primary display image.</p>
+                            <p className="text-xs font-bold text-slate-400 mt-1.5">This link will be used as the primary display image.</p>
                           )}
                         </div>
                         {form.productLink && (
@@ -686,24 +686,24 @@ const AdminPhones = () => {
 
                 {/* Section 2: Technical Specifications */}
                 <div className="space-y-5">
-                  <h3 className="text-xs font-black text-brand-indigo uppercase tracking-widest flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <h3 className="text-xs font-bold text-brand-indigo uppercase tracking-widest flex items-center gap-2 border-b border-slate-100 pb-3">
                     <Cpu size={16} /> Technical Specifications
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div>
-                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">RAM Capacity</label>
+                      <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-1.5">RAM Capacity</label>
                       <input value={form.ram} onChange={(e) => setForm({ ...form, ram: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" placeholder="e.g. 8GB, 12GB" />
                     </div>
                     <div>
-                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Internal Storage</label>
+                      <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-1.5">Internal Storage</label>
                       <input value={form.storage} onChange={(e) => setForm({ ...form, storage: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" placeholder="e.g. 128GB, 256GB" />
                     </div>
                     <div>
-                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Color</label>
+                      <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-1.5">Color</label>
                       <input value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" placeholder="e.g. Titanium Gray" />
                     </div>
                     <div>
-                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Condition *</label>
+                      <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-1.5">Condition *</label>
                       <select value={form.condition} onChange={(e) => setForm({ ...form, condition: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all cursor-pointer">
                         <option value="new">Brand New</option>
                         <option value="used">Pre-Owned / Used</option>
@@ -711,7 +711,7 @@ const AdminPhones = () => {
                       </select>
                     </div>
                     <div className="md:col-span-2">
-                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">IMEI Numbers <span className="font-bold text-slate-400 normal-case">(Comma separated — one per unit, Stock Quantity auto-updates to match)</span></label>
+                      <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-1.5">IMEI Numbers <span className="font-bold text-slate-400 normal-case">(Comma separated — one per unit, Stock Quantity auto-updates to match)</span></label>
                       <textarea rows={2} value={form.imei} onChange={(e) => {
                         const imeiValue = e.target.value;
                         const imeiCount = imeiValue.split(',').map((s) => s.trim()).filter(Boolean).length;
@@ -719,7 +719,7 @@ const AdminPhones = () => {
                       }} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all resize-none" placeholder="Enter IMEI numbers..." />
                     </div>
                     <div className="md:col-span-2">
-                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Warranty Details</label>
+                      <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-1.5">Warranty Details</label>
                       <textarea rows={2} value={form.warranty} onChange={(e) => setForm({ ...form, warranty: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all resize-none" placeholder="e.g. 1 Year Company Warranty" />
                     </div>
                   </div>
@@ -727,24 +727,24 @@ const AdminPhones = () => {
 
                 {/* Section 3: Pricing & Inventory */}
                 <div className="space-y-5">
-                  <h3 className="text-xs font-black text-brand-indigo uppercase tracking-widest flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <h3 className="text-xs font-bold text-brand-indigo uppercase tracking-widest flex items-center gap-2 border-b border-slate-100 pb-3">
                     <Tag size={16} /> Pricing & Supplier Info
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div>
-                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Selling Price *</label>
-                      <input type="number" required value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-black text-brand-indigo focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" placeholder="0.00" />
+                      <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-1.5">Selling Price *</label>
+                      <input type="number" required value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-brand-indigo focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" placeholder="0.00" />
                     </div>
                     <div>
-                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Minimum Price</label>
-                      <input type="number" min="0" value={form.minPrice} onChange={(e) => setForm({ ...form, minPrice: e.target.value })} className="w-full bg-rose-50 border border-rose-200 rounded-xl py-3 px-4 text-sm font-black text-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all" placeholder="Cannot sell below" />
+                      <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-1.5">Minimum Price</label>
+                      <input type="number" min="0" value={form.minPrice} onChange={(e) => setForm({ ...form, minPrice: e.target.value })} className="w-full bg-rose-50 border border-rose-200 rounded-xl py-3 px-4 text-sm font-bold text-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all" placeholder="Cannot sell below" />
                     </div>
                     <div>
-                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Purchase/Cost Price</label>
+                      <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-1.5">Purchase/Cost Price</label>
                       <input type="number" value={form.purchasePrice} onChange={(e) => setForm({ ...form, purchasePrice: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" placeholder="0.00" />
                     </div>
                     <div>
-                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">
+                      <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-1.5">
                         Stock Quantity *
                         {form.imei.split(',').map((s) => s.trim()).filter(Boolean).length > 0 && (
                           <span className="font-bold text-emerald-500 normal-case ml-1">(auto-set from IMEI count)</span>
@@ -756,12 +756,12 @@ const AdminPhones = () => {
                         readOnly={form.imei.split(',').map((s) => s.trim()).filter(Boolean).length > 0}
                         value={form.stock}
                         onChange={(e) => setForm({ ...form, stock: e.target.value })}
-                        className={`w-full border rounded-xl py-3 px-4 text-sm font-extrabold focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all ${form.imei.split(',').map((s) => s.trim()).filter(Boolean).length > 0 ? 'bg-emerald-50 border-emerald-200 text-emerald-700 cursor-not-allowed' : 'bg-slate-50 border-slate-200 text-slate-800'}`}
+                        className={`w-full border rounded-xl py-3 px-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all ${form.imei.split(',').map((s) => s.trim()).filter(Boolean).length > 0 ? 'bg-emerald-50 border-emerald-200 text-emerald-700 cursor-not-allowed' : 'bg-slate-50 border-slate-200 text-slate-800'}`}
                         placeholder="0"
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1.5">Supplier</label>
+                      <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-1.5">Supplier</label>
                       <input 
                         list="supplier-suggestions"
                         placeholder="Search or select supplier"
@@ -787,7 +787,7 @@ const AdminPhones = () => {
 
                 {/* Section 4: Product Images */}
                 <div className="space-y-5">
-                  <h3 className="text-xs font-black text-brand-indigo uppercase tracking-widest flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <h3 className="text-xs font-bold text-brand-indigo uppercase tracking-widest flex items-center gap-2 border-b border-slate-100 pb-3">
                     <ImageIcon size={16} /> Product Images
                   </h3>
 
@@ -802,7 +802,7 @@ const AdminPhones = () => {
                           className="w-24 h-24 object-cover rounded-xl border-2 border-brand-indigo shadow-md"
                           onError={(e) => handleImageError(e, 'Phone')}
                         />
-                        <span className="absolute top-2 left-2 bg-brand-indigo text-white text-[9px] uppercase tracking-wider font-black px-2 py-0.5 rounded-md shadow-sm">LINK</span>
+                        <span className="absolute top-2 left-2 bg-brand-indigo text-white text-xs uppercase tracking-wider font-bold px-2 py-0.5 rounded-md shadow-sm">LINK</span>
                       </div>
                     )}
                     
@@ -846,7 +846,7 @@ const AdminPhones = () => {
                         addImageUrl(input.value.trim());
                         input.value = '';
                       }}
-                      className="bg-brand-indigo/10 text-brand-indigo font-black text-[10px] uppercase tracking-wider px-6 rounded-xl hover:bg-brand-indigo/20 transition-all border border-brand-indigo/20"
+                      className="bg-brand-indigo/10 text-brand-indigo font-bold text-xs uppercase tracking-wider px-6 rounded-xl hover:bg-brand-indigo/20 transition-all border border-brand-indigo/20"
                     >
                       Add Image
                     </button>
@@ -854,10 +854,10 @@ const AdminPhones = () => {
                 </div>
 
                 <div className="flex gap-4 pt-4 border-t border-slate-100">
-                  <button type="button" onClick={() => setShowModal(false)} className="px-8 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl font-black text-[11px] uppercase tracking-wider transition-all">
+                  <button type="button" onClick={() => setShowModal(false)} className="px-8 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl font-bold text-xs uppercase tracking-wider transition-all">
                     Cancel
                   </button>
-                  <button type="submit" disabled={saving} className="flex-1 bg-gradient-to-r from-brand-indigo to-brand-violet text-white py-4 rounded-2xl font-black text-[11px] uppercase tracking-wider hover:opacity-95 shadow-lg shadow-brand-indigo/20 transition-all disabled:opacity-50">
+                  <button type="submit" disabled={saving} className="flex-1 bg-gradient-to-r from-brand-indigo to-brand-violet text-white py-4 rounded-2xl font-bold text-xs uppercase tracking-wider hover:opacity-95 shadow-lg shadow-brand-indigo/20 transition-all disabled:opacity-50">
                     {saving ? 'Processing...' : editingId ? 'Update Device Record' : 'Register Device'}
                   </button>
                 </div>

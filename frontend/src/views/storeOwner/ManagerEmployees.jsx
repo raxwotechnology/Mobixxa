@@ -131,8 +131,8 @@ const ManagerEmployees = ({ navItems = managerNavGroups, title = 'Manager Dashbo
   if (loading) {
     return (
       <DashboardLayout navItems={navItems} title={title}>
-        <div className="flex items-center justify-center h-64">
-          <div className="w-10 h-10 border-4 border-primary-blue border-t-transparent rounded-full animate-spin" />
+        <div className="ds-loading">
+          <div className="ds-spinner" />
         </div>
       </DashboardLayout>
     );
@@ -140,125 +140,161 @@ const ManagerEmployees = ({ navItems = managerNavGroups, title = 'Manager Dashbo
 
   return (
     <DashboardLayout navItems={navItems} title={title}>
-      <div className="animate-fade-in space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-indigo/5 rounded-full blur-3xl pointer-events-none -z-10"></div>
-          <div>
-            <div className="flex items-center gap-2.5 mb-1">
-              <span className="inline-flex items-center gap-1.5 bg-brand-indigo/10 text-brand-indigo text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg border border-brand-indigo/15">
-                Staff & Roles
-              </span>
-            </div>
-            <h1 className="text-2xl font-semibold text-slate-900 m-0">Employees Registry</h1>
-            <p className="text-[10px] font-normal uppercase tracking-wider text-slate-500 mt-2 m-0">{employees.length} registered staff members</p>
+      <div className="ds-page">
+
+        {/* Page Header */}
+        <div className="ds-page-header">
+          <div className="ds-page-header-left">
+            <span className="ds-page-header-badge">Staff &amp; Roles</span>
+            <h1>My Team</h1>
+            <p>{employees.length} registered staff members</p>
           </div>
-          <div className="flex gap-2 flex-wrap">
-            <button onClick={openCreate}
-              className="bg-slate-900 hover:bg-slate-800 text-white text-[10px] uppercase tracking-wider font-black px-4 py-2.5 rounded-xl transition-all shadow-md flex items-center gap-2">
+          <div className="ds-page-header-right">
+            <button onClick={openCreate} className="ds-btn ds-btn-primary">
               <UserPlus size={14} /> Add Employee
             </button>
           </div>
         </div>
 
-        <div className="relative mb-6">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            placeholder="Search employees..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full sm:w-96 bg-white/80 border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm"
-          />
+        {/* Search Bar */}
+        <div className="ds-card" style={{ padding: '0.75rem 1rem' }}>
+          <div className="ds-filter-bar">
+            <div className="ds-search" style={{ maxWidth: '400px', width: '100%' }}>
+              <Search size={16} />
+              <input
+                placeholder="Search employees by name or email..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+          </div>
         </div>
 
+        {/* Empty State */}
         {filtered.length === 0 && (
-          <div className="text-center py-16 bg-white rounded-3xl border border-slate-100 shadow-sm">
-            <Users size={48} className="mx-auto text-slate-300 mb-3" />
-            <h3 className="font-black text-slate-700 text-sm uppercase tracking-wider">No employees found</h3>
-            <p className="text-slate-400 text-xs mt-1">Click "Add Employee" to register your first staff member</p>
+          <div className="ds-empty">
+            <Users size={40} className="ds-empty-icon" />
+            <p className="ds-empty-title">No employees found</p>
+            <p className="ds-empty-desc">Click "Add Employee" to register your first staff member</p>
           </div>
         )}
 
-        <div className="grid gap-4">
-          {filtered.map((emp) => (
-            <div key={emp._id} className="bg-white/60 backdrop-blur-md rounded-3xl border border-white/40 p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-indigo to-brand-violet flex items-center justify-center text-white font-black text-lg shadow-sm">
-                    {emp.name?.charAt(0)?.toUpperCase()}
-                  </div>
-                  <div>
-                    <h3 className="font-black text-slate-800 text-sm m-0">{emp.name}</h3>
-                    <p className="text-xs text-slate-400 font-bold m-0 mt-0.5">{emp.email}</p>
-                    {emp.phone && <p className="text-[11px] text-slate-500 font-semibold m-0 mt-1 flex items-center gap-1">📞 {emp.phone}</p>}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
-                  <span className={`text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-lg border ${roleColors[emp.role] || 'bg-slate-100 text-slate-600 border-slate-200'}`}>
-                    {emp.role === 'deliveryGuy' ? 'Delivery Rider' : emp.role === 'stockEmployee' ? 'Stock Employee' : emp.role === 'cashier' ? 'Cashier' : emp.role}
-                  </span>
-                  {emp.assignedStore?.name && (
-                    <span className="text-[10px] uppercase font-black tracking-wider bg-slate-50 border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg">🏪 {emp.assignedStore.name}</span>
-                  )}
-                  <div className="flex gap-1.5 border-l border-slate-150 pl-3">
-                    <button onClick={() => openEdit(emp)} className="p-2 rounded-xl bg-slate-50 border border-slate-200/60 hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition-colors" title="Edit">
-                      <Edit3 size={14} />
-                    </button>
-                    <button onClick={() => handleDeleteClick(emp)} className="p-2 rounded-xl bg-rose-50 border border-rose-100 hover:bg-rose-100 text-rose-500 hover:text-rose-700 transition-colors" title="Delete">
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                </div>
-              </div>
+        {/* Employee Cards */}
+        <div style={{ display: 'grid', gap: '1rem' }}>
+          {filtered.map((emp) => {
+            const roleBadgeClass =
+              emp.role === 'manager'       ? 'ds-badge ds-badge-amber' :
+              emp.role === 'cashier'       ? 'ds-badge ds-badge-amber' :
+              emp.role === 'deliveryGuy'   ? 'ds-badge ds-badge-blue' :
+              emp.role === 'stockEmployee' ? 'ds-badge ds-badge-green' :
+                                            'ds-badge ds-badge-slate';
+            const roleLabel =
+              emp.role === 'deliveryGuy'   ? 'Delivery Rider' :
+              emp.role === 'stockEmployee' ? 'Stock Employee' :
+              emp.role === 'cashier'       ? 'Cashier' :
+              emp.role === 'manager'       ? 'Manager' : emp.role;
 
-              <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3 text-[11px] text-slate-500 font-bold border-t border-slate-100/60 pt-4">
-                <span className="flex items-center gap-1 text-slate-600">💰 Rs. {(emp.employeeInfo?.salary || 0).toLocaleString()}</span>
-                <span className="flex items-center gap-1">🏢 {emp.employeeInfo?.department || '—'}</span>
-                <span className="flex items-center gap-1">🏦 {emp.employeeInfo?.bankName || '—'} {emp.employeeInfo?.bankBranch ? `(${emp.employeeInfo.bankBranch})` : ''}</span>
-                <span className="flex items-center gap-1">📋 EPF: {emp.employeeInfo?.epfNo || '—'}</span>
+            return (
+              <div
+                key={emp._id}
+                className="ds-card"
+                style={{
+                  padding: '1.25rem',
+                }}
+              >
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+                  {/* Avatar + Identity */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div
+                      style={{
+                        width: '2.75rem', height: '2.75rem', borderRadius: 'var(--ds-r-md)',
+                        background: 'linear-gradient(135deg, var(--ds-primary) 0%, #7c3aed 100%)', display: 'flex', alignItems: 'center',
+                        justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 'var(--ds-text-md)',
+                        flexShrink: 0,
+                      }}
+                    >
+                      {emp.name?.charAt(0)?.toUpperCase()}
+                    </div>
+                    <div>
+                      <p style={{ fontWeight: 600, color: 'var(--ds-text-head)', fontSize: 'var(--ds-text-sm)', margin: 0 }}>{emp.name}</p>
+                      <p style={{ fontSize: 'var(--ds-text-xs)', color: 'var(--ds-text-muted)', margin: '0.15rem 0 0' }}>{emp.email}</p>
+                      {emp.phone && <p style={{ fontSize: 'var(--ds-text-2xs)', color: 'var(--ds-text-muted)', margin: '0.1rem 0 0' }}>{emp.phone}</p>}
+                    </div>
+                  </div>
+
+                  {/* Badges + Actions */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', flexWrap: 'wrap' }}>
+                    <span className={roleBadgeClass}>{roleLabel}</span>
+                    {emp.assignedStore?.name && (
+                      <span className="ds-badge ds-badge-slate">{emp.assignedStore.name}</span>
+                    )}
+                    <div style={{ display: 'flex', gap: '0.375rem', borderLeft: '1px solid var(--ds-border)', paddingLeft: '0.75rem' }}>
+                      <button onClick={() => openEdit(emp)} className="ds-btn ds-btn-ghost ds-btn-icon ds-btn-sm" title="Edit">
+                        <Edit3 size={14} />
+                      </button>
+                      <button onClick={() => handleDeleteClick(emp)} className="ds-btn ds-btn-danger ds-btn-icon ds-btn-sm" title="Delete">
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Meta Row */}
+                <div style={{
+                  marginTop: '1rem', paddingTop: '0.875rem',
+                  borderTop: '1px solid var(--ds-border-soft)',
+                  display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                  gap: '0.5rem', fontSize: 'var(--ds-text-xs)', color: 'var(--ds-text-muted)',
+                }}>
+                  <span>Rs. {(emp.employeeInfo?.salary || 0).toLocaleString()}</span>
+                  <span>{emp.employeeInfo?.department || '—'}</span>
+                  <span>{emp.employeeInfo?.bankName || '—'}{emp.employeeInfo?.bankBranch ? ` (${emp.employeeInfo.bankBranch})` : ''}</span>
+                  <span>EPF: {emp.employeeInfo?.epfNo || '—'}</span>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
+        {/* Add / Edit Modal */}
         {showAddModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
-              <div className="flex items-center justify-between p-5 border-b border-card-border">
-                <h2 className="text-lg font-bold text-dark-navy flex items-center gap-2">
-                  <UserPlus size={20} className="text-primary-blue" /> {editingId ? 'Edit Employee Info' : 'Register New Employee'}
+          <div className="ds-modal-overlay">
+            <div className="ds-modal ds-modal-lg">
+              <div className="ds-modal-header">
+                <h2 className="ds-modal-title">
+                  <UserPlus size={18} />
+                  {editingId ? 'Edit Employee Info' : 'Register New Employee'}
                 </h2>
-                <button onClick={() => setShowAddModal(false)} className="p-1.5 rounded-lg hover:bg-gray-100"><X size={18} /></button>
+                <button onClick={() => setShowAddModal(false)} className="ds-btn ds-btn-ghost ds-btn-icon ds-btn-sm">
+                  <X size={18} />
+                </button>
               </div>
 
-              <form onSubmit={handleSaveEmployee} className="p-5 space-y-4">
-                {/* Basic Info */}
-                <div className="bg-gray-50 rounded-xl p-4 space-y-3">
-                  <h3 className="text-sm font-semibold text-dark-navy mb-2">👤 Basic Information</h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="col-span-2">
-                      <label className="text-xs text-muted-text block mb-1">Full Name *</label>
-                      <input required value={newForm.name} onChange={(e) => setNewForm({ ...newForm, name: e.target.value })}
-                        className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" placeholder="John Doe" />
+              <form onSubmit={handleSaveEmployee}>
+                <div className="ds-modal-body" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+
+                  {/* Basic Information */}
+                  <p style={{ fontSize: 'var(--ds-text-xs)', fontWeight: 700, color: 'var(--ds-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.75rem' }}>Basic Information</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.25rem' }}>
+                    <div className="ds-form-group" style={{ gridColumn: '1 / -1' }}>
+                      <label className="ds-label">Full Name *</label>
+                      <input required className="ds-input" value={newForm.name} onChange={(e) => setNewForm({ ...newForm, name: e.target.value })} placeholder="John Doe" />
                     </div>
-                    <div>
-                      <label className="text-xs text-muted-text block mb-1">Email *</label>
-                      <input required type="email" value={newForm.email} onChange={(e) => setNewForm({ ...newForm, email: e.target.value })}
-                        className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" placeholder="john@example.com" />
+                    <div className="ds-form-group">
+                      <label className="ds-label">Email *</label>
+                      <input required type="email" className="ds-input" value={newForm.email} onChange={(e) => setNewForm({ ...newForm, email: e.target.value })} placeholder="john@example.com" />
                     </div>
-                    <div>
-                      <label className="text-xs text-muted-text block mb-1">Password {editingId ? '(Leave blank to keep same)' : '*'}</label>
-                      <input required={!editingId} type="password" value={newForm.password} onChange={(e) => setNewForm({ ...newForm, password: e.target.value })}
-                        className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" placeholder={editingId ? '••••••••' : 'Min 6 characters'} />
+                    <div className="ds-form-group">
+                      <label className="ds-label">Password {editingId ? '(Leave blank to keep same)' : '*'}</label>
+                      <input required={!editingId} type="password" className="ds-input" value={newForm.password} onChange={(e) => setNewForm({ ...newForm, password: e.target.value })} placeholder={editingId ? '••••••••' : 'Min 6 characters'} />
                     </div>
-                    <div>
-                      <label className="text-xs text-muted-text block mb-1">Phone</label>
-                      <input value={newForm.phone} onChange={(e) => setNewForm({ ...newForm, phone: e.target.value })}
-                        className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" placeholder="+94 7X XXX XXXX" />
+                    <div className="ds-form-group">
+                      <label className="ds-label">Phone</label>
+                      <input className="ds-input" value={newForm.phone} onChange={(e) => setNewForm({ ...newForm, phone: e.target.value })} placeholder="+94 7X XXX XXXX" />
                     </div>
-                    <div>
-                      <label className="text-xs text-muted-text block mb-1">Role *</label>
-                      <select value={newForm.role} onChange={(e) => setNewForm({ ...newForm, role: e.target.value })}
-                        className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue bg-white">
+                    <div className="ds-form-group">
+                      <label className="ds-label">Role *</label>
+                      <select className="ds-input ds-select" value={newForm.role} onChange={(e) => setNewForm({ ...newForm, role: e.target.value })}>
                         <option value="cashier">Cashier</option>
                         <option value="deliveryGuy">Delivery Rider</option>
                         <option value="stockEmployee">Stock Employee</option>
@@ -266,71 +302,60 @@ const ManagerEmployees = ({ navItems = managerNavGroups, title = 'Manager Dashbo
                       </select>
                     </div>
                   </div>
-                </div>
 
-                {/* Employment Info */}
-                <div className="bg-gray-50 rounded-xl p-4 space-y-3">
-                  <h3 className="text-sm font-semibold text-dark-navy mb-2">💼 Employment Details</h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-xs text-muted-text block mb-1">Monthly Salary (LKR)</label>
-                      <input type="number" value={newForm.salary} onChange={(e) => setNewForm({ ...newForm, salary: e.target.value })}
-                        className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" placeholder="45000" />
+                  {/* Employment Details */}
+                  <p style={{ fontSize: 'var(--ds-text-xs)', fontWeight: 700, color: 'var(--ds-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.75rem' }}>Employment Details</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.25rem' }}>
+                    <div className="ds-form-group">
+                      <label className="ds-label">Monthly Salary (LKR)</label>
+                      <input type="number" className="ds-input" value={newForm.salary} onChange={(e) => setNewForm({ ...newForm, salary: e.target.value })} placeholder="45000" />
                     </div>
-                    <div>
-                      <label className="text-xs text-muted-text block mb-1">Department</label>
-                      <input value={newForm.department} onChange={(e) => setNewForm({ ...newForm, department: e.target.value })}
-                        className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" placeholder="Sales / Logistics" />
+                    <div className="ds-form-group">
+                      <label className="ds-label">Department</label>
+                      <input className="ds-input" value={newForm.department} onChange={(e) => setNewForm({ ...newForm, department: e.target.value })} placeholder="Sales / Logistics" />
+                    </div>
+                  </div>
+
+                  {/* Bank & Statutory */}
+                  <p style={{ fontSize: 'var(--ds-text-xs)', fontWeight: 700, color: 'var(--ds-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.75rem' }}>Bank &amp; Statutory Details</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                    <div className="ds-form-group">
+                      <label className="ds-label">Bank Name</label>
+                      <input className="ds-input" value={newForm.bankName} onChange={(e) => setNewForm({ ...newForm, bankName: e.target.value })} placeholder="Bank of Ceylon" />
+                    </div>
+                    <div className="ds-form-group">
+                      <label className="ds-label">Bank Branch</label>
+                      <input className="ds-input" value={newForm.bankBranch} onChange={(e) => setNewForm({ ...newForm, bankBranch: e.target.value })} placeholder="Colombo Main" />
+                    </div>
+                    <div className="ds-form-group">
+                      <label className="ds-label">Account Number</label>
+                      <input className="ds-input" value={newForm.bankAccount} onChange={(e) => setNewForm({ ...newForm, bankAccount: e.target.value })} placeholder="XXXX XXXX XXXX" />
+                    </div>
+                    <div className="ds-form-group">
+                      <label className="ds-label">EPF Number</label>
+                      <input className="ds-input" value={newForm.epfNo} onChange={(e) => setNewForm({ ...newForm, epfNo: e.target.value })} placeholder="EPF-XXXXX" />
+                    </div>
+                    <div className="ds-form-group" style={{ gridColumn: '1 / -1' }}>
+                      <label className="ds-label">ETF Number</label>
+                      <input className="ds-input" value={newForm.etfNo} onChange={(e) => setNewForm({ ...newForm, etfNo: e.target.value })} placeholder="ETF-XXXXX" />
                     </div>
                   </div>
                 </div>
 
-                {/* Bank & EPF/ETF */}
-                <div className="bg-gray-50 rounded-xl p-4 space-y-3">
-                  <h3 className="text-sm font-semibold text-dark-navy mb-2">🏦 Bank & Statutory Details</h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-xs text-muted-text block mb-1">Bank Name</label>
-                      <input value={newForm.bankName} onChange={(e) => setNewForm({ ...newForm, bankName: e.target.value })}
-                        className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" placeholder="Bank of Ceylon" />
-                    </div>
-                    <div>
-                      <label className="text-xs text-muted-text block mb-1">Bank Branch</label>
-                      <input value={newForm.bankBranch} onChange={(e) => setNewForm({ ...newForm, bankBranch: e.target.value })}
-                        className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" placeholder="Colombo Main" />
-                    </div>
-                    <div>
-                      <label className="text-xs text-muted-text block mb-1">Account Number</label>
-                      <input value={newForm.bankAccount} onChange={(e) => setNewForm({ ...newForm, bankAccount: e.target.value })}
-                        className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" placeholder="XXXX XXXX XXXX" />
-                    </div>
-                    <div>
-                      <label className="text-xs text-muted-text block mb-1">EPF Number</label>
-                      <input value={newForm.epfNo} onChange={(e) => setNewForm({ ...newForm, epfNo: e.target.value })}
-                        className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" placeholder="EPF-XXXXX" />
-                    </div>
-                    <div className="col-span-2">
-                      <label className="text-xs text-muted-text block mb-1">ETF Number</label>
-                      <input value={newForm.etfNo} onChange={(e) => setNewForm({ ...newForm, etfNo: e.target.value })}
-                        className="w-full border border-card-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" placeholder="ETF-XXXXX" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex justify-end gap-3 pt-2">
-                  <button type="button" onClick={() => setShowAddModal(false)}
-                    className="px-5 py-2.5 text-sm font-medium text-muted-text hover:text-dark-navy transition-colors">
+                <div className="ds-modal-footer">
+                  <button type="button" onClick={() => setShowAddModal(false)} className="ds-btn ds-btn-secondary">
                     Cancel
                   </button>
-                  <button type="submit" disabled={adding}
-                    className="flex items-center gap-2 bg-primary-blue hover:bg-emerald-600 text-white font-medium px-6 py-2.5 rounded-xl transition-colors shadow-md disabled:opacity-50">
-                    <UserPlus size={16} /> {adding ? 'Saving...' : editingId ? 'Update Employee' : 'Register Employee'}
+                  <button type="submit" disabled={adding} className="ds-btn ds-btn-primary">
+                    <UserPlus size={15} />
+                    {adding ? 'Saving...' : editingId ? 'Update Employee' : 'Register Employee'}
                   </button>
                 </div>
               </form>
             </div>
           </div>
         )}
+
       </div>
 
       <DeleteConfirmationModal

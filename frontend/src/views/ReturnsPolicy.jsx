@@ -22,10 +22,10 @@ const ReturnsPolicy = () => {
         {/* Banner */}
         <div className="bg-slate-900 text-white rounded-3xl p-8 sm:p-12 relative overflow-hidden shadow-lg space-y-3">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(245,158,11,0.15),transparent_60%)] pointer-events-none" />
-          <span className="inline-flex items-center gap-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest">
+          <span className="inline-flex items-center gap-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-widest">
             <RotateCcw size={12} /> 7-Day Guarantee & Warranty
           </span>
-          <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight m-0">Returns & Exchange Policy</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight m-0">Returns & Exchange Policy</h1>
           <p className="text-slate-300 text-xs sm:text-sm font-semibold max-w-2xl m-0">
             Hassle-free 7-day replacement guarantee and transparent return policies for your tech purchases.
           </p>
@@ -38,7 +38,7 @@ const ReturnsPolicy = () => {
               <RefreshCw size={20} />
             </div>
             <div>
-              <h3 className="text-base font-black text-slate-900 m-0">7-Day Replacement Guarantee</h3>
+              <h3 className="text-base font-bold text-slate-900 m-0">7-Day Replacement Guarantee</h3>
               <p className="text-xs text-slate-500 font-semibold m-0 mt-1 leading-relaxed">If your purchased phone or accessory exhibits a manufacturing defect within 7 days, we issue an immediate replacement unit.</p>
             </div>
           </div>
@@ -48,7 +48,7 @@ const ReturnsPolicy = () => {
               <CheckCircle size={20} />
             </div>
             <div>
-              <h3 className="text-base font-black text-slate-900 m-0">Official Warranty Support</h3>
+              <h3 className="text-base font-bold text-slate-900 m-0">Official Warranty Support</h3>
               <p className="text-xs text-slate-500 font-semibold m-0 mt-1 leading-relaxed">All devices are covered by 1-Year Company / Agent Warranty or Mobixa Store Warranty with official repair support.</p>
             </div>
           </div>
@@ -56,13 +56,13 @@ const ReturnsPolicy = () => {
 
         {/* Return Steps */}
         <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
-          <h2 className="text-xl font-black text-slate-900 m-0">Simple 4-Step Return Process</h2>
+          <h2 className="text-xl font-bold text-slate-900 m-0">Simple 4-Step Return Process</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {steps.map((s, i) => (
               <div key={i} className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 space-y-2">
-                <span className="text-2xl font-black text-amber-600 block">{s.num}</span>
-                <h4 className="text-sm font-black text-slate-900 m-0">{s.title}</h4>
-                <p className="text-[11px] text-slate-500 font-semibold m-0 leading-relaxed">{s.desc}</p>
+                <span className="text-2xl font-bold text-amber-600 block">{s.num}</span>
+                <h4 className="text-sm font-bold text-slate-900 m-0">{s.title}</h4>
+                <p className="text-xs text-slate-500 font-semibold m-0 leading-relaxed">{s.desc}</p>
               </div>
             ))}
           </div>
@@ -70,7 +70,7 @@ const ReturnsPolicy = () => {
 
         {/* Terms */}
         <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4 text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
-          <h2 className="text-xl font-black text-slate-900 m-0">Return Eligibility Conditions</h2>
+          <h2 className="text-xl font-bold text-slate-900 m-0">Return Eligibility Conditions</h2>
           <ul className="space-y-2 pl-5 m-0 list-disc">
             <li>Item must be returned with the original retail box, user manuals, warranty card, and untouched included accessories.</li>
             <li>The phone's serial number and IMEI must match the original invoice bill issued at purchase.</li>

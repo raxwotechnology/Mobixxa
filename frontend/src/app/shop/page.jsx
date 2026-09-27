@@ -69,7 +69,7 @@ export default function ShopPage() {
             </div>
 
             {/* Title */}
-            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-white">
+            <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-white">
               Explore All Products
             </h1>
 

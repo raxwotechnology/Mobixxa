@@ -93,82 +93,81 @@ const AdminLateDeductions = () => {
 
   return (
     <DashboardLayout title="Late Deductions">
-      <div>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
-          <div>
-            <h1 className="text-2xl font-bold text-dark-navy">⚠️ Late Arrival Deductions</h1>
-            <p className="text-muted-text text-sm mt-1">Automatically computed from check-in time vs. shift start</p>
+      <div className="ds-page">
+        <div className="ds-page-header">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700">
+              <Clock size={20} strokeWidth={2} />
+            </div>
+            <div>
+              <h1 className="ds-page-title">Late Arrival Deductions</h1>
+              <p className="ds-page-subtitle">Automatically computed from check-in time vs. shift start</p>
+            </div>
           </div>
-          <div className="flex gap-2 flex-wrap">
-            <input type="date" value={dateRange.startDate} onChange={e => setDateRange(r => ({ ...r, startDate: e.target.value }))} className="border border-card-border rounded-xl py-2 px-3 text-sm bg-white" />
-            <input type="date" value={dateRange.endDate} onChange={e => setDateRange(r => ({ ...r, endDate: e.target.value }))} className="border border-card-border rounded-xl py-2 px-3 text-sm bg-white" />
-            <button onClick={exportCSV} className="flex items-center gap-2 border border-card-border text-dark-navy px-4 py-2 rounded-xl text-sm font-semibold hover:bg-gray-50">
-              <Download size={16} /> Export
+          <div className="flex gap-2 flex-wrap items-center">
+            <input type="date" value={dateRange.startDate} onChange={e => setDateRange(r => ({ ...r, startDate: e.target.value }))} className="ds-input py-2 px-3 text-xs w-auto" />
+            <input type="date" value={dateRange.endDate} onChange={e => setDateRange(r => ({ ...r, endDate: e.target.value }))} className="ds-input py-2 px-3 text-xs w-auto" />
+            <button onClick={exportCSV} className="ds-btn ds-btn-secondary">
+              <Download size={14} /> Export
             </button>
           </div>
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-red-400 to-rose-500 flex items-center justify-center mb-2">
-              <AlertTriangle size={16} className="text-white" />
-            </div>
-            <p className="text-2xl font-bold text-red-600">− Rs. {totalDeduction.toLocaleString()}</p>
-            <p className="text-xs text-muted-text mt-1">Total Deducted</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="ds-stat">
+            <span className="ds-stat-label text-rose-600">Total Deducted</span>
+            <div className="ds-stat-value text-rose-600">− Rs. {totalDeduction.toLocaleString()}</div>
+            <p className="ds-stat-sub">Late fee deductions</p>
           </div>
-          <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-red-400 to-rose-500 flex items-center justify-center mb-2">
-              <Clock size={16} className="text-white" />
-            </div>
-            <p className="text-2xl font-bold text-dark-navy">{totalLateMinutes}m</p>
-            <p className="text-xs text-muted-text mt-1">Total Late Minutes</p>
+          <div className="ds-stat">
+            <span className="ds-stat-label">Total Late Minutes</span>
+            <div className="ds-stat-value text-slate-900">{totalLateMinutes}m</div>
+            <p className="ds-stat-sub">Across all employees</p>
           </div>
-          <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-red-400 to-rose-500 flex items-center justify-center mb-2">
-              <AlertTriangle size={16} className="text-white" />
-            </div>
-            <p className="text-2xl font-bold text-dark-navy">{filteredRecords.length}</p>
-            <p className="text-xs text-muted-text mt-1">Late Instances</p>
+          <div className="ds-stat">
+            <span className="ds-stat-label">Late Instances</span>
+            <div className="ds-stat-value text-slate-900">{filteredRecords.length}</div>
+            <p className="ds-stat-sub">Incidents recorded</p>
           </div>
         </div>
 
         {/* Per-employee summary */}
-        <div className="bg-white rounded-2xl border border-card-border shadow-sm overflow-hidden mb-6">
-          <div className="p-4 border-b border-card-border">
-            <h2 className="font-semibold text-dark-navy">Employee Summary</h2>
+        <div className="ds-card p-0 overflow-hidden">
+          <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+            <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Employee Summary</h2>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="ds-table">
               <thead>
-                <tr className="border-b border-card-border bg-gray-50/50">
-                  <th className="text-left py-3 px-4 text-muted-text text-xs uppercase font-semibold">Employee</th>
-                  <th className="text-right py-3 px-4 text-muted-text text-xs uppercase font-semibold">Late Minutes</th>
-                  <th className="text-right py-3 px-4 text-muted-text text-xs uppercase font-semibold">Total Deduction</th>
-                  <th className="text-right py-3 px-4 text-muted-text text-xs uppercase font-semibold">Instances</th>
+                <tr>
+                  <th>Employee</th>
+                  <th className="text-right">Late Minutes</th>
+                  <th className="text-right">Total Deduction</th>
+                  <th className="text-right">Instances</th>
                 </tr>
               </thead>
               <tbody>
                 {summary.map((s, i) => (
-                  <tr key={i} className="border-b border-gray-50 hover:bg-gray-50/50">
-                    <td className="py-3 px-4">
+                  <tr key={i}>
+                    <td>
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center text-red-600 text-xs font-bold">
+                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700 text-xs font-bold">
                           {s.employee?.name?.charAt(0)?.toUpperCase() || '?'}
                         </div>
                         <div>
-                          <p className="font-semibold text-dark-navy text-sm">{s.employee?.name}</p>
-                          <p className="text-xs text-muted-text capitalize">{s.employee?.role}</p>
+                          <p className="font-semibold text-slate-900 text-xs">{s.employee?.name}</p>
+                          <p className="text-[0.7rem] text-slate-400 capitalize">{s.employee?.role}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-right font-medium">{s.totalLateMinutes}m</td>
-                    <td className="py-3 px-4 text-right font-bold text-red-600">− Rs. {s.totalDeduction.toLocaleString()}</td>
-                    <td className="py-3 px-4 text-right">{s.recordCount}</td>
+                    <td className="text-right font-medium text-xs">{s.totalLateMinutes}m</td>
+                    <td className="text-right font-bold text-xs text-rose-600">− Rs. {s.totalDeduction.toLocaleString()}</td>
+                    <td className="text-right text-xs font-medium">{s.recordCount}</td>
                   </tr>
                 ))}
                 {summary.length === 0 && (
-                  <tr><td colSpan={4} className="py-12 text-center text-muted-text">No late deductions found</td></tr>
+                  <tr><td colSpan={4} className="py-8 text-center text-slate-400 text-xs">No late deductions found</td></tr>
                 )}
               </tbody>
             </table>
@@ -176,37 +175,39 @@ const AdminLateDeductions = () => {
         </div>
 
         {/* Records */}
-        <div className="relative mb-4">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input placeholder="Search by employee name..." value={search} onChange={e => setSearch(e.target.value)} className="w-full sm:w-96 border border-card-border rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-red-300" />
-        </div>
-        <div className="bg-white rounded-2xl border border-card-border shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-card-border bg-gray-50/50">
-                  <th className="text-left py-3 px-4 text-muted-text text-xs uppercase font-semibold">Employee</th>
-                  <th className="text-left py-3 px-4 text-muted-text text-xs uppercase font-semibold">Date</th>
-                  <th className="text-left py-3 px-4 text-muted-text text-xs uppercase font-semibold">Check-in</th>
-                  <th className="text-right py-3 px-4 text-muted-text text-xs uppercase font-semibold">Late</th>
-                  <th className="text-right py-3 px-4 text-muted-text text-xs uppercase font-semibold">Deduction</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredRecords.map(r => (
-                  <tr key={r._id} className="border-b border-gray-50 hover:bg-gray-50/50">
-                    <td className="py-3 px-4 font-semibold text-dark-navy">{r.employeeId?.name || 'Unknown'}</td>
-                    <td className="py-3 px-4 text-muted-text">{new Date(r.date).toLocaleDateString()}</td>
-                    <td className="py-3 px-4 text-muted-text">{r.checkIn ? new Date(r.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</td>
-                    <td className="py-3 px-4 text-right">{r.lateMinutes}m</td>
-                    <td className="py-3 px-4 text-right font-bold text-red-600">− Rs. {(r.lateDeduction || 0).toLocaleString()}</td>
+        <div className="space-y-3">
+          <div className="relative">
+            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input placeholder="Search by employee name..." value={search} onChange={e => setSearch(e.target.value)} className="ds-input pl-10 max-w-sm" />
+          </div>
+          <div className="ds-table-wrap">
+            <div className="overflow-x-auto">
+              <table className="ds-table">
+                <thead>
+                  <tr>
+                    <th>Employee</th>
+                    <th>Date</th>
+                    <th>Check-in</th>
+                    <th className="text-right">Late</th>
+                    <th className="text-right">Deduction</th>
                   </tr>
-                ))}
-                {filteredRecords.length === 0 && (
-                  <tr><td colSpan={5} className="py-12 text-center text-muted-text">No late deductions found</td></tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {filteredRecords.map(r => (
+                    <tr key={r._id}>
+                      <td className="font-semibold text-slate-900 text-xs">{r.employeeId?.name || 'Unknown'}</td>
+                      <td className="text-slate-500 text-xs">{new Date(r.date).toLocaleDateString()}</td>
+                      <td className="text-slate-500 text-xs">{r.checkIn ? new Date(r.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</td>
+                      <td className="text-right text-xs font-medium">{r.lateMinutes}m</td>
+                      <td className="text-right text-xs font-bold text-rose-600">− Rs. {(r.lateDeduction || 0).toLocaleString()}</td>
+                    </tr>
+                  ))}
+                  {filteredRecords.length === 0 && (
+                    <tr><td colSpan={5} className="py-8 text-center text-slate-400 text-xs">No late deductions found</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>

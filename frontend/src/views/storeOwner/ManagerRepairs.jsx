@@ -444,33 +444,25 @@ const ManagerRepairs = ({ isAdmin = false, isEmployee = false, navItems: propNav
 
   return (
     <DashboardLayout navItems={navItems} title={isAdmin ? "Admin Repairs Dashboard" : "Repairs Dashboard"}>
-      <div className="no-print">
+      <div className="no-print ds-page">
         {/* Header Block */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm relative overflow-hidden mb-6">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-indigo/5 rounded-full blur-3xl pointer-events-none -z-10"></div>
+        <div className="ds-page-header">
           <div>
-            <div className="flex items-center gap-3 mb-1">
-              <div className="w-10 h-10 rounded-2xl bg-brand-indigo/10 flex items-center justify-center text-brand-indigo">
-                <Wrench size={20} strokeWidth={2.5} />
-              </div>
-              <h1 className="text-2xl font-semibold text-slate-900 m-0">Device Repairs</h1>
-            </div>
-            <p className="text-[10px] font-normal uppercase tracking-wider text-slate-500 mt-2 m-0">Log customer devices, manage technician tasks, parts replacements, and track ledger synchronization</p>
+            <h1 className="ds-page-title">Device Repairs</h1>
+            <p className="ds-page-subtitle">Log customer devices, manage technician tasks, parts replacements, and track ledger synchronization</p>
           </div>
-          <div className="flex flex-wrap gap-2.5">
-            <button
-              onClick={handleOpenCreate}
-              className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors shadow-sm flex items-center gap-2 cursor-pointer self-start md:self-auto"
-            >
-              <Plus size={14} /> Log Repair Job
-            </button>
-          </div>
+          <button
+            onClick={handleOpenCreate}
+            className="ds-btn ds-btn-primary"
+          >
+            <Plus size={16} /> Log Repair Job
+          </button>
         </div>
 
         {/* Filters, Search, and Tabs */}
-        <div className="glass-card rounded-[2rem] p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+        <div className="ds-card p-3.5 flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-6">
           {/* Tabs */}
-          <div className="flex gap-2 pb-1 overflow-x-auto scrollbar-hide">
+          <div className="ds-tab-bar overflow-x-auto scrollbar-hide">
             {['all', 'received', 'in_progress', 'completed', 'delivered', 'cancelled', 'reports'].map((status) => {
               let count = 0;
               if (status === 'all') count = repairs.length;
@@ -483,18 +475,12 @@ const ManagerRepairs = ({ isAdmin = false, isEmployee = false, navItems: propNav
                 <button
                   key={status}
                   onClick={() => setFilterStatus(status)}
-                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider whitespace-nowrap transition-all cursor-pointer flex items-center gap-2 ${
-                    isSelected
-                      ? 'bg-brand-indigo text-white shadow-sm'
-                      : 'bg-slate-100 text-slate-550 hover:bg-slate-200'
-                  }`}
+                  className={`ds-tab-btn ${isSelected ? 'active' : ''}`}
                 >
                   {status === 'reports' ? 'Repairs Report' : status.replace('_', ' ')}
                   {status !== 'reports' && (
-                    <span className={`ml-2 px-1.5 py-0.5 rounded-md text-[9px] font-black ${
-                      isSelected ? 'bg-white/20 text-white' : 'bg-slate-200/80 text-slate-700'
-                    }`}>
-                      {count}
+                    <span className="ml-1.5 opacity-75 font-mono text-xs">
+                      ({count})
                     </span>
                   )}
                 </button>
@@ -506,14 +492,14 @@ const ManagerRepairs = ({ isAdmin = false, isEmployee = false, navItems: propNav
           {filterStatus !== 'reports' && (
             <div className="relative w-full lg:w-72">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
-                <Search size={16} />
+                <Search size={15} />
               </span>
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search ID, name, model..."
-                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-indigo focus:border-transparent focus:outline-none text-xs font-semibold text-slate-800 bg-white"
+                className="ds-input pl-9 text-xs"
               />
             </div>
           )}
@@ -524,42 +510,26 @@ const ManagerRepairs = ({ isAdmin = false, isEmployee = false, navItems: propNav
           /* ════════════════ REPORTS TAB DASHBOARD ════════════════ */
           <div className="space-y-6">
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white border border-card-border rounded-2xl p-5 shadow-sm flex items-center gap-4">
-                <div className="bg-blue-50 text-blue-600 p-3.5 rounded-xl">
-                  <Wrench size={24} />
-                </div>
-                <div>
-                  <h4 className="text-xs font-semibold text-muted-text uppercase">Total Jobs Logged</h4>
-                  <p className="text-2xl font-black text-dark-navy mt-1">{totalJobsCount}</p>
-                </div>
+            <div className="ds-stats grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="ds-stat">
+                <div className="ds-stat-label">Total Jobs Logged</div>
+                <div className="ds-stat-value text-blue-600">{totalJobsCount}</div>
+                <div className="ds-stat-sub">All logged service jobs</div>
               </div>
-              <div className="bg-white border border-card-border rounded-2xl p-5 shadow-sm flex items-center gap-4">
-                <div className="bg-amber-50 text-amber-600 p-3.5 rounded-xl">
-                  <RefreshCw className="animate-spin-slow" size={24} />
-                </div>
-                <div>
-                  <h4 className="text-xs font-semibold text-muted-text uppercase">Active Repairs</h4>
-                  <p className="text-2xl font-black text-dark-navy mt-1">{activeRepairsCount}</p>
-                </div>
+              <div className="ds-stat">
+                <div className="ds-stat-label">Active Repairs</div>
+                <div className="ds-stat-value text-amber-600">{activeRepairsCount}</div>
+                <div className="ds-stat-sub">Currently in workbench</div>
               </div>
-              <div className="bg-white border border-card-border rounded-2xl p-5 shadow-sm flex items-center gap-4">
-                <div className="bg-emerald-50 text-emerald-600 p-3.5 rounded-xl">
-                  <DollarSign size={24} />
-                </div>
-                <div>
-                  <h4 className="text-xs font-semibold text-muted-text uppercase">Delivered Income</h4>
-                  <p className="text-xl font-black text-emerald-600 mt-1">{formatPrice(totalRevenue)}</p>
-                </div>
+              <div className="ds-stat">
+                <div className="ds-stat-label">Delivered Income</div>
+                <div className="ds-stat-value text-emerald-600">{formatPrice(totalRevenue)}</div>
+                <div className="ds-stat-sub">Settled revenue collected</div>
               </div>
-              <div className="bg-white border border-card-border rounded-2xl p-5 shadow-sm flex items-center gap-4">
-                <div className="bg-purple-50 text-purple-600 p-3.5 rounded-xl">
-                  <ShoppingBag size={24} />
-                </div>
-                <div>
-                  <h4 className="text-xs font-semibold text-muted-text uppercase">Projected Value</h4>
-                  <p className="text-xl font-black text-purple-600 mt-1">{formatPrice(projectedRevenue)}</p>
-                </div>
+              <div className="ds-stat">
+                <div className="ds-stat-label">Projected Value</div>
+                <div className="ds-stat-value text-indigo-600">{formatPrice(projectedRevenue)}</div>
+                <div className="ds-stat-sub">Expected upon delivery</div>
               </div>
             </div>
 
@@ -592,7 +562,7 @@ const ManagerRepairs = ({ isAdmin = false, isEmployee = false, navItems: propNav
                           <tr key={tech._id} className="hover:bg-gray-50/50">
                             <td className="py-2.5 px-3">
                               <span className="font-semibold text-dark-navy block">{tech.name}</span>
-                              <span className="text-[10px] text-muted-text uppercase">{tech.role}</span>
+                              <span className="text-xs text-muted-text uppercase">{tech.role}</span>
                             </td>
                             <td className="py-2.5 px-3 text-center font-bold text-dark-navy">{tech.assigned}</td>
                             <td className="py-2.5 px-3 text-center">
@@ -600,7 +570,7 @@ const ManagerRepairs = ({ isAdmin = false, isEmployee = false, navItems: propNav
                                 {tech.completed}
                               </span>
                             </td>
-                            <td className="py-2.5 px-3 text-right font-black text-emerald-600">{formatPrice(tech.income)}</td>
+                            <td className="py-2.5 px-3 text-right font-bold text-emerald-600">{formatPrice(tech.income)}</td>
                           </tr>
                         ))
                       )}
@@ -617,14 +587,14 @@ const ManagerRepairs = ({ isAdmin = false, isEmployee = false, navItems: propNav
                   </h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-gray-50 border border-card-border p-3.5 rounded-xl">
-                      <span className="text-muted-text text-[11px] uppercase font-bold block">Inventory Parts Replaced</span>
-                      <span className="text-lg font-black text-dark-navy block mt-0.5">{totalInventoryPartsCount} units</span>
-                      <span className="text-[10px] text-emerald-600 font-semibold">Cost: {formatPrice(inventoryPartsCost)}</span>
+                      <span className="text-muted-text text-xs uppercase font-bold block">Inventory Parts Replaced</span>
+                      <span className="text-lg font-bold text-dark-navy block mt-0.5">{totalInventoryPartsCount} units</span>
+                      <span className="text-xs text-emerald-600 font-semibold">Cost: {formatPrice(inventoryPartsCost)}</span>
                     </div>
                     <div className="bg-gray-50 border border-card-border p-3.5 rounded-xl">
-                      <span className="text-muted-text text-[11px] uppercase font-bold block">External Custom Parts</span>
-                      <span className="text-lg font-black text-dark-navy block mt-0.5">{totalExternalPartsCount} units</span>
-                      <span className="text-[10px] text-emerald-600 font-semibold">Cost: {formatPrice(externalPartsCost)}</span>
+                      <span className="text-muted-text text-xs uppercase font-bold block">External Custom Parts</span>
+                      <span className="text-lg font-bold text-dark-navy block mt-0.5">{totalExternalPartsCount} units</span>
+                      <span className="text-xs text-emerald-600 font-semibold">Cost: {formatPrice(externalPartsCost)}</span>
                     </div>
                   </div>
                 </div>
@@ -662,22 +632,22 @@ const ManagerRepairs = ({ isAdmin = false, isEmployee = false, navItems: propNav
               <p className="text-muted-text text-sm mt-1">Try expanding your search query or status filter.</p>
             </div>
           ) : (
-            <div className="bg-white rounded-2xl border border-card-border shadow-sm overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
+            <div className="ds-card p-0 overflow-hidden">
+              <div className="ds-table-wrap">
+                <table className="ds-table">
                   <thead>
-                    <tr className="bg-gray-50 border-b border-card-border text-xs font-extrabold uppercase text-muted-text">
-                      <th className="py-4 px-6">Job No</th>
-                      <th className="py-4 px-6">Customer Details</th>
-                      <th className="py-4 px-6">Device Info</th>
-                      <th className="py-4 px-6">Reported Issue</th>
-                      <th className="py-4 px-6">Technicians</th>
-                      <th className="py-4 px-6">Total Cost</th>
-                      <th className="py-4 px-6">Status</th>
-                      <th className="py-4 px-6 text-right">Actions</th>
+                    <tr>
+                      <th className="text-left">Job No</th>
+                      <th className="text-left">Customer Details</th>
+                      <th className="text-left">Device Info</th>
+                      <th className="text-left">Reported Issue</th>
+                      <th className="text-left">Technicians</th>
+                      <th className="text-right">Total Cost</th>
+                      <th className="text-center">Status</th>
+                      <th className="text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-card-border text-sm">
+                  <tbody>
                     {filteredRepairs.map((repair) => {
                       const partsTotal = repair.partsUsed?.reduce((sum, p) => sum + (p.cost * p.qty), 0) || 0;
                       const grandTotal = (repair.repairFee || 0) + partsTotal;
@@ -686,7 +656,7 @@ const ManagerRepairs = ({ isAdmin = false, isEmployee = false, navItems: propNav
                         <tr key={repair._id} className="hover:bg-gray-50 transition-colors">
                           <td className="py-4 px-6 font-bold text-dark-navy">
                             {repair.jobNo}
-                            <span className="block text-[10px] text-muted-text font-normal">
+                            <span className="block text-xs text-muted-text font-normal">
                               {new Date(repair.dateReceived || repair.createdAt).toLocaleDateString()}
                             </span>
                           </td>
@@ -697,7 +667,7 @@ const ManagerRepairs = ({ isAdmin = false, isEmployee = false, navItems: propNav
                           <td className="py-4 px-6">
                             <div className="font-semibold text-dark-navy">{repair.deviceModel}</div>
                             {repair.deviceSerialNumber && (
-                              <div className="text-[11px] text-muted-text">S/N: {repair.deviceSerialNumber}</div>
+                              <div className="text-xs text-muted-text">S/N: {repair.deviceSerialNumber}</div>
                             )}
                           </td>
                           <td className="py-4 px-6">
@@ -707,7 +677,7 @@ const ManagerRepairs = ({ isAdmin = false, isEmployee = false, navItems: propNav
                             {repair.technicians && repair.technicians.length > 0 ? (
                               <div className="flex flex-wrap gap-1">
                                 {repair.technicians.map(t => (
-                                  <span key={t._id} className="bg-gray-100 text-gray-700 text-[10px] font-semibold px-2 py-0.5 rounded">
+                                  <span key={t._id} className="bg-gray-100 text-gray-700 text-xs font-semibold px-2 py-0.5 rounded">
                                     {t.name}
                                   </span>
                                 ))}
@@ -719,8 +689,14 @@ const ManagerRepairs = ({ isAdmin = false, isEmployee = false, navItems: propNav
                           <td className="py-4 px-6 font-bold text-dark-navy">
                             {grandTotal > 0 ? formatPrice(grandTotal) : <span className="text-muted-text text-xs">TBD</span>}
                           </td>
-                          <td className="py-4 px-6">
-                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${statusColors[repair.status] || 'bg-gray-100 border-gray-200 text-gray-700'}`}>
+                          <td className="text-center">
+                            <span className={
+                              repair.status === 'delivered' ? 'ds-badge-green' :
+                              repair.status === 'completed' ? 'ds-badge-purple' :
+                              repair.status === 'in_progress' ? 'ds-badge-amber' :
+                              repair.status === 'cancelled' ? 'ds-badge-red' :
+                              'ds-badge-blue'
+                            }>
                               {repair.status.toUpperCase().replace('_', ' ')}
                             </span>
                           </td>
@@ -907,7 +883,7 @@ const ManagerRepairs = ({ isAdmin = false, isEmployee = false, navItems: propNav
           )}
 
           {/* Terms & Signatures */}
-          <div className="mt-8 pt-4 border-t border-black text-[9px] text-gray-700" style={{ lineHeight: '1.3' }}>
+          <div className="mt-8 pt-4 border-t border-black text-xs text-gray-700" style={{ lineHeight: '1.3' }}>
             <h5 className="font-bold mb-1 text-black">Terms & Conditions:</h5>
             {printJob.type === 'handover' ? (
               <ol className="list-decimal pl-3 space-y-1">
@@ -933,7 +909,7 @@ const ManagerRepairs = ({ isAdmin = false, isEmployee = false, navItems: propNav
               </div>
             </div>
 
-            <div className="text-center mt-6 text-[8px] text-gray-500">
+            <div className="text-center mt-6 text-xs text-gray-500">
               Printed on {new Date().toLocaleString()} | Powered by Mobixa ERP
             </div>
           </div>
@@ -960,7 +936,7 @@ const ManagerRepairs = ({ isAdmin = false, isEmployee = false, navItems: propNav
             >
               <X size={20} />
             </button>
-            <h3 className="text-xl font-extrabold text-dark-navy mb-4 flex items-center gap-2">
+            <h3 className="text-xl font-bold text-dark-navy mb-4 flex items-center gap-2">
               <Wrench className="text-primary-blue" /> Log Device Repair Job
             </h3>
             
@@ -1115,7 +1091,7 @@ const ManagerRepairs = ({ isAdmin = false, isEmployee = false, navItems: propNav
             >
               <X size={20} />
             </button>
-            <h3 className="text-xl font-extrabold text-dark-navy mb-4 flex items-center gap-2">
+            <h3 className="text-xl font-bold text-dark-navy mb-4 flex items-center gap-2">
               <Edit2 className="text-amber-500" /> Proceed Repair - Job #{selectedRepair.jobNo}
             </h3>
 
@@ -1139,7 +1115,7 @@ const ManagerRepairs = ({ isAdmin = false, isEmployee = false, navItems: propNav
 
                   <div>
                     <label className="block text-xs font-bold text-dark-navy uppercase mb-1">Assign Technicians</label>
-                    <p className="text-[10px] text-muted-text mb-1.5">Assign one or more staff to work on this device:</p>
+                    <p className="text-xs text-muted-text mb-1.5">Assign one or more staff to work on this device:</p>
                     {technicians.length === 0 ? (
                       <p className="text-xs text-muted-text italic">No employees found in store system.</p>
                     ) : (
@@ -1180,7 +1156,7 @@ const ManagerRepairs = ({ isAdmin = false, isEmployee = false, navItems: propNav
                   <div>
                     <label className="block text-xs font-bold text-dark-navy uppercase mb-1 flex justify-between">
                       <span>Replacement Parts Used</span>
-                      <span className="text-[10px] text-primary-blue normal-case font-normal">Deducts inventory on checkout</span>
+                      <span className="text-xs text-primary-blue normal-case font-normal">Deducts inventory on checkout</span>
                     </label>
 
                     {/* Search store accessories */}
@@ -1206,7 +1182,7 @@ const ManagerRepairs = ({ isAdmin = false, isEmployee = false, navItems: propNav
                             >
                               <div className="max-w-[70%]">
                                 <span className="font-semibold text-dark-navy block truncate">{product.name}</span>
-                                <span className="block text-[10px] text-muted-text">Stock: {product.stock} | SKU: {product.sku || 'N/A'}</span>
+                                <span className="block text-xs text-muted-text">Stock: {product.stock} | SKU: {product.sku || 'N/A'}</span>
                               </div>
                               <span className="text-primary-blue font-bold">Rs. {product.price?.toLocaleString()}</span>
                             </button>
@@ -1217,7 +1193,7 @@ const ManagerRepairs = ({ isAdmin = false, isEmployee = false, navItems: propNav
 
                     {/* Add Custom / External Parts */}
                     <div className="bg-gray-50 p-2.5 rounded-xl border border-card-border mb-3">
-                      <p className="text-[10px] font-bold text-dark-navy mb-1.5 uppercase">Add Custom External Part</p>
+                      <p className="text-xs font-bold text-dark-navy mb-1.5 uppercase">Add Custom External Part</p>
                       <div className="grid grid-cols-5 gap-1.5">
                         <input
                           type="text"
@@ -1252,7 +1228,7 @@ const ManagerRepairs = ({ isAdmin = false, isEmployee = false, navItems: propNav
                           <div key={idx} className="bg-white p-2 rounded-lg border border-card-border text-xs flex justify-between items-center">
                             <div className="max-w-[70%]">
                               <span className="font-semibold text-dark-navy block truncate">{part.name}</span>
-                              <span className="text-[10px] text-muted-text">
+                              <span className="text-xs text-muted-text">
                                 {part.isInventory ? 'Inventory Part' : 'External Part'} | Rs. {part.cost.toLocaleString()}
                               </span>
                             </div>
@@ -1326,7 +1302,7 @@ const ManagerRepairs = ({ isAdmin = false, isEmployee = false, navItems: propNav
             >
               <X size={20} />
             </button>
-            <h3 className="text-xl font-extrabold text-dark-navy mb-4 flex items-center gap-2">
+            <h3 className="text-xl font-bold text-dark-navy mb-4 flex items-center gap-2">
               <CheckCircle2 className="text-emerald-500" /> Deliver & Checkout Job
             </h3>
 
@@ -1363,7 +1339,7 @@ const ManagerRepairs = ({ isAdmin = false, isEmployee = false, navItems: propNav
                   <div className="space-y-1">
                     <span className="text-muted-text block">Parts Replacement:</span>
                     {selectedRepair.partsUsed.map((p, idx) => (
-                      <div key={idx} className="flex justify-between pl-3 text-[10px] text-gray-600">
+                      <div key={idx} className="flex justify-between pl-3 text-xs text-gray-600">
                         <span>{p.name} (x{p.qty}):</span>
                         <span>Rs. {(p.cost * p.qty).toLocaleString()}</span>
                       </div>

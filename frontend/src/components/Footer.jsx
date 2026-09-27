@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Link } from '../utils/navigation';
-import { MapPin, Phone, Mail } from 'lucide-react';
+import { MapPin, Phone, Mail, Headphones, Shield, ShoppingBag, UserCheck, Clock, X } from 'lucide-react';
 import useSettingsStore from '../store/settingsStore';
 import useAuthStore from '../store/authStore';
 import { getImageUrl } from '../utils/imageHelper';
@@ -125,7 +125,7 @@ const Footer = () => {
                   onError={(e) => { e.target.onerror = null; e.target.src = '/logo.png'; }}
                 />
               </div>
-              <span className="text-xl font-black bg-gradient-to-r from-brand-indigo via-brand-violet to-brand-fuchsia bg-clip-text text-transparent">
+              <span className="text-xl font-bold bg-gradient-to-r from-brand-indigo via-brand-violet to-brand-fuchsia bg-clip-text text-transparent">
                 {brandName}
               </span>
             </Link>
@@ -245,11 +245,11 @@ const Footer = () => {
             </span>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Accepted Payments:</span>
-            <div className="flex gap-2.5 text-slate-400 font-semibold bg-white/5 border border-white/5 rounded-lg px-2.5 py-1">
-              <span title="Visa/Master Card">💳 Card</span>
-              <span title="Bank Transfer">🏦 Bank</span>
-              <span title="Cash on Delivery">💵 Cash</span>
+            <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Accepted Payments:</span>
+            <div className="flex gap-2.5 text-slate-400 font-semibold bg-white/5 border border-white/5 rounded-lg px-2.5 py-1 text-xs">
+              <span title="Visa/Master Card">Card</span>
+              <span title="Bank Transfer">Bank</span>
+              <span title="Cash on Delivery">Cash</span>
             </div>
           </div>
         </div>
@@ -263,15 +263,15 @@ const Footer = () => {
               onClick={() => setShowHelpModal(false)}
               className="absolute top-4 right-4 text-slate-400 hover:text-white bg-white/10 w-8 h-8 rounded-full flex items-center justify-center transition-colors text-sm cursor-pointer"
             >
-              ✕
+              <X size={16} />
             </button>
 
             <div className="flex items-center gap-3.5 border-b border-white/10 pb-5">
-              <div className="w-12 h-12 rounded-2xl bg-brand-indigo/20 border border-brand-indigo/20 flex items-center justify-center text-brand-indigo text-2xl shadow-[0_0_15px_rgba(99,102,241,0.2)]">
-                🎧
+              <div className="w-12 h-12 rounded-2xl bg-brand-indigo/20 border border-brand-indigo/20 flex items-center justify-center text-brand-indigo shadow-[0_0_15px_rgba(99,102,241,0.2)]">
+                <Headphones size={24} />
               </div>
               <div>
-                <h3 className="text-xl font-extrabold text-white m-0">Help Center & Support Hotlines</h3>
+                <h3 className="text-xl font-bold text-white m-0">Help Center & Support Hotlines</h3>
                 <p className="text-xs text-brand-indigo m-0">Direct shop, admin, and management support contact details</p>
               </div>
             </div>
@@ -280,7 +280,7 @@ const Footer = () => {
               {/* 1. Shop Support */}
               <div className="bg-white/5 border border-white/5 rounded-2xl p-4 space-y-2">
                 <div className="flex items-center gap-2 text-brand-indigo font-bold text-xs uppercase tracking-wider">
-                  <span>🛍️</span> Shop Support
+                  <ShoppingBag size={14} /> Shop Support
                 </div>
                 <div className="space-y-2 text-xs text-slate-300">
                   <p className="flex items-center gap-2 m-0">
@@ -291,7 +291,7 @@ const Footer = () => {
                     <Mail size={13} className="text-brand-indigo shrink-0" />
                     <span className="truncate">{brandEmail}</span>
                   </p>
-                  <p className="flex items-start gap-2 m-0 text-[10px] text-slate-400 pt-2 border-t border-white/5">
+                  <p className="flex items-start gap-2 m-0 text-xs text-slate-400 pt-2 border-t border-white/5">
                     <MapPin size={13} className="text-brand-indigo shrink-0 mt-0.5" />
                     <span>{brandAddress}</span>
                   </p>
@@ -301,7 +301,7 @@ const Footer = () => {
               {/* 2. Admin Support */}
               <div className="bg-white/5 border border-white/5 rounded-2xl p-4 space-y-2">
                 <div className="flex items-center gap-2 text-brand-fuchsia font-bold text-xs uppercase tracking-wider">
-                  <span>🛡️</span> Admin Support
+                  <Shield size={14} /> Admin Support
                 </div>
                 <div className="space-y-2 text-xs text-slate-300">
                   <p className="flex items-center gap-2 m-0">
@@ -313,7 +313,7 @@ const Footer = () => {
                     <span className="truncate">admin@raxwo.net</span>
                   </p>
                   <div className="pt-1.5 border-t border-white/5">
-                    <span className="inline-block px-2 py-0.5 rounded-full bg-brand-fuchsia/10 text-brand-fuchsia text-[9px] font-bold">
+                    <span className="inline-block px-2 py-0.5 rounded-full bg-brand-fuchsia/10 text-brand-fuchsia text-xs font-bold">
                       Account & Payments
                     </span>
                   </div>
@@ -323,7 +323,7 @@ const Footer = () => {
               {/* 3. Manager Support */}
               <div className="bg-white/5 border border-white/5 rounded-2xl p-4 space-y-2">
                 <div className="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider">
-                  <span>👔</span> Store Manager
+                  <UserCheck size={14} /> Store Manager
                 </div>
                 <div className="space-y-2 text-xs text-slate-300">
                   <p className="flex items-center gap-2 m-0">
@@ -335,7 +335,7 @@ const Footer = () => {
                     <span className="truncate font-medium">manager@mobixa.com</span>
                   </p>
                   <div className="pt-1.5 border-t border-white/5">
-                    <span className="inline-block px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 text-[9px] font-bold">
+                    <span className="inline-block px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 text-xs font-bold">
                       Orders & Returns
                     </span>
                   </div>
@@ -344,13 +344,13 @@ const Footer = () => {
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-white/10 text-xs text-slate-400">
-              <p className="m-0">⏰ <strong>Operating Hours:</strong> Mon - Sat: 8:30 AM - 7:00 PM | Sun: 9:00 AM - 5:00 PM</p>
+              <p className="m-0 flex items-center gap-1.5"><Clock size={13} className="text-slate-400" /> <strong>Operating Hours:</strong> Mon - Sat: 8:30 AM - 7:00 PM | Sun: 9:00 AM - 5:00 PM</p>
               <div className="flex gap-2">
-                <a href={`tel:${brandPhone}`} className="bg-brand-indigo hover:opacity-95 text-white font-bold px-4 py-2.5 rounded-xl transition-all shadow-md shadow-brand-indigo/15">
-                  📞 Call Shop
+                <a href={`tel:${brandPhone}`} className="bg-brand-indigo hover:opacity-95 text-white font-bold px-4 py-2.5 rounded-xl transition-all shadow-md shadow-brand-indigo/15 flex items-center gap-1.5">
+                  <Phone size={13} /> Call Shop
                 </a>
-                <a href={`mailto:${brandEmail}`} className="bg-white/5 border border-white/5 hover:bg-white/10 text-white font-bold px-4 py-2.5 rounded-xl transition-colors">
-                  ✉️ Email Support
+                <a href={`mailto:${brandEmail}`} className="bg-white/5 border border-white/5 hover:bg-white/10 text-white font-bold px-4 py-2.5 rounded-xl transition-colors flex items-center gap-1.5">
+                  <Mail size={13} /> Email Support
                 </a>
               </div>
             </div>

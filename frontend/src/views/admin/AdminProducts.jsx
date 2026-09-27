@@ -105,7 +105,7 @@ const AdminProducts = () => {
         const trimmed = s.trim();
         const converted = convertExternalUrl(trimmed);
         if (converted && converted !== trimmed) {
-          toast.info('External link auto-converted ✅');
+          toast.info('External link auto-converted');
         }
         return converted || trimmed;
       }).filter(Boolean) : [];
@@ -186,8 +186,10 @@ const AdminProducts = () => {
   if (loading) {
     return (
       <DashboardLayout navItems={navItems} title="Products">
-        <div className="flex items-center justify-center h-64">
-          <div className="w-10 h-10 border-4 border-slate-200 border-t-brand-indigo rounded-full animate-spin" />
+        <div className="ds-page">
+          <div className="ds-loading">
+            <div className="ds-spinner" />
+          </div>
         </div>
       </DashboardLayout>
     );
@@ -195,9 +197,9 @@ const AdminProducts = () => {
 
   return (
     <DashboardLayout navItems={navItems} title="Products">
-      <div className="max-w-7xl mx-auto pb-10">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-          <div className="flex gap-2 flex-wrap">
+      <div className="ds-page">
+        <div style={{ marginBottom: '1.5rem' }}>
+          <div style={{ display:'flex', gap:'0.25rem', padding:'0.25rem', background:'var(--ds-border-soft)', borderRadius:'var(--ds-r-lg)', width:'fit-content', flexWrap: 'wrap' }}>
             {[
               { id: 'products', label: 'Products' },
               { id: 'suppliers', label: 'Suppliers' },
@@ -207,11 +209,11 @@ const AdminProducts = () => {
               <button
                 key={t.id}
                 onClick={() => setActiveTab(t.id)}
-                className={`px-5 py-2.5 text-xs uppercase tracking-wider font-medium rounded-xl transition-all cursor-pointer ${
+                style={
                   activeTab === t.id 
-                    ? 'bg-brand-indigo text-white shadow-lg shadow-brand-indigo/20' 
-                    : 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700'
-                }`}
+                    ? { background:'var(--ds-primary)', color:'#fff', borderRadius:'var(--ds-r-md)', padding:'0.4rem 1rem', fontSize:'var(--ds-text-xs)', fontWeight:600, border: 'none', cursor: 'pointer' } 
+                    : { background:'transparent', color:'var(--ds-text-muted)', borderRadius:'var(--ds-r-md)', padding:'0.4rem 1rem', fontSize:'var(--ds-text-xs)', fontWeight:600, border: 'none', cursor: 'pointer' }
+                }
               >
                 {t.label}
               </button>
@@ -237,411 +239,411 @@ const AdminProducts = () => {
 
         {activeTab === 'products' && (
           <>
-        {error && <div className="mb-4 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl px-4 py-3 text-sm font-semibold flex items-center gap-2"><AlertCircle size={16}/> {error}</div>}
-        
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
-          <div>
-            <div className="flex items-center gap-2.5 mb-1">
-              <span className="inline-flex items-center gap-1.5 bg-brand-indigo/10 text-brand-indigo text-xs font-medium uppercase tracking-widest px-3 py-1 rounded-lg border border-brand-indigo/15">
-                <Package size={11} /> Business Management
-              </span>
+            {error && <div style={{ color: 'var(--ds-text-md)', background: 'var(--ds-border-soft)', padding: '1rem', borderRadius: 'var(--ds-r-md)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><AlertCircle size={16}/> {error}</div>}
+            
+            <div className="ds-page-header">
+              <div className="ds-page-header-left">
+                <span className="ds-page-header-badge">
+                  <Package size={11} /> Business Management
+                </span>
+                <h1 className="ds-card-title">Products Catalog</h1>
+                <p style={{ color: 'var(--ds-text-muted)', fontSize: 'var(--ds-text-xs)' }}>{products.length} registered items</p>
+              </div>
+              <div className="ds-page-header-right">
+                <button onClick={openCreate} className="ds-btn ds-btn-primary">
+                  <Plus size={16} /> Add Product
+                </button>
+              </div>
             </div>
-            <h1 className="text-2xl font-semibold text-slate-900 m-0">Products Catalog</h1>
-            <p className="text-slate-400 text-xs font-normal mt-1 m-0">{products.length} registered items</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="relative sm:w-64 md:w-72 flex-shrink-0">
-              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-sm font-normal focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all placeholder:text-slate-400"
-              />
+
+            <div className="ds-card" style={{ marginBottom: '1.5rem' }}>
+              <div className="ds-filter-bar">
+                <div className="ds-search">
+                  <Search size={16} />
+                  <input
+                    type="text"
+                    placeholder="Search products..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '4px', alignItems: 'center' }}>
+                  <button
+                    onClick={() => setCategoryFilter('all')}
+                    className={`ds-btn ds-btn-sm ${categoryFilter === 'all' ? 'ds-btn-primary' : 'ds-btn-secondary'}`}
+                  >
+                    All Categories
+                  </button>
+                  {categories.map((cat) => (
+                    <button
+                      key={cat._id}
+                      onClick={() => setCategoryFilter(cat._id)}
+                      className={`ds-btn ds-btn-sm ${categoryFilter === cat._id ? 'ds-btn-primary' : 'ds-btn-secondary'}`}
+                    >
+                      {cat.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
-            <button onClick={openCreate} className="flex items-center justify-center gap-2 bg-gradient-to-r from-brand-indigo to-brand-violet hover:opacity-95 text-white px-6 py-2.5 rounded-xl font-medium text-xs uppercase tracking-wider shadow-lg shadow-brand-indigo/20 transition-all cursor-pointer whitespace-nowrap">
-              <Plus size={16} /> Add Product
-            </button>
-          </div>
-        </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-6 scrollbar-hide">
-          <button
-            onClick={() => setCategoryFilter('all')}
-            className={`px-5 py-2.5 text-xs font-medium uppercase tracking-wider rounded-full whitespace-nowrap transition-all duration-150 cursor-pointer border transform hover:-translate-y-0.5 active:scale-95 active:translate-y-0 ${
-              categoryFilter === 'all' ? 'bg-brand-indigo border-brand-indigo text-white shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800 hover:shadow-sm'
-            }`}
-          >
-            All Categories
-          </button>
-          {categories.map((cat) => (
-            <button
-              key={cat._id}
-              onClick={() => setCategoryFilter(cat._id)}
-              className={`px-5 py-2.5 text-xs font-medium uppercase tracking-wider rounded-full whitespace-nowrap transition-all duration-150 cursor-pointer border transform hover:-translate-y-0.5 active:scale-95 active:translate-y-0 ${
-                categoryFilter === cat._id ? 'bg-brand-indigo border-brand-indigo text-white shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800 hover:shadow-sm'
-              }`}
-            >
-              {cat.name}
-            </button>
-          ))}
-        </div>
-
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-100">
-                  <th className="text-left px-6 py-4 text-xs uppercase font-medium tracking-wider text-slate-500">Product</th>
-                  <th className="text-left px-6 py-4 text-xs uppercase font-medium tracking-wider text-slate-500">Store</th>
-                  <th className="text-left px-6 py-4 text-xs uppercase font-medium tracking-wider text-slate-500">Price</th>
-                  <th className="text-left px-6 py-4 text-xs uppercase font-medium tracking-wider text-slate-500">Stock</th>
-                  <th className="text-left px-6 py-4 text-xs uppercase font-medium tracking-wider text-slate-500">Status</th>
-                  <th className="text-right px-6 py-4 text-xs uppercase font-medium tracking-wider text-slate-500">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filtered.map((product) => {
-                  const isExpanded = expandedProduct === product._id;
-                  return (
-                    <React.Fragment key={product._id}>
-                      <tr className="hover:bg-slate-50/80 transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <button
-                              onClick={() => setExpandedProduct(isExpanded ? null : product._id)}
-                              className="p-1 rounded-md hover:bg-slate-200 text-slate-400 transition-colors"
-                              title="Show price rows"
-                            >
-                              {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                            </button>
-                            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 overflow-hidden shadow-xs border border-slate-200/50">
-                              {(product.productLink || product.images?.[0]) ? (
-                                <img 
-                                  src={getImageUrl(product.productLink || product.images?.[0])} 
-                                  className="w-full h-full object-cover" 
-                                  alt="" 
-                                  onError={(e) => handleImageError(e, 'Product')}
-                                />
-                              ) : <Package size={18} />}
-                            </div>
-                            <div>
-                              <div className="font-extrabold text-slate-800 text-sm">{product.name}</div>
-                              <div className="text-[11px] font-bold text-slate-400 mt-0.5">{product.categoryId?.name || '-'}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-xs font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200/60">
-                            {product.storeId?.name || '-'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-sm font-extrabold text-slate-800">
-                            Rs. {Number(product.price || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-1.5">
-                            <span className={`text-xs font-black px-2.5 py-1 rounded-lg ${product.stock > 10 ? 'bg-emerald-50 text-emerald-600' : product.stock > 0 ? 'bg-amber-50 text-amber-600' : 'bg-rose-50 text-rose-600'}`}>
-                              {product.stock} in stock
-                            </span>
-                            {product.priceRows?.length > 0 && (
-                              <span className="text-[10px] font-bold text-brand-indigo bg-brand-indigo/5 px-2 py-0.5 rounded border border-brand-indigo/10">
-                                {product.priceRows.length} rows
+            <div className="ds-card">
+              <div className="ds-table-wrap">
+                <table className="ds-table">
+                  <thead>
+                    <tr>
+                      <th>Product</th>
+                      <th>Store</th>
+                      <th>Price</th>
+                      <th>Stock</th>
+                      <th>Status</th>
+                      <th style={{ textAlign: 'right' }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map((product) => {
+                      const isExpanded = expandedProduct === product._id;
+                      return (
+                        <React.Fragment key={product._id}>
+                          <tr>
+                            <td>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <button
+                                  onClick={() => setExpandedProduct(isExpanded ? null : product._id)}
+                                  className="ds-btn ds-btn-ghost ds-btn-icon ds-btn-sm"
+                                  title="Show price rows"
+                                >
+                                  {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                                </button>
+                                <div style={{ width: '40px', height: '40px', borderRadius: 'var(--ds-r-md)', background: 'var(--ds-border-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                                  {(product.productLink || product.images?.[0]) ? (
+                                    <img 
+                                      src={getImageUrl(product.productLink || product.images?.[0])} 
+                                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                      alt="" 
+                                      onError={(e) => handleImageError(e, 'Product')}
+                                    />
+                                  ) : <Package size={18} style={{ color: 'var(--ds-text-muted)' }} />}
+                                </div>
+                                <div>
+                                  <div style={{ fontWeight: 600, color: 'var(--ds-text-body)' }}>{product.name}</div>
+                                  <div style={{ fontSize: 'var(--ds-text-xs)', color: 'var(--ds-text-muted)' }}>{product.categoryId?.name || '-'}</div>
+                                </div>
+                              </div>
+                            </td>
+                            <td>
+                              <span className="ds-badge ds-badge-slate">
+                                {product.storeId?.name || '-'}
                               </span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className={`text-[10px] uppercase tracking-wider font-black px-2.5 py-1 rounded-lg ${product.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
-                            {product.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center justify-end gap-1.5">
-                            <button onClick={() => openEdit(product)} className="p-2 rounded-lg bg-slate-50 hover:bg-brand-indigo/10 text-slate-400 hover:text-brand-indigo transition-colors" title="View / Edit Details">
-                              <Edit2 size={15} />
-                            </button>
-                            <button onClick={() => handleDeleteClick(product)} className="p-2 rounded-lg bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-500 transition-colors" title="Delete">
-                              <Trash2 size={15} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                      {/* Price Rows Expansion */}
-                      {isExpanded && (
-                        <tr>
-                          <td colSpan={6} className="px-8 pb-4 pt-0 bg-indigo-50/50">
-                            <div className="rounded-xl border border-indigo-100 bg-white p-4">
-                              <p className="text-xs font-bold text-indigo-700 mb-3 flex items-center gap-1"><Package size={12} /> Stock Price Rows — {product.name}</p>
-                              {!product.priceRows || product.priceRows.length === 0 ? (
-                                <p className="text-xs text-gray-400 italic">No price rows yet. Stock will be tracked by price row when received via GRN.</p>
+                            </td>
+                            <td>
+                              <span style={{ fontWeight: 600, color: 'var(--ds-text-body)' }}>
+                                Rs. {Number(product.price || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}
+                              </span>
+                            </td>
+                            <td>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <span className={`ds-badge ${product.stock > 10 ? 'ds-badge-green' : product.stock > 0 ? 'ds-badge-amber' : 'ds-badge-red'}`}>
+                                  {product.stock} in stock
+                                </span>
+                                {product.priceRows?.length > 0 && (
+                                  <span className="ds-badge ds-badge-primary">
+                                    {product.priceRows.length} rows
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                            <td>
+                              <span className={`ds-badge ${product.status === 'active' ? 'ds-badge-green' : 'ds-badge-slate'}`}>
+                                {product.status}
+                              </span>
+                            </td>
+                            <td style={{ textAlign: 'right' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.25rem' }}>
+                                <button onClick={() => openEdit(product)} className="ds-btn ds-btn-ghost ds-btn-icon ds-btn-sm" title="View / Edit Details">
+                                  <Edit2 size={15} />
+                                </button>
+                                <button onClick={() => handleDeleteClick(product)} className="ds-btn ds-btn-danger ds-btn-icon ds-btn-sm" title="Delete">
+                                  <Trash2 size={15} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                          {/* Price Rows Expansion */}
+                          {isExpanded && (
+                            <tr>
+                              <td colSpan={6} style={{ padding: '1rem', background: 'var(--ds-border-soft)' }}>
+                                <div className="ds-card">
+                                  <div className="ds-card-header">
+                                    <div className="ds-card-title" style={{ fontSize: 'var(--ds-text-sm)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                      <Package size={14} /> Stock Price Rows — {product.name}
+                                    </div>
+                                  </div>
+                                  {!product.priceRows || product.priceRows.length === 0 ? (
+                                    <div className="ds-card-body" style={{ color: 'var(--ds-text-muted)', fontSize: 'var(--ds-text-sm)' }}>
+                                      No price rows yet. Stock will be tracked by price row when received via GRN.
+                                    </div>
+                                  ) : (
+                                    <div className="ds-table-wrap">
+                                      <table className="ds-table">
+                                        <thead>
+                                          <tr>
+                                            <th>#</th>
+                                            <th>Cost Price</th>
+                                            <th>Qty in Stock</th>
+                                            <th>Last Received</th>
+                                            <th>Total Value</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {product.priceRows.map((row, idx) => (
+                                            <tr key={row._id || idx}>
+                                              <td>{idx + 1}</td>
+                                              <td style={{ fontWeight: 600 }}>Rs. {Number(row.costPrice).toFixed(2)}</td>
+                                              <td>
+                                                <span className={`ds-badge ${row.qty > 0 ? 'ds-badge-green' : 'ds-badge-red'}`}>{row.qty}</span>
+                                              </td>
+                                              <td style={{ color: 'var(--ds-text-muted)' }}>{row.receivedAt ? new Date(row.receivedAt).toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'}) : '-'}</td>
+                                              <td style={{ fontWeight: 600, color: 'var(--ds-primary)' }}>Rs. {(Number(row.costPrice) * Number(row.qty)).toFixed(2)}</td>
+                                            </tr>
+                                          ))}
+                                        </tbody>
+                                        <tfoot>
+                                          <tr>
+                                            <td colSpan={2} style={{ fontWeight: 600, color: 'var(--ds-text-muted)' }}>Total Stock Value</td>
+                                            <td style={{ fontWeight: 600 }}>{product.priceRows.reduce((s,r) => s + Number(r.qty||0), 0)}</td>
+                                            <td />
+                                            <td style={{ fontWeight: 600, color: 'var(--ds-primary)' }}>Rs. {product.priceRows.reduce((s,r) => s + Number(r.costPrice||0)*Number(r.qty||0), 0).toFixed(2)}</td>
+                                          </tr>
+                                        </tfoot>
+                                      </table>
+                                    </div>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </React.Fragment>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {showModal && (
+              <div className="ds-modal-overlay" onClick={() => setShowModal(false)}>
+                <div className="ds-modal ds-modal-xl" onClick={(e) => e.stopPropagation()}>
+                  <div className="ds-modal-header">
+                    <h2 className="ds-modal-title">{editingId ? 'Edit Product Details' : 'Add New Product'}</h2>
+                    <button onClick={() => setShowModal(false)} className="ds-btn ds-btn-ghost ds-btn-icon"><X size={18} /></button>
+                  </div>
+                  <div className="ds-modal-body">
+                    <form onSubmit={handleSubmit}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+                        <div className="ds-form-group" style={{ gridColumn: '1 / -1' }}>
+                          <label className="ds-label">Product Name *</label>
+                          <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="ds-input" />
+                        </div>
+                        <div className="ds-form-group">
+                          <label className="ds-label">Category *</label>
+                          <input 
+                            list="category-suggestions"
+                            required 
+                            value={categories.find(c => c._id === form.categoryId)?.name || form.categoryId} 
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              const existing = categories.find(c => c.name.toLowerCase() === val.toLowerCase());
+                              setForm({ ...form, categoryId: existing ? existing._id : val });
+                            }} 
+                            placeholder="Type or select category"
+                            className="ds-input" 
+                          />
+                          <datalist id="category-suggestions">
+                            {categories.map((c) => <option key={c._id} value={c.name} />)}
+                          </datalist>
+                          <p style={{ fontSize: 'var(--ds-text-xs)', color: 'var(--ds-text-muted)', marginTop: '0.25rem' }}>If the category doesn't exist, it will be created automatically.</p>
+                        </div>
+
+                        <div className="ds-form-group">
+                          <label className="ds-label">Store *</label>
+                          <input 
+                            list="store-suggestions"
+                            required
+                            placeholder="Type or select Store"
+                            value={stores.find(s => s._id === form.storeId)?.name || form.storeId || ''}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              const existing = stores.find(s => s.name.toLowerCase() === val.toLowerCase());
+                              setForm({ ...form, storeId: existing ? existing._id : val });
+                            }}
+                            className="ds-input" 
+                          />
+                          <datalist id="store-suggestions">
+                            {stores.map((s) => <option key={s._id} value={s.name} />)}
+                          </datalist>
+                        </div>
+                        <div className="ds-form-group">
+                          <label className="ds-label">Barcode / SKU</label>
+                          <input type="text" placeholder="Scan or type barcode" value={form.barcode || ''} onChange={(e) => setForm({ ...form, barcode: e.target.value })} className="ds-input" />
+                        </div>
+                        <div className="ds-form-group">
+                          <label className="ds-label">Price *</label>
+                          <input type="number" step="0.01" required value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="ds-input" />
+                        </div>
+                        <div className="ds-form-group">
+                          <label className="ds-label">MRP</label>
+                          <input type="number" step="0.01" value={form.mrp} onChange={(e) => setForm({ ...form, mrp: e.target.value })} className="ds-input" />
+                        </div>
+                        <div className="ds-form-group">
+                          <label className="ds-label">Minimum Price</label>
+                          <input type="number" step="0.01" value={form.minPrice} onChange={(e) => setForm({ ...form, minPrice: e.target.value })} className="ds-input" placeholder="Minimum Selling Price" />
+                        </div>
+                        <div className="ds-form-group">
+                          <label className="ds-label">Stock *</label>
+                          <input type="number" required value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} className="ds-input" />
+                        </div>
+                        <div className="ds-form-group">
+                          <label className="ds-label">Purchase Price</label>
+                          <input type="number" min="0" step="0.01" value={form.purchasePrice} onChange={(e) => setForm({ ...form, purchasePrice: e.target.value })} className="ds-input" />
+                        </div>
+                        <div className="ds-form-group">
+                          <label className="ds-label">Discount %</label>
+                          <input type="number" min="0" value={form.discount} onChange={(e) => setForm({ ...form, discount: e.target.value })} className="ds-input" />
+                        </div>
+                        <div className="ds-form-group">
+                          <label className="ds-label">Supplier</label>
+                          <input 
+                            list="supplier-suggestions"
+                            placeholder="Search or select supplier"
+                            value={form.supplierId === 'none' ? 'None' : (suppliers.find(s => s._id === form.supplierId)?.name || form.supplierId || '')}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (val.toLowerCase() === 'none' || val === '') {
+                                setForm({ ...form, supplierId: 'none' });
+                              } else {
+                                const existing = suppliers.find(s => s.name.toLowerCase() === val.toLowerCase());
+                                setForm({ ...form, supplierId: existing ? existing._id : val });
+                              }
+                            }}
+                            className="ds-input" 
+                          />
+                          <datalist id="supplier-suggestions">
+                            <option value="None" />
+                            {suppliers.map((s) => <option key={s._id} value={s.name}>{s.company}</option>)}
+                          </datalist>
+                        </div>
+                        <div className="ds-form-group">
+                          <label className="ds-label">Unit</label>
+                          <select value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} className="ds-input">
+                            {['kg', 'g', 'L', 'ml', 'pcs', 'pack', 'dozen', 'bunch'].map((u) => <option key={u} value={u}>{u}</option>)}
+                          </select>
+                        </div>
+                        <div className="ds-form-group" style={{ gridColumn: '1 / -1' }}>
+                          <label className="ds-label">Description</label>
+                          <textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="ds-input" style={{ resize: 'vertical' }} />
+                        </div>
+                        <div className="ds-form-group" style={{ gridColumn: '1 / -1' }}>
+                          <label className="ds-label">Image URLs (comma separated)</label>
+                          <input value={form.images} onChange={(e) => setForm({ ...form, images: e.target.value })} className="ds-input" />
+                        </div>
+                        <div className="ds-form-group" style={{ gridColumn: '1 / -1' }}>
+                          <label className="ds-label">Product Image URL (External Link)</label>
+                          <div style={{ display: 'flex', gap: '1rem' }}>
+                            <div style={{ flex: 1 }}>
+                              <input 
+                                value={form.productLink} 
+                                onChange={(e) => {
+                                  let val = e.target.value;
+                                  const converted = convertExternalUrl(val);
+                                  if (converted && converted !== val) {
+                                    val = converted;
+                                    toast.info('External link auto-converted to direct image URL');
+                                  }
+                                  setForm({ ...form, productLink: val });
+                                }}
+                                className="ds-input" 
+                                placeholder="https://example.com/image.jpg" 
+                              />
+                              {form.productLink && !isDirectImageUrl(form.productLink) ? (
+                                <div style={{ background: 'var(--ds-border-soft)', padding: '0.75rem', borderRadius: 'var(--ds-r-md)', marginTop: '0.5rem', fontSize: 'var(--ds-text-xs)' }}>
+                                  <p style={{ fontWeight: 600, color: 'var(--ds-text-body)', marginBottom: '0.25rem' }}>Not a Direct Image Link</p>
+                                  <p style={{ color: 'var(--ds-text-muted)' }}>This link leads to a web page, not an image file. To fix this:</p>
+                                  <ul style={{ marginLeft: '1rem', marginTop: '0.25rem', color: 'var(--ds-text-muted)' }}>
+                                    <li>For Unsplash/Websites: Right-click the image and select "Copy image address".</li>
+                                    <li>For Google Drive: Share → Change to "Anyone with link" → Copy link.</li>
+                                  </ul>
+                                </div>
                               ) : (
-                                <table className="w-full text-xs">
-                                  <thead>
-                                    <tr className="text-left text-gray-400 border-b border-gray-100">
-                                      <th className="pb-2 pr-4 font-medium">#</th>
-                                      <th className="pb-2 pr-4 font-medium">Cost Price</th>
-                                      <th className="pb-2 pr-4 font-medium">Qty in Stock</th>
-                                      <th className="pb-2 pr-4 font-medium">Last Received</th>
-                                      <th className="pb-2 font-medium">Total Value</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {product.priceRows.map((row, idx) => (
-                                      <tr key={row._id || idx} className="border-b border-gray-50 hover:bg-indigo-50/30">
-                                        <td className="py-1.5 pr-4 text-gray-400">{idx + 1}</td>
-                                        <td className="py-1.5 pr-4 font-semibold text-dark-navy">Rs. {Number(row.costPrice).toFixed(2)}</td>
-                                        <td className="py-1.5 pr-4">
-                                          <span className={`px-2 py-0.5 rounded-full font-bold ${row.qty > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}`}>{row.qty}</span>
-                                        </td>
-                                        <td className="py-1.5 pr-4 text-gray-500">{row.receivedAt ? new Date(row.receivedAt).toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'}) : '-'}</td>
-                                        <td className="py-1.5 font-medium text-indigo-700">Rs. {(Number(row.costPrice) * Number(row.qty)).toFixed(2)}</td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                  <tfoot>
-                                    <tr className="border-t border-gray-200">
-                                      <td colSpan={2} className="pt-2 text-gray-500 font-medium">Total Stock Value</td>
-                                      <td className="pt-2 font-bold text-dark-navy">{product.priceRows.reduce((s,r) => s + Number(r.qty||0), 0)}</td>
-                                      <td />
-                                      <td className="pt-2 font-bold text-indigo-700">Rs. {product.priceRows.reduce((s,r) => s + Number(r.costPrice||0)*Number(r.qty||0), 0).toFixed(2)}</td>
-                                    </tr>
-                                  </tfoot>
-                                </table>
+                                <p style={{ fontSize: 'var(--ds-text-xs)', color: 'var(--ds-text-muted)', marginTop: '0.25rem' }}>This will be the primary display image.</p>
                               )}
                             </div>
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {showModal && (
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={() => setShowModal(false)}>
-            <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100 transform transition-all duration-300 scale-100" onClick={(e) => e.stopPropagation()}>
-              <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white/80 backdrop-blur-md rounded-t-3xl z-10">
-                <h2 className="text-lg font-black text-slate-900">{editingId ? 'Edit Product Details' : 'Add New Product'}</h2>
-                <button onClick={() => setShowModal(false)} className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"><X size={18} /></button>
-              </div>
-              <form onSubmit={handleSubmit} className="p-6 space-y-5">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div className="sm:col-span-2">
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Product Name *</label>
-                    <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Category *</label>
-                    <input 
-                      list="category-suggestions"
-                      required 
-                      value={categories.find(c => c._id === form.categoryId)?.name || form.categoryId} 
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        const existing = categories.find(c => c.name.toLowerCase() === val.toLowerCase());
-                        setForm({ ...form, categoryId: existing ? existing._id : val });
-                      }} 
-                      placeholder="Type or select category"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" 
-                    />
-                    <datalist id="category-suggestions">
-                      {categories.map((c) => <option key={c._id} value={c.name} />)}
-                    </datalist>
-                    <p className="text-[10px] font-bold text-slate-400 mt-1.5">If the category doesn't exist, it will be created automatically.</p>
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Store *</label>
-                    <input 
-                      list="store-suggestions"
-                      required
-                      placeholder="Type or select Store"
-                      value={stores.find(s => s._id === form.storeId)?.name || form.storeId || ''}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        const existing = stores.find(s => s.name.toLowerCase() === val.toLowerCase());
-                        setForm({ ...form, storeId: existing ? existing._id : val });
-                      }}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" 
-                    />
-                    <datalist id="store-suggestions">
-                      {stores.map((s) => <option key={s._id} value={s.name} />)}
-                    </datalist>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Barcode / SKU</label>
-                    <input type="text" placeholder="Scan or type barcode" value={form.barcode || ''} onChange={(e) => setForm({ ...form, barcode: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Price *</label>
-                    <input type="number" step="0.01" required value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-extrabold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">MRP</label>
-                    <input type="number" step="0.01" value={form.mrp} onChange={(e) => setForm({ ...form, mrp: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Minimum Price</label>
-                    <input type="number" step="0.01" value={form.minPrice} onChange={(e) => setForm({ ...form, minPrice: e.target.value })} className="w-full bg-rose-50/30 border border-rose-200 rounded-xl py-3 px-4 text-sm font-bold text-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all placeholder:text-rose-300" placeholder="Minimum Selling Price" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Stock *</label>
-                    <input type="number" required value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Purchase Price</label>
-                    <input type="number" min="0" step="0.01" value={form.purchasePrice} onChange={(e) => setForm({ ...form, purchasePrice: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Discount %</label>
-                    <input type="number" min="0" value={form.discount} onChange={(e) => setForm({ ...form, discount: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Supplier</label>
-                    <input 
-                      list="supplier-suggestions"
-                      placeholder="Search or select supplier"
-                      value={form.supplierId === 'none' ? 'None' : (suppliers.find(s => s._id === form.supplierId)?.name || form.supplierId || '')}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        if (val.toLowerCase() === 'none' || val === '') {
-                          setForm({ ...form, supplierId: 'none' });
-                        } else {
-                          const existing = suppliers.find(s => s.name.toLowerCase() === val.toLowerCase());
-                          setForm({ ...form, supplierId: existing ? existing._id : val });
-                        }
-                      }}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" 
-                    />
-                    <datalist id="supplier-suggestions">
-                      <option value="None" />
-                      {suppliers.map((s) => <option key={s._id} value={s.name}>{s.company}</option>)}
-                    </datalist>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Unit</label>
-                    <select value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all">
-                      {['kg', 'g', 'L', 'ml', 'pcs', 'pack', 'dozen', 'bunch'].map((u) => <option key={u} value={u}>{u}</option>)}
-                    </select>
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Description</label>
-                    <textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all resize-none" />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Image URLs <span className="text-slate-400 font-bold lowercase tracking-normal">(comma separated)</span></label>
-                    <input value={form.images} onChange={(e) => setForm({ ...form, images: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Product Image URL (External Link)</label>
-                    <div className="flex gap-4">
-                      <div className="flex-1">
-                        <input 
-                          value={form.productLink} 
-                          onChange={(e) => {
-                            let val = e.target.value;
-                            // Auto-convert external links on paste (Drive, Unsplash, etc.)
-                            const converted = convertExternalUrl(val);
-                            if (converted && converted !== val) {
-                              val = converted;
-                              toast.info('External link auto-converted to direct image URL ✅');
-                            }
-                            setForm({ ...form, productLink: val });
-                          }}
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all" 
-                          placeholder="https://example.com/image.jpg" 
-                        />
-                        {form.productLink && !isDirectImageUrl(form.productLink) ? (
-                          <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mt-2 space-y-2">
-                            <p className="text-[11px] text-amber-700 font-bold flex items-center gap-1">
-                              ⚠️ Not a Direct Image Link
-                            </p>
-                            <p className="text-[10px] text-amber-600 leading-relaxed">
-                              This link leads to a <strong>web page</strong>, not an image file. To fix this:
-                            </p>
-                            <ul className="text-[10px] text-amber-600 list-disc ml-4 space-y-1">
-                              <li><strong>For Unsplash/Websites:</strong> Right-click the image on the site and select <strong>"Copy image address"</strong>.</li>
-                              <li><strong>For Google Drive:</strong> Use: Share → Change to "Anyone with link" → Copy link.</li>
-                            </ul>
+                            {form.productLink && (
+                              <div style={{ width: '48px', height: '48px', borderRadius: 'var(--ds-r-md)', overflow: 'hidden', background: 'var(--ds-border-soft)', flexShrink: 0 }}>
+                                <img 
+                                  src={getImageUrl(form.productLink)} 
+                                  alt="Preview" 
+                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                  onError={(e) => handleImageError(e, 'Product')}
+                                />
+                              </div>
+                            )}
                           </div>
-                        ) : (
-                          <p className="text-[10px] font-bold text-slate-400 mt-1.5">This will be the primary display image.</p>
+                        </div>
+                        <div className="ds-form-group" style={{ flexDirection: 'row', gap: '1.5rem', alignItems: 'center' }}>
+                          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: 'var(--ds-text-sm)', cursor: 'pointer' }}>
+                            <input type="checkbox" checked={form.isFeatured} onChange={(e) => setForm({ ...form, isFeatured: e.target.checked })} />
+                            Featured
+                          </label>
+                          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: 'var(--ds-text-sm)', cursor: 'pointer' }}>
+                            <input type="checkbox" checked={form.isOnSale} onChange={(e) => setForm({ ...form, isOnSale: e.target.checked })} />
+                            On Sale
+                          </label>
+                        </div>
+                        <div className="ds-form-group" style={{ gridColumn: '1 / -1' }}>
+                          <label className="ds-label">Koko Pay Availability</label>
+                          <div style={{ display: 'flex', gap: '1.5rem', padding: '1rem', background: 'var(--ds-border-soft)', borderRadius: 'var(--ds-r-md)' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: 'var(--ds-text-sm)', cursor: 'pointer' }}>
+                              <input
+                                type="checkbox"
+                                checked={form.allowKokoOnline}
+                                onChange={(e) => setForm({ ...form, allowKokoOnline: e.target.checked })}
+                              />
+                              Allow Koko on Online Checkout
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: 'var(--ds-text-sm)', cursor: 'pointer' }}>
+                              <input
+                                type="checkbox"
+                                checked={form.allowKokoPos}
+                                onChange={(e) => setForm({ ...form, allowKokoPos: e.target.checked })}
+                              />
+                              Allow Koko on POS
+                            </label>
+                          </div>
+                        </div>
+                        {editingId && (
+                          <div className="ds-form-group">
+                            <label className="ds-label">Status</label>
+                            <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="ds-input">
+                              <option value="active">Active</option>
+                              <option value="inactive">Inactive</option>
+                            </select>
+                          </div>
                         )}
                       </div>
-                      {form.productLink && (
-                        <div className="w-12 h-12 rounded-xl border-2 border-slate-200 overflow-hidden bg-slate-100 flex-shrink-0 shadow-sm">
-                          <img 
-                            src={getImageUrl(form.productLink)} 
-                            alt="Preview" 
-                            className="w-full h-full object-cover"
-                            onError={(e) => handleImageError(e, 'Product')}
-                          />
-                        </div>
-                      )}
-                    </div>
+                      <div className="ds-modal-footer">
+                        <button type="button" onClick={() => setShowModal(false)} className="ds-btn ds-btn-ghost">
+                          Cancel
+                        </button>
+                        <button type="submit" disabled={saving} className="ds-btn ds-btn-primary">
+                          {saving ? 'Saving...' : editingId ? 'Update Product' : 'Save Product'}
+                        </button>
+                      </div>
+                    </form>
                   </div>
-                  <div className="flex items-center gap-6 pt-2">
-                    <label className="flex items-center gap-2 text-sm font-bold text-slate-700 cursor-pointer">
-                      <input type="checkbox" checked={form.isFeatured} onChange={(e) => setForm({ ...form, isFeatured: e.target.checked })} className="w-4 h-4 rounded text-brand-indigo focus:ring-brand-indigo border-slate-300" />
-                      Featured
-                    </label>
-                    <label className="flex items-center gap-2 text-sm font-bold text-slate-700 cursor-pointer">
-                      <input type="checkbox" checked={form.isOnSale} onChange={(e) => setForm({ ...form, isOnSale: e.target.checked })} className="w-4 h-4 rounded text-brand-indigo focus:ring-brand-indigo border-slate-300" />
-                      On Sale
-                    </label>
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Koko Pay Availability</label>
-                    <div className="flex flex-wrap gap-6 border border-slate-200 bg-slate-50 rounded-xl px-5 py-4">
-                      <label className="flex items-center gap-2 text-sm font-bold text-slate-700 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={form.allowKokoOnline}
-                          onChange={(e) => setForm({ ...form, allowKokoOnline: e.target.checked })}
-                          className="w-4 h-4 rounded text-brand-indigo focus:ring-brand-indigo border-slate-300"
-                        />
-                        Allow Koko on Online Checkout
-                      </label>
-                      <label className="flex items-center gap-2 text-sm font-bold text-slate-700 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={form.allowKokoPos}
-                          onChange={(e) => setForm({ ...form, allowKokoPos: e.target.checked })}
-                          className="w-4 h-4 rounded text-brand-indigo focus:ring-brand-indigo border-slate-300"
-                        />
-                        Allow Koko on POS
-                      </label>
-                    </div>
-                  </div>
-                  {editingId && (
-                    <div>
-                      <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Status</label>
-                      <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all">
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                      </select>
-                    </div>
-                  )}
                 </div>
-                <div className="flex gap-3 pt-4 border-t border-slate-100">
-                  <button type="button" onClick={() => setShowModal(false)} className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all">
-                    Cancel
-                  </button>
-                  <button type="submit" disabled={saving} className="flex-1 bg-gradient-to-r from-brand-indigo to-brand-violet text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-wider hover:opacity-95 shadow-lg shadow-brand-indigo/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                    {saving ? 'Saving...' : editingId ? 'Update Product' : 'Save Product'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
+              </div>
+            )}
           </>
         )}
       </div>

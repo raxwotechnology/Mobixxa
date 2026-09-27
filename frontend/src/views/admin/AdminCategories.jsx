@@ -84,8 +84,8 @@ const AdminCategories = () => {
   if (loading) {
     return (
       <DashboardLayout navItems={navItems} title="Categories">
-        <div className="flex items-center justify-center h-64">
-          <div className="w-10 h-10 border-4 border-slate-200 border-t-brand-indigo rounded-full animate-spin" />
+        <div className="ds-page">
+          <div className="ds-loading"><div className="ds-spinner" /></div>
         </div>
       </DashboardLayout>
     );
@@ -93,56 +93,45 @@ const AdminCategories = () => {
 
   return (
     <DashboardLayout navItems={navItems} title="Categories">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <div className="flex items-center gap-2.5 mb-1">
-              <span className="inline-flex items-center gap-1.5 bg-brand-indigo/10 text-brand-indigo text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg border border-brand-indigo/15">
-                <Tag size={11} /> Business Management
-              </span>
-            </div>
-            <h1 className="text-2xl font-semibold text-slate-900 m-0">Product Categories</h1>
-            <p className="text-slate-400 text-xs font-normal mt-1 m-0">{categories.length} categories configured</p>
+      <div className="ds-page">
+        <div className="ds-page-header">
+          <div className="ds-page-header-left">
+            <span className="ds-page-header-badge">
+              <Tag size={11} /> Categories
+            </span>
+            <h1>Product Categories</h1>
+            <p>{categories.length} categories configured</p>
           </div>
-          <button
-            onClick={openCreate}
-            className="flex items-center gap-2 bg-gradient-to-r from-brand-indigo to-brand-violet hover:opacity-95 text-white px-6 py-3 rounded-xl font-black text-xs uppercase tracking-wider shadow-lg shadow-brand-indigo/20 transition-all cursor-pointer"
-          >
-            <Plus size={16} /> Add Category
-          </button>
+          <div className="ds-page-header-right">
+            <button onClick={openCreate} className="ds-btn ds-btn-primary">
+              <Plus size={16} /> Add Category
+            </button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1rem' }}>
           {categories.map((cat) => (
-            <div key={cat._id} className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden hover:shadow-md hover:border-brand-indigo/30 transition-all group">
-              {/* Image */}
-              <div className="h-32 bg-gradient-to-br from-brand-indigo/10 to-brand-violet/5 flex items-center justify-center relative overflow-hidden">
+            <div key={cat._id} className="ds-card" style={{ overflow: 'hidden' }}>
+              <div style={{ height: '120px', background: 'var(--ds-border-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                 {cat.image ? (
-                  <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
+                  <img src={cat.image} alt={cat.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
-                  <Tag size={36} className="text-brand-indigo/30" />
+                  <Tag size={36} style={{ color: 'var(--ds-text-faint)' }} />
                 )}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-all" />
               </div>
-
-              <div className="p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  {cat.icon && <span className="text-lg">{cat.icon}</span>}
-                  <h3 className="font-extrabold text-slate-800 text-sm m-0">{cat.name}</h3>
+              <div className="ds-card-body">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                  {cat.icon && <span style={{ fontSize: '1.25rem' }}>{cat.icon}</span>}
+                  <div style={{ fontWeight: 600, color: 'var(--ds-text-body)' }}>{cat.name}</div>
                 </div>
-                <p className="text-[10px] text-slate-400 font-mono mb-3 m-0">slug: {cat.slug}</p>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => openEdit(cat)}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider text-brand-indigo bg-brand-indigo/10 hover:bg-brand-indigo/15 transition-colors cursor-pointer"
-                  >
+                <div style={{ fontSize: 'var(--ds-text-xs)', color: 'var(--ds-text-muted)', fontFamily: 'monospace', marginBottom: '1rem' }}>
+                  slug: {cat.slug}
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button onClick={() => openEdit(cat)} className="ds-btn ds-btn-ghost ds-btn-sm" style={{ flex: 1 }}>
                     <Edit2 size={12} /> Edit
                   </button>
-                  <button
-                    onClick={() => handleDeleteClick(cat)}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider text-rose-500 bg-rose-50 hover:bg-rose-100 transition-colors cursor-pointer"
-                  >
+                  <button onClick={() => handleDeleteClick(cat)} className="ds-btn ds-btn-danger ds-btn-sm" style={{ flex: 1 }}>
                     <Trash2 size={12} /> Delete
                   </button>
                 </div>
@@ -152,7 +141,7 @@ const AdminCategories = () => {
         </div>
 
         {categories.length === 0 && (
-          <div className="bg-white rounded-2xl border border-slate-200/80 p-16 text-center text-slate-400 text-sm font-bold">
+          <div className="ds-empty">
             No categories yet. Click "Add Category" to create one.
           </div>
         )}
@@ -160,34 +149,38 @@ const AdminCategories = () => {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-slate-200/80" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-slate-200/80 flex items-center justify-between">
-              <h2 className="text-base font-black text-slate-900 m-0">{editingId ? 'Edit Category' : 'New Category'}</h2>
-              <button onClick={() => setShowModal(false)} className="p-1.5 rounded-lg hover:bg-slate-100 cursor-pointer"><X size={18} className="text-slate-400" /></button>
+        <div className="ds-modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="ds-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="ds-modal-header">
+              <div className="ds-modal-title">{editingId ? 'Edit Category' : 'New Category'}</div>
+              <button onClick={() => setShowModal(false)} className="ds-btn ds-btn-ghost ds-btn-icon"><X size={18} /></button>
             </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Name *</label>
-                <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full border border-slate-200 rounded-xl py-2.5 px-4 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-brand-indigo/15 focus:border-brand-indigo bg-slate-50 focus:bg-white transition-all" />
-              </div>
-              <div>
-                <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Icon (emoji)</label>
-                <input value={form.icon} onChange={(e) => setForm({ ...form, icon: e.target.value })} placeholder="📱" className="w-full border border-slate-200 rounded-xl py-2.5 px-4 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-brand-indigo/15 focus:border-brand-indigo bg-slate-50 focus:bg-white transition-all" />
-              </div>
-              <div>
-                <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Image URL</label>
-                <input value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} className="w-full border border-slate-200 rounded-xl py-2.5 px-4 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-brand-indigo/15 focus:border-brand-indigo bg-slate-50 focus:bg-white transition-all" />
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button type="submit" disabled={saving} className="flex-1 bg-gradient-to-r from-brand-indigo to-brand-violet hover:opacity-95 text-white py-2.5 rounded-xl font-black text-xs uppercase tracking-wider transition-all disabled:opacity-50 shadow-lg shadow-brand-indigo/20 cursor-pointer">
-                  {saving ? 'Saving...' : editingId ? 'Update' : 'Create'}
-                </button>
-                <button type="button" onClick={() => setShowModal(false)} className="flex-1 border border-slate-200 py-2.5 rounded-xl font-bold text-xs text-slate-500 hover:bg-slate-50 transition-all cursor-pointer">
-                  Cancel
-                </button>
-              </div>
-            </form>
+            <div className="ds-modal-body">
+              <form onSubmit={handleSubmit}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div className="ds-form-group">
+                    <label className="ds-label">Name *</label>
+                    <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="ds-input" />
+                  </div>
+                  <div className="ds-form-group">
+                    <label className="ds-label">Icon (emoji)</label>
+                    <input value={form.icon} onChange={(e) => setForm({ ...form, icon: e.target.value })} className="ds-input" />
+                  </div>
+                  <div className="ds-form-group">
+                    <label className="ds-label">Image URL</label>
+                    <input value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} className="ds-input" />
+                  </div>
+                </div>
+                <div className="ds-modal-footer" style={{ marginTop: '1.5rem' }}>
+                  <button type="button" onClick={() => setShowModal(false)} className="ds-btn ds-btn-ghost">
+                    Cancel
+                  </button>
+                  <button type="submit" disabled={saving} className="ds-btn ds-btn-primary">
+                    {saving ? 'Saving...' : editingId ? 'Update' : 'Create'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

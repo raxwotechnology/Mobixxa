@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Package, AlertTriangle, Search } from 'lucide-react';
+import { Package, AlertTriangle, Search, DollarSign, Building2 } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
 import { toast } from 'react-toastify';
 import { exportToCSV, exportToExcel } from '../../utils/exportUtils';
@@ -71,139 +71,202 @@ const ManagerInventory = () => {
   if (loading) {
     return (
       <DashboardLayout navItems={navItems} title="Manager Dashboard">
-        <div className="flex items-center justify-center h-64">
-          <div className="w-10 h-10 border-4 border-primary-blue border-t-transparent rounded-full animate-spin" />
-        </div>
+        <div className="ds-loading"><div className="ds-spinner" /></div>
       </DashboardLayout>
     );
   }
 
   return (
     <DashboardLayout navItems={navItems} title="Manager Dashboard">
-      <div>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
-          <div>
-            <h1 className="text-2xl font-bold text-dark-navy">📦 Store Inventory</h1>
-            <p className="text-muted-text text-sm mt-1">Stock levels and product tracking</p>
+      <div className="ds-page">
+
+        {/* Page Header */}
+        <div className="ds-page-header">
+          <div className="ds-page-header-left">
+            <span className="ds-page-header-badge">Store Inventory</span>
+            <h1>Store Inventory</h1>
+            <p>Stock levels and product tracking</p>
           </div>
-          <div className="flex gap-2">
-            <button onClick={() => exportToCSV(filtered, exportCols, 'store-inventory')}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors">📄 CSV</button>
-            <button onClick={() => exportToExcel(filtered, exportCols, 'store-inventory')}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors">📊 Excel</button>
+          <div className="ds-page-header-right">
+            <button onClick={() => exportToCSV(filtered, exportCols, 'store-inventory')} className="ds-btn ds-btn-secondary ds-btn-sm">
+              CSV
+            </button>
+            <button onClick={() => exportToExcel(filtered, exportCols, 'store-inventory')} className="ds-btn ds-btn-primary ds-btn-sm">
+              Excel
+            </button>
           </div>
         </div>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center mb-2">
-              <Package size={18} className="text-white" />
+        {/* Stats */}
+        <div className="ds-stats ds-stats-4">
+          <div className="ds-stat">
+            <div className="ds-stat-top">
+              <div className="ds-stat-icon" style={{ background: '#eff6ff', color: '#2563eb' }}>
+                <Package size={18} />
+              </div>
+              <span className="ds-stat-change pos">Total SKUs</span>
             </div>
-            <p className="text-2xl font-bold text-dark-navy">{totalProducts}</p>
-            <p className="text-xs text-muted-text mt-1">Total Products</p>
-          </div>
-          <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-400 to-blue-500 flex items-center justify-center mb-2">
-              <AlertTriangle size={18} className="text-white" />
+            <div className="ds-stat-bottom">
+              <p className="ds-stat-label">Total Items</p>
+              <p className="ds-stat-value">{totalProducts}</p>
+              <p className="ds-stat-sub">Active catalog inventory</p>
             </div>
-            <p className="text-2xl font-bold text-red-600">{outOfStock}</p>
-            <p className="text-xs text-muted-text mt-1">Out of Stock</p>
           </div>
-          <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mb-2">
-              <AlertTriangle size={18} className="text-white" />
+
+          <div className="ds-stat">
+            <div className="ds-stat-top">
+              <div className="ds-stat-icon" style={{ background: '#f0fdf4', color: '#15803d' }}>
+                <DollarSign size={18} />
+              </div>
+              <span className="ds-stat-change up">Valuation</span>
             </div>
-            <p className="text-2xl font-bold text-amber-600">{lowStock}</p>
-            <p className="text-xs text-muted-text mt-1">Low Stock (≤10)</p>
+            <div className="ds-stat-bottom">
+              <p className="ds-stat-label">Page Value</p>
+              <p className="ds-stat-value text-emerald-600">
+                <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600 }}>LKR </span>
+                {totalStockValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </p>
+              <p className="ds-stat-sub">Total retail stock worth</p>
+            </div>
           </div>
-          <div className="bg-white rounded-2xl border border-card-border p-5 shadow-sm">
-            <p className="text-xs text-muted-text">Total Stock Value</p>
-            <p className="text-2xl font-bold text-emerald-600 mt-1">Rs. {totalStockValue.toLocaleString()}</p>
+
+          <div className="ds-stat">
+            <div className="ds-stat-top">
+              <div className="ds-stat-icon" style={{ background: '#f5f3ff', color: '#7c3aed' }}>
+                <Building2 size={18} />
+              </div>
+              <span className="ds-stat-change neu">Active</span>
+            </div>
+            <div className="ds-stat-bottom">
+              <p className="ds-stat-label">Categories</p>
+              <p className="ds-stat-value">{categories.length}</p>
+              <p className="ds-stat-sub">Catalog product groups</p>
+            </div>
+          </div>
+
+          <div className="ds-stat" style={{ borderColor: (outOfStock + lowStock) > 0 ? '#fde68a' : undefined }}>
+            <div className="ds-stat-top">
+              <div className="ds-stat-icon" style={{ background: '#fffbeb', color: '#b45309' }}>
+                <AlertTriangle size={18} />
+              </div>
+              <button
+                type="button"
+                onClick={() => setStockFilter(stockFilter === 'low' || stockFilter === 'out' ? 'all' : 'low')}
+                className="ds-stat-change amber"
+                style={{ cursor: 'pointer', border: '1px solid #fde68a' }}
+              >
+                {stockFilter === 'low' || stockFilter === 'out' ? 'Showing' : 'View'}
+              </button>
+            </div>
+            <div className="ds-stat-bottom">
+              <p className="ds-stat-label" style={{ color: '#b45309', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <AlertTriangle size={12} /> Low / Critical
+              </p>
+              <p className="ds-stat-value" style={{ color: '#b45309' }}>
+                {outOfStock + lowStock}
+              </p>
+              <p className="ds-stat-sub" style={{ color: '#d97706' }}>
+                {outOfStock} out of stock · {lowStock} low
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-6">
-          <div className="relative flex-1">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input placeholder="Search by name or barcode..." value={search} onChange={(e) => setSearch(e.target.value)}
-              className="w-full border border-card-border rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue" />
+        {/* Filter Bar */}
+        <div className="ds-card" style={{ padding: '0.75rem 1rem' }}>
+          <div className="ds-filter-bar">
+            <div className="ds-search">
+              <Search size={16} />
+              <input
+                placeholder="Search by name or barcode..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <select className="ds-select" value={catFilter} onChange={(e) => setCatFilter(e.target.value)}>
+              <option value="all">All Categories</option>
+              {categories.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+            </select>
+            <select className="ds-select" value={stockFilter} onChange={(e) => setStockFilter(e.target.value)}>
+              <option value="all">All Stock</option>
+              <option value="ok">In Stock (&gt;10)</option>
+              <option value="low">Low Stock (1-10)</option>
+              <option value="out">Out of Stock</option>
+            </select>
+            <select className="ds-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+              <option value="stock-asc">Stock: Low → High</option>
+              <option value="stock-desc">Stock: High → Low</option>
+              <option value="name">Name A-Z</option>
+              <option value="price">Price: High → Low</option>
+            </select>
           </div>
-          <select value={catFilter} onChange={(e) => setCatFilter(e.target.value)}
-            className="border border-card-border rounded-xl py-2.5 px-4 text-sm bg-white">
-            <option value="all">All Categories</option>
-            {categories.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
-          </select>
-          <select value={stockFilter} onChange={(e) => setStockFilter(e.target.value)}
-            className="border border-card-border rounded-xl py-2.5 px-4 text-sm bg-white">
-            <option value="all">All Stock</option>
-            <option value="ok">In Stock (&gt;10)</option>
-            <option value="low">Low Stock (1-10)</option>
-            <option value="out">Out of Stock</option>
-          </select>
-          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}
-            className="border border-card-border rounded-xl py-2.5 px-4 text-sm bg-white">
-            <option value="stock-asc">Stock: Low → High</option>
-            <option value="stock-desc">Stock: High → Low</option>
-            <option value="name">Name A-Z</option>
-            <option value="price">Price: High → Low</option>
-          </select>
         </div>
 
         {/* Products Table */}
-        <div className="bg-white rounded-2xl border border-card-border shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-gray-50">
-                  <th className="text-left px-6 py-3 font-medium text-muted-text">Product</th>
-                  <th className="text-left px-6 py-3 font-medium text-muted-text">SKU/Barcode</th>
-                  <th className="text-left px-6 py-3 font-medium text-muted-text">Price</th>
-                  <th className="text-left px-6 py-3 font-medium text-muted-text">Stock</th>
-                  <th className="text-left px-6 py-3 font-medium text-muted-text">Status</th>
-                  <th className="text-left px-6 py-3 font-medium text-muted-text">Value</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-card-border">
-                {filtered.map(p => {
-                  const stockStatus = p.stock <= 0 ? 'out' : p.stock <= 10 ? 'low' : 'ok';
-                  return (
-                    <tr key={p._id} className={`hover:bg-gray-50 transition-colors ${stockStatus === 'out' ? 'bg-red-50/50' : stockStatus === 'low' ? 'bg-amber-50/50' : ''}`}>
-                      <td className="px-6 py-3.5">
-                        <div className="flex items-center gap-3">
-                          {p.images?.[0] ? (
-                            <img src={p.images[0]} alt="" className="w-10 h-10 rounded-xl object-cover" />
-                          ) : (
-                            <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center"><Package size={16} className="text-gray-400" /></div>
-                          )}
-                          <span className="font-medium text-dark-navy">{p.name}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-3.5 font-mono text-xs text-muted-text">{p.sku || p.barcode || '—'}</td>
-                      <td className="px-6 py-3.5 font-semibold">Rs. {p.price?.toLocaleString()}</td>
-                      <td className="px-6 py-3.5">
-                        <span className={`text-lg font-bold ${stockStatus === 'out' ? 'text-red-600' : stockStatus === 'low' ? 'text-amber-600' : 'text-emerald-600'}`}>
-                          {p.stock}
-                        </span>
-                        <span className="text-xs text-muted-text ml-1">/{p.unit || 'pcs'}</span>
-                      </td>
-                      <td className="px-6 py-3.5">
-                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-                          stockStatus === 'out' ? 'bg-red-100 text-red-700' : stockStatus === 'low' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
-                        }`}>
-                          {stockStatus === 'out' ? 'Out of Stock' : stockStatus === 'low' ? 'Low Stock' : 'In Stock'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-3.5 font-semibold text-muted-text">Rs. {((p.price || 0) * (p.stock || 0)).toLocaleString()}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-            {filtered.length === 0 && <div className="text-center py-12 text-muted-text text-sm">No products found</div>}
+        <div className="ds-card" style={{ overflow: 'hidden' }}>
+          <div className="ds-table-wrap">
+            {filtered.length === 0 ? (
+              <div className="ds-empty">
+                <Package size={36} className="ds-empty-icon" />
+                <p className="ds-empty-title">No products found</p>
+              </div>
+            ) : (
+              <table className="ds-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>SKU / Barcode</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Status</th>
+                    <th>Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map(p => {
+                    const stockStatus = p.stock <= 0 ? 'out' : p.stock <= 10 ? 'low' : 'ok';
+                    const badgeClass =
+                      stockStatus === 'out' ? 'ds-badge ds-badge-red' :
+                      stockStatus === 'low' ? 'ds-badge ds-badge-amber' :
+                                             'ds-badge ds-badge-green';
+                    const badgeLabel =
+                      stockStatus === 'out' ? 'Out of Stock' :
+                      stockStatus === 'low' ? 'Low Stock' : 'In Stock';
+                    const stockColor =
+                      stockStatus === 'out' ? '#dc2626' :
+                      stockStatus === 'low' ? '#d97706' : '#059669';
+
+                    return (
+                      <tr key={p._id}>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            {p.images?.[0] ? (
+                              <img src={p.images[0]} alt="" style={{ width: '2.5rem', height: '2.5rem', borderRadius: 'var(--ds-r-sm)', objectFit: 'cover' }} />
+                            ) : (
+                              <div style={{ width: '2.5rem', height: '2.5rem', borderRadius: 'var(--ds-r-sm)', background: 'var(--ds-border-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <Package size={14} style={{ color: 'var(--ds-text-faint)' }} />
+                              </div>
+                            )}
+                            <span style={{ fontWeight: 600, color: 'var(--ds-text-head)' }}>{p.name}</span>
+                          </div>
+                        </td>
+                        <td style={{ fontFamily: 'monospace', fontSize: 'var(--ds-text-xs)', color: 'var(--ds-text-muted)' }}>{p.sku || p.barcode || '—'}</td>
+                        <td style={{ fontWeight: 600 }}>Rs. {p.price?.toLocaleString()}</td>
+                        <td>
+                          <span style={{ fontSize: 'var(--ds-text-md)', fontWeight: 700, color: stockColor }}>{p.stock}</span>
+                          <span style={{ fontSize: 'var(--ds-text-2xs)', color: 'var(--ds-text-muted)', marginLeft: '0.25rem' }}>/{p.unit || 'pcs'}</span>
+                        </td>
+                        <td><span className={badgeClass}>{badgeLabel}</span></td>
+                        <td style={{ fontWeight: 600, color: 'var(--ds-text-muted)' }}>Rs. {((p.price || 0) * (p.stock || 0)).toLocaleString()}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
+
       </div>
     </DashboardLayout>
   );

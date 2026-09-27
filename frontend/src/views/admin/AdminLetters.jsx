@@ -255,14 +255,14 @@ const AdminLetters = () => {
         <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-5">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
-              <h2 className="text-sm font-black uppercase tracking-wider text-slate-900 m-0">Templates</h2>
-              <p className="text-[11px] font-semibold text-slate-400 m-0">Select template to generate custom company letter</p>
+              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-900 m-0">Templates</h2>
+              <p className="text-xs font-semibold text-slate-400 m-0">Select template to generate custom company letter</p>
             </div>
             {/* Category Tabs */}
             <div className="flex bg-slate-100 p-1 rounded-2xl">
               <button
                 onClick={() => setActiveCategory('hr')}
-                className={`px-4 py-2 rounded-xl text-xs font-black transition-all border-0 cursor-pointer ${
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border-0 cursor-pointer ${
                   activeCategory === 'hr' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -270,7 +270,7 @@ const AdminLetters = () => {
               </button>
               <button
                 onClick={() => setActiveCategory('customer')}
-                className={`px-4 py-2 rounded-xl text-xs font-black transition-all border-0 cursor-pointer ${
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border-0 cursor-pointer ${
                   activeCategory === 'customer' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -278,7 +278,7 @@ const AdminLetters = () => {
               </button>
               <button
                 onClick={() => setActiveCategory('general')}
-                className={`px-4 py-2 rounded-xl text-xs font-black transition-all border-0 cursor-pointer ${
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border-0 cursor-pointer ${
                   activeCategory === 'general' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -301,10 +301,10 @@ const AdminLetters = () => {
                     <Icon size={20} />
                   </div>
                   <div>
-                    <h4 className="text-xs font-black text-slate-900 group-hover:text-brand-indigo transition-colors m-0">
+                    <h4 className="text-xs font-bold text-slate-900 group-hover:text-brand-indigo transition-colors m-0">
                       {tpl.name}
                     </h4>
-                    <p className="text-[10px] text-slate-400 font-semibold mt-1 m-0">
+                    <p className="text-xs text-slate-400 font-semibold mt-1 m-0">
                       {tpl.desc}
                     </p>
                   </div>
@@ -318,8 +318,8 @@ const AdminLetters = () => {
         <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-b border-slate-100 pb-3">
             <div>
-              <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 m-0">Issued Letters History</h3>
-              <p className="text-[10px] font-semibold text-slate-400 m-0">All generated & saved letters with reference numbers</p>
+              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900 m-0">Issued Letters History</h3>
+              <p className="text-xs font-semibold text-slate-400 m-0">All generated & saved letters with reference numbers</p>
             </div>
             <div className="relative w-full sm:w-72">
               <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -336,7 +336,7 @@ const AdminLetters = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-100 text-slate-500 font-black uppercase tracking-wider">
+                <tr className="bg-slate-50 border-b border-slate-100 text-slate-500 font-bold uppercase tracking-wider">
                   <th className="px-5 py-4">Reference</th>
                   <th className="px-5 py-4">Employee / Customer</th>
                   <th className="px-5 py-4">Letter Type</th>
@@ -363,10 +363,10 @@ const AdminLetters = () => {
                       </td>
                       <td className="px-5 py-4">
                         <p className="font-bold text-slate-900 m-0">{ltr.recipientName}</p>
-                        <p className="text-[10px] text-slate-400 m-0">{ltr.recipientAddress || 'N/A'}</p>
+                        <p className="text-xs text-slate-400 m-0">{ltr.recipientAddress || 'N/A'}</p>
                       </td>
                       <td className="px-5 py-4">
-                        <span className="inline-block text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
+                        <span className="inline-block text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
                           {ltr.title}
                         </span>
                       </td>
@@ -413,8 +413,8 @@ const AdminLetters = () => {
           <div className="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
               <div>
-                <h3 className="text-base font-black text-slate-900 m-0">Generate {selectedTemplate.name}</h3>
-                <p className="text-[10px] text-slate-400 font-semibold m-0">Formatted with official company letterhead</p>
+                <h3 className="text-base font-bold text-slate-900 m-0">Generate {selectedTemplate.name}</h3>
+                <p className="text-xs text-slate-400 font-semibold m-0">Formatted with official company letterhead</p>
               </div>
               <button onClick={() => setSelectedTemplate(null)} className="p-1.5 text-slate-400 hover:text-slate-700 bg-slate-100 rounded-full cursor-pointer border-0">
                 <X size={16} />
@@ -492,7 +492,7 @@ const AdminLetters = () => {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-brand-indigo hover:bg-brand-violet text-white font-black py-3 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer border-0 shadow-md flex items-center justify-center gap-2"
+                  className="flex-1 bg-brand-indigo hover:bg-brand-violet text-white font-bold py-3 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer border-0 shadow-md flex items-center justify-center gap-2"
                 >
                   <CheckCircle size={15} /> Generate & Save Official Letter
                 </button>
@@ -516,8 +516,8 @@ const AdminLetters = () => {
             {/* Official Letterhead Header */}
             <div className="bg-slate-900 text-white p-5 rounded-2xl mb-6 flex justify-between items-center">
               <div>
-                <h2 className="text-xl font-black tracking-wider m-0 uppercase">{settings?.shopName || 'Mobixa'}</h2>
-                <p className="text-[10px] text-slate-300 m-0 mt-0.5">{settings?.address || 'Colombo, Sri Lanka'} • Tel: {settings?.phone || '077 123 4567'}</p>
+                <h2 className="text-xl font-bold tracking-wider m-0 uppercase">{settings?.shopName || 'Mobixa'}</h2>
+                <p className="text-xs text-slate-300 m-0 mt-0.5">{settings?.address || 'Colombo, Sri Lanka'} • Tel: {settings?.phone || '077 123 4567'}</p>
               </div>
               <span className="font-mono text-xs font-bold bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700 text-brand-indigo">
                 {previewLetter.referenceNo}
@@ -528,14 +528,14 @@ const AdminLetters = () => {
               <div className="flex justify-between border-b border-slate-100 pb-2">
                 <div>
                   <p className="font-bold text-slate-900 m-0">To: {previewLetter.recipientName}</p>
-                  <p className="text-[10px] text-slate-500 m-0">{previewLetter.recipientAddress}</p>
+                  <p className="text-xs text-slate-500 m-0">{previewLetter.recipientAddress}</p>
                 </div>
-                <p className="text-[10px] font-bold text-slate-400 m-0">
+                <p className="text-xs font-bold text-slate-400 m-0">
                   Date: {new Date(previewLetter.issueDate || previewLetter.createdAt).toLocaleDateString()}
                 </p>
               </div>
 
-              <p className="font-black text-sm text-slate-900 uppercase border-b border-slate-100 pb-2 m-0">
+              <p className="font-bold text-sm text-slate-900 uppercase border-b border-slate-100 pb-2 m-0">
                 SUBJECT: {previewLetter.subject || previewLetter.title}
               </p>
 
@@ -547,11 +547,11 @@ const AdminLetters = () => {
                 <div>
                   <div className="w-40 border-b border-slate-400 mb-1" />
                   <p className="font-bold text-slate-900 m-0">Authorized Signature</p>
-                  <p className="text-[10px] text-slate-400 m-0">{settings?.shopName || 'Mobixa'} Management</p>
+                  <p className="text-xs text-slate-400 m-0">{settings?.shopName || 'Mobixa'} Management</p>
                 </div>
                 <button
                   onClick={() => downloadPDFLetter(previewLetter)}
-                  className="bg-brand-indigo hover:bg-brand-violet text-white font-black px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer border-0 shadow-sm flex items-center gap-2"
+                  className="bg-brand-indigo hover:bg-brand-violet text-white font-bold px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer border-0 shadow-sm flex items-center gap-2"
                 >
                   <Download size={14} /> Download PDF
                 </button>

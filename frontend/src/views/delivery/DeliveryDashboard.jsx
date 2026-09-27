@@ -13,15 +13,15 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { toast } from 'react-toastify';
 import useAuthStore from '../../store/authStore';
 import { getEmployeeNavGroups } from '../employee/employeeNav';
-import EmployeePageHeader, { EmployeeStatCard, EmployeeLoading } from '../employee/EmployeePageHeader';
+import { EmployeeStatCard, EmployeeLoading } from '../employee/EmployeePageHeader';
 
 const statusFlow = ['assigned_delivery', 'out_for_delivery', 'delivered'];
 const statusColors = {
-  assigned_delivery: 'bg-purple-100 text-purple-700',
-  out_for_delivery: 'bg-amber-100 text-amber-700',
-  delivered: 'bg-emerald-100 text-emerald-700',
-  completed: 'bg-green-100 text-green-700',
-  cancelled: 'bg-red-100 text-red-700',
+  assigned_delivery: 'ds-badge-blue',
+  out_for_delivery: 'ds-badge-amber',
+  delivered: 'ds-badge-green',
+  completed: 'ds-badge-green',
+  cancelled: 'ds-badge-red',
 };
 
 const DeliveryDashboard = () => {
@@ -128,26 +128,29 @@ const DeliveryDashboard = () => {
 
   return (
     <DashboardLayout title="Delivery Dashboard">
-      <div className="animate-fade-in space-y-6">
-        <EmployeePageHeader
-          badge="DELIVERY OPERATIONS"
-          title="Delivery Dashboard"
-          subtitle={`${orders.length} active · ${earnings?.totalDeliveries || 0} completed`}
-          icon={Truck}
-          actions={
-            history.length > 0 ? (
+      <div className="ds-page">
+        <div className="ds-page-header">
+          <div className="ds-page-header-left">
+            <span className="ds-page-header-badge">
+              <Truck size={11} /> Delivery
+            </span>
+            <h1>Delivery Dashboard</h1>
+            <p>{orders.length} active · {earnings?.totalDeliveries || 0} completed</p>
+          </div>
+          <div className="ds-page-header-right">
+            {history.length > 0 && (
               <button
                 onClick={exportCSV}
-                className="bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 text-[10px] uppercase tracking-wider font-black px-4 py-2.5 rounded-xl transition-all shadow-sm flex items-center gap-2 cursor-pointer"
+                className="ds-btn ds-btn-secondary"
               >
                 <Download size={14} /> Export CSV
               </button>
-            ) : null
-          }
-        />
+            )}
+          </div>
+        </div>
 
         {earnings && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="ds-stats grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <EmployeeStatCard
               label="Active Deliveries"
               value={orders.length}
@@ -182,7 +185,7 @@ const DeliveryDashboard = () => {
           </div>
         )}
 
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-2 flex-wrap mb-4">
           {[
             { key: 'active', label: `Active (${orders.length})` },
             { key: 'earnings', label: 'Earnings' },
@@ -191,7 +194,7 @@ const DeliveryDashboard = () => {
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`px-4 py-2.5 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all border-0 cursor-pointer ${
+              className={`px-4 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl transition-all border-0 cursor-pointer ${
                 tab === t.key
                   ? 'bg-slate-900 text-white shadow-md'
                   : 'bg-white/80 text-slate-500 border border-slate-200 hover:bg-slate-50'
@@ -203,93 +206,86 @@ const DeliveryDashboard = () => {
         </div>
 
         {tab === 'active' && (
-          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100">
-              <h2 className="font-black text-slate-900 text-sm m-0 uppercase tracking-wider">Active Deliveries</h2>
+          <div className="ds-card">
+            <div className="ds-card-header">
+              <h2 className="ds-card-title">Active Deliveries</h2>
             </div>
             {orders.length === 0 ? (
-              <div className="text-center py-12 text-slate-400">
+              <div className="ds-empty">
                 <Truck size={40} className="mx-auto mb-3 text-slate-200" />
-                <p className="text-[11px] font-black uppercase tracking-wider m-0">No active deliveries right now</p>
+                <p>No active deliveries right now</p>
               </div>
             ) : (
-              <div className="divide-y divide-slate-100">
-                {orders.map((order) => {
-                  const next = getNextStatus(order.orderStatus);
-                  return (
-                    <div key={order._id} className="p-5 hover:bg-slate-50/50 transition-colors">
-                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2 flex-wrap">
-                            <span className="font-mono text-[10px] font-black bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg">
-                              #{order._id.slice(-8).toUpperCase()}
-                            </span>
-                            <span className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full ${statusColors[order.orderStatus]}`}>
-                              {order.orderStatus?.replace(/_/g, ' ')}
-                            </span>
-                          </div>
-                          <p className="text-sm font-black text-slate-900 m-0">
-                            {order.items?.length} items · Rs. {order.totalAmount?.toFixed(2)}
-                          </p>
-                          {order.userId && (
-                            <p className="text-xs text-slate-500 mt-1.5 m-0 flex items-center gap-1.5 font-semibold">
-                              <Package size={12} /> {order.userId.name}
-                              {order.userId.phone && (
-                                <>
-                                  <Phone size={12} className="ml-2" /> {order.userId.phone}
-                                </>
-                              )}
-                            </p>
-                          )}
-                          {order.deliveryAddress && (
-                            <p className="text-xs text-slate-500 mt-1 m-0 flex items-center gap-1.5 font-semibold">
-                              <MapPin size={12} /> {order.deliveryAddress.street}, {order.deliveryAddress.city}
-                            </p>
-                          )}
-                          <div className="flex items-center gap-1 mt-3">
-                            {statusFlow.map((s, i) => (
-                              <div key={s} className="flex items-center">
-                                <div
-                                  className={`w-2.5 h-2.5 rounded-full ${
-                                    statusFlow.indexOf(order.orderStatus) >= i ? 'bg-brand-indigo' : 'bg-slate-200'
-                                  }`}
-                                />
-                                {i < statusFlow.length - 1 && (
-                                  <div
-                                    className={`w-6 h-0.5 ${
-                                      statusFlow.indexOf(order.orderStatus) > i ? 'bg-brand-indigo' : 'bg-slate-200'
-                                    }`}
-                                  />
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="flex gap-2 flex-wrap">
-                          {next && (
-                            <button
-                              onClick={() => handleStatusUpdate(order._id, next)}
-                              className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-[10px] font-black uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all shadow-md border-0 cursor-pointer"
-                            >
-                              {next === 'delivered' ? 'Mark Delivered' : next.replace(/_/g, ' ')}
-                              <ArrowRight size={14} />
-                            </button>
-                          )}
-                          {order.paymentMethod === 'cod' &&
-                            order.orderStatus === 'delivered' &&
-                            order.paymentStatus !== 'completed' && (
-                              <button
-                                onClick={() => handlePaymentSuccess(order._id)}
-                                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all shadow-md border-0 cursor-pointer"
-                              >
-                                Mark Payment Done
-                              </button>
+              <div className="ds-table-wrap">
+                <table className="ds-table">
+                  <thead>
+                    <tr>
+                      <th>Order ID</th>
+                      <th>Customer & Address</th>
+                      <th>Items & Total</th>
+                      <th>Status & Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {orders.map((order) => {
+                      const next = getNextStatus(order.orderStatus);
+                      return (
+                        <tr key={order._id}>
+                          <td className="font-mono text-xs font-bold text-slate-600">
+                            #{order._id.slice(-8).toUpperCase()}
+                          </td>
+                          <td>
+                            {order.userId && (
+                              <p className="font-bold text-slate-900 m-0">
+                                {order.userId.name} {order.userId.phone && `· ${order.userId.phone}`}
+                              </p>
                             )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                            {order.deliveryAddress && (
+                              <p className="text-xs text-slate-500 mt-1 m-0">
+                                {order.deliveryAddress.street}, {order.deliveryAddress.city}
+                              </p>
+                            )}
+                          </td>
+                          <td>
+                            <p className="text-sm font-bold text-slate-900 m-0">
+                              {order.items?.length} items
+                            </p>
+                            <p className="text-xs font-bold text-slate-500 mt-0.5 m-0">
+                              Rs. {order.totalAmount?.toFixed(2)}
+                            </p>
+                          </td>
+                          <td>
+                            <div className="flex flex-col gap-2">
+                              <span className={`ds-badge w-fit ${statusColors[order.orderStatus] || 'ds-badge-slate'}`}>
+                                {order.orderStatus?.replace(/_/g, ' ')}
+                              </span>
+                              <div className="flex gap-2 flex-wrap mt-1">
+                                {next && (
+                                  <button
+                                    onClick={() => handleStatusUpdate(order._id, next)}
+                                    className="ds-btn ds-btn-sm ds-btn-primary"
+                                  >
+                                    {next === 'delivered' ? 'Mark Delivered' : next.replace(/_/g, ' ')}
+                                  </button>
+                                )}
+                                {order.paymentMethod === 'cod' &&
+                                  order.orderStatus === 'delivered' &&
+                                  order.paymentStatus !== 'completed' && (
+                                    <button
+                                      onClick={() => handlePaymentSuccess(order._id)}
+                                      className="ds-btn ds-btn-sm ds-btn-primary bg-emerald-600"
+                                    >
+                                      Mark Payment Done
+                                    </button>
+                                  )}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
@@ -297,8 +293,8 @@ const DeliveryDashboard = () => {
 
         {tab === 'earnings' && (
           <div className="space-y-6">
-            <div className="bg-white/60 backdrop-blur-md rounded-3xl border border-white/40 p-6 shadow-sm">
-              <h2 className="font-black text-slate-900 text-lg mb-6 m-0">Weekly Earnings (Rs. 150/delivery)</h2>
+            <div className="ds-card p-6">
+              <h2 className="ds-card-title mb-6">Weekly Earnings (Rs. 150/delivery)</h2>
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={weeklyData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
@@ -315,7 +311,7 @@ const DeliveryDashboard = () => {
               </ResponsiveContainer>
             </div>
 
-            <div className="grid sm:grid-cols-3 gap-4">
+            <div className="ds-stats grid sm:grid-cols-3 gap-4">
               <EmployeeStatCard
                 label={`Today (${weeklyData[weeklyData.length - 1]?.deliveries || 0} deliveries)`}
                 value={`Rs. ${(weeklyData[weeklyData.length - 1]?.earnings || 0).toLocaleString()}`}
@@ -330,61 +326,61 @@ const DeliveryDashboard = () => {
         )}
 
         {tab === 'history' && (
-          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <h2 className="font-black text-slate-900 text-sm m-0 uppercase tracking-wider">
-                Delivery History ({history.length})
-              </h2>
+          <div className="ds-card">
+            <div className="ds-card-header flex justify-between items-center">
+              <h2 className="ds-card-title m-0">Delivery History ({history.length})</h2>
               {history.length > 0 && (
                 <button
                   onClick={exportCSV}
-                  className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-[10px] font-black uppercase tracking-wider px-3 py-2 rounded-xl border-0 cursor-pointer"
+                  className="ds-btn ds-btn-sm ds-btn-secondary"
                 >
                   <Download size={14} /> CSV
                 </button>
               )}
             </div>
             {history.length === 0 ? (
-              <div className="text-center py-12 text-slate-400">
+              <div className="ds-empty">
                 <Clock size={40} className="mx-auto mb-3 text-slate-200" />
-                <p className="text-[11px] font-black uppercase tracking-wider m-0">No delivery history</p>
+                <p>No delivery history</p>
               </div>
             ) : (
-              <div className="divide-y divide-slate-100">
-                {history.map((order) => (
-                  <div key={order._id} className="px-6 py-3.5 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`w-9 h-9 rounded-xl flex items-center justify-center ${
-                          order.orderStatus === 'delivered' ? 'bg-emerald-100' : 'bg-rose-100'
-                        }`}
-                      >
-                        {order.orderStatus === 'delivered' ? (
-                          <CheckCircle size={14} className="text-emerald-600" />
-                        ) : (
-                          <span className="text-rose-500 text-xs font-black">X</span>
-                        )}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-[10px] font-black text-slate-400">
-                            #{order._id.slice(-8).toUpperCase()}
+              <div className="ds-table-wrap">
+                <table className="ds-table">
+                  <thead>
+                    <tr>
+                      <th>Status</th>
+                      <th>Order ID & Customer</th>
+                      <th>Date</th>
+                      <th className="text-right">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {history.map((order) => (
+                      <tr key={order._id}>
+                        <td>
+                          <span className={`ds-badge ${order.orderStatus === 'delivered' ? 'ds-badge-green' : 'ds-badge-red'}`}>
+                            {order.orderStatus === 'delivered' ? 'Delivered' : 'Failed'}
                           </span>
-                          <span className="text-sm font-black text-slate-900">{order.userId?.name}</span>
-                        </div>
-                        <p className="text-[10px] font-bold text-slate-400 m-0 mt-0.5 uppercase tracking-wide">
-                          {new Date(order.createdAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-black text-slate-900 m-0">Rs. {order.totalAmount?.toFixed(2)}</p>
-                      {order.orderStatus === 'delivered' && (
-                        <p className="text-[10px] font-black text-emerald-600 m-0">+Rs. 150</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                        </td>
+                        <td>
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-xs font-bold text-slate-400">
+                              #{order._id.slice(-8).toUpperCase()}
+                            </span>
+                            <span className="text-sm font-bold text-slate-900">{order.userId?.name}</span>
+                          </div>
+                        </td>
+                        <td>{new Date(order.createdAt).toLocaleDateString()}</td>
+                        <td className="text-right">
+                          <p className="text-sm font-bold text-slate-900 m-0">Rs. {order.totalAmount?.toFixed(2)}</p>
+                          {order.orderStatus === 'delivered' && (
+                            <p className="text-xs font-bold text-emerald-600 m-0">+Rs. 150</p>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>

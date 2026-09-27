@@ -123,7 +123,7 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
   const handleCheckInAction = async () => {
     try {
       await checkIn();
-      toast.success('Successfully Clocked In! ⚡');
+      toast.success('Successfully Clocked In!');
       fetchData();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to Clock In');
@@ -133,7 +133,7 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
   const handleCheckOutAction = async () => {
     try {
       await checkOut();
-      toast.success('Successfully Clocked Out! 🚪');
+      toast.success('Successfully Clocked Out!');
       fetchData();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to Clock Out');
@@ -144,7 +144,7 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
     try {
       const res = await startBreak();
       setActiveBreak(res.data || true);
-      toast.info('Break Started ☕');
+      toast.info('Break Started');
       fetchData();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to start break');
@@ -155,7 +155,7 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
     try {
       await endBreak();
       setActiveBreak(null);
-      toast.success('Break Ended ⚡');
+      toast.success('Break Ended');
       fetchData();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to end break');
@@ -404,80 +404,82 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
     toast.success('PDF downloaded');
   };
 
-  if (loading) return <DashboardLayout navItems={navItems} title="Admin Dashboard"><div className="flex items-center justify-center h-64"><div className="w-10 h-10 border-4 border-primary-blue border-t-transparent rounded-full animate-spin" /></div></DashboardLayout>;
+  if (loading) {
+    return (
+      <DashboardLayout navItems={navItems} title="Admin Dashboard">
+        <div className="ds-loading"><div className="ds-spinner" /></div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout navItems={navItems} title="Admin Dashboard">
-      <div className="animate-fade-in space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-indigo/5 rounded-full blur-3xl pointer-events-none -z-10"></div>
-          <div>
-            <div className="flex items-center gap-2.5 mb-1">
-              <span className="inline-flex items-center gap-1.5 bg-brand-indigo/10 text-brand-indigo text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg border border-brand-indigo/15">
-                USER & EMPLOYEE MANAGEMENT
-              </span>
-            </div>
-            <h1 className="text-2xl font-semibold text-slate-900 m-0">HR & Attendance</h1>
-            <p className="text-[10px] font-normal uppercase tracking-wider text-slate-500 mt-2 m-0">Configure shift times, leaves, and track employee hours</p>
+      <div className="ds-page">
+        {/* Page Header */}
+        <div className="ds-page-header">
+          <div className="ds-page-header-left">
+            <span className="ds-page-header-badge">HR &amp; Staff Attendance</span>
+            <h1>HR &amp; Attendance</h1>
+            <p>Configure shift policies, grace time, leave deductions, and track employee hours</p>
           </div>
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="ds-page-header-right">
             {activeTab === 'records' && (
               <>
                 {user?.role === 'admin' && (
-                  <button onClick={() => setShowAttModal(true)} className="bg-slate-900 hover:bg-slate-800 text-white text-[10px] uppercase tracking-wider font-black px-4 py-2.5 rounded-xl transition-all shadow-md flex items-center gap-2"><Clock size={14} /> Mark Attendance</button>
+                  <button onClick={() => setShowAttModal(true)} className="ds-btn ds-btn-primary">
+                    <Clock size={14} /> Mark Attendance
+                  </button>
                 )}
-                <button onClick={exportExcel} className="bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 text-[10px] uppercase tracking-wider font-black px-4 py-2.5 rounded-xl transition-all shadow-sm flex items-center gap-2"><FileSpreadsheet size={14} /> Excel</button>
-                <button onClick={exportPDF} className="bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 text-[10px] uppercase tracking-wider font-black px-4 py-2.5 rounded-xl transition-all shadow-sm flex items-center gap-2"><FileText size={14} /> PDF</button>
+                <button onClick={exportExcel} className="ds-btn ds-btn-secondary ds-btn-sm">
+                  <FileSpreadsheet size={14} /> Excel
+                </button>
+                <button onClick={exportPDF} className="ds-btn ds-btn-secondary ds-btn-sm">
+                  <FileText size={14} /> PDF
+                </button>
               </>
             )}
             {activeTab === 'attendance-policies' && (
-              <button onClick={openCreateAttendance} className="bg-slate-900 hover:bg-slate-800 text-white text-[10px] uppercase tracking-wider font-black px-4 py-2.5 rounded-xl transition-all shadow-md flex items-center gap-2"><Plus size={14} /> Create Policy</button>
+              <button onClick={openCreateAttendance} className="ds-btn ds-btn-primary">
+                <Plus size={14} /> Create Policy
+              </button>
             )}
           </div>
         </div>
 
         {/* Tab switcher */}
-        <div className="flex gap-2 flex-wrap mb-6 bg-white/40 backdrop-blur-sm p-2 rounded-2xl border border-white/40 shadow-sm w-fit">
-          <button
-            onClick={() => setActiveTab('my-attendance')}
-            className={`px-4 py-2.5 text-[10px] uppercase font-black tracking-wider rounded-xl transition-all flex items-center gap-2 border-0 cursor-pointer ${
-              activeTab === 'my-attendance' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-white hover:text-slate-900'
-            }`}
-          >
-            ⚡ My Attendance
-          </button>
-          <button
-            onClick={() => setActiveTab('records')}
-            className={`px-4 py-2.5 text-[10px] uppercase font-black tracking-wider rounded-xl transition-all flex items-center gap-2 border-0 cursor-pointer ${
-              activeTab === 'records' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-white hover:text-slate-900'
-            }`}
-          >
-            📋 Team Records
-          </button>
-          <button
-            onClick={() => setActiveTab('attendance-policies')}
-            className={`px-4 py-2.5 text-[10px] uppercase font-black tracking-wider rounded-xl transition-all flex items-center gap-2 border-0 cursor-pointer ${
-              activeTab === 'attendance-policies' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-white hover:text-slate-900'
-            }`}
-          >
-            ⏱️ Policies
-          </button>
-          <button
-            onClick={() => setActiveTab('assign-policies')}
-            className={`px-4 py-2.5 text-[10px] uppercase font-black tracking-wider rounded-xl transition-all flex items-center gap-2 border-0 cursor-pointer ${
-              activeTab === 'assign-policies' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-white hover:text-slate-900'
-            }`}
-          >
-            👤 Assign
-          </button>
-          <button
-            onClick={() => setActiveTab('salary-summary')}
-            className={`px-4 py-2.5 text-[10px] uppercase font-black tracking-wider rounded-xl transition-all flex items-center gap-2 border-0 cursor-pointer ${
-              activeTab === 'salary-summary' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-white hover:text-slate-900'
-            }`}
-          >
-            💰 Leave & Salary Summary
-          </button>
+        <div className="ds-card" style={{ padding: '0.375rem', width: 'fit-content' }}>
+          <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => setActiveTab('my-attendance')}
+              className={`ds-btn ds-btn-sm ${activeTab === 'my-attendance' ? 'ds-btn-primary' : 'ds-btn-ghost'}`}
+            >
+              My Attendance
+            </button>
+            <button
+              onClick={() => setActiveTab('records')}
+              className={`ds-btn ds-btn-sm ${activeTab === 'records' ? 'ds-btn-primary' : 'ds-btn-ghost'}`}
+            >
+              Team Records
+            </button>
+            <button
+              onClick={() => setActiveTab('attendance-policies')}
+              className={`ds-btn ds-btn-sm ${activeTab === 'attendance-policies' ? 'ds-btn-primary' : 'ds-btn-ghost'}`}
+            >
+              Policies
+            </button>
+            <button
+              onClick={() => setActiveTab('assign-policies')}
+              className={`ds-btn ds-btn-sm ${activeTab === 'assign-policies' ? 'ds-btn-primary' : 'ds-btn-ghost'}`}
+            >
+              Assign
+            </button>
+            <button
+              onClick={() => setActiveTab('salary-summary')}
+              className={`ds-btn ds-btn-sm ${activeTab === 'salary-summary' ? 'ds-btn-primary' : 'ds-btn-ghost'}`}
+            >
+              Leave &amp; Salary Summary
+            </button>
+          </div>
         </div>
 
         {/* Tab content */}
@@ -502,53 +504,124 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
         )}
         {activeTab === 'records' && (
           <>
+            {/* KPI Summary Cards */}
+            <div className="ds-stats" style={{ marginBottom: '1.25rem' }}>
+              <div className="ds-stat">
+                <div className="ds-stat-top">
+                  <div className="ds-stat-icon" style={{ background: '#eff6ff', color: '#1d4ed8' }}>
+                    <StoreIcon size={18} />
+                  </div>
+                  <span className="ds-stat-change blue">Staff</span>
+                </div>
+                <div className="ds-stat-bottom">
+                  <p className="ds-stat-label">Total Staff</p>
+                  <p className="ds-stat-value">{summaryData.length}</p>
+                </div>
+              </div>
+
+              <div className="ds-stat">
+                <div className="ds-stat-top">
+                  <div className="ds-stat-icon" style={{ background: '#f0fdf4', color: '#15803d' }}>
+                    <CheckCircle size={18} />
+                  </div>
+                  <span className="ds-stat-change up">Present</span>
+                </div>
+                <div className="ds-stat-bottom">
+                  <p className="ds-stat-label">Total Present</p>
+                  <p className="ds-stat-value text-emerald-600">{summaryData.reduce((s, c) => s + (c.present || 0), 0)}</p>
+                </div>
+              </div>
+
+              <div className="ds-stat">
+                <div className="ds-stat-top">
+                  <div className="ds-stat-icon" style={{ background: '#fffbeb', color: '#b45309' }}>
+                    <Clock size={18} />
+                  </div>
+                  <span className="ds-stat-change amber">Leave</span>
+                </div>
+                <div className="ds-stat-bottom">
+                  <p className="ds-stat-label">Total Leaves</p>
+                  <p className="ds-stat-value text-amber-600">{summaryData.reduce((s, c) => s + (c.leave || 0), 0)}</p>
+                </div>
+              </div>
+
+              <div className="ds-stat">
+                <div className="ds-stat-top">
+                  <div className="ds-stat-icon" style={{ background: '#fff1f2', color: '#be123c' }}>
+                    <AlertCircle size={18} />
+                  </div>
+                  <span className="ds-stat-change down">Absent</span>
+                </div>
+                <div className="ds-stat-bottom">
+                  <p className="ds-stat-label">Total Absent</p>
+                  <p className="ds-stat-value text-rose-600">{summaryData.reduce((s, c) => s + (c.absent || 0), 0)}</p>
+                </div>
+              </div>
+
+              <div className="ds-stat">
+                <div className="ds-stat-top">
+                  <div className="ds-stat-icon" style={{ background: '#f8fafc', color: '#334155' }}>
+                    <Clock size={18} />
+                  </div>
+                  <span className="ds-stat-change neu">Recorded</span>
+                </div>
+                <div className="ds-stat-bottom">
+                  <p className="ds-stat-label">Total Hours</p>
+                  <p className="ds-stat-value">{summaryData.reduce((s, c) => s + (c.totalHours || 0), 0).toFixed(1)}h</p>
+                </div>
+              </div>
+            </div>
+
             {/* Filters */}
-            {/* Filters */}
-            <div className="bg-white/60 backdrop-blur-md rounded-3xl border border-white/40 p-5 shadow-sm mb-6 flex flex-wrap gap-4 items-end">
-              <div>
-                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Month</label>
-                <select value={month} onChange={e => setMonth(Number(e.target.value))} className="w-full bg-white/80 border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all cursor-pointer shadow-sm">
-                  {Array.from({ length: 12 }, (_, i) => <option key={i + 1} value={i + 1}>{new Date(2000, i).toLocaleString('en', { month: 'long' })}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Year</label>
-                <input type="number" value={year} onChange={e => setYear(Number(e.target.value))} className="w-24 bg-white/80 border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm" />
-              </div>
-              <div>
-                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Department</label>
-                <select value={selectedDepartment} onChange={e => setSelectedDepartment(e.target.value)} className="w-40 bg-white/80 border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all cursor-pointer shadow-sm">
-                  {departments.map(d => <option key={d} value={d}>{d}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Store</label>
-                <select value={selectedStore} onChange={e => setSelectedStore(e.target.value)} className="w-40 bg-white/80 border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all cursor-pointer shadow-sm">
-                  <option value="All">All Stores</option>
-                  {stores.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2">Role</label>
-                <select value={selectedRole} onChange={e => setSelectedRole(e.target.value)} className="w-40 bg-white/80 border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all cursor-pointer shadow-sm">
-                  {roles.map(r => <option key={r} value={r}>{r}</option>)}
-                </select>
+            <div className="ds-card" style={{ padding: '0.75rem 1rem', marginBottom: '1rem' }}>
+              <div className="ds-filter-bar" style={{ background: 'transparent', padding: 0, border: 'none' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                  <label className="ds-label">Month</label>
+                  <select value={month} onChange={e => setMonth(Number(e.target.value))} className="ds-input ds-select">
+                    {Array.from({ length: 12 }, (_, i) => <option key={i + 1} value={i + 1}>{new Date(2000, i).toLocaleString('en', { month: 'long' })}</option>)}
+                  </select>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', width: '90px' }}>
+                  <label className="ds-label">Year</label>
+                  <input type="number" value={year} onChange={e => setYear(Number(e.target.value))} className="ds-input" />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                  <label className="ds-label">Department</label>
+                  <select value={selectedDepartment} onChange={e => setSelectedDepartment(e.target.value)} className="ds-input ds-select">
+                    {departments.map(d => <option key={d} value={d}>{d}</option>)}
+                  </select>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                  <label className="ds-label">Store</label>
+                  <select value={selectedStore} onChange={e => setSelectedStore(e.target.value)} className="ds-input ds-select">
+                    <option value="All">All Stores</option>
+                    {stores.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
+                  </select>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                  <label className="ds-label">Role</label>
+                  <select value={selectedRole} onChange={e => setSelectedRole(e.target.value)} className="ds-input ds-select">
+                    {roles.map(r => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                </div>
               </div>
             </div>
 
             {/* Attendance Chart */}
             {chartData.length > 0 && (
-              <div className="bg-white/60 backdrop-blur-md rounded-3xl border border-white/40 p-6 shadow-sm mb-6">
-                <h2 className="font-black text-slate-900 text-lg mb-6 flex items-center gap-2"><span className="text-xl">📊</span> Attendance Overview</h2>
-                <div className="overflow-x-auto overflow-y-hidden w-full custom-scrollbar">
+              <div className="ds-card" style={{ marginBottom: '1rem' }}>
+                <div className="ds-card-header">
+                  <h3 className="ds-card-title">Attendance Overview ({month}/{year})</h3>
+                </div>
+                <div className="ds-card-body">
                   <div style={{ minWidth: `${Math.max(chartData.length * 60, 600)}px`, height: 300 }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                         <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#64748b', fontWeight: 'bold', textTransform: 'uppercase' }} interval={0} angle={-45} textAnchor="end" height={60} axisLine={false} tickLine={false} />
                         <YAxis tick={{ fontSize: 10, fill: '#64748b', fontWeight: 'bold' }} axisLine={false} tickLine={false} />
-                        <Tooltip cursor={{fill: '#f8fafc'}} contentStyle={{ borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)', fontWeight: 'bold' }} />
-                        <Legend wrapperStyle={{ paddingTop: '20px', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', color: '#64748b' }} iconType="circle" />
+                        <Tooltip cursor={{fill: '#f8fafc'}} contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }} />
+                        <Legend wrapperStyle={{ paddingTop: '20px', fontSize: '10px', fontWeight: '700', textTransform: 'uppercase', color: '#64748b' }} iconType="circle" />
                         <Bar dataKey="present" fill="#10b981" name="Present" radius={[6, 6, 0, 0]} maxBarSize={32} />
                         <Bar dataKey="leave" fill="#f59e0b" name="Leave" radius={[6, 6, 0, 0]} maxBarSize={32} />
                         <Bar dataKey="absent" fill="#ef4444" name="Absent" radius={[6, 6, 0, 0]} maxBarSize={32} />
@@ -560,39 +633,41 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
             )}
 
             {/* Summary Table */}
-            <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+            <div className="ds-card">
+              <div className="ds-card-header">
+                <h3 className="ds-card-title">Staff Attendance Summary</h3>
+                <span className="ds-badge ds-badge-slate">{summaryData.length} records</span>
+              </div>
+              <div className="ds-table-wrap">
+                <table className="ds-table">
                   <thead>
-                    <tr className="bg-slate-50 border-b border-slate-100">
-                      <th className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500 text-left">Employee</th>
-                      <th className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500 text-center">Role/Dept</th>
-                      <th className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-emerald-600 text-center">Present</th>
-                      <th className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-amber-600 text-center">Leave</th>
-                      <th className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-rose-500 text-center">Absent</th>
-                      <th className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-orange-500 text-center">Late</th>
-                      <th className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-brand-indigo text-center">Hours</th>
-                      <th className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-purple-600 text-center">Overtime</th>
+                    <tr>
+                      <th>Employee</th>
+                      <th style={{ textAlign: 'center' }}>Role / Dept</th>
+                      <th style={{ textAlign: 'center' }}>Present</th>
+                      <th style={{ textAlign: 'center' }}>Leave</th>
+                      <th style={{ textAlign: 'center' }}>Absent</th>
+                      <th style={{ textAlign: 'center' }}>Late</th>
+                      <th style={{ textAlign: 'center' }}>Hours</th>
+                      <th style={{ textAlign: 'right' }}>Overtime</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody>
                     {summaryData.length === 0 ? (
-                      <tr><td colSpan={8} className="text-center py-12 font-black text-slate-400 text-[11px] uppercase tracking-wider">No attendance records found</td></tr>
+                      <tr><td colSpan={8} style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--ds-text-muted)' }}>No attendance records found</td></tr>
                     ) : summaryData.map(e => (
-                      <tr key={e.id} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="px-6 py-4 font-black text-slate-900">{e.name}</td>
-                        <td className="px-6 py-4 text-center">
-                          <div className="flex flex-col items-center gap-1.5">
-                            <span className="text-[10px] uppercase font-black tracking-wider text-slate-400">{e.role}</span>
-                            {e.department && <span className="text-[9px] uppercase tracking-wider font-black bg-brand-indigo/10 text-brand-indigo px-2 py-0.5 rounded-md">{e.department}</span>}
-                          </div>
+                      <tr key={e.id}>
+                        <td style={{ fontWeight: 600 }}>{e.name}</td>
+                        <td style={{ textAlign: 'center' }}>
+                          <span className="ds-badge ds-badge-slate">{e.role}</span>
+                          {e.department && <span className="ds-badge ds-badge-blue" style={{ marginLeft: '0.25rem' }}>{e.department}</span>}
                         </td>
-                        <td className="px-6 py-4 text-center font-black text-emerald-600">{e.present}</td>
-                        <td className="px-6 py-4 text-center font-black text-amber-600">{e.leave}</td>
-                        <td className="px-6 py-4 text-center font-black text-rose-500">{e.absent}</td>
-                        <td className="px-6 py-4 text-center font-black text-orange-500">{e.late}</td>
-                        <td className="px-6 py-4 text-center font-black text-brand-indigo">{e.totalHours.toFixed(1)}h</td>
-                        <td className="px-6 py-4 text-center font-black text-purple-600">{e.overtime.toFixed(1)}h</td>
+                        <td style={{ textAlign: 'center', fontWeight: 700, color: '#15803d' }}>{e.present}</td>
+                        <td style={{ textAlign: 'center', fontWeight: 700, color: '#b45309' }}>{e.leave}</td>
+                        <td style={{ textAlign: 'center', fontWeight: 700, color: '#be123c' }}>{e.absent}</td>
+                        <td style={{ textAlign: 'center', fontWeight: 700, color: '#ea580c' }}>{e.late}</td>
+                        <td style={{ textAlign: 'center', fontWeight: 700 }}>{e.totalHours.toFixed(1)}h</td>
+                        <td style={{ textAlign: 'right', fontWeight: 700, color: '#7c3aed' }}>{e.overtime.toFixed(1)}h</td>
                       </tr>
                     ))}
                   </tbody>
@@ -611,7 +686,7 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
                 <div className="w-10 h-10 border-4 border-brand-indigo border-t-transparent rounded-full animate-spin" />
               </div>
             ) : attendancePolicies.length === 0 ? (
-              <div className="bg-white/60 backdrop-blur-md rounded-3xl border border-white/40 p-12 text-center text-[11px] uppercase tracking-wider font-black text-slate-500 shadow-sm">
+              <div className="bg-white/60 backdrop-blur-md rounded-3xl border border-white/40 p-12 text-center text-xs uppercase tracking-wider font-bold text-slate-500 shadow-sm">
                 No attendance policies found. Click "Create Policy" to add one.
               </div>
             ) : (
@@ -619,46 +694,46 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
                 {attendancePolicies.map(p => (
                   <div key={p._id} className="bg-white/60 backdrop-blur-md rounded-3xl border border-white/40 p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden flex flex-col justify-between group">
                     {p.isDefault && (
-                      <div className="absolute top-0 right-0 bg-emerald-50 text-emerald-600 border-b border-l border-emerald-100 text-[9px] font-black px-3 py-1.5 rounded-bl-2xl uppercase tracking-wider shadow-sm">
+                      <div className="absolute top-0 right-0 bg-emerald-50 text-emerald-600 border-b border-l border-emerald-100 text-xs font-bold px-3 py-1.5 rounded-bl-2xl uppercase tracking-wider shadow-sm">
                         System Default
                       </div>
                     )}
                     <div>
-                      <h3 className="font-black text-slate-800 text-lg mb-5 pr-16">{p.name}</h3>
+                      <h3 className="font-bold text-slate-800 text-lg mb-5 pr-16">{p.name}</h3>
                       <div className="space-y-3 text-sm text-slate-600 mb-6">
                         <div className="flex justify-between items-center border-b border-slate-50 pb-2">
-                          <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">⏰ Shift Schedule</span>
-                          <span className="font-black text-slate-800">{p.shiftStartTime} - {p.shiftEndTime}</span>
+                          <span className="text-xs uppercase font-bold tracking-wider text-slate-500">Shift Schedule</span>
+                          <span className="font-bold text-slate-800">{p.shiftStartTime} - {p.shiftEndTime}</span>
                         </div>
                         <div className="flex justify-between items-center border-b border-slate-50 pb-2">
-                          <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">⏱️ Late Grace</span>
-                          <span className="font-black text-slate-800">{p.graceTimeMinutes} mins</span>
+                          <span className="text-xs uppercase font-bold tracking-wider text-slate-500">Late Grace</span>
+                          <span className="font-bold text-slate-800">{p.graceTimeMinutes} mins</span>
                         </div>
                         <div className="flex justify-between items-center border-b border-slate-50 pb-2">
-                          <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">⚠️ Late Fine</span>
-                          <span className="font-black text-rose-500">Rs. {p.lateArrivalPenalty.toLocaleString()} / {p.lateBlockMinutes || 30}m</span>
+                          <span className="text-xs uppercase font-bold tracking-wider text-slate-500"> Late Fine</span>
+                          <span className="font-bold text-rose-500">Rs. {p.lateArrivalPenalty.toLocaleString()} / {p.lateBlockMinutes || 30}m</span>
                         </div>
                         <div className="flex justify-between items-center border-b border-slate-50 pb-2">
-                          <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">🚶 Checkout Fine</span>
-                          <span className="font-black text-rose-500">Rs. {p.earlyCheckoutPenalty.toLocaleString()}</span>
+                          <span className="text-xs uppercase font-bold tracking-wider text-slate-500"> Checkout Fine</span>
+                          <span className="font-bold text-rose-500">Rs. {p.earlyCheckoutPenalty.toLocaleString()}</span>
                         </div>
                         <div className="flex justify-between items-center border-b border-slate-50 pb-2">
-                          <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">⏳ OT Rate</span>
-                          <span className="font-black text-emerald-600">Rs. {(p.otRatePerBlock || 0).toLocaleString()} / {p.otBlockMinutes || 30}m</span>
+                          <span className="text-xs uppercase font-bold tracking-wider text-slate-500">OT Rate</span>
+                          <span className="font-bold text-emerald-600">Rs. {(p.otRatePerBlock || 0).toLocaleString()} / {p.otBlockMinutes || 30}m</span>
                         </div>
                         <div className="flex justify-between items-center border-b border-slate-50 pb-2">
-                          <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">⚖️ Half-Day</span>
-                          <span className="font-black text-slate-800">&lt; {p.halfDayThresholdHours} hrs</span>
+                          <span className="text-xs uppercase font-bold tracking-wider text-slate-500"> Half-Day</span>
+                          <span className="font-bold text-slate-800">&lt; {p.halfDayThresholdHours} hrs</span>
                         </div>
                         <div className="flex justify-between items-center border-b border-slate-100 pb-2">
-                          <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">🚫 Absent Day Deduction</span>
-                          <span className="font-black text-rose-500">Rs. {(p.absentDayDeduction || 0).toLocaleString()}</span>
+                          <span className="text-xs uppercase font-bold tracking-wider text-slate-500"> Absent Day Deduction</span>
+                          <span className="font-bold text-rose-500">Rs. {(p.absentDayDeduction || 0).toLocaleString()}</span>
                         </div>
                       </div>
                     </div>
                     <div className="flex gap-3 border-t border-slate-100 pt-5 mt-auto opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => openEditAttendance(p)} className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 rounded-xl text-[10px] uppercase tracking-wider font-black flex items-center justify-center gap-1.5 transition-all"><Edit2 size={12} /> Edit</button>
-                      <button onClick={() => handlePolicyDeleteClick(p, 'attendance')} className="flex-1 bg-rose-50 hover:bg-rose-100 text-rose-600 py-2.5 rounded-xl text-[10px] uppercase tracking-wider font-black flex items-center justify-center gap-1.5 transition-all border border-rose-200"><Trash2 size={12} /> Delete</button>
+                      <button onClick={() => openEditAttendance(p)} className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 rounded-xl text-xs uppercase tracking-wider font-bold flex items-center justify-center gap-1.5 transition-all"><Edit2 size={12} /> Edit</button>
+                      <button onClick={() => handlePolicyDeleteClick(p, 'attendance')} className="flex-1 bg-rose-50 hover:bg-rose-100 text-rose-600 py-2.5 rounded-xl text-xs uppercase tracking-wider font-bold flex items-center justify-center gap-1.5 transition-all border border-rose-200"><Trash2 size={12} /> Delete</button>
                     </div>
                   </div>
                 ))}
@@ -672,12 +747,12 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between sm:items-center bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm gap-4">
               <div>
-                <h3 className="font-black text-slate-900 text-lg">Bulk Policy Assignment</h3>
-                <p className="text-[10px] uppercase tracking-wider font-black text-slate-500 mt-1">Assign policies to all employees at once</p>
+                <h3 className="font-bold text-slate-900 text-lg">Bulk Policy Assignment</h3>
+                <p className="text-xs uppercase tracking-wider font-bold text-slate-500 mt-1">Assign policies to all employees at once</p>
               </div>
               <button
                 onClick={() => openAssignModal(null)}
-                className="bg-slate-900 hover:bg-slate-800 text-white text-[10px] uppercase tracking-wider font-black px-6 py-3 rounded-xl transition-all shadow-md"
+                className="bg-slate-900 hover:bg-slate-800 text-white text-xs uppercase tracking-wider font-bold px-6 py-3 rounded-xl transition-all shadow-md"
               >
                 Bulk Assign to All
               </button>
@@ -688,10 +763,10 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
                 <table className="w-full text-sm">
                   <thead>
                   <tr className="bg-slate-50 border-b border-slate-100">
-                    <th className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500 text-left">Employee</th>
-                    <th className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500 text-left">Role</th>
-                    <th className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500 text-left">Attendance Policy</th>
-                    <th className="px-6 py-4 text-[10px] uppercase font-black tracking-wider text-slate-500 text-center">Action</th>
+                    <th className="px-6 py-4 text-xs uppercase font-bold tracking-wider text-slate-500 text-left">Employee</th>
+                    <th className="px-6 py-4 text-xs uppercase font-bold tracking-wider text-slate-500 text-left">Role</th>
+                    <th className="px-6 py-4 text-xs uppercase font-bold tracking-wider text-slate-500 text-left">Attendance Policy</th>
+                    <th className="px-6 py-4 text-xs uppercase font-bold tracking-wider text-slate-500 text-center">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -707,15 +782,15 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
                       
                       return (
                         <tr key={emp._id} className="hover:bg-slate-50/80 transition-colors">
-                          <td className="px-6 py-4 font-black text-slate-900">{emp.name}</td>
-                          <td className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-wider">{emp.role}</td>
+                          <td className="px-6 py-4 font-bold text-slate-900">{emp.name}</td>
+                          <td className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">{emp.role}</td>
                           <td className="px-6 py-4">
                             {ap ? (
-                              <span className="bg-brand-indigo/10 text-brand-indigo px-3 py-1.5 rounded-lg text-[10px] uppercase tracking-wider font-black border border-brand-indigo/20">
+                              <span className="bg-brand-indigo/10 text-brand-indigo px-3 py-1.5 rounded-lg text-xs uppercase tracking-wider font-bold border border-brand-indigo/20">
                                 {ap.name}
                               </span>
                             ) : (
-                              <span className="text-[10px] uppercase tracking-wider text-slate-500 font-black bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
+                              <span className="text-xs uppercase tracking-wider text-slate-500 font-bold bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
                                 System Default
                               </span>
                             )}
@@ -723,7 +798,7 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
                           <td className="px-6 py-4 text-center">
                             <button
                               onClick={() => openAssignModal(emp)}
-                              className="text-[10px] uppercase tracking-wider font-black bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl transition-all"
+                              className="text-xs uppercase tracking-wider font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl transition-all"
                             >
                               Assign Policy
                             </button>
@@ -743,8 +818,8 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between sm:items-center bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm gap-4">
               <div>
-                <h3 className="font-black text-slate-900 text-lg">Leave & Salary Summary</h3>
-                <p className="text-[10px] uppercase tracking-wider font-black text-slate-500 mt-1">Recomputed live from attendance/leave records — locked once payroll is processed for the month</p>
+                <h3 className="font-bold text-slate-900 text-lg">Leave & Salary Summary</h3>
+                <p className="text-xs uppercase tracking-wider font-bold text-slate-500 mt-1">Recomputed live from attendance/leave records — locked once payroll is processed for the month</p>
               </div>
               <div className="flex items-center gap-3 flex-wrap">
                 <div className="w-56">
@@ -776,47 +851,47 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
             ) : salarySummary ? (
               <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 space-y-6">
                 {salarySummary.locked && (
-                  <div className="bg-amber-50 border border-amber-200 text-amber-700 text-[10px] uppercase font-black tracking-wider px-4 py-2.5 rounded-xl">
-                    🔒 Payroll already processed for this month — figures are the locked snapshot, not a live recalculation
+                  <div className="bg-amber-50 border border-amber-200 text-amber-700 text-xs uppercase font-bold tracking-wider px-4 py-2.5 rounded-xl">
+                     Payroll already processed for this month — figures are the locked snapshot, not a live recalculation
                   </div>
                 )}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                    <p className="text-[9px] uppercase font-black tracking-wider text-slate-400 mb-1">Off-Days Allowed</p>
-                    <p className="text-2xl font-black text-slate-900">{salarySummary.allowedLeaves ?? 0}</p>
+                    <p className="text-xs uppercase font-bold tracking-wider text-slate-400 mb-1">Off-Days Allowed</p>
+                    <p className="text-2xl font-bold text-slate-900">{salarySummary.allowedLeaves ?? 0}</p>
                   </div>
                   <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                    <p className="text-[9px] uppercase font-black tracking-wider text-slate-400 mb-1">Leave Days Taken</p>
-                    <p className="text-2xl font-black text-slate-900">{salarySummary.leaveDaysTaken ?? 0}</p>
+                    <p className="text-xs uppercase font-bold tracking-wider text-slate-400 mb-1">Leave Days Taken</p>
+                    <p className="text-2xl font-bold text-slate-900">{salarySummary.leaveDaysTaken ?? 0}</p>
                   </div>
                   <div className="bg-rose-50 rounded-2xl p-4 border border-rose-100">
-                    <p className="text-[9px] uppercase font-black tracking-wider text-rose-500 mb-1">Extra Off-Days</p>
-                    <p className="text-2xl font-black text-rose-600">{salarySummary.extraOffDaysThisMonth ?? 0}</p>
+                    <p className="text-xs uppercase font-bold tracking-wider text-rose-500 mb-1">Extra Off-Days</p>
+                    <p className="text-2xl font-bold text-rose-600">{salarySummary.extraOffDaysThisMonth ?? 0}</p>
                   </div>
                   <div className="bg-rose-50 rounded-2xl p-4 border border-rose-100">
-                    <p className="text-[9px] uppercase font-black tracking-wider text-rose-500 mb-1">Unapproved Absences</p>
-                    <p className="text-2xl font-black text-rose-600">{salarySummary.unapprovedAbsences ?? 0}</p>
+                    <p className="text-xs uppercase font-bold tracking-wider text-rose-500 mb-1">Unapproved Absences</p>
+                    <p className="text-2xl font-bold text-rose-600">{salarySummary.unapprovedAbsences ?? 0}</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 border-t border-slate-100 pt-6">
                   <div className="bg-rose-50/60 rounded-2xl p-4 border border-rose-100">
-                    <p className="text-[9px] uppercase font-black tracking-wider text-rose-500 mb-1">Late Deduction</p>
-                    <p className="text-xl font-black text-rose-600">− Rs. {(salarySummary.lateDeductionTotal || 0).toLocaleString()}</p>
+                    <p className="text-xs uppercase font-bold tracking-wider text-rose-500 mb-1">Late Deduction</p>
+                    <p className="text-xl font-bold text-rose-600">− Rs. {(salarySummary.lateDeductionTotal || 0).toLocaleString()}</p>
                   </div>
                   <div className="bg-emerald-50/60 rounded-2xl p-4 border border-emerald-100">
-                    <p className="text-[9px] uppercase font-black tracking-wider text-emerald-600 mb-1">Overtime Earned</p>
-                    <p className="text-xl font-black text-emerald-600">+ Rs. {(salarySummary.otEarnedTotal || 0).toLocaleString()}</p>
+                    <p className="text-xs uppercase font-bold tracking-wider text-emerald-600 mb-1">Overtime Earned</p>
+                    <p className="text-xl font-bold text-emerald-600">+ Rs. {(salarySummary.otEarnedTotal || 0).toLocaleString()}</p>
                   </div>
                   <div className="bg-rose-50/60 rounded-2xl p-4 border border-rose-100">
-                    <p className="text-[9px] uppercase font-black tracking-wider text-rose-500 mb-1">Total Deduction</p>
-                    <p className="text-xl font-black text-rose-600">Rs. {(salarySummary.attendanceDeductions || 0).toLocaleString()}</p>
+                    <p className="text-xs uppercase font-bold tracking-wider text-rose-500 mb-1">Total Deduction</p>
+                    <p className="text-xl font-bold text-rose-600">Rs. {(salarySummary.attendanceDeductions || 0).toLocaleString()}</p>
                   </div>
                   <div className="bg-slate-900 rounded-2xl p-4">
-                    <p className="text-[9px] uppercase font-black tracking-wider text-slate-400 mb-1">Net Adjustment</p>
-                    <p className="text-xl font-black text-white">Rs. {((salarySummary.attendanceAllowance || 0) - (salarySummary.attendanceDeductions || 0)).toLocaleString()}</p>
+                    <p className="text-xs uppercase font-bold tracking-wider text-slate-400 mb-1">Net Adjustment</p>
+                    <p className="text-xl font-bold text-white">Rs. {((salarySummary.attendanceAllowance || 0) - (salarySummary.attendanceDeductions || 0)).toLocaleString()}</p>
                   </div>
                 </div>
-                <p className="text-[9px] text-slate-400 m-0">Late deduction and OT are computed automatically from check-in/check-out and flow into Payroll on their own — see Financial Management &gt; Late Deductions / Overtime Pay for the day-by-day breakdown.</p>
+                <p className="text-xs text-slate-400 m-0">Late deduction and OT are computed automatically from check-in/check-out and flow into Payroll on their own — see Financial Management &gt; Late Deductions / Overtime Pay for the day-by-day breakdown.</p>
               </div>
             ) : (
               <div className="bg-white rounded-3xl border border-slate-100 p-16 text-center shadow-sm">
@@ -838,13 +913,13 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
               <div className="w-12 h-12 bg-slate-50 text-slate-900 rounded-full flex items-center justify-center mb-4 border border-slate-200 shadow-sm">
                 <Clock size={24} />
               </div>
-              <h3 className="font-black text-slate-900 text-xl">Mark Attendance</h3>
-              <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mt-2">Record manual attendance for an employee</p>
+              <h3 className="font-bold text-slate-900 text-xl">Mark Attendance</h3>
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mt-2">Record manual attendance for an employee</p>
             </div>
             
             <div className="p-6 bg-slate-50/50 space-y-4">
               <div>
-                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-1">Search & Select Employee *</label>
+                <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-1">Search & Select Employee *</label>
                 <EmployeeSelector
                   multiple={false}
                   employees={employees.filter(e => e.role !== 'customer')}
@@ -855,12 +930,12 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Date</label>
+                  <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">Date</label>
                   <input type="date" value={attForm.date} onChange={(e) => setAttForm({...attForm, date: e.target.value})}
                     className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm" />
                 </div>
                 <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Status</label>
+                  <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">Status</label>
                   <select value={attForm.status} onChange={(e) => setAttForm({...attForm, status: e.target.value})}
                     className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm cursor-pointer">
                     <option value="present">Present</option>
@@ -873,27 +948,27 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Check In</label>
+                  <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">Check In</label>
                   <input type="time" value={attForm.checkInTime} onChange={(e) => setAttForm({...attForm, checkInTime: e.target.value})}
                     className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm" />
                 </div>
                 <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Check Out</label>
+                  <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">Check Out</label>
                   <input type="time" value={attForm.checkOutTime} onChange={(e) => setAttForm({...attForm, checkOutTime: e.target.value})}
                     className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm" />
                 </div>
               </div>
               <div>
-                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Notes</label>
+                <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">Notes</label>
                 <input value={attForm.notes} onChange={(e) => setAttForm({...attForm, notes: e.target.value})}
                   className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo transition-all shadow-sm" placeholder="Optional notes" />
               </div>
               
               <div className="flex gap-3 pt-6">
-                <button type="button" onClick={() => setShowAttModal(false)} className="flex-1 py-3 rounded-xl bg-slate-100 text-[10px] uppercase tracking-wider font-black hover:bg-slate-200 text-slate-700 transition-all">
+                <button type="button" onClick={() => setShowAttModal(false)} className="flex-1 py-3 rounded-xl bg-slate-100 text-xs uppercase tracking-wider font-bold hover:bg-slate-200 text-slate-700 transition-all">
                   Cancel
                 </button>
-                <button onClick={handleMarkAtt} className="flex-1 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[10px] uppercase tracking-wider font-black shadow-lg shadow-slate-900/20 transition-all flex items-center justify-center gap-2">
+                <button onClick={handleMarkAtt} className="flex-1 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs uppercase tracking-wider font-bold shadow-lg shadow-slate-900/20 transition-all flex items-center justify-center gap-2">
                   <CheckCircle size={14} /> Submit
                 </button>
               </div>
@@ -911,14 +986,14 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
                 <X size={16} />
               </button>
               <div className="w-12 h-12 bg-slate-50 text-slate-900 rounded-full flex items-center justify-center mb-4 border border-slate-200 shadow-sm text-xl">
-                ⏱️
+                
               </div>
-              <h3 className="font-black text-slate-900 text-xl">{editingAttendancePolicyId ? 'Edit Policy' : 'Create Policy'}</h3>
+              <h3 className="font-bold text-slate-900 text-xl">{editingAttendancePolicyId ? 'Edit Policy' : 'Create Policy'}</h3>
             </div>
             
             <form onSubmit={handleSaveAttendancePolicy} className="p-6 bg-slate-50/50 space-y-4">
               <div>
-                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Policy Name *</label>
+                <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">Policy Name *</label>
                 <input
                   type="text"
                   required
@@ -930,7 +1005,7 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Shift Start (HH:MM)</label>
+                  <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">Shift Start (HH:MM)</label>
                   <input
                     type="text"
                     required
@@ -941,7 +1016,7 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Shift End (HH:MM)</label>
+                  <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">Shift End (HH:MM)</label>
                   <input
                     type="text"
                     required
@@ -954,7 +1029,7 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Late Grace (Mins)</label>
+                  <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">Late Grace (Mins)</label>
                   <input
                     type="number"
                     min="0"
@@ -964,7 +1039,7 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Half-Day Limit (Hrs)</label>
+                  <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">Half-Day Limit (Hrs)</label>
                   <input
                     type="number"
                     min="0"
@@ -976,7 +1051,7 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Late Fine (Rs. per block)</label>
+                  <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">Late Fine (Rs. per block)</label>
                   <input
                     type="number"
                     min="0"
@@ -986,7 +1061,7 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Late Block Size (Mins)</label>
+                  <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">Late Block Size (Mins)</label>
                   <input
                     type="number"
                     min="1"
@@ -998,7 +1073,7 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">OT Rate (Rs. per block)</label>
+                  <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">OT Rate (Rs. per block)</label>
                   <input
                     type="number"
                     min="0"
@@ -1008,7 +1083,7 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">OT Block Size (Mins)</label>
+                  <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">OT Block Size (Mins)</label>
                   <input
                     type="number"
                     min="1"
@@ -1020,7 +1095,7 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Early Out Fine (Rs.)</label>
+                  <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">Early Out Fine (Rs.)</label>
                   <input
                     type="number"
                     min="0"
@@ -1031,7 +1106,7 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
                 </div>
               </div>
               <div>
-                <label className="text-[10px] uppercase font-black tracking-wider text-rose-600 block mb-2">Absent Day Deduction (Rs.)</label>
+                <label className="text-xs uppercase font-bold tracking-wider text-rose-600 block mb-2">Absent Day Deduction (Rs.)</label>
                 <input
                   type="number"
                   min="0"
@@ -1040,7 +1115,7 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
                   placeholder="e.g. 1500"
                   className="w-full bg-white border border-rose-200 rounded-xl px-4 py-3 text-sm font-semibold text-rose-800 focus:outline-none focus:ring-2 focus:ring-rose-300 transition-all shadow-sm"
                 />
-                <p className="text-[9px] text-slate-400 mt-1">Fixed amount deducted for each unapproved absent day (also used for extra off-days if no separate leave-policy fine is set)</p>
+                <p className="text-xs text-slate-400 mt-1">Fixed amount deducted for each unapproved absent day (also used for extra off-days if no separate leave-policy fine is set)</p>
               </div>
               <div className="flex items-center gap-3 pt-2 bg-slate-100 p-3 rounded-xl border border-slate-200">
                 <input
@@ -1050,15 +1125,15 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
                   onChange={(e) => setAttendanceForm({ ...attendanceForm, isDefault: e.target.checked })}
                   className="w-4 h-4 rounded text-brand-indigo focus:ring-brand-indigo accent-brand-indigo cursor-pointer"
                 />
-                <label htmlFor="attendanceDefault" className="text-xs font-black text-slate-700 cursor-pointer select-none">
+                <label htmlFor="attendanceDefault" className="text-xs font-bold text-slate-700 cursor-pointer select-none">
                   Set as system default policy
                 </label>
               </div>
               <div className="flex gap-3 pt-6">
-                <button type="button" onClick={() => setShowAttendanceModal(false)} className="flex-1 py-3 rounded-xl bg-slate-100 text-[10px] uppercase tracking-wider font-black hover:bg-slate-200 text-slate-700 transition-all">
+                <button type="button" onClick={() => setShowAttendanceModal(false)} className="flex-1 py-3 rounded-xl bg-slate-100 text-xs uppercase tracking-wider font-bold hover:bg-slate-200 text-slate-700 transition-all">
                   Cancel
                 </button>
-                <button type="submit" className="flex-1 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[10px] uppercase tracking-wider font-black shadow-lg shadow-slate-900/20 transition-all">
+                <button type="submit" className="flex-1 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs uppercase tracking-wider font-bold shadow-lg shadow-slate-900/20 transition-all">
                   {editingAttendancePolicyId ? 'Update Policy' : 'Create Policy'}
                 </button>
               </div>
@@ -1076,14 +1151,14 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
                 <X size={16} />
               </button>
               <div className="w-12 h-12 bg-slate-50 text-slate-900 rounded-full flex items-center justify-center mb-4 border border-slate-200 shadow-sm text-xl">
-                👤
+                
               </div>
-              <h3 className="font-black text-slate-900 text-xl">Assign Policy</h3>
+              <h3 className="font-bold text-slate-900 text-xl">Assign Policy</h3>
             </div>
 
             <form onSubmit={handleSaveAssignment} className="p-6 bg-slate-50/50 space-y-4 overflow-y-auto">
               <div>
-                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Employees</label>
+                <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">Employees</label>
                 <EmployeeSelector
                   alwaysOpen
                   multiple
@@ -1093,7 +1168,7 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
                 />
               </div>
               <div>
-                <label className="text-[10px] uppercase font-black tracking-wider text-slate-500 block mb-2">Select Attendance Policy *</label>
+                <label className="text-xs uppercase font-bold tracking-wider text-slate-500 block mb-2">Select Attendance Policy *</label>
                 {attendancePolicies.length > 6 && (
                   <input
                     type="text"
@@ -1120,13 +1195,13 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
                 </select>
               </div>
               <div className="flex gap-3 pt-6">
-                <button type="button" onClick={() => setShowAssignModal(false)} className="flex-1 py-3 rounded-xl bg-slate-100 text-[10px] uppercase tracking-wider font-black hover:bg-slate-200 text-slate-700 transition-all">
+                <button type="button" onClick={() => setShowAssignModal(false)} className="flex-1 py-3 rounded-xl bg-slate-100 text-xs uppercase tracking-wider font-bold hover:bg-slate-200 text-slate-700 transition-all">
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={assignForm.employeeIds.length === 0 || !assignForm.attendancePolicyId}
-                  className="flex-1 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[10px] uppercase tracking-wider font-black shadow-lg shadow-slate-900/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-slate-900"
+                  className="flex-1 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs uppercase tracking-wider font-bold shadow-lg shadow-slate-900/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-slate-900"
                 >
                   Save Changes
                 </button>
@@ -1152,7 +1227,7 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
                 <AlertCircle size={24} />
               </div>
               <div>
-                <h3 className="font-extrabold text-slate-900 text-lg">Bulk Policy Assignment</h3>
+                <h3 className="font-bold text-slate-900 text-lg">Bulk Policy Assignment</h3>
                 <p className="text-xs text-slate-500 font-medium">Please confirm this action</p>
               </div>
             </div>

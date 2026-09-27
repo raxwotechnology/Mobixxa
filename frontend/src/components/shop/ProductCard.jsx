@@ -64,7 +64,7 @@ export default function ProductCard({ product }) {
 
         {/* Floating Category Tag */}
         {product.badge && (
-          <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm border border-slate-200/60 text-slate-700 text-[10px] font-semibold px-2.5 py-1 rounded-full shadow-xs">
+          <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm border border-slate-200/60 text-slate-700 text-xs font-semibold px-2.5 py-1 rounded-full shadow-xs">
             {product.badge}
           </span>
         )}
@@ -164,7 +164,7 @@ export default function ProductCard({ product }) {
 
         {/* Extra swatches indicator badge like (+1) */}
         {product.extraSwatchesCount && (
-          <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-full border border-slate-200">
+          <span className="text-xs font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-full border border-slate-200">
             +{product.extraSwatchesCount}
           </span>
         )}
@@ -186,7 +186,7 @@ function PixelProIllustration({ color }) {
         <div className="w-2 h-2 rounded-full bg-slate-800 mx-auto mt-0.5" />
         {/* Screen Display Wallpaper */}
         <div className="h-32 rounded-[16px] bg-gradient-to-tr from-slate-900 via-blue-950 to-slate-900 flex flex-col items-center justify-center p-2 text-center">
-          <span className="text-[9px] font-bold text-white tracking-tight">Pixel 10 Pro</span>
+          <span className="text-xs font-bold text-white tracking-tight">Pixel 10 Pro</span>
           <span className="text-[7px] text-blue-300">Tensor G5</span>
         </div>
         {/* Home bottom bar */}
@@ -211,7 +211,7 @@ function PixelProIllustration({ color }) {
 
         {/* Minimalist 'G' logo on back */}
         <div className="mt-auto mb-4 w-4 h-4 rounded-full border-2 border-slate-700/50 flex items-center justify-center">
-          <span className="text-[8px] font-black text-slate-700">G</span>
+          <span className="text-xs font-bold text-slate-700">G</span>
         </div>
       </div>
     </div>
@@ -225,7 +225,7 @@ function PixelStandardIllustration({ color }) {
       <div className="w-18 h-40 bg-slate-950 rounded-[20px] p-1.5 shadow-xl border-2 border-slate-800 flex flex-col justify-between">
         <div className="w-1.5 h-1.5 rounded-full bg-slate-800 mx-auto mt-0.5" />
         <div className="h-28 rounded-[14px] bg-gradient-to-br from-emerald-950 via-slate-900 to-indigo-950 flex flex-col items-center justify-center text-center">
-          <span className="text-[9px] font-bold text-white">Pixel 10</span>
+          <span className="text-xs font-bold text-white">Pixel 10</span>
           <span className="text-[7px] text-emerald-400">OLED 120Hz</span>
         </div>
         <div className="w-6 h-0.5 bg-slate-600 rounded-full mx-auto mb-1" />
@@ -258,13 +258,13 @@ function FitbitIllustration({ color }) {
       />
       {/* Smartwatch Screen Pebble */}
       <div className="w-24 h-32 bg-slate-950 rounded-[26px] p-2 shadow-xl border-2 border-slate-700 z-10 flex flex-col items-center justify-between">
-        <div className="flex items-center justify-between w-full text-[8px] text-blue-400 px-1 pt-0.5">
+        <div className="flex items-center justify-between w-full text-xs text-blue-400 px-1 pt-0.5">
           <span>FITBIT</span>
           <span className="text-slate-400 font-mono">10:08</span>
         </div>
         <div className="text-center my-auto">
-          <span className="text-xl font-black text-white tracking-tight">8,420</span>
-          <span className="text-[8px] text-emerald-400 block font-medium">Steps Today</span>
+          <span className="text-xl font-bold text-white tracking-tight">8,420</span>
+          <span className="text-xs text-emerald-400 block font-medium">Steps Today</span>
         </div>
         <div className="w-12 h-1 bg-emerald-500 rounded-full mb-1" />
       </div>
@@ -284,7 +284,7 @@ function InfinixIllustration({ color }) {
       <div className="w-20 h-44 bg-slate-950 rounded-[22px] p-1.5 shadow-xl border-2 border-slate-800 flex flex-col justify-between">
         <div className="w-2 h-2 rounded-full bg-slate-800 mx-auto mt-0.5" />
         <div className="h-32 rounded-[16px] bg-gradient-to-tr from-emerald-950 via-slate-900 to-teal-950 flex flex-col items-center justify-center p-2 text-center">
-          <span className="text-[9px] font-bold text-white">Note 60 Ultra</span>
+          <span className="text-xs font-bold text-white">Note 60 Ultra</span>
           <span className="text-[7px] text-teal-300">200MP OIS</span>
         </div>
         <div className="w-8 h-0.5 bg-slate-600 rounded-full mx-auto mb-1" />
@@ -302,7 +302,7 @@ function InfinixIllustration({ color }) {
           <div className="w-3.5 h-3.5 rounded-full bg-slate-900 border border-slate-700" />
           <div className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-sm" />
         </div>
-        <div className="mt-auto mb-4 text-[7px] font-black tracking-widest text-slate-800/80 uppercase">
+        <div className="mt-auto mb-4 text-[7px] font-bold tracking-widest text-slate-800/80 uppercase">
           INFINIX
         </div>
       </div>
@@ -323,7 +323,7 @@ function TabletIllustration({ color }) {
         </div>
         <div className="text-center my-auto">
           <span className="text-sm font-bold text-white block">Ultra Retina XDR</span>
-          <span className="text-[8px] text-blue-400 font-mono">Apple M4 Chip</span>
+          <span className="text-xs text-blue-400 font-mono">Apple M4 Chip</span>
         </div>
         <div className="w-10 h-0.5 bg-slate-600 rounded-full mx-auto" />
       </div>
@@ -339,7 +339,7 @@ function LaptopIllustration({ color }) {
       >
         <div className="w-1 h-1 rounded-full bg-slate-800 mx-auto" />
         <div className="h-20 bg-gradient-to-tr from-slate-900 via-indigo-950 to-slate-900 rounded-lg p-1.5 flex flex-col items-center justify-center text-center">
-          <span className="text-[9px] font-bold text-white">MacBook Air 15</span>
+          <span className="text-xs font-bold text-white">MacBook Air 15</span>
           <span className="text-[7px] text-amber-300">Liquid Retina</span>
         </div>
       </div>
@@ -383,7 +383,7 @@ function ChargerIllustration({ color }) {
         <div className="w-1 h-3 bg-slate-400 rounded-sm" />
       </div>
       <div className="text-center">
-        <span className="text-xs font-black text-slate-800 block">65W</span>
+        <span className="text-xs font-bold text-slate-800 block">65W</span>
         <span className="text-[7px] text-blue-600 font-bold uppercase">GaN Prime</span>
       </div>
       <div className="flex flex-col gap-1 w-full items-center mb-1">

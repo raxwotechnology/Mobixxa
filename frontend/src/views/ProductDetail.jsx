@@ -112,8 +112,8 @@ const ProductDetail = () => {
   if (!product) {
     return (
       <div className="base-container py-24 text-center">
-        <span className="text-5xl block mb-4">😢</span>
-        <h2 className="text-2xl font-black text-slate-800 mb-2">Device Not Found</h2>
+        
+        <h2 className="text-2xl font-bold text-slate-800 mb-2">Device Not Found</h2>
         <Link to="/shop" className="text-brand-indigo font-bold hover:underline">Back to Shop Catalog</Link>
       </div>
     );
@@ -144,7 +144,7 @@ const ProductDetail = () => {
               onError={(e) => handleImageError(e, 'Product')}
             />
             {product.discount > 0 && (
-              <span className="absolute top-4 left-4 bg-rose-500 text-white text-[10px] font-black px-3.5 py-1.5 rounded-xl shadow-md uppercase tracking-wider">
+              <span className="absolute top-4 left-4 bg-rose-500 text-white text-xs font-bold px-3.5 py-1.5 rounded-xl shadow-md uppercase tracking-wider">
                 -{product.discount}% OFF
               </span>
             )}
@@ -170,9 +170,9 @@ const ProductDetail = () => {
         <motion.div className="lg:col-span-3" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.1 }}>
           <div className="bg-white p-8 rounded-[2rem] border border-slate-200/60 shadow-sm h-full flex flex-col">
             <div className="mb-4">
-              <span className="text-[10px] font-bold text-brand-indigo uppercase tracking-wider bg-brand-indigo/5 border border-brand-indigo/10 px-3.5 py-1.5 rounded-xl">{product.categoryId?.name || 'Device'}</span>
+              <span className="text-xs font-bold text-brand-indigo uppercase tracking-wider bg-brand-indigo/5 border border-brand-indigo/10 px-3.5 py-1.5 rounded-xl">{product.categoryId?.name || 'Device'}</span>
             </div>
-            <h1 className="text-2xl md:text-3xl font-black text-slate-800 mt-0 mb-3 tracking-tight">{product.name}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mt-0 mb-3 tracking-tight">{product.name}</h1>
             
             <div className="flex items-center gap-3 mb-6">
               <div className="flex items-center gap-1 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-100">
@@ -199,19 +199,19 @@ const ProductDetail = () => {
               {product.price > 0 && (
                 <div className="mt-3.5 p-3.5 bg-blue-50/80 border border-blue-200/80 rounded-2xl flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-blue-600 text-white font-black text-xs flex items-center justify-center shadow-sm">
+                    <div className="px-2.5 py-1 rounded-lg bg-[#0052FF] text-white font-bold text-xs flex items-center justify-center shadow-xs">
                       koko
                     </div>
                     <div>
                       <p className="text-xs font-bold text-slate-900 m-0">
-                        Or 3 interest-free payments of <span className="font-black text-blue-600">
+                        Or 3 interest-free payments of <span className="font-bold text-blue-600">
                           {currency === 'USD' ? `$${(Math.ceil(product.price / 3) / exchangeRate).toFixed(2)}` : `Rs. ${Math.ceil(product.price / 3).toLocaleString()}`}
                         </span>
                       </p>
-                      <p className="text-[10px] text-slate-500 m-0 font-medium">No hidden fees • Instant approval at checkout</p>
+                      <p className="text-xs text-slate-500 m-0 font-medium">No hidden fees • Instant approval at checkout</p>
                     </div>
                   </div>
-                  <span className="text-[10px] font-black text-blue-700 bg-blue-100/90 px-3 py-1 rounded-full uppercase tracking-wider">3x Pay</span>
+                  <span className="text-xs font-bold text-blue-700 bg-blue-100/90 px-3 py-1 rounded-full uppercase tracking-wider">3x Pay</span>
                 </div>
               )}
 
@@ -229,15 +229,15 @@ const ProductDetail = () => {
               <div className="flex items-start gap-3 p-3.5 bg-slate-50 border border-slate-200/60 rounded-2xl">
                 <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 flex-shrink-0"><ShieldCheck size={18} /></div>
                 <div>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider m-0">Warranty</p>
-                  <p className="text-sm font-extrabold text-slate-800 m-0">1 Year Official</p>
+                  <p className="text-xs text-slate-400 font-bold uppercase tracking-wider m-0">Warranty</p>
+                  <p className="text-sm font-bold text-slate-800 m-0">1 Year Official</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-3.5 bg-slate-50 border border-slate-200/60 rounded-2xl">
                 <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 flex-shrink-0"><Cpu size={18} /></div>
                 <div>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider m-0">Condition</p>
-                  <p className="text-sm font-extrabold text-slate-800 m-0">Brand New Sealed</p>
+                  <p className="text-xs text-slate-400 font-bold uppercase tracking-wider m-0">Condition</p>
+                  <p className="text-sm font-bold text-slate-800 m-0">Brand New Sealed</p>
                 </div>
               </div>
             </div>
@@ -248,14 +248,14 @@ const ProductDetail = () => {
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Quantity</span>
                 <div className="flex items-center border border-slate-200 rounded-xl overflow-hidden bg-slate-50">
                   <button onClick={() => setQuantity((q) => Math.max(1, q - 1))} className="w-11 h-11 flex items-center justify-center hover:bg-slate-200 transition-colors text-slate-600 cursor-pointer border-0 bg-transparent"><Minus size={16} /></button>
-                  <span className="w-11 h-11 flex items-center justify-center font-black text-slate-900 text-sm border-x border-slate-200">{quantity}</span>
+                  <span className="w-11 h-11 flex items-center justify-center font-bold text-slate-900 text-sm border-x border-slate-200">{quantity}</span>
                   <button onClick={() => setQuantity((q) => Math.min(product.stock, q + 1))} disabled={!inStock} className="w-11 h-11 flex items-center justify-center hover:bg-slate-200 transition-colors text-slate-600 disabled:opacity-50 cursor-pointer border-0 bg-transparent"><Plus size={16} /></button>
                 </div>
               </div>
 
               {/* Actions */}
               <div className="flex flex-col sm:flex-row gap-3.5 mb-6">
-                <button onClick={handleAddToCart} disabled={!inStock} className={`flex-1 font-black py-4 px-8 rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2.5 text-base cursor-pointer ${inStock ? 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white shadow-[0_4px_16px_rgba(37,99,235,0.35)] hover:shadow-[0_6px_22px_rgba(37,99,235,0.45)] hover:-translate-y-0.5 border-0' : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none border-0'}`}>
+                <button onClick={handleAddToCart} disabled={!inStock} className={`flex-1 font-bold py-4 px-8 rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2.5 text-base cursor-pointer ${inStock ? 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white shadow-[0_4px_16px_rgba(37,99,235,0.35)] hover:shadow-[0_6px_22px_rgba(37,99,235,0.45)] hover:-translate-y-0.5 border-0' : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none border-0'}`}>
                   <ShoppingCart size={20} /> Add to Cart
                 </button>
                 <div className="flex gap-3">
@@ -274,10 +274,10 @@ const ProductDetail = () => {
                 <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-4 flex items-center gap-4">
                   <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-slate-200/40 flex items-center justify-center"><Store size={18} className="text-blue-600" /></div>
                   <div className="flex-1">
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider m-0 mb-0.5">Sold by</p>
+                    <p className="text-xs text-slate-400 font-bold uppercase tracking-wider m-0 mb-0.5">Sold by</p>
                     <Link to={`/store/${product.storeId._id}`} className="font-bold text-slate-800 hover:text-blue-600 transition-colors text-sm block no-underline">{product.storeId.name}</Link>
                   </div>
-                  {product.storeId.city && <div className="text-right"><p className="text-[10px] font-extrabold uppercase tracking-wide text-slate-600 bg-white border border-slate-200 px-2.5 py-1 rounded-lg inline-flex items-center gap-1.5"><MapPin size={11} className="text-blue-600"/> {product.storeId.city}</p></div>}
+                  {product.storeId.city && <div className="text-right"><p className="text-xs font-bold uppercase tracking-wide text-slate-600 bg-white border border-slate-200 px-2.5 py-1 rounded-lg inline-flex items-center gap-1.5"><MapPin size={11} className="text-blue-600"/> {product.storeId.city}</p></div>}
                 </div>
               )}
             </div>
@@ -290,7 +290,7 @@ const ProductDetail = () => {
         <div className="flex overflow-x-auto border-b border-slate-200 mb-8 gap-8 px-4 scrollbar-hide">
           {['description', 'specifications', 'reviews'].map((tab) => (
             <button key={tab} onClick={() => setActiveTab(tab)}
-              className={`py-4 text-sm font-bold capitalize transition-all border-b-2 whitespace-nowrap cursor-pointer border-x-0 border-t-0 bg-transparent ${activeTab === tab ? 'border-blue-600 text-blue-600 font-extrabold' : 'border-transparent text-slate-400 hover:text-slate-700'}`}>
+              className={`py-4 text-sm font-bold capitalize transition-all border-b-2 whitespace-nowrap cursor-pointer border-x-0 border-t-0 bg-transparent ${activeTab === tab ? 'border-blue-600 text-blue-600 font-bold' : 'border-transparent text-slate-400 hover:text-slate-700'}`}>
               {tab === 'reviews' ? `Customer Reviews (${product.totalReviews})` : tab}
             </button>
           ))}
@@ -330,7 +330,7 @@ const ProductDetail = () => {
       {related.length > 0 && (
         <section className="pt-10 border-t border-slate-200/60">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-black text-slate-800 tracking-tight m-0">You Might Also Like</h2>
+            <h2 className="text-2xl font-bold text-slate-800 tracking-tight m-0">You Might Also Like</h2>
             <Link to="/shop" className="text-sm font-bold text-brand-indigo hover:underline">View All Devices</Link>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">

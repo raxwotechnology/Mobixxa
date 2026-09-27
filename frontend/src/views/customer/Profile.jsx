@@ -201,12 +201,12 @@ const Profile = () => {
                   </div>
                 )}
                 <label className="absolute inset-0 bg-black/60 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
-                  <span className="text-white text-[10px] font-black uppercase tracking-wider">{uploading ? '...' : 'Change'}</span>
+                  <span className="text-white text-xs font-bold uppercase tracking-wider">{uploading ? '...' : 'Change'}</span>
                   <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" disabled={uploading} />
                 </label>
               </div>
               <div>
-                <h2 className="text-lg font-black text-slate-900 m-0">{user?.name || 'Customer'}</h2>
+                <h2 className="text-lg font-bold text-slate-900 m-0">{user?.name || 'Customer'}</h2>
                 <p className="text-xs text-slate-500 font-semibold m-0 mt-1">Manage your account profile and profile image</p>
               </div>
             </div>
@@ -274,14 +274,14 @@ const Profile = () => {
                   <MapPin size={16} className="text-brand-indigo" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-black text-slate-850 m-0 uppercase tracking-wider">Delivery Addresses</h2>
+                  <h2 className="text-sm font-bold text-slate-850 m-0 uppercase tracking-wider">Delivery Addresses</h2>
                   <p className="text-xs text-slate-400 font-semibold m-0 mt-0.5">Manage your saved addresses</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={addAddress}
-                className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-brand-indigo hover:text-brand-violet transition-colors border-0 bg-transparent cursor-pointer"
+                className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-brand-indigo hover:text-brand-violet transition-colors border-0 bg-transparent cursor-pointer"
               >
                 <Plus size={14} /> Add
               </button>
@@ -290,7 +290,7 @@ const Profile = () => {
             {form.addresses.length === 0 && (
               <div className="text-center py-8 text-slate-400">
                 <MapPin size={28} className="mx-auto mb-2 text-slate-300 animate-pulse" />
-                <p className="text-xs font-black uppercase tracking-wider">No addresses saved yet</p>
+                <p className="text-xs font-bold uppercase tracking-wider">No addresses saved yet</p>
               </div>
             )}
 
@@ -301,13 +301,13 @@ const Profile = () => {
                     <button
                       type="button"
                       onClick={() => setDefaultAddress(i)}
-                      className={`text-[9px] font-black uppercase tracking-wider px-3 py-1.5 rounded-lg transition-all cursor-pointer border ${
+                      className={`text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg transition-all cursor-pointer border ${
                         addr.isDefault 
                           ? 'bg-slate-900 border-slate-900 text-white shadow-xs' 
                           : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
                       }`}
                     >
-                      {addr.isDefault ? '✓ Default' : 'Set as Default'}
+                      {addr.isDefault ? 'Default' : 'Set as Default'}
                     </button>
                     <button type="button" onClick={() => removeAddress(i)} className="text-rose-450 hover:text-rose-600 transition-colors bg-transparent border-0 cursor-pointer">
                       <Trash2 size={16} />
@@ -340,10 +340,10 @@ const Profile = () => {
         <div id="help-center" className="mt-8 bg-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-800 space-y-6">
           <div className="flex items-center gap-3 border-b border-white/10 pb-4">
             <div className="w-12 h-12 rounded-2xl bg-blue-600/30 border border-blue-400/30 flex items-center justify-center text-blue-400 text-2xl">
-              🎧
+              
             </div>
             <div>
-              <h3 className="text-xl font-extrabold text-white m-0">Help Center & Support Hotlines</h3>
+              <h3 className="text-xl font-bold text-white m-0">Help Center & Support Hotlines</h3>
               <p className="text-xs text-blue-300 m-0">Direct shop, admin, and management support contact details</p>
             </div>
           </div>
@@ -352,7 +352,7 @@ const Profile = () => {
             {/* 1. Shop Support */}
             <div className="bg-white/5 border border-white/10 rounded-2xl p-5 backdrop-blur-sm space-y-3">
               <div className="flex items-center gap-2 text-blue-400 font-bold text-sm">
-                <span>🛍️</span> Shop Support
+                Shop Support
               </div>
               <div className="space-y-2 text-xs text-slate-300">
                 <p className="flex items-center gap-2 m-0">
@@ -369,7 +369,7 @@ const Profile = () => {
                   <Mail size={14} className="text-blue-400 shrink-0" />
                   <span>{settings?.email || 'support@mobixa.com'}</span>
                 </p>
-                <p className="flex items-start gap-2 m-0 text-[11px] text-slate-400 pt-1 border-t border-white/5">
+                <p className="flex items-start gap-2 m-0 text-xs text-slate-400 pt-1 border-t border-white/5">
                   <MapPin size={14} className="text-blue-400 shrink-0 mt-0.5" />
                   <span>{settings?.address || '88 Tech Avenue, Colombo 03'}</span>
                 </p>
@@ -379,7 +379,7 @@ const Profile = () => {
             {/* 2. Admin Support */}
             <div className="bg-white/5 border border-white/10 rounded-2xl p-5 backdrop-blur-sm space-y-3">
               <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm">
-                <span>🛡️</span> Admin Support
+                Admin Support
               </div>
               <div className="space-y-2 text-xs text-slate-300">
                 <p className="flex items-center gap-2 m-0">
@@ -391,7 +391,7 @@ const Profile = () => {
                   <span>{settings?.email || 'admin@mobixa.com'}</span>
                 </p>
                 <div className="pt-2">
-                  <span className="inline-block px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold uppercase">
+                  <span className="inline-block px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold uppercase">
                     Account & Payments Escalation
                   </span>
                 </div>
@@ -401,7 +401,7 @@ const Profile = () => {
             {/* 3. Manager Support */}
             <div className="bg-white/5 border border-white/10 rounded-2xl p-5 backdrop-blur-sm space-y-3">
               <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
-                <span>👔</span> Store Manager
+                Store Manager
               </div>
               <div className="space-y-2 text-xs text-slate-300">
                 <p className="flex items-center gap-2 m-0">
@@ -413,7 +413,7 @@ const Profile = () => {
                   <span>manager@mobixa.com</span>
                 </p>
                 <div className="pt-2">
-                  <span className="inline-block px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold uppercase">
+                  <span className="inline-block px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold uppercase">
                     Orders & Return Queries
                   </span>
                 </div>
@@ -422,13 +422,13 @@ const Profile = () => {
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-white/10 text-xs text-slate-400">
-            <p className="m-0">⏰ <strong>Operating Hours:</strong> Mon - Sat: 8:30 AM - 7:00 PM | Sun: 9:00 AM - 5:00 PM</p>
+            <p className="m-0"><strong>Operating Hours:</strong> Mon - Sat: 8:30 AM - 7:00 PM | Sun: 9:00 AM - 5:00 PM</p>
             <div className="flex gap-2">
               <a href={`tel:${settings?.phone || '+94112555000'}`} className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2 rounded-xl transition-colors">
-                📞 Call Shop
+                 Call Shop
               </a>
               <a href={`mailto:${settings?.email || 'support@mobixa.com'}`} className="bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-2 rounded-xl transition-colors">
-                ✉️ Email Support
+                 Email Support
               </a>
             </div>
           </div>
@@ -439,9 +439,9 @@ const Profile = () => {
           <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl border border-slate-100 p-6 space-y-4">
             <div className="text-center space-y-2">
               <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-2 text-xl">
-                ⚠️
+                
               </div>
-              <h3 className="font-extrabold text-slate-900 text-lg">Delete Profile Photo</h3>
+              <h3 className="font-bold text-slate-900 text-lg">Delete Profile Photo</h3>
               <p className="text-sm text-slate-500">Are you sure you want to permanently delete your profile photo?</p>
             </div>
             <div className="flex gap-3 justify-center pt-2">

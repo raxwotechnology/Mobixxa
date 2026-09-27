@@ -56,7 +56,7 @@ export const exportToPDF = (data, columns, title = 'Report') => {
   if (!data || data.length === 0) return;
 
   let table = `
-    <div style="font-family: Arial, sans-serif; padding: 20px;">
+    <div style="font-family: 'Poppins', sans-serif; padding: 20px;">
       <h1 style="color: #1a1a2e; margin-bottom: 5px;">${title}</h1>
       <p style="color: #666; font-size: 12px; margin-bottom: 20px;">Generated: ${new Date().toLocaleString()}</p>
       <table style="width:100%; border-collapse: collapse; font-size: 12px;">

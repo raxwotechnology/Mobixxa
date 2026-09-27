@@ -130,15 +130,15 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
   const showBarcode = documentTemplate.showBarcode !== false;
 
   return (
-    <div className="pos-modal-overlay" onClick={onClose}>
-      <div className="pos-invoice-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: layoutMode === 'invoice' ? '800px' : '420px', width: '100%', transition: 'all 0.3s' }}>
+    <div className="pos-modal-overlay p-2 sm:p-4" onClick={onClose}>
+      <div className="pos-invoice-modal w-full max-w-[96vw] sm:max-w-[420px] mx-auto overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()} style={{ maxWidth: layoutMode === 'invoice' ? '800px' : '420px', transition: 'all 0.3s' }}>
         {/* Close button — hidden when printing */}
         <button className="pos-invoice-close no-print" onClick={onClose}>
           <X size={20} />
         </button>
 
         {/* Layout Mode Selector — hidden when printing */}
-        <div className="flex justify-center border-b border-gray-100 p-3 no-print" style={{ gap: '10px' }}>
+        <div className="flex flex-wrap justify-center border-b border-gray-100 p-2.5 sm:p-3 no-print gap-2">
           <button
             type="button"
             onClick={() => setLayoutMode('receipt')}
@@ -204,12 +204,12 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
         ` }} />
 
         {/* ═══════ Professional Receipt/Invoice Content ═══════ */}
-        <div className="pos-receipt" id="pos-receipt-content" style={{ padding: '20px', background: '#fff', color: '#111' }}>
+        <div className="pos-receipt p-4 sm:p-5 overflow-y-auto max-h-[70vh]" id="pos-receipt-content" style={{ background: '#fff', color: '#111' }}>
           {layoutMode === 'invoice' ? (
             /* ═══════ Tax Invoice Layout (A4 Style) ═══════ */
-            <div className="a4-invoice-content" style={{ fontFamily: 'system-ui, -apple-system, sans-serif', color: '#334155' }}>
+            <div className="a4-invoice-content" style={{ fontFamily: "'Poppins', sans-serif", color: '#334155' }}>
               {/* Corporate Header */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #e2e8f0', paddingBottom: '16px', marginBottom: '16px' }}>
+              <div className="flex flex-col sm:flex-row justify-between gap-4 pb-4 mb-4 border-b-2 border-slate-200">
                 <div>
                   {(settings?.logoUrl || settings?.logo) && settings?.receiptSettings?.showLogo !== false && (
                     <img
@@ -240,7 +240,7 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
                     </>
                   )}
                 </div>
-                <div style={{ textAlign: 'right' }}>
+                <div className="text-left sm:text-right">
                   <h1 style={{ fontSize: '24px', fontWeight: 900, color: '#2563eb', margin: 0, letterSpacing: '1px' }}>
                     TAX INVOICE
                   </h1>
@@ -257,7 +257,7 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
               </div>
 
               {/* Info Columns */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5 mb-5">
                 <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
                   <h3 style={{ fontSize: '9px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', margin: '0 0 6px 0', letterSpacing: '0.5px' }}>Customer Details</h3>
                   <p style={{ fontSize: '12px', fontWeight: 700, color: '#1e293b', margin: '0 0 4px 0' }}>{order.customerName || 'Walk-in Customer'}</p>
@@ -274,46 +274,48 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
               </div>
 
               {/* Items Grid */}
-              <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
-                <thead>
-                  <tr style={{ background: '#f1f5f9', borderBottom: '2px solid #cbd5e1' }}>
-                    <th style={{ padding: '8px 10px', textAlign: 'left', fontSize: '10px', fontWeight: 800, color: '#475569', textTransform: 'uppercase' }}>Description</th>
-                    <th style={{ padding: '8px 10px', textAlign: 'center', fontSize: '10px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', width: '60px' }}>Qty</th>
-                    <th style={{ padding: '8px 10px', textAlign: 'right', fontSize: '10px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', width: '100px' }}>Price</th>
-                    <th style={{ padding: '8px 10px', textAlign: 'right', fontSize: '10px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', width: '100px' }}>Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {order.items?.map((item, idx) => (
-                    <tr key={idx} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                      <td style={{ padding: '10px', fontSize: '12px', color: '#334155' }}>
-                        <div style={{ fontWeight: 700 }}>{item.name}</div>
-                        {(item.barcode || item.sku) && (
-                          <div style={{ fontSize: '10px', color: '#64748b', marginTop: '1px' }}>
-                            Barcode: {item.barcode || item.sku}
-                          </div>
-                        )}
-                        {(item.imei?.length > 0 || item.imeiNumber) && (
-                          <div style={{ fontSize: '11px', color: '#2563eb', fontWeight: 800, marginTop: '2px' }}>
-                            IMEI / S/N: {Array.isArray(item.imei) ? item.imei.join(', ') : (item.imei || item.imeiNumber)}
-                          </div>
-                        )}
-                        {(item.warranty || item.warrantyMonths) && (
-                          <div style={{ fontSize: '10px', color: '#64748b', fontStyle: 'italic', marginTop: '1px' }}>
-                            Warranty: {item.warranty || `${item.warrantyMonths || 12} Months`}
-                          </div>
-                        )}
-                      </td>
-                      <td style={{ padding: '10px', textAlign: 'center', fontSize: '12px', color: '#334155' }}>{item.quantity}</td>
-                      <td style={{ padding: '10px', textAlign: 'right', fontSize: '12px', color: '#334155' }}>Rs. {item.price.toLocaleString()}</td>
-                      <td style={{ padding: '10px', textAlign: 'right', fontSize: '12px', fontWeight: 700, color: '#1e293b' }}>Rs. {(item.price * item.quantity).toLocaleString()}</td>
+              <div className="overflow-x-auto w-full mb-5 -mx-1 sm:mx-0">
+                <table style={{ width: '100%', minWidth: '440px', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ background: '#f1f5f9', borderBottom: '2px solid #cbd5e1' }}>
+                      <th style={{ padding: '8px 10px', textAlign: 'left', fontSize: '10px', fontWeight: 800, color: '#475569', textTransform: 'uppercase' }}>Description</th>
+                      <th style={{ padding: '8px 10px', textAlign: 'center', fontSize: '10px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', width: '60px' }}>Qty</th>
+                      <th style={{ padding: '8px 10px', textAlign: 'right', fontSize: '10px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', width: '100px' }}>Price</th>
+                      <th style={{ padding: '8px 10px', textAlign: 'right', fontSize: '10px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', width: '100px' }}>Total</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {order.items?.map((item, idx) => (
+                      <tr key={idx} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                        <td style={{ padding: '10px', fontSize: '12px', color: '#334155' }}>
+                          <div style={{ fontWeight: 700 }}>{item.name}</div>
+                          {(item.barcode || item.sku) && (
+                            <div style={{ fontSize: '10px', color: '#64748b', marginTop: '1px' }}>
+                              Barcode: {item.barcode || item.sku}
+                            </div>
+                          )}
+                          {(item.imei?.length > 0 || item.imeiNumber) && (
+                            <div style={{ fontSize: '11px', color: '#2563eb', fontWeight: 800, marginTop: '2px' }}>
+                              IMEI / S/N: {Array.isArray(item.imei) ? item.imei.join(', ') : (item.imei || item.imeiNumber)}
+                            </div>
+                          )}
+                          {(item.warranty || item.warrantyMonths) && (
+                            <div style={{ fontSize: '10px', color: '#64748b', fontStyle: 'italic', marginTop: '1px' }}>
+                              Warranty: {item.warranty || `${item.warrantyMonths || 12} Months`}
+                            </div>
+                          )}
+                        </td>
+                        <td style={{ padding: '10px', textAlign: 'center', fontSize: '12px', color: '#334155' }}>{item.quantity}</td>
+                        <td style={{ padding: '10px', textAlign: 'right', fontSize: '12px', color: '#334155' }}>Rs. {item.price.toLocaleString()}</td>
+                        <td style={{ padding: '10px', textAlign: 'right', fontSize: '12px', fontWeight: 700, color: '#1e293b' }}>Rs. {(item.price * item.quantity).toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
               {/* Totals & Credit Plan Row */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '30px', alignItems: 'start' }}>
+              <div className="grid grid-cols-1 sm:grid-cols-[1.2fr_1fr] gap-4 sm:gap-8 items-start">
                 <div>
                   {order.paymentMethod === 'hire_purchase' && (
                     <div style={{ border: '1px solid #fde68a', background: '#fffbeb', padding: '12px', borderRadius: '12px' }}>
@@ -358,7 +360,7 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
                   )}
                 </div>
 
-                <div style={{ marginLeft: 'auto', width: '100%', maxWidth: '260px', fontSize: '11px' }}>
+                <div style={{ marginLeft: 'auto', width: '100%', maxWidth: '320px', fontSize: '11px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', color: '#64748b' }}>
                     <span>Subtotal:</span>
                     <span>Rs. {subtotal.toLocaleString()}</span>
@@ -383,8 +385,8 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
               </div>
 
               {/* Footer Terms, Letterhead & Seal */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '30px', borderTop: '1px solid #cbd5e1', paddingTop: '16px' }}>
-                <div style={{ width: '65%', fontSize: '10px', color: '#64748b', textAlign: 'left' }}>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mt-6 pt-4 border-t border-slate-300">
+                <div className="w-full sm:w-[65%] text-[10px] text-slate-500 text-left">
                   {settings?.letterheadFooter ? (
                     <div style={{ whiteSpace: 'pre-line', lineHeight: '1.4', marginBottom: '8px' }}>
                       {settings.letterheadFooter}
@@ -396,7 +398,7 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
                   {showWarranty && settings?.receiptSettings?.warrantyTerms && <p style={{ margin: 0, fontSize: '9px', fontStyle: 'italic' }}>Warranty: {settings.receiptSettings.warrantyTerms}</p>}
                 </div>
 
-                <div style={{ width: '30%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end' }}>
+                <div className="w-full sm:w-[30%] flex flex-col items-center justify-end">
                   {(settings?.sealUrl || settings?.seal) && (
                     <div style={{ textAlign: 'center', marginBottom: '8px' }}>
                       <img src={getImageUrl(settings.sealUrl || settings.seal)} alt="Seal" style={{ width: '64px', height: '64px', objectFit: 'contain', opacity: 0.8, margin: '0 auto' }} />
@@ -681,59 +683,59 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
         </div>
 
         {/* Send Receipt Panel — hidden when printing */}
-        <div className="no-print" style={{ padding: '15px 20px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <h4 style={{ margin: 0, fontSize: '11px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+        <div className="no-print p-3 sm:p-4 bg-slate-50 border-t border-slate-200 flex flex-col gap-2.5">
+          <h4 className="m-0 text-xs font-extrabold text-slate-600 uppercase tracking-wider">
             Send Invoice / Receipt
           </h4>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px', alignItems: 'center' }}>
+          <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
             <input
               type="text"
               placeholder="WhatsApp Number (e.g., 0771234567)"
               value={whatsappRecipient}
               onChange={(e) => setWhatsappRecipient(e.target.value)}
-              style={{ fontSize: '12px', padding: '8px 12px', border: '1px solid #10b981', borderRadius: '8px', background: '#fff', color: '#1e293b' }}
+              className="text-xs p-2 border border-emerald-500 rounded-lg bg-white text-slate-800 flex-1 outline-none"
             />
             <button
               type="button"
               onClick={() => sendWhatsAppInvoice({ ...order, customerPhone: whatsappRecipient || order.customerPhone }, brandName, brandPhone)}
-              style={{ padding: '8px 14px', fontSize: '12px', fontWeight: 'bold', background: '#10b981', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+              className="px-3.5 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white border-0 rounded-lg cursor-pointer flex items-center justify-center gap-1.5 transition-colors"
             >
-              💬 WhatsApp Invoice
+              WhatsApp Invoice
             </button>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px', alignItems: 'center' }}>
+          <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
             <input
               type="text"
               placeholder="SMS Number (e.g., 0771234567)"
               value={smsRecipient}
               onChange={(e) => setSmsRecipient(e.target.value)}
-              style={{ fontSize: '12px', padding: '8px 12px', border: '1px solid #f59e0b', borderRadius: '8px', background: '#fff', color: '#1e293b' }}
+              className="text-xs p-2 border border-amber-500 rounded-lg bg-white text-slate-800 flex-1 outline-none"
             />
             <button
               type="button"
               onClick={handleSendSms}
               disabled={sendingSms}
-              style={{ padding: '8px 14px', fontSize: '12px', fontWeight: 'bold', background: '#f59e0b', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+              className="px-3.5 py-2 text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white border-0 rounded-lg cursor-pointer flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50"
             >
-              {sendingSms ? 'Sending...' : '📱 Send SMS'}
+              {sendingSms ? 'Sending...' : 'Send SMS'}
             </button>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px', alignItems: 'center' }}>
+          <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
             <input
               type="email"
               placeholder="Email Address"
               value={emailRecipient}
               onChange={(e) => setEmailRecipient(e.target.value)}
-              style={{ fontSize: '12px', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', background: '#fff', color: '#1e293b' }}
+              className="text-xs p-2 border border-slate-300 rounded-lg bg-white text-slate-800 flex-1 outline-none"
             />
             <button
               type="button"
               onClick={handleSendEmail}
               disabled={sendingEmail}
-              style={{ padding: '8px 14px', fontSize: '12px', fontWeight: 'bold', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', transition: 'opacity 0.2s' }}
+              className="px-3.5 py-2 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white border-0 rounded-lg cursor-pointer flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50"
             >
               {sendingEmail ? 'Sending...' : 'Send Email'}
             </button>
@@ -741,25 +743,11 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
         </div>
 
         {/* Action buttons — hidden when printing */}
-        <div className="pos-invoice-actions no-print" style={{ borderTop: '1px solid #e2e8f0', padding: '16px 20px', display: 'flex', gap: '12px', justifyContent: 'flex-end', background: '#ffffff', alignItems: 'center' }}>
+        <div className="pos-invoice-actions no-print border-t border-slate-200 p-3 sm:p-4 flex flex-wrap gap-2.5 justify-end bg-white items-center">
           <button
             type="button"
             onClick={handlePrint}
-            style={{
-              padding: '10px 22px',
-              fontSize: '13px',
-              fontWeight: '800',
-              background: '#2563eb',
-              color: '#ffffff',
-              border: 'none',
-              borderRadius: '12px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              boxShadow: '0 4px 12px rgba(37, 99, 235, 0.35)',
-              transition: 'all 0.2s'
-            }}
+            className="flex-1 sm:flex-initial justify-center px-4 py-2.5 text-xs sm:text-sm font-extrabold bg-blue-600 hover:bg-blue-700 text-white rounded-xl cursor-pointer flex items-center gap-2 shadow-sm transition-all"
           >
             <Download size={18} />
             Save PDF
@@ -768,28 +756,14 @@ const InvoiceModal = ({ isOpen, onClose, order, onNewSale, initialLayoutMode = '
           <button
             type="button"
             onClick={handlePrint}
-            style={{
-              padding: '10px 22px',
-              fontSize: '13px',
-              fontWeight: '800',
-              background: '#334155',
-              color: '#ffffff',
-              border: 'none',
-              borderRadius: '12px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              boxShadow: '0 4px 12px rgba(51, 65, 85, 0.35)',
-              transition: 'all 0.2s'
-            }}
+            className="flex-1 sm:flex-initial justify-center px-4 py-2.5 text-xs sm:text-sm font-extrabold bg-slate-700 hover:bg-slate-800 text-white rounded-xl cursor-pointer flex items-center gap-2 shadow-sm transition-all"
           >
             <Printer size={18} />
             Print Receipt
           </button>
 
           {onNewSale && (
-            <button className="pos-btn-green pos-btn-lg" onClick={handleNewSale} style={{ padding: '6px 14px', fontSize: '11px', fontWeight: 'bold' }}>
+            <button className="pos-btn-green pos-btn-lg w-full sm:w-auto justify-center px-3.5 py-2.5 text-xs font-bold" onClick={handleNewSale}>
               <RotateCcw size={14} />
               New Sale
             </button>

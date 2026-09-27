@@ -7,9 +7,9 @@ import { getStores } from '../services/api';
 import { getImageUrl } from '../utils/imageHelper';
 
 const STORE_THEMES = [
-  { bannerBg: 'bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600', icon: '🏢' },
-  { bannerBg: 'bg-gradient-to-r from-purple-800 via-purple-700 to-indigo-800', icon: '🔧' },
-  { bannerBg: 'bg-gradient-to-r from-slate-900 via-slate-800 to-blue-900', icon: '⚡' },
+  { bannerBg: 'bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600', icon: '' },
+  { bannerBg: 'bg-gradient-to-r from-purple-800 via-purple-700 to-indigo-800', icon: '' },
+  { bannerBg: 'bg-gradient-to-r from-slate-900 via-slate-800 to-blue-900', icon: '' },
 ];
 
 const StoreList = () => {
@@ -50,11 +50,11 @@ const StoreList = () => {
       <section className="catalog-hero base-container py-10 sm:py-12 px-6 lg:px-12 text-white mb-10">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_60%)] pointer-events-none" />
         <div className="base-container relative z-10">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-900/40 border border-white/20 text-white text-[10px] font-extrabold uppercase tracking-widest mb-3">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-900/40 border border-white/20 text-white text-xs font-bold uppercase tracking-widest mb-3">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
             Official Flagship Boutiques
           </div>
-          <h1 className="text-3xl sm:text-4xl font-black text-white m-0 tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-bold text-white m-0 tracking-tight">
             Our Stores &amp; Showrooms
           </h1>
           <p className="text-blue-100 text-xs sm:text-sm m-0 mt-1 max-w-xl">
@@ -78,7 +78,7 @@ const StoreList = () => {
             <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide py-1">
               <button
                 onClick={() => setSelectedCity('')}
-                className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+                className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                   selectedCity === ''
                     ? 'bg-white text-blue-700 shadow-md'
                     : 'bg-blue-800/60 text-white hover:bg-blue-800 border border-white/15'
@@ -90,7 +90,7 @@ const StoreList = () => {
                 <button
                   key={city}
                   onClick={() => setSelectedCity(city)}
-                  className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+                  className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                     selectedCity === city
                       ? 'bg-white text-blue-700 shadow-md'
                       : 'bg-blue-800/60 text-white hover:bg-blue-800 border border-white/15'
@@ -118,7 +118,7 @@ const StoreList = () => {
           </div>
         ) : filteredStores.length === 0 ? (
           <div className="text-center py-16 bg-white rounded-3xl border border-slate-200 p-8 max-w-md mx-auto">
-            <span className="text-4xl">🏢</span>
+            
             <h3 className="font-bold text-lg text-slate-800 mt-2">No showrooms found</h3>
             <p className="text-xs text-slate-500 mb-4">Try clearing your search or city filters.</p>
             <button
@@ -153,11 +153,11 @@ const StoreList = () => {
                     )}
 
                     <div className="relative z-10">
-                      <span className="inline-flex items-center gap-1.5 bg-emerald-500/90 text-white text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full shadow-sm">
+                      <span className="inline-flex items-center gap-1.5 bg-emerald-500/90 text-white text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-sm">
                         <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                         Open Showroom
                       </span>
-                      <h3 className="text-xl font-black text-white mt-3 mb-0">{store.name}</h3>
+                      <h3 className="text-xl font-bold text-white mt-3 mb-0">{store.name}</h3>
                       <p className="text-xs text-blue-100 m-0 mt-0.5">{store.address || store.city}</p>
                     </div>
 
@@ -188,9 +188,9 @@ const StoreList = () => {
                       {['Flagship Devices', 'Trade-In Centre', 'Repair Workshop', 'Free Parking'].map((tag, i) => (
                         <span
                           key={i}
-                          className="bg-slate-100 text-slate-600 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-slate-200/60"
+                          className="bg-slate-100 text-slate-600 text-xs font-bold px-2.5 py-1 rounded-lg border border-slate-200/60"
                         >
-                          ✓ {tag}
+                           {tag}
                         </span>
                       ))}
                     </div>
@@ -201,7 +201,7 @@ const StoreList = () => {
                         href={mapsUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="bg-blue-600 hover:bg-blue-700 text-white font-black text-xs py-2.5 rounded-xl text-center shadow-md hover:shadow transition-all flex items-center justify-center gap-1.5"
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2.5 rounded-xl text-center shadow-md hover:shadow transition-all flex items-center justify-center gap-1.5"
                       >
                         <Navigation size={13} />
                         Get Directions
@@ -226,14 +226,14 @@ const StoreList = () => {
       <section className="base-container px-4 sm:px-6 pb-20">
         <div className="w-full bg-blue-600 rounded-3xl p-6 sm:p-10 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
           <div>
-            <span className="text-[10px] font-extrabold uppercase tracking-widest text-blue-200">Can't Visit Us?</span>
-            <h3 className="text-2xl font-black text-white mt-1 mb-1">Shop Online, Delivered to You</h3>
+            <span className="text-xs font-bold uppercase tracking-widest text-blue-200">Can't Visit Us?</span>
+            <h3 className="text-2xl font-bold text-white mt-1 mb-1">Shop Online, Delivered to You</h3>
             <p className="text-blue-100 text-xs sm:text-sm m-0">Enjoy the same premium experience from the comfort of your home.</p>
           </div>
 
           <Link
             to="/shop"
-            className="inline-flex items-center gap-2 bg-white text-blue-700 font-black text-xs sm:text-sm px-6 py-3 rounded-xl hover:bg-blue-50 shadow-md transition-all flex-shrink-0"
+            className="inline-flex items-center gap-2 bg-white text-blue-700 font-bold text-xs sm:text-sm px-6 py-3 rounded-xl hover:bg-blue-50 shadow-md transition-all flex-shrink-0"
           >
             <ShoppingBag size={15} />
             Shop Online ↗

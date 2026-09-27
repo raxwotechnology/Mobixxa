@@ -47,7 +47,7 @@ export default function StoresPage() {
             </div>
 
             {/* Heading */}
-            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-white">
+            <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-white">
               Our Stores &amp; Showrooms
             </h1>
 
@@ -85,7 +85,7 @@ export default function StoresPage() {
             <button
               type="button"
               onClick={() => setSelectedCityFilter("ALL")}
-              className="bg-[#0a0f1d] hover:bg-slate-900 text-white font-bold text-xs px-6 py-3 rounded-full shadow-sm uppercase tracking-wide transition-colors"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-6 py-3 rounded-full shadow-md shadow-blue-500/20 uppercase tracking-wide transition-colors"
             >
               ALL CITIES ({stores.length})
             </button>

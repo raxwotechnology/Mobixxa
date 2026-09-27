@@ -2,18 +2,16 @@
 
 import { useState } from 'react';
 import { Link, useNavigate } from '../utils/navigation';
-import { Eye, EyeOff } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Eye, EyeOff, UserPlus, Mail, Lock, Phone, User, ArrowRight } from 'lucide-react';
 import useAuthStore from '../store/authStore';
 import useSettingsStore from '../store/settingsStore';
 import { registerUser } from '../services/api';
 import { getImageUrl } from '../utils/imageHelper';
 import { toast } from 'react-toastify';
 
-// Sri Lankan phone validation
 const SL_PHONE_REGEX = /^(?:\+94|0)?[0-9]{9}$/;
 const isValidSLPhone = (phone) => {
-  if (!phone) return true; // optional field
+  if (!phone) return true;
   return SL_PHONE_REGEX.test(phone.replace(/[\s\-()]/g, ''));
 };
 
@@ -34,7 +32,7 @@ const Register = () => {
   const handlePhoneChange = (value) => {
     setPhone(value);
     if (value && !isValidSLPhone(value)) {
-      setPhoneError('Enter a valid Sri Lankan number (e.g., 0771234567 or +94771234567)');
+      setPhoneError('Enter a valid Sri Lankan number (e.g. 0771234567)');
     } else {
       setPhoneError('');
     }
@@ -42,146 +40,110 @@ const Register = () => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    if (password.length < 6) {
-      toast.error('Password must be at least 6 characters');
-      return;
-    }
-    if (phone && !isValidSLPhone(phone)) {
-      toast.error('Please enter a valid Sri Lankan phone number');
-      return;
-    }
-    
+    if (password.length < 6) { toast.error('Password must be at least 6 characters'); return; }
+    if (phone && !isValidSLPhone(phone)) { toast.error('Please enter a valid Sri Lankan phone number'); return; }
     setLoading(true);
     try {
       const { data } = await registerUser({ name, email, password, phone });
       login(data);
-      toast.success('Account created successfully! 🎉');
+      toast.success('Account created successfully!');
       navigate('/');
     } catch (error) {
-      const errorMsg = error.response?.data?.message || 
-                       error.response?.data?.error || 
-                       error.message || 
-                       'Registration failed';
-      toast.error(errorMsg);
+      toast.error(error.response?.data?.message || error.response?.data?.error || error.message || 'Registration failed');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-[85vh] flex items-center justify-center bg-gradient-to-br from-slate-50 via-slate-100 to-indigo-50/50 py-16 px-4">
-      <motion.div
-        className="glass-card p-8 md:p-10 rounded-[2rem] w-full max-w-md"
-        initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-      >
-        <div className="text-center mb-8">
-          <Link to="/" className="text-3xl font-extrabold inline-flex items-center gap-2.5 mb-4">
+    <div className="ds-auth-page">
+      <div className="ds-auth-card" style={{ maxWidth: 480 }}>
+
+        {/* Header */}
+        <div className="ds-auth-card-header">
+          <Link to="/" className="inline-flex items-center gap-2.5 no-underline mb-3">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-indigo via-brand-violet to-brand-fuchsia p-[2px] shadow-sm flex items-center justify-center flex-shrink-0">
-              <img
-                src={brandLogoUrl}
-                alt={brandName}
-                className="w-full h-full rounded-[10px] object-cover bg-white"
-                onError={(e) => { e.target.onerror = null; e.target.src = '/logo.png'; }}
-              />
+              <img src={brandLogoUrl} alt={brandName} className="w-full h-full rounded-[10px] object-cover bg-white"
+                onError={(e) => { e.target.onerror = null; e.target.src = '/logo.png'; }} />
             </div>
-            <span className="bg-gradient-to-r from-brand-indigo via-brand-violet to-brand-fuchsia bg-clip-text text-transparent font-black">{brandName}</span>
+            <span className="bg-gradient-to-r from-brand-indigo via-brand-violet to-brand-fuchsia bg-clip-text text-transparent font-black text-lg tracking-tight">{brandName}</span>
           </Link>
-          <h1 className="text-2xl font-black text-slate-800 mt-0 mb-2">Create Account</h1>
-          <p className="text-slate-400 text-sm m-0 font-medium">Join {brandName} for tech and smart devices shopping</p>
+          <h1 style={{ fontSize: 'var(--ds-text-xl)', fontWeight: 700, color: 'var(--ds-text-head)', margin: '0 0 0.375rem' }}>Create Account</h1>
+          <p style={{ fontSize: 'var(--ds-text-sm)', color: 'var(--ds-text-muted)', margin: 0, fontWeight: 400 }}>Join {brandName} for tech &amp; smart devices shopping</p>
         </div>
 
-        <form onSubmit={handleRegister} className="space-y-4.5">
-          <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2" htmlFor="reg-name">
-              Full Name
-            </label>
-            <input
-              type="text"
-              id="reg-name"
-              className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-indigo/25 focus:border-brand-indigo outline-none transition-all text-sm"
-              placeholder="John Doe"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </div>
+        {/* Form */}
+        <div className="ds-auth-card-body">
+          <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2" htmlFor="reg-email">
-              Email Address
-            </label>
-            <input
-              type="email"
-              id="reg-email"
-              className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-indigo/25 focus:border-brand-indigo outline-none transition-all text-sm"
-              placeholder="yourname@gmail.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2" htmlFor="reg-phone">
-              Phone Number <span className="text-[10px] text-slate-400 font-normal uppercase tracking-normal">({settings?.country || 'Sri Lankan'})</span>
-            </label>
-            <input
-              type="tel"
-              id="reg-phone"
-              className={`w-full border rounded-xl px-4 py-3 focus:ring-2 outline-none transition-all text-sm ${
-                phoneError ? 'border-red-400 focus:ring-red-300' : 'border-slate-200 focus:ring-brand-indigo/25 focus:border-brand-indigo'
-              }`}
-              placeholder="0771234567 or +94771234567"
-              value={phone}
-              onChange={(e) => handlePhoneChange(e.target.value)}
-            />
-            {phoneError && (
-              <p className="text-xs text-red-500 mt-1 font-medium">{phoneError}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2" htmlFor="reg-password">
-              Password
-            </label>
-            <div className="relative">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                id="reg-password"
-                className="w-full border border-slate-200 rounded-xl px-4 py-3 pr-12 focus:ring-2 focus:ring-brand-indigo/25 focus:border-brand-indigo outline-none transition-all text-sm"
-                placeholder="Min. 6 characters"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
-              >
-                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
+            {/* Full Name */}
+            <div className="ds-form-group">
+              <label className="ds-label" htmlFor="reg-name">Full Name</label>
+              <div style={{ position: 'relative' }}>
+                <User size={15} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--ds-text-muted)', pointerEvents: 'none' }} />
+                <input type="text" id="reg-name" className="ds-input" style={{ paddingLeft: '2.25rem' }}
+                  placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} required />
+              </div>
             </div>
-          </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-gradient-to-r from-brand-indigo to-brand-violet hover:opacity-95 text-white font-bold py-3.5 rounded-xl transition-all shadow-[0_4px_12px_rgba(99,102,241,0.25)] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer mt-2"
-          >
-            {loading ? 'Creating Account...' : 'Create Account'}
-          </button>
-        </form>
+            {/* Email */}
+            <div className="ds-form-group">
+              <label className="ds-label" htmlFor="reg-email">Email Address</label>
+              <div style={{ position: 'relative' }}>
+                <Mail size={15} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--ds-text-muted)', pointerEvents: 'none' }} />
+                <input type="email" id="reg-email" className="ds-input" style={{ paddingLeft: '2.25rem' }}
+                  placeholder="yourname@gmail.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              </div>
+            </div>
 
-        <div className="mt-6 text-center">
-          <p className="text-sm text-slate-400 font-medium">
-            Already have an account?{' '}
-            <Link to="/login" className="text-brand-indigo font-bold hover:underline">
-              Sign In
-            </Link>
-          </p>
+            {/* Phone */}
+            <div className="ds-form-group">
+              <label className="ds-label" htmlFor="reg-phone">
+                Phone Number <span style={{ fontSize: 'var(--ds-text-2xs)', color: 'var(--ds-text-faint)', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>({settings?.country || 'Sri Lankan'}) optional</span>
+              </label>
+              <div style={{ position: 'relative' }}>
+                <Phone size={15} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--ds-text-muted)', pointerEvents: 'none' }} />
+                <input type="tel" id="reg-phone"
+                  className="ds-input"
+                  style={{ paddingLeft: '2.25rem', borderColor: phoneError ? '#f87171' : undefined }}
+                  placeholder="0771234567 or +94771234567"
+                  value={phone} onChange={(e) => handlePhoneChange(e.target.value)} />
+              </div>
+              {phoneError && <p className="ds-form-error">{phoneError}</p>}
+            </div>
+
+            {/* Password */}
+            <div className="ds-form-group">
+              <label className="ds-label" htmlFor="reg-password">Password</label>
+              <div style={{ position: 'relative' }}>
+                <Lock size={15} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--ds-text-muted)', pointerEvents: 'none' }} />
+                <input type={showPassword ? 'text' : 'password'} id="reg-password" className="ds-input"
+                  style={{ paddingLeft: '2.25rem', paddingRight: '2.5rem' }}
+                  placeholder="Min. 6 characters" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                <button type="button" onClick={() => setShowPassword(!showPassword)}
+                  style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ds-text-muted)', padding: 0 }}>
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+              <p className="ds-form-hint">Use at least 6 characters including letters and numbers</p>
+            </div>
+
+            <button type="submit" disabled={loading} className="ds-btn ds-btn-primary"
+              style={{ width: '100%', justifyContent: 'center', padding: '0.7rem 1rem', marginTop: '0.25rem', opacity: loading ? 0.7 : 1 }}>
+              {loading ? (
+                <><div className="ds-spinner" style={{ width: '1rem', height: '1rem', borderWidth: 2, borderColor: 'rgba(255,255,255,0.3)', borderTopColor: '#fff' }} /> Creating Account...</>
+              ) : (
+                <><UserPlus size={16} /> Create Account</>
+              )}
+            </button>
+          </form>
         </div>
-      </motion.div>
+
+        <div className="ds-auth-card-footer">
+          Already have an account?{' '}
+          <Link to="/login">Sign In</Link>
+        </div>
+      </div>
     </div>
   );
 };

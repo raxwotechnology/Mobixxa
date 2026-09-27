@@ -198,13 +198,13 @@ const SuppliersPanel = ({ storeId, stores = [], onStoreChange }) => {
                     <td className="px-6 py-3.5">
                       <div className="flex items-center gap-2">
                         <div className="font-medium text-dark-navy">{s.name}</div>
-                        <span className={`text-[8px] font-bold px-1.5 py-0.2 rounded-full ${s.allStores ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                        <span className={`text-xs font-bold px-1.5 py-0.2 rounded-full ${s.allStores ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
                           {storeName}
                         </span>
                       </div>
                       <div className="text-xs text-muted-text">{s.address || '—'}</div>
                       {s.bankAccountNumber && (
-                        <div className="text-[10px] text-gray-400 mt-1 flex items-center gap-1">
+                        <div className="text-xs text-gray-400 mt-1 flex items-center gap-1">
                           <Landmark size={10} /> {s.bankName} - {s.bankAccountNumber} ({s.bankBranch})
                         </div>
                       )}
@@ -293,19 +293,19 @@ const SuppliersPanel = ({ storeId, stores = [], onStoreChange }) => {
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Bank Name</label>
+                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Bank Name</label>
                       <input value={form.bankName} onChange={(e) => setForm({ ...form, bankName: e.target.value })} className="w-full border border-card-border rounded-xl py-2 px-3 text-xs bg-gray-50" placeholder="Commercial Bank" />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Branch Name</label>
+                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Branch Name</label>
                       <input value={form.bankBranch} onChange={(e) => setForm({ ...form, bankBranch: e.target.value })} className="w-full border border-card-border rounded-xl py-2 px-3 text-xs bg-gray-50" placeholder="Colombo 03" />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Account Number</label>
+                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Account Number</label>
                       <input value={form.bankAccountNumber} onChange={(e) => setForm({ ...form, bankAccountNumber: e.target.value })} className="w-full border border-card-border rounded-xl py-2 px-3 text-xs bg-gray-50" placeholder="1009123456" />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Account Name</label>
+                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Account Name</label>
                       <input value={form.bankAccountName} onChange={(e) => setForm({ ...form, bankAccountName: e.target.value })} className="w-full border border-card-border rounded-xl py-2 px-3 text-xs bg-gray-50" placeholder="Samsung Lanka" />
                     </div>
                   </div>

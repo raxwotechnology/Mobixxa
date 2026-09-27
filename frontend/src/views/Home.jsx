@@ -69,7 +69,7 @@ const Home = () => {
               </div>
 
               {/* Headline */}
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight tracking-tight mb-4">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight tracking-tight mb-4">
                 Welcome to {brandName}<br />
                 <span className="text-white drop-shadow-sm">Premium Tech &amp;</span>{' '}
                 <span className="text-amber-300 drop-shadow-sm">Smart Devices.</span>
@@ -84,13 +84,13 @@ const Home = () => {
               <div className="flex flex-wrap items-center gap-4 mb-10">
                 <Link
                   to="/shop"
-                  className="inline-flex items-center gap-2 px-7 py-3.5 bg-white text-blue-700 font-extrabold text-sm rounded-full shadow-lg hover:shadow-xl hover:bg-blue-50 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 bg-white text-blue-700 font-bold text-sm rounded-full shadow-lg hover:shadow-xl hover:bg-blue-50 transition-all hover:scale-[1.02] active:scale-[0.98]"
                 >
                   Shop Now <ArrowRight size={16} />
                 </Link>
                 <Link
                   to="/deals"
-                  className="inline-flex items-center gap-2 px-7 py-3.5 bg-transparent text-white font-extrabold text-sm rounded-full border-2 border-white/60 hover:border-white hover:bg-white/10 transition-all"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 bg-transparent text-white font-bold text-sm rounded-full border-2 border-white/60 hover:border-white hover:bg-white/10 transition-all"
                 >
                   Tech Deals
                 </Link>
@@ -99,15 +99,15 @@ const Home = () => {
               {/* Stat Counters */}
               <div className="grid grid-cols-3 gap-6 pt-6 border-t border-white/15 max-w-lg">
                 <div>
-                  <p className="text-xl sm:text-2xl font-black text-white m-0">50K+</p>
+                  <p className="text-xl sm:text-2xl font-bold text-white m-0">50K+</p>
                   <p className="text-xs text-blue-200 m-0 mt-0.5">Happy Customers</p>
                 </div>
                 <div>
-                  <p className="text-xl sm:text-2xl font-black text-white m-0">2K+</p>
+                  <p className="text-xl sm:text-2xl font-bold text-white m-0">2K+</p>
                   <p className="text-xs text-blue-200 m-0 mt-0.5">Genuine Products</p>
                 </div>
                 <div>
-                  <p className="text-xl sm:text-2xl font-black text-amber-300 m-0">4.9★</p>
+                  <p className="text-xl sm:text-2xl font-bold text-amber-300 m-0">4.9</p>
                   <p className="text-xs text-blue-200 m-0 mt-0.5">Customer Rating</p>
                 </div>
               </div>
@@ -161,8 +161,8 @@ const Home = () => {
       <section className="base-container px-4 sm:px-6 mb-16">
         <div className="flex items-end justify-between mb-8">
           <div>
-            <span className="text-[11px] font-extrabold uppercase tracking-widest text-blue-600">Shop by Type</span>
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-1 mb-0 tracking-tight">Explore Categories</h2>
+            <span className="text-xs font-bold uppercase tracking-widest text-blue-600">Shop by Type</span>
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mt-1 mb-0 tracking-tight">Explore Categories</h2>
           </div>
           <Link to="/shop" className="text-blue-600 hover:text-blue-700 font-bold text-xs sm:text-sm flex items-center gap-1">
             All Categories <ArrowRight size={14} />
@@ -177,7 +177,7 @@ const Home = () => {
               className="bg-white border border-slate-200/80 hover:border-blue-500/80 rounded-2xl p-4 text-center group shadow-xs hover:shadow-lg hover:-translate-y-1 transition-all"
             >
               <div className="w-12 h-12 bg-slate-50 group-hover:bg-blue-50 rounded-xl mx-auto mb-2.5 flex items-center justify-center text-2xl transition-colors border border-slate-100">
-                {cat.icon || '📱'}
+                {cat.icon || ''}
               </div>
               <h3 className="font-bold text-xs text-slate-800 m-0 group-hover:text-blue-600 transition-colors truncate">
                 {cat.name}
@@ -192,8 +192,8 @@ const Home = () => {
         <section className="base-container px-4 sm:px-6 mb-16">
           <div className="flex items-end justify-between mb-8">
             <div>
-              <span className="text-[11px] font-extrabold uppercase tracking-widest text-blue-600">Handpicked Devices</span>
-              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-1 mb-0 tracking-tight">Featured Products</h2>
+              <span className="text-xs font-bold uppercase tracking-widest text-blue-600">Handpicked Devices</span>
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mt-1 mb-0 tracking-tight">Featured Products</h2>
             </div>
             <Link to="/shop?featured=true" className="text-blue-600 hover:text-blue-700 font-bold text-xs sm:text-sm flex items-center gap-1">
               View All <ArrowRight size={14} />
@@ -213,8 +213,8 @@ const Home = () => {
           <div className="base-container px-4 sm:px-6">
             <div className="flex items-end justify-between mb-8">
               <div>
-                <span className="text-[11px] font-extrabold uppercase tracking-widest text-amber-600">⚡ Limited Time Offers</span>
-                <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-1 mb-0 tracking-tight">Mega Deals &amp; Offers</h2>
+                <span className="text-xs font-bold uppercase tracking-widest text-amber-600"> Limited Time Offers</span>
+                <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mt-1 mb-0 tracking-tight">Mega Deals &amp; Offers</h2>
               </div>
               <Link to="/deals" className="text-blue-600 hover:text-blue-700 font-bold text-xs sm:text-sm flex items-center gap-1">
                 View All Deals <ArrowRight size={14} />
@@ -232,8 +232,8 @@ const Home = () => {
       {/* ===== CUSTOMER REVIEWS ===== */}
       <section className="base-container px-4 sm:px-6 pb-20">
         <div className="text-center max-w-xl mx-auto mb-10">
-          <span className="text-[11px] font-extrabold uppercase tracking-widest text-blue-600">Testimonials</span>
-          <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-1 mb-2 tracking-tight">What Our Customers Say</h2>
+          <span className="text-xs font-bold uppercase tracking-widest text-blue-600">Testimonials</span>
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mt-1 mb-2 tracking-tight">What Our Customers Say</h2>
           <p className="text-slate-500 text-xs sm:text-sm m-0">Trusted by tech lovers and enterprise customers across the island</p>
         </div>
 
@@ -254,7 +254,7 @@ const Home = () => {
               </div>
               <div className="border-t border-slate-100 pt-4 flex items-center justify-between">
                 <span className="font-bold text-xs text-slate-900">{item.name}</span>
-                <span className="text-[10px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">{item.role}</span>
+                <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">{item.role}</span>
               </div>
             </div>
           ))}

@@ -118,7 +118,7 @@ const LeaveRequestsPanel = ({ defaultFilter = 'pending' }) => {
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
         <div>
-          <h2 className="text-xl font-bold text-dark-navy mb-1">📅 Leave Requests</h2>
+          <h2 className="text-xl font-bold text-dark-navy mb-1"> Leave Requests</h2>
           <p className="text-muted-text text-sm">{leaves.filter((l) => l.status === 'pending').length} pending requests</p>
         </div>
         <div className="flex gap-2">

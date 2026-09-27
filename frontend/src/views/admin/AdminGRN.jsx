@@ -216,7 +216,7 @@ const AdminGRN = () => {
     }, 0);
 
     const html = `<!DOCTYPE html><html><head><title>GRN - ${grnNumber}</title>
-    <style>body{font-family:'Segoe UI',sans-serif;padding:30px;max-width:800px;margin:0 auto}
+    <style>body{font-family:'Poppins',sans-serif;padding:30px;max-width:800px;margin:0 auto}
     .header{text-align:center;border-bottom:3px solid #2563eb;padding-bottom:15px;margin-bottom:20px}
     .logo{width:60px;height:60px;border-radius:12px;object-fit:cover;margin-bottom:8px}
     .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;font-size:13px}
@@ -259,8 +259,10 @@ const AdminGRN = () => {
   if (loading) {
     return (
       <DashboardLayout navItems={navItems} title="GRN Management">
-        <div className="flex items-center justify-center h-64">
-          <div className="w-10 h-10 border-4 border-primary-blue border-t-transparent rounded-full animate-spin" />
+        <div className="ds-page">
+          <div className="ds-loading">
+            <div className="ds-spinner" />
+          </div>
         </div>
       </DashboardLayout>
     );
@@ -268,21 +270,17 @@ const AdminGRN = () => {
 
   return (
     <DashboardLayout navItems={navItems} title="GRN Management">
-      <div className="animate-fade-in">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-dark-navy flex items-center gap-2">
-              <ShoppingBag className="text-primary-blue" /> Goods Received Note
-              (GRN)
-            </h1>
-            <p className="text-muted-text text-sm mt-1">
-              Record and track incoming stock from suppliers
-            </p>
+      <div className="ds-page">
+        <div className="ds-page-header">
+          <div className="ds-page-header-left">
+            <span className="ds-page-header-badge">GRN</span>
+            <h1>Goods Received Notes</h1>
+            <p>Record and track incoming stock from suppliers</p>
           </div>
-          <div className="flex gap-2">
+          <div className="ds-page-header-right">
             <button
               onClick={fetchHistory}
-              className="p-2.5 rounded-xl border border-gray-200 text-gray-500 hover:bg-gray-50 transition-all"
+              className="ds-btn ds-btn-secondary ds-btn-icon"
             >
               <Calendar size={18} />
             </button>
@@ -294,18 +292,16 @@ const AdminGRN = () => {
           <div className="lg:col-span-2 space-y-6">
             <form
               onSubmit={handleSubmit}
-              className="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm space-y-6"
+              className="ds-card p-6 space-y-6"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">
-                    Supplier *
-                  </label>
+                <div className="ds-form-group">
+                  <label className="ds-label">Supplier *</label>
                   <select
                     required
                     value={supplierId}
                     onChange={(e) => setSupplierId(e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary-blue transition-all"
+                    className="ds-select"
                   >
                     <option value="">Select Supplier</option>
                     {suppliers.map((s) => (
@@ -315,34 +311,28 @@ const AdminGRN = () => {
                     ))}
                   </select>
                 </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">
-                    Invoice / Reference No *
-                  </label>
+                <div className="ds-form-group">
+                  <label className="ds-label">Invoice / Reference No *</label>
                   <input
                     required
                     value={invoiceNo}
                     onChange={(e) => setInvoiceNo(e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary-blue"
+                    className="ds-input"
                     placeholder="e.g. INV-12345"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">
-                    Date Received
-                  </label>
+                <div className="ds-form-group">
+                  <label className="ds-label">Date Received</label>
                   <input
                     type="date"
                     value={receivedAt}
                     onChange={(e) => setReceivedAt(e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm"
+                    className="ds-input"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">
-                    Store Assignment
-                  </label>
-                  <div className="w-full bg-gray-100 border border-gray-200 rounded-xl py-3 px-4 text-sm text-gray-500 font-semibold italic">
+                <div className="ds-form-group">
+                  <label className="ds-label">Store Assignment</label>
+                  <div className="ds-input bg-gray-100 text-gray-500 font-semibold italic">
                     {stores.find((s) => s._id === selectedStoreId)?.name ||
                       "Please select a store from top bar"}
                   </div>
@@ -351,13 +341,11 @@ const AdminGRN = () => {
 
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-dark-navy">
-                    Item List
-                  </h3>
+                  <h3 className="ds-card-title text-sm">Item List</h3>
                   <button
                     type="button"
                     onClick={addLine}
-                    className="text-xs font-bold text-primary-blue hover:underline flex items-center gap-1"
+                    className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1"
                   >
                     <Plus size={14} /> Add Line Item
                   </button>
@@ -367,19 +355,17 @@ const AdminGRN = () => {
                   {items.map((item, idx) => (
                     <div
                       key={idx}
-                      className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end bg-gray-50/50 p-4 rounded-2xl border border-gray-100"
+                      className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end bg-gray-50/50 p-4 rounded-xl border border-gray-100"
                     >
-                      <div className="md:col-span-5">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">
-                          Product
-                        </label>
+                      <div className="md:col-span-5 ds-form-group mb-0">
+                        <label className="ds-label">Product</label>
                         <select
                           required
                           value={item.productId}
                           onChange={(e) =>
                             updateLine(idx, { productId: e.target.value })
                           }
-                          className="w-full bg-white border border-gray-200 rounded-xl py-2 px-3 text-sm"
+                          className="ds-select"
                         >
                           <option value="">Select Product</option>
                           {products.map((p) => (
@@ -389,10 +375,8 @@ const AdminGRN = () => {
                           ))}
                         </select>
                       </div>
-                      <div className="md:col-span-2">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">
-                          Qty
-                        </label>
+                      <div className="md:col-span-2 ds-form-group mb-0">
+                        <label className="ds-label">Qty</label>
                         <input
                           type="number"
                           min="1"
@@ -401,13 +385,11 @@ const AdminGRN = () => {
                           onChange={(e) =>
                             updateLine(idx, { qty: e.target.value })
                           }
-                          className="w-full bg-white border border-gray-200 rounded-xl py-2 px-3 text-sm"
+                          className="ds-input"
                         />
                       </div>
-                      <div className="md:col-span-2">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">
-                          Cost
-                        </label>
+                      <div className="md:col-span-2 ds-form-group mb-0">
+                        <label className="ds-label">Cost</label>
                         <input
                           type="number"
                           min="0"
@@ -417,14 +399,12 @@ const AdminGRN = () => {
                           onChange={(e) =>
                             updateLine(idx, { unitCost: e.target.value })
                           }
-                          className="w-full bg-white border border-gray-200 rounded-xl py-2 px-3 text-sm"
+                          className="ds-input"
                         />
                       </div>
-                      <div className="md:col-span-2">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">
-                          Total
-                        </label>
-                        <div className="w-full bg-indigo-50 border border-indigo-100 rounded-xl py-2 px-3 text-sm font-bold text-primary-blue text-center">
+                      <div className="md:col-span-2 ds-form-group mb-0">
+                        <label className="ds-label">Total</label>
+                        <div className="ds-input bg-indigo-50 border-indigo-100 text-indigo-600 font-bold text-center">
                           Rs. {(item.qty * item.unitCost).toFixed(2)}
                         </div>
                       </div>
@@ -443,7 +423,7 @@ const AdminGRN = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-5 bg-gradient-to-r from-indigo-600 to-blue-700 rounded-2xl text-white shadow-lg shadow-indigo-100">
+              <div className="flex items-center justify-between p-5 bg-gradient-to-r from-indigo-600 to-blue-700 rounded-2xl text-white shadow-lg">
                 <span className="font-bold">Total GRN Value</span>
                 <span className="text-xl font-bold">
                   Rs.{" "}
@@ -456,7 +436,7 @@ const AdminGRN = () => {
               <button
                 type="submit"
                 disabled={saving || selectedStoreId === "all"}
-                className="w-full bg-primary-blue text-white py-4 rounded-2xl font-bold hover:bg-emerald-600 shadow-xl shadow-emerald-50 transition-all disabled:opacity-50"
+                className="ds-btn ds-btn-primary w-full py-4 text-base"
               >
                 {saving ? "Processing GRN..." : "Post GRN & Update Inventory"}
               </button>
@@ -465,102 +445,107 @@ const AdminGRN = () => {
 
           {/* GRN History & Search */}
           <div className="space-y-6">
-            <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm">
-              <h3 className="text-sm font-bold text-dark-navy mb-4 flex items-center gap-2">
-                <Search size={16} className="text-primary-blue" /> Quick Search
-              </h3>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Enter GRN Number..."
-                  value={grnSearch}
-                  onChange={(e) => setGrnSearch(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleGrnSearch()}
-                  className="flex-1 bg-gray-50 border border-gray-200 rounded-xl py-2.5 px-4 text-sm focus:ring-2 focus:ring-primary-blue"
-                />
+            <div className="ds-card p-6">
+              <div className="ds-filter-bar mb-0">
+                <div className="relative flex-1">
+                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Enter GRN Number..."
+                    value={grnSearch}
+                    onChange={(e) => setGrnSearch(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleGrnSearch()}
+                    className="ds-search pl-9 w-full"
+                  />
+                </div>
                 <button
                   onClick={handleGrnSearch}
-                  className="bg-primary-blue text-white p-2.5 rounded-xl hover:bg-indigo-700 transition-all"
+                  className="ds-btn ds-btn-primary ds-btn-icon"
                 >
                   <ArrowRight size={18} />
                 </button>
               </div>
             </div>
 
-            <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm">
-              <div className="p-6 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
-                <h3 className="text-sm font-bold text-dark-navy">
-                  Recent GRNs
-                </h3>
-                <FileText size={16} className="text-gray-300" />
+            <div className="ds-card">
+              <div className="ds-card-header">
+                <h3 className="ds-card-title">Recent GRNs</h3>
+                <FileText size={16} className="text-gray-400" />
               </div>
-              <div className="divide-y divide-gray-50 max-h-[600px] overflow-y-auto">
-                {history.map((r) => {
-                  const total = (r.items || []).reduce(
-                    (s, it) => s + it.qty * Number(it.unitCost || 0),
-                    0,
-                  );
-                  return (
-                    <div
-                      key={r._id}
-                      className="p-4 hover:bg-gray-50 transition-colors cursor-pointer group"
-                      onClick={() => setViewGrn(r)}
-                    >
-                      <div className="flex justify-between items-start mb-1">
-                        <span className="text-xs font-bold text-primary-blue">
-                          {r.grnNumber}
-                        </span>
-                        <span className="text-[10px] text-muted-text">
-                          {new Date(
-                            r.receivedAt || r.createdAt,
-                          ).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <div className="text-xs font-bold text-dark-navy truncate">
-                        {r.supplierId?.name || "Unknown Supplier"}
-                      </div>
-                      <div className="flex justify-between items-center mt-2">
-                        <span className="text-[10px] bg-indigo-50 text-primary-blue px-2 py-0.5 rounded-full font-bold">
-                          Rs. {total.toLocaleString()}
-                        </span>
-                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setViewGrn(r);
-                            }}
-                            className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg"
-                            title="View"
+              <div className="ds-card-body p-0">
+                <div className="ds-table-wrap max-h-[600px] overflow-y-auto">
+                  <table className="ds-table">
+                    <tbody>
+                      {history.map((r) => {
+                        const total = (r.items || []).reduce(
+                          (s, it) => s + it.qty * Number(it.unitCost || 0),
+                          0,
+                        );
+                        return (
+                          <tr
+                            key={r._id}
+                            className="hover:bg-gray-50 cursor-pointer group"
+                            onClick={() => setViewGrn(r)}
                           >
-                            <Eye size={14} />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              printVoucher(r);
-                            }}
-                            className="p-1.5 text-emerald-500 hover:bg-emerald-50 rounded-lg"
-                            title="Print"
-                          >
-                            <Printer size={14} />
-                          </button>
-                          <button
-                            onClick={(e) => handleDeleteClick(r._id, e)}
-                            className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg"
-                            title="Delete"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-                {history.length === 0 && (
-                  <div className="p-8 text-center text-xs text-muted-text">
-                    No records found
-                  </div>
-                )}
+                            <td className="py-3 px-4">
+                              <div className="flex justify-between items-start mb-1">
+                                <span className="text-xs font-bold text-blue-600">
+                                  {r.grnNumber}
+                                </span>
+                                <span className="text-xs text-gray-500">
+                                  {new Date(
+                                    r.receivedAt || r.createdAt,
+                                  ).toLocaleDateString()}
+                                </span>
+                              </div>
+                              <div className="text-sm font-bold text-gray-900 truncate">
+                                {r.supplierId?.name || "Unknown Supplier"}
+                              </div>
+                              <div className="flex justify-between items-center mt-2">
+                                <span className="ds-badge ds-badge-blue">
+                                  Rs. {total.toLocaleString()}
+                                </span>
+                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setViewGrn(r);
+                                    }}
+                                    className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg"
+                                  >
+                                    <Eye size={14} />
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      printVoucher(r);
+                                    }}
+                                    className="p-1.5 text-emerald-500 hover:bg-emerald-50 rounded-lg"
+                                  >
+                                    <Printer size={14} />
+                                  </button>
+                                  <button
+                                    onClick={(e) => handleDeleteClick(r._id, e)}
+                                    className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg"
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                      {history.length === 0 && (
+                        <tr>
+                          <td className="p-8 text-center text-sm text-gray-500">
+                            <div className="ds-empty">No records found</div>
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
@@ -568,21 +553,19 @@ const AdminGRN = () => {
 
         {/* View Modal */}
         {viewGrn && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-[2px] z-[200] flex items-center justify-center p-4 animate-in fade-in" onClick={() => setViewGrn(null)}>
-            <div className="bg-white rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col" onClick={(e) => e.stopPropagation()}>
-              <div className="px-8 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/30">
+          <div className="ds-modal-overlay" onClick={() => setViewGrn(null)}>
+            <div className="ds-modal ds-modal-lg" onClick={(e) => e.stopPropagation()}>
+              <div className="ds-modal-header">
                 <div>
-                  <h2 className="text-lg font-bold text-dark-navy">
-                    GRN Information
-                  </h2>
-                  <p className="text-xs text-primary-blue font-bold">
+                  <h2 className="ds-modal-title">GRN Information</h2>
+                  <p className="text-xs text-blue-600 font-bold mt-1">
                     {viewGrn.grnNumber}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => printVoucher(viewGrn)}
-                    className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100"
+                    className="ds-btn ds-btn-primary ds-btn-sm bg-emerald-600 hover:bg-emerald-700 border-none"
                   >
                     <Printer size={14} /> Print Voucher
                   </button>
@@ -595,105 +578,97 @@ const AdminGRN = () => {
                 </div>
               </div>
 
-              <div className="p-8 overflow-y-auto">
+              <div className="ds-modal-body">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                  <div className="bg-gray-50 rounded-2xl p-4">
-                    <div className="text-[10px] font-bold text-gray-400 uppercase mb-1">
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <div className="text-xs font-bold text-gray-400 uppercase mb-1">
                       Supplier
                     </div>
-                    <div className="text-sm font-bold text-dark-navy">
+                    <div className="text-sm font-bold text-gray-900">
                       {viewGrn.supplierId?.name || "N/A"}
                     </div>
                   </div>
-                  <div className="bg-gray-50 rounded-2xl p-4">
-                    <div className="text-[10px] font-bold text-gray-400 uppercase mb-1">
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <div className="text-xs font-bold text-gray-400 uppercase mb-1">
                       Date
                     </div>
-                    <div className="text-sm font-bold text-dark-navy">
+                    <div className="text-sm font-bold text-gray-900">
                       {new Date(
                         viewGrn.receivedAt || viewGrn.createdAt,
                       ).toLocaleDateString()}
                     </div>
                   </div>
-                  <div className="bg-gray-50 rounded-2xl p-4">
-                    <div className="text-[10px] font-bold text-gray-400 uppercase mb-1">
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <div className="text-xs font-bold text-gray-400 uppercase mb-1">
                       Invoice
                     </div>
-                    <div className="text-sm font-bold text-dark-navy">
+                    <div className="text-sm font-bold text-gray-900">
                       {viewGrn.invoiceNo || "N/A"}
                     </div>
                   </div>
-                  <div className="bg-gray-50 rounded-2xl p-4">
-                    <div className="text-[10px] font-bold text-gray-400 uppercase mb-1">
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <div className="text-xs font-bold text-gray-400 uppercase mb-1">
                       Total Items
                     </div>
-                    <div className="text-sm font-bold text-dark-navy">
+                    <div className="text-sm font-bold text-gray-900">
                       {viewGrn.items?.length || 0}
                     </div>
                   </div>
                 </div>
 
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-left text-gray-400 border-b border-gray-100">
-                      <th className="pb-3 font-bold uppercase text-[10px]">
-                        #
-                      </th>
-                      <th className="pb-3 font-bold uppercase text-[10px]">
-                        Product Description
-                      </th>
-                      <th className="pb-3 font-bold uppercase text-[10px] text-center">
-                        Qty
-                      </th>
-                      <th className="pb-3 font-bold uppercase text-[10px] text-right">
-                        Unit Cost
-                      </th>
-                      <th className="pb-3 font-bold uppercase text-[10px] text-right">
-                        Line Total
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {viewGrn.items.map((it, i) => (
-                      <tr key={i}>
-                        <td className="py-4 text-xs">{i + 1}</td>
-                        <td className="py-4 font-bold text-dark-navy">
-                          {it.productId?.name || "N/A"}
+                <div className="ds-table-wrap">
+                  <table className="ds-table">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Product Description</th>
+                        <th className="text-center">Qty</th>
+                        <th className="text-right">Unit Cost</th>
+                        <th className="text-right">Line Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {viewGrn.items.map((it, i) => (
+                        <tr key={i}>
+                          <td>{i + 1}</td>
+                          <td className="font-bold text-gray-900">
+                            {it.productId?.name || "N/A"}
+                          </td>
+                          <td className="text-center font-bold text-indigo-600">
+                            {it.qty}
+                          </td>
+                          <td className="text-right">
+                            Rs. {Number(it.unitCost).toLocaleString()}
+                          </td>
+                          <td className="text-right font-bold">
+                            Rs. {(it.qty * Number(it.unitCost)).toLocaleString()}
+                          </td>
+                        </tr>
+                      ))}
+                      <tr className="bg-indigo-50/50">
+                        <td
+                          colSpan={4}
+                          className="text-right font-bold text-gray-500"
+                        >
+                          Grand Total
                         </td>
-                        <td className="py-4 text-center font-bold text-indigo-600">
-                          {it.qty}
-                        </td>
-                        <td className="py-4 text-right">
-                          Rs. {Number(it.unitCost).toLocaleString()}
-                        </td>
-                        <td className="py-4 text-right font-bold">
-                          Rs. {(it.qty * Number(it.unitCost)).toLocaleString()}
+                        <td className="text-right font-bold text-blue-600 text-lg">
+                          Rs.{" "}
+                          {viewGrn.items
+                            .reduce(
+                              (s, it) => s + it.qty * Number(it.unitCost),
+                              0,
+                            )
+                            .toLocaleString()}
                         </td>
                       </tr>
-                    ))}
-                    <tr className="bg-indigo-50/50">
-                      <td
-                        colSpan={4}
-                        className="py-4 px-4 text-right font-bold text-gray-500"
-                      >
-                        Grand Total
-                      </td>
-                      <td className="py-4 px-4 text-right font-bold text-primary-blue text-lg">
-                        Rs.{" "}
-                        {viewGrn.items
-                          .reduce(
-                            (s, it) => s + it.qty * Number(it.unitCost),
-                            0,
-                          )
-                          .toLocaleString()}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                    </tbody>
+                  </table>
+                </div>
 
                 {viewGrn.notes && (
-                  <div className="mt-8 p-4 bg-amber-50 rounded-2xl border border-amber-100">
-                    <div className="text-[10px] font-bold text-amber-600 uppercase mb-1">
+                  <div className="mt-8 p-4 bg-amber-50 rounded-xl border border-amber-100">
+                    <div className="text-xs font-bold text-amber-600 uppercase mb-1">
                       Internal Notes
                     </div>
                     <p className="text-xs text-amber-800 italic">

@@ -123,7 +123,7 @@ export default function CustomerDashboardPage() {
 
           {/* User Info Left */}
           <div className="flex items-center gap-4 sm:gap-6 relative z-10">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/15 border-2 border-white/20 backdrop-blur-md flex items-center justify-center text-xl sm:text-2xl font-black text-white shadow-inner flex-shrink-0">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/15 border-2 border-white/20 backdrop-blur-md flex items-center justify-center text-xl sm:text-2xl font-bold text-white shadow-inner flex-shrink-0">
               {customer.name
                 .split(" ")
                 .map((n) => n[0])
@@ -133,7 +133,7 @@ export default function CustomerDashboardPage() {
             </div>
             <div>
               <div className="flex items-center gap-2.5 flex-wrap">
-                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
                   {customer.name}
                 </h1>
                 <span className="bg-white/20 backdrop-blur-sm border border-white/25 px-3 py-0.5 rounded-full text-xs font-semibold tracking-wide">
@@ -183,7 +183,7 @@ export default function CustomerDashboardPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
             <div>
               <div className="flex items-center gap-3">
-                <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
                   Active Hire Purchase Plan
                 </h2>
                 <span className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold px-3 py-0.5 rounded-full flex items-center gap-1.5 shadow-2xs">
@@ -228,52 +228,52 @@ export default function CustomerDashboardPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
             {/* Stat 1 */}
             <div className="bg-slate-50/80 border border-slate-200/70 rounded-2xl p-4">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
                 Total Financed
               </span>
-              <span className="text-lg sm:text-xl font-extrabold text-slate-900 mt-1 block">
+              <span className="text-lg sm:text-xl font-bold text-slate-900 mt-1 block">
                 {contract.totalValue}
               </span>
-              <span className="text-[11px] text-slate-500 mt-0.5 block">
+              <span className="text-xs text-slate-500 mt-0.5 block">
                 Downpayment: {contract.downpaymentPaid}
               </span>
             </div>
 
             {/* Stat 2 */}
             <div className="bg-slate-50/80 border border-slate-200/70 rounded-2xl p-4">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
                 Monthly Installment
               </span>
-              <span className="text-lg sm:text-xl font-extrabold text-blue-600 mt-1 block">
+              <span className="text-lg sm:text-xl font-bold text-blue-600 mt-1 block">
                 {contract.monthlyInstallment}
               </span>
-              <span className="text-[11px] text-slate-500 mt-0.5 block">
+              <span className="text-xs text-slate-500 mt-0.5 block">
                 Fixed 0% APR Plan
               </span>
             </div>
 
             {/* Stat 3 */}
             <div className="bg-slate-50/80 border border-slate-200/70 rounded-2xl p-4">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
                 Progress
               </span>
-              <span className="text-lg sm:text-xl font-extrabold text-slate-900 mt-1 block">
+              <span className="text-lg sm:text-xl font-bold text-slate-900 mt-1 block">
                 {contract.installmentsPaid} of {contract.totalInstallments} Paid ({progressPercent}%)
               </span>
-              <span className="text-[11px] text-emerald-600 font-semibold mt-0.5 block">
+              <span className="text-xs text-emerald-600 font-semibold mt-0.5 block">
                 {contract.totalInstallments - contract.installmentsPaid} installments remaining
               </span>
             </div>
 
             {/* Stat 4 */}
             <div className="bg-slate-50/80 border border-slate-200/70 rounded-2xl p-4">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
                 Next Payment Due
               </span>
-              <span className="text-lg sm:text-xl font-extrabold text-amber-600 mt-1 block">
+              <span className="text-lg sm:text-xl font-bold text-amber-600 mt-1 block">
                 {contract.nextDueDate}
               </span>
-              <span className="text-[11px] text-slate-500 mt-0.5 block">
+              <span className="text-xs text-slate-500 mt-0.5 block">
                 Automatic reminder set
               </span>
             </div>
@@ -295,7 +295,7 @@ export default function CustomerDashboardPage() {
             </div>
 
             {/* Step Marks */}
-            <div className="grid grid-cols-12 gap-1 text-[10px] text-slate-400 font-mono text-center mt-2">
+            <div className="grid grid-cols-12 gap-1 text-xs text-slate-400 font-mono text-center mt-2">
               {Array.from({ length: 12 }).map((_, i) => {
                 const isPaid = i < contract.installmentsPaid;
                 const isCurrent = i === contract.installmentsPaid;
@@ -333,7 +333,7 @@ export default function CustomerDashboardPage() {
         <div className="bg-white border border-slate-200/90 rounded-[32px] p-6 sm:p-8 shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">
+              <h3 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
                 Repayment Schedule
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
@@ -351,7 +351,7 @@ export default function CustomerDashboardPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-50/80 border-b border-slate-200 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                  <tr className="bg-slate-50/80 border-b border-slate-200 text-xs font-bold text-slate-600 uppercase tracking-wider">
                     <th className="py-3.5 px-4 sm:px-6">Installment</th>
                     <th className="py-3.5 px-4 sm:px-6">Due Date</th>
                     <th className="py-3.5 px-4 sm:px-6">Amount</th>
@@ -436,7 +436,7 @@ export default function CustomerDashboardPage() {
         {/* ================================================================= */}
         <div className="bg-white border border-slate-200/90 rounded-[32px] p-6 sm:p-8 shadow-sm">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">
+            <h3 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
               Order History
             </h3>
             <Link
@@ -485,7 +485,7 @@ export default function CustomerDashboardPage() {
                       {order.total}
                     </span>
                     <span
-                      className={`inline-block text-[11px] font-bold px-2 py-0.5 rounded-full mt-0.5 ${
+                      className={`inline-block text-xs font-bold px-2 py-0.5 rounded-full mt-0.5 ${
                         order.status === "Active HP"
                           ? "bg-blue-50 text-blue-700 border border-blue-200"
                           : "bg-emerald-50 text-emerald-700 border border-emerald-200"
@@ -520,7 +520,7 @@ export default function CustomerDashboardPage() {
           <div className="bg-white rounded-[32px] max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-200 relative overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-              <h3 className="text-lg font-extrabold text-slate-900">
+              <h3 className="text-lg font-bold text-slate-900">
                 Pay Monthly Installment
               </h3>
               <button
@@ -537,7 +537,7 @@ export default function CustomerDashboardPage() {
                 <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-4">
                   <CheckCircle2 className="w-8 h-8" />
                 </div>
-                <h4 className="text-xl font-black text-slate-900">
+                <h4 className="text-xl font-bold text-slate-900">
                   Payment Successful!
                 </h4>
                 <p className="text-xs text-slate-500 mt-1">
@@ -559,7 +559,7 @@ export default function CustomerDashboardPage() {
                       Oct 05, 2026
                     </span>
                   </div>
-                  <div className="flex justify-between text-slate-900 font-extrabold text-sm mt-2 pt-2 border-t border-blue-200/60">
+                  <div className="flex justify-between text-slate-900 font-bold text-sm mt-2 pt-2 border-t border-blue-200/60">
                     <span>Total Due:</span>
                     <span className="text-blue-600">Rs 24,718.00</span>
                   </div>

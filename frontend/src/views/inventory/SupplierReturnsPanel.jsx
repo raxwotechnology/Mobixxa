@@ -149,7 +149,7 @@ const SupplierReturnsPanel = ({ storeId, products, prefillData, onSuccess }) => 
     const total = (ret.items || []).reduce((s, it) => s + (it.unitCostAtReturn != null ? it.qty * Number(it.unitCostAtReturn) : 0), 0);
 
     const html = `<!DOCTYPE html><html><head><title>Return Voucher</title>
-    <style>body{font-family:'Segoe UI',sans-serif;padding:30px;max-width:800px;margin:0 auto}
+    <style>body{font-family:'Poppins',sans-serif;padding:30px;max-width:800px;margin:0 auto}
     .header{text-align:center;border-bottom:3px solid #dc2626;padding-bottom:15px;margin-bottom:20px}
     .header h1{margin:5px 0;color:#1f1f1f;font-size:22px}
     .logo{width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:8px}
@@ -203,7 +203,7 @@ const SupplierReturnsPanel = ({ storeId, products, prefillData, onSuccess }) => 
 
   return (
     <div>
-      <h2 className="text-xl font-bold text-dark-navy mb-4">↩️ Supplier Returns</h2>
+      <h2 className="text-xl font-bold text-dark-navy mb-4">↩ Supplier Returns</h2>
       <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-card-border p-6 shadow-sm space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
           {user?.role === 'admin' && (
@@ -253,7 +253,7 @@ const SupplierReturnsPanel = ({ storeId, products, prefillData, onSuccess }) => 
             </button>
           </div>
           <p className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2 mb-3">
-            ⚠️ Specify the <strong>unit cost at return</strong> to deduct from the correct price row. Same product at different prices are tracked as separate stock entries.
+             Specify the <strong>unit cost at return</strong> to deduct from the correct price row. Same product at different prices are tracked as separate stock entries.
           </p>
           <div className="space-y-3">
             {items.map((l, idx) => (
