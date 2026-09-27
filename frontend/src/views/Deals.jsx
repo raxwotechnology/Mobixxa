@@ -112,8 +112,8 @@ const Deals = () => {
 
           {/* Countdown Clock Box */}
           <div className="flex items-center gap-2 bg-blue-800/60 border border-white/20 backdrop-blur-md px-4 py-2.5 rounded-2xl shadow-lg">
-            <Clock size={16} className="text-amber-300" />
-            <span className="text-xs font-bold uppercase tracking-wider text-blue-200">Offers Expire In</span>
+            <Clock size={16} className="text-rose-400 animate-pulse" />
+            <span className="text-xs font-extrabold uppercase tracking-wider text-rose-400">Offers Expire In</span>
             <span className="font-mono font-bold text-sm text-white bg-blue-950/60 px-2 py-0.5 rounded-md">
               {String(timeLeft.hours).padStart(2, '0')} : {String(timeLeft.minutes).padStart(2, '0')} : {String(timeLeft.seconds).padStart(2, '0')}
             </span>

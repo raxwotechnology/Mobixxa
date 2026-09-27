@@ -227,19 +227,18 @@ const StoreProducts = () => {
               </div>
             )}
             {/* Operations Control Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm relative overflow-hidden mb-6">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-brand-indigo/5 rounded-full blur-3xl pointer-events-none -z-10"></div>
-              <div>
-                <div className="flex items-center gap-3 mb-1">
-                  <div className="w-10 h-10 rounded-2xl bg-brand-indigo/10 flex items-center justify-center text-brand-indigo">
-                    <Package size={20} strokeWidth={2.5} />
-                  </div>
-                  <h1 className="text-2xl font-semibold text-slate-900 m-0">Products Catalog</h1>
+            <div className="ds-page-header mb-6">
+              <div className="ds-page-header-left">
+                <div className="ds-page-header-icon">
+                  <Package size={20} strokeWidth={1.75} />
                 </div>
-                <p className="text-xs font-normal uppercase tracking-wider text-slate-500 mt-2 m-0">{products.length} products in your store</p>
+                <div>
+                  <h1 className="ds-page-title">Products Catalog</h1>
+                  <p className="ds-page-subtitle">{products.length} products in your store</p>
+                </div>
               </div>
-              <div className="flex flex-wrap gap-2.5">
-                <button onClick={openCreate} className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
+              <div className="ds-page-header-right">
+                <button onClick={openCreate} className="ds-btn ds-btn-primary">
                   <Plus size={14} /> Add Product
                 </button>
               </div>

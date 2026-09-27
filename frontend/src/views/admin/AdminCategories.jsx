@@ -96,11 +96,13 @@ const AdminCategories = () => {
       <div className="ds-page">
         <div className="ds-page-header">
           <div className="ds-page-header-left">
-            <span className="ds-page-header-badge">
-              <Tag size={11} /> Categories
-            </span>
-            <h1>Product Categories</h1>
-            <p>{categories.length} categories configured</p>
+            <div className="ds-page-header-icon">
+              <Tag size={20} strokeWidth={1.75} />
+            </div>
+            <div>
+              <h1 className="ds-page-title">Product Categories</h1>
+              <p className="ds-page-subtitle">{categories.length} categories configured</p>
+            </div>
           </div>
           <div className="ds-page-header-right">
             <button onClick={openCreate} className="ds-btn ds-btn-primary">

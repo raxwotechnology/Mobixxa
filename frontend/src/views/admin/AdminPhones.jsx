@@ -261,18 +261,18 @@ const AdminPhones = () => {
   return (
     <DashboardLayout navItems={navItems} title="Mobile Inventory">
       <div className="animate-fade-in">
-        {/* Tabs */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-          <div>
-            <div className="flex items-center gap-2.5 mb-1">
-              <span className="inline-flex items-center gap-1.5 bg-brand-indigo/10 text-brand-indigo text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-lg border border-brand-indigo/15">
-                <Smartphone size={11} /> Business Management
-              </span>
+        {/* Header */}
+        <div className="ds-page-header mb-6">
+          <div className="ds-page-header-left">
+            <div className="ds-page-header-icon">
+              <Smartphone size={20} strokeWidth={1.75} />
             </div>
-            <h1 className="text-2xl font-semibold text-slate-900 m-0">Mobile Phones</h1>
-            <p className="text-slate-400 text-xs font-normal mt-1 m-0">{products.length} devices in inventory</p>
+            <div>
+              <h1 className="ds-page-title">Mobile Phones</h1>
+              <p className="ds-page-subtitle">{products.length} devices in inventory</p>
+            </div>
           </div>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div className="ds-page-header-right">
             <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide max-w-full">
               {[
                 { id: 'phones', label: 'Phones' }, 

@@ -185,11 +185,13 @@ const AdminReports = () => {
       <div className="ds-page">
         <div className="ds-page-header">
           <div className="ds-page-header-left">
-            <span className="ds-page-header-badge">
-              REPORTS
-            </span>
-            <h1>Categorized Reports</h1>
-            <p>Filter by category/role and export as PDF or Excel</p>
+            <div className="ds-page-header-icon">
+              <FileDown size={20} strokeWidth={1.75} />
+            </div>
+            <div>
+              <h1 className="ds-page-title">Categorized Reports</h1>
+              <p className="ds-page-subtitle">Filter by category/role and export as PDF or Excel</p>
+            </div>
           </div>
           <div className="ds-page-header-right flex items-center gap-2">
             <button onClick={() => exportCurrent('csv')} className="ds-btn ds-btn-secondary">CSV</button>

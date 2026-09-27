@@ -58,26 +58,21 @@ const AdminOverview = () => {
     <DashboardLayout navItems={navItems} title="Overview">
       <div className="ds-page">
         
-        {/* Executive Command Center Banner */}
-        <div
-          className="ds-page-header"
-          style={{ background: 'linear-gradient(135deg, var(--ds-primary) 0%, #7c3aed 100%)', color: '#fff', border: 'none' }}
-        >
+        <div className="ds-page-header">
           <div className="ds-page-header-left">
-            <span
-              className="ds-page-header-badge"
-              style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: '#fff', borderColor: 'rgba(255,255,255,0.3)' }}
-            >
-              <ShieldCheck size={13} /> Executive Command Center
-            </span>
-            <h1 style={{ color: '#fff' }}>Enterprise Overview</h1>
-            <p style={{ color: 'rgba(255,255,255,0.8)' }}>
-              Real-time insights across store network, sales revenues, inventory assets, and group profit performance.
-            </p>
+            <div className="ds-page-header-icon">
+              <ShieldCheck size={20} strokeWidth={1.75} />
+            </div>
+            <div>
+              <h1 className="ds-page-title">Enterprise Overview</h1>
+              <p className="ds-page-subtitle">
+                Real-time insights across store network, sales revenues, inventory assets, and group profit performance
+              </p>
+            </div>
           </div>
           <div className="ds-page-header-right">
-            <span className="ds-page-header-badge" style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: '#fff', borderColor: 'rgba(255,255,255,0.3)' }}>
-              <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" /> Live System Active
+            <span className="ds-badge ds-badge-green flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Live System Active
             </span>
           </div>
         </div>

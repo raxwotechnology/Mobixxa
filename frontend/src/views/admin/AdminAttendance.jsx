@@ -418,9 +418,13 @@ const AdminAttendance = ({ navItems: propNavItems }) => {
         {/* Page Header */}
         <div className="ds-page-header">
           <div className="ds-page-header-left">
-            <span className="ds-page-header-badge">HR &amp; Staff Attendance</span>
-            <h1>HR &amp; Attendance</h1>
-            <p>Configure shift policies, grace time, leave deductions, and track employee hours</p>
+            <div className="ds-page-header-icon">
+              <Clock size={20} strokeWidth={1.75} />
+            </div>
+            <div>
+              <h1 className="ds-page-title">HR &amp; Attendance</h1>
+              <p className="ds-page-subtitle">Configure shift policies, grace time, leave deductions, and track employee hours</p>
+            </div>
           </div>
           <div className="ds-page-header-right">
             {activeTab === 'records' && (

@@ -145,9 +145,13 @@ const ManagerEmployees = ({ navItems = managerNavGroups, title = 'Manager Dashbo
         {/* Page Header */}
         <div className="ds-page-header">
           <div className="ds-page-header-left">
-            <span className="ds-page-header-badge">Staff &amp; Roles</span>
-            <h1>My Team</h1>
-            <p>{employees.length} registered staff members</p>
+            <div className="ds-page-header-icon">
+              <Users size={20} strokeWidth={1.75} />
+            </div>
+            <div>
+              <h1 className="ds-page-title">My Team</h1>
+              <p className="ds-page-subtitle">{employees.length} registered staff members</p>
+            </div>
           </div>
           <div className="ds-page-header-right">
             <button onClick={openCreate} className="ds-btn ds-btn-primary">

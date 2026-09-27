@@ -143,9 +143,13 @@ const AdminSuppliers = () => {
         
         <div className="ds-page-header">
           <div className="ds-page-header-left">
-            <span className="ds-page-header-badge">Network</span>
-            <h1 style={{ margin: '8px 0 0 0' }}>Suppliers</h1>
-            <p style={{ margin: '8px 0 0 0', color: 'var(--ds-text-muted)' }}>{suppliers.length} active supply partners</p>
+            <div className="ds-page-header-icon">
+              <Users size={20} strokeWidth={1.75} />
+            </div>
+            <div>
+              <h1 className="ds-page-title">Suppliers</h1>
+              <p className="ds-page-subtitle">{suppliers.length} active supply partners</p>
+            </div>
           </div>
           <div className="ds-page-header-right">
             <button onClick={openCreate} className="ds-btn ds-btn-primary">

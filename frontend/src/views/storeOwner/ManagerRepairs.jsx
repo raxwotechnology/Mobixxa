@@ -447,16 +447,23 @@ const ManagerRepairs = ({ isAdmin = false, isEmployee = false, navItems: propNav
       <div className="no-print ds-page">
         {/* Header Block */}
         <div className="ds-page-header">
-          <div>
-            <h1 className="ds-page-title">Device Repairs</h1>
-            <p className="ds-page-subtitle">Log customer devices, manage technician tasks, parts replacements, and track ledger synchronization</p>
+          <div className="ds-page-header-left">
+            <div className="ds-page-header-icon">
+              <Wrench size={20} strokeWidth={1.75} />
+            </div>
+            <div>
+              <h1 className="ds-page-title">Device Repairs</h1>
+              <p className="ds-page-subtitle">Log customer devices, manage technician tasks, parts replacements, and track ledger synchronization</p>
+            </div>
           </div>
-          <button
-            onClick={handleOpenCreate}
-            className="ds-btn ds-btn-primary"
-          >
-            <Plus size={16} /> Log Repair Job
-          </button>
+          <div className="ds-page-header-right">
+            <button
+              onClick={handleOpenCreate}
+              className="ds-btn ds-btn-primary"
+            >
+              <Plus size={16} /> Log Repair Job
+            </button>
+          </div>
         </div>
 
         {/* Filters, Search, and Tabs */}

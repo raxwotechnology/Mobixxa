@@ -110,9 +110,13 @@ const AdminPromotions = () => {
       <div className="ds-page">
         <div className="ds-page-header">
           <div className="ds-page-header-left">
-            <span className="ds-page-header-badge"><Gift size={11} /> Promotions</span>
-            <h1>Promotions & Discounts</h1>
-            <p>{promotions.length} total • {activeCount} active • {expiredCount} expired</p>
+            <div className="ds-page-header-icon">
+              <Gift size={20} strokeWidth={1.75} />
+            </div>
+            <div>
+              <h1 className="ds-page-title">Promotions &amp; Discounts</h1>
+              <p className="ds-page-subtitle">{promotions.length} total • {activeCount} active • {expiredCount} expired</p>
+            </div>
           </div>
           <div className="ds-page-header-right">
             <button onClick={() => setShowModal(true)} className="ds-btn ds-btn-primary">

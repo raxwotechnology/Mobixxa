@@ -199,13 +199,13 @@ const AdminProfitReports = ({ navItems: propNavItems }) => {
         {/* Title and Top Level Controls */}
         <div className="ds-page-header">
           <div className="ds-page-header-left">
-            <div className="ds-page-header-badge">
-              Reports
+            <div className="ds-page-header-icon">
+              <TrendingUp size={20} strokeWidth={1.75} />
             </div>
             <div>
-              <h1 className="m-0">Profit & Loss Reports</h1>
-              <p className="m-0 mt-1.5">
-                Analyze margins and gross product profitability by categories, brands, and timelines.
+              <h1 className="ds-page-title">Profit &amp; Loss Reports</h1>
+              <p className="ds-page-subtitle">
+                Analyze margins and gross product profitability by categories, brands, and timelines
               </p>
             </div>
           </div>

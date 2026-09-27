@@ -1,7 +1,6 @@
-"use client";
-
 import React, { useState } from "react";
-import { Bookmark, ShoppingBag, Check } from "lucide-react";
+import Link from "next/link";
+import { Bookmark, ShoppingBag, Check, Eye } from "lucide-react";
 
 export default function DealCard({ deal }) {
   const [selectedSwatchIndex, setSelectedSwatchIndex] = useState(0);
@@ -61,7 +60,7 @@ export default function DealCard({ deal }) {
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. Action Icons Row (Wishlist, Carousel Dots, Shopping Bag) */}
+      {/* 2. Action Icons Row (Wishlist, Carousel Dots, View, Shopping Bag) */}
       {/* ========================================================================= */}
       <div className="flex items-center justify-between mt-4 px-2">
         {/* Wishlist / Bookmark Icon */}
@@ -97,32 +96,43 @@ export default function DealCard({ deal }) {
           ))}
         </div>
 
-        {/* Shopping Bag Button */}
-        <button
-          type="button"
-          onClick={handleAddToCart}
-          aria-label="Add to cart"
-          className={`p-1.5 rounded-full transition-colors ${
-            isAdded
-              ? "text-emerald-600 bg-emerald-50"
-              : "text-slate-700 hover:text-blue-600 hover:bg-slate-100"
-          }`}
-        >
-          {isAdded ? (
-            <Check className="w-4 h-4" />
-          ) : (
-            <ShoppingBag className="w-4 h-4" />
-          )}
-        </button>
+        {/* View & Shopping Bag Buttons */}
+        <div className="flex items-center gap-1.5">
+          <Link
+            href={`/product/${deal.id || deal._id}`}
+            className="p-1.5 rounded-full text-slate-700 hover:text-blue-600 hover:bg-slate-100 transition-colors"
+            title="View Details"
+          >
+            <Eye className="w-4 h-4" />
+          </Link>
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            aria-label="Add to cart"
+            className={`p-1.5 rounded-full transition-colors ${
+              isAdded
+                ? "text-emerald-600 bg-emerald-50"
+                : "text-slate-700 hover:text-blue-600 hover:bg-slate-100"
+            }`}
+          >
+            {isAdded ? (
+              <Check className="w-4 h-4" />
+            ) : (
+              <ShoppingBag className="w-4 h-4" />
+            )}
+          </button>
+        </div>
       </div>
 
       {/* ========================================================================= */}
       {/* 3. Product Typography (Title & Price) */}
       {/* ========================================================================= */}
       <div className="text-center mt-3">
-        <h3 className="font-bold text-slate-900 text-base tracking-tight group-hover:text-blue-600 transition-colors">
-          {deal.name}
-        </h3>
+        <Link href={`/product/${deal.id || deal._id}`} className="block">
+          <h3 className="font-bold text-slate-900 text-base tracking-tight hover:text-blue-600 transition-colors">
+            {deal.name}
+          </h3>
+        </Link>
         <div className="flex items-center justify-center gap-1.5 mt-1">
           <p className="text-xs text-slate-700 font-bold">
             From Rs {deal.price}

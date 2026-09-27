@@ -571,23 +571,25 @@ const AdminSupplierPayments = () => {
     <DashboardLayout navItems={navItems} title="Supplier Payments">
       <div className="ds-page">
         <div className="ds-page-header">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700">
-              <Wallet size={20} strokeWidth={2} />
+          <div className="ds-page-header-left">
+            <div className="ds-page-header-icon">
+              <Wallet size={20} strokeWidth={1.75} />
             </div>
             <div>
               <h1 className="ds-page-title">Supplier Payments</h1>
               <p className="ds-page-subtitle">Track supplier balances, purchases, and payments</p>
             </div>
           </div>
-          <button
-            onClick={() => fetchSummary(true)}
-            disabled={loading}
-            className="ds-btn ds-btn-secondary"
-          >
-            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-            {loading ? 'Refreshing...' : 'Refresh'}
-          </button>
+          <div className="ds-page-header-right">
+            <button
+              onClick={() => fetchSummary(true)}
+              disabled={loading}
+              className="ds-btn ds-btn-secondary"
+            >
+              <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+              {loading ? 'Refreshing...' : 'Refresh'}
+            </button>
+          </div>
         </div>
 
         {/* Summary Cards */}

@@ -366,12 +366,12 @@ const AdminOrders = ({ navItems: propNavItems }) => {
         {/* Header */}
         <div className="ds-page-header">
           <div className="ds-page-header-left">
-            <div className="ds-page-header-badge">
-              <Package size={24} className="text-brand-indigo" />
+            <div className="ds-page-header-icon">
+              <ShoppingBag size={20} strokeWidth={1.75} />
             </div>
             <div>
-              <h1 className="m-0">Order &amp; Billing Management</h1>
-              <p className="m-0 mt-1">
+              <h1 className="ds-page-title">Order &amp; Billing Management</h1>
+              <p className="ds-page-subtitle">
                 Track customer orders, live bill preview &amp; print, WhatsApp digital receipts, and delivery dispatch
               </p>
             </div>

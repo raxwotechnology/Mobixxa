@@ -80,11 +80,15 @@ const StoreOverview = () => {
         {/* Operations Control Banner */}
         <div className="ds-page-header">
           <div className="ds-page-header-left">
-            <span className="ds-page-header-badge">Store Manager Hub</span>
-            <h1>Store Operations</h1>
-            <p>
-              Monitor live inventory stock levels, store order fulfillments, staff targets, and returns.
-            </p>
+            <div className="ds-page-header-icon">
+              <Package size={20} strokeWidth={1.75} />
+            </div>
+            <div>
+              <h1 className="ds-page-title">Store Operations</h1>
+              <p className="ds-page-subtitle">
+                Monitor live inventory stock levels, store order fulfillments, staff targets, and returns.
+              </p>
+            </div>
           </div>
           <div className="ds-page-header-right">
             <span className="ds-badge ds-badge-green">

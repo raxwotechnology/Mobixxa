@@ -107,9 +107,13 @@ const ManagerPayroll = ({ navItems = managerNavGroups, title = 'Manager Dashboar
       <div className="ds-page">
         <div className="ds-page-header">
           <div className="ds-page-header-left">
-            <span className="ds-page-header-badge">Payroll</span>
-            <h1>Staff Payroll</h1>
-            <p>Process salaries with Sri Lankan EPF/ETF compliance</p>
+            <div className="ds-page-header-icon">
+              <Landmark size={20} strokeWidth={1.75} />
+            </div>
+            <div>
+              <h1 className="ds-page-title">Staff Payroll</h1>
+              <p className="ds-page-subtitle">Process salaries with Sri Lankan EPF/ETF compliance</p>
+            </div>
           </div>
           <div className="ds-page-header-right">
              <button onClick={exportCSV} className="ds-btn ds-btn-sm ds-btn-secondary">

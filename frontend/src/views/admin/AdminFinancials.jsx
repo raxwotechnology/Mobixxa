@@ -335,12 +335,17 @@ const AdminFinancials = ({ navItems: propNavItems }) => {
       <div className="ds-page">
         {/* Header */}
         <div className="ds-page-header">
-          <div>
-            <h1 className="ds-page-title">Store Financials & Accounts</h1>
-            <p className="ds-page-subtitle">Manage overview analytics, petty cash flow, and tax reports</p>
+          <div className="ds-page-header-left">
+            <div className="ds-page-header-icon">
+              <TrendingUp size={20} strokeWidth={1.75} />
+            </div>
+            <div>
+              <h1 className="ds-page-title">Store Financials &amp; Accounts</h1>
+              <p className="ds-page-subtitle">Manage overview analytics, petty cash flow, and tax reports</p>
+            </div>
           </div>
 
-          <div className="flex gap-2 flex-wrap items-center">
+          <div className="ds-page-header-right flex gap-2 flex-wrap items-center">
             {activeTab === 'overview' && (
               <div className="flex gap-2 flex-wrap items-center">
                 <select value={period} onChange={(e) => setPeriod(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-xs font-bold uppercase tracking-wider text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-indigo/20 shadow-sm cursor-pointer">

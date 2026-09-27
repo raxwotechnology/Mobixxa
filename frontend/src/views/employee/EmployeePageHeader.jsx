@@ -5,24 +5,24 @@
  * Responsive for mobile, tablet, and desktop.
  */
 const EmployeePageHeader = ({ badge = 'EMPLOYEE PORTAL', title, subtitle, icon: Icon, actions }) => (
-  <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center md:justify-between employee-page-header relative overflow-hidden">
-    <div className="absolute top-0 right-0 w-40 sm:w-64 h-40 sm:h-64 bg-brand-indigo/5 rounded-full blur-3xl pointer-events-none -z-10" />
-    <div className="min-w-0">
-      <div className="flex items-center gap-2 mb-1">
-        <span className="inline-flex items-center gap-1.5 bg-brand-indigo/10 text-brand-indigo text-xs font-bold uppercase tracking-widest px-2.5 sm:px-3 py-1 rounded-lg border border-brand-indigo/15">
-          {Icon ? <Icon size={12} /> : null}
-          <span className="truncate">{badge}</span>
-        </span>
-      </div>
-      <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 m-0 leading-tight">{title}</h1>
-      {subtitle && (
-        <p className="text-xs font-normal uppercase tracking-wider text-slate-500 mt-1.5 sm:mt-2 m-0 leading-relaxed">
-          {subtitle}
-        </p>
+  <div className="ds-page-header">
+    <div className="ds-page-header-left">
+      {Icon && (
+        <div className="ds-page-header-icon">
+          <Icon size={20} strokeWidth={1.75} />
+        </div>
       )}
+      <div>
+        <h1 className="ds-page-title">{title}</h1>
+        {subtitle && (
+          <p className="ds-page-subtitle">
+            {subtitle}
+          </p>
+        )}
+      </div>
     </div>
     {actions && (
-      <div className="flex items-center gap-2 sm:gap-3 flex-wrap w-full md:w-auto md:justify-end shrink-0">
+      <div className="ds-page-header-right flex items-center gap-2 sm:gap-3 flex-wrap">
         {actions}
       </div>
     )}

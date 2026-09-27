@@ -80,11 +80,15 @@ const AdminTradeIn = () => {
       <div className="ds-page">
         <div className="ds-page-header">
           <div className="ds-page-header-left">
-            <span className="ds-page-header-badge">Operations</span>
-            <h1 style={{ margin: '8px 0 0 0' }}>Trade-In Management</h1>
-            <p style={{ margin: '8px 0 0 0', color: 'var(--ds-text-muted)' }}>
-              View customer trade-in records & convert pre-owned devices into certified shop inventory
-            </p>
+            <div className="ds-page-header-icon">
+              <Smartphone size={20} strokeWidth={1.75} />
+            </div>
+            <div>
+              <h1 className="ds-page-title">Trade-In Management</h1>
+              <p className="ds-page-subtitle">
+                View customer trade-in records &amp; convert pre-owned devices into certified shop inventory
+              </p>
+            </div>
           </div>
         </div>
 

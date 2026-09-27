@@ -59,7 +59,7 @@ export default function AuthLayout({ children }) {
         </div>
 
         <div className="absolute bottom-8 left-14 right-14 z-10 flex items-center justify-between text-xs text-blue-200/70">
-          <span>&copy; {new Date().getFullYear()} Mobixa</span>
+          <span>&copy; {new Date().getFullYear()} Raxwo (Pvt) Ltd</span>
           <div className="flex items-center gap-4">
             <a href="/help-center" className="hover:text-white transition-colors">
               Help

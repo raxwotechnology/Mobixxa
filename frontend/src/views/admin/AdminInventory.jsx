@@ -97,9 +97,13 @@ const AdminInventory = ({ navItems: customNavItems }) => {
         {/* ── Page Header ── */}
         <div className="ds-page-header">
           <div className="ds-page-header-left">
-            <span className="ds-page-header-badge"><Package size={11} /> Inventory</span>
-            <h1>Inventory Valuation &amp; Stock</h1>
-            <p>Track stock counts, safety levels &amp; valuation across all products</p>
+            <div className="ds-page-header-icon">
+              <Package size={20} strokeWidth={1.75} />
+            </div>
+            <div>
+              <h1 className="ds-page-title">Inventory Valuation &amp; Stock</h1>
+              <p className="ds-page-subtitle">Track stock counts, safety levels &amp; valuation across all products</p>
+            </div>
           </div>
           <div className="ds-page-header-right">
             <button onClick={() => exportToCSV(filtered, exportCols, 'inventory')} className="ds-btn ds-btn-secondary ds-btn-sm">CSV</button>

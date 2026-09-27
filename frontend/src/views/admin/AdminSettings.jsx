@@ -208,19 +208,21 @@ const AdminSettings = () => {
     <DashboardLayout navItems={navItems} title="Mobixa Admin Panel">
       <div className="ds-page">
         <div className="ds-page-header">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700">
-              <Settings size={20} strokeWidth={2} />
+          <div className="ds-page-header-left">
+            <div className="ds-page-header-icon">
+              <Settings size={20} strokeWidth={1.75} />
             </div>
             <div>
               <h1 className="ds-page-title">Brand Settings</h1>
               <p className="ds-page-subtitle">Manage your tech and smart devices storefront configuration</p>
             </div>
           </div>
-          <button onClick={handleSave} disabled={saving}
-            className="ds-btn ds-btn-primary">
-            <Save size={15} /> {saving ? 'Saving...' : 'Save Changes'}
-          </button>
+          <div className="ds-page-header-right">
+            <button onClick={handleSave} disabled={saving}
+              className="ds-btn ds-btn-primary">
+              <Save size={15} /> {saving ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
         </div>
 
         {/* Tabs */}

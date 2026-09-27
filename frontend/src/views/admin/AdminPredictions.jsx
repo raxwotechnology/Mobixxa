@@ -67,27 +67,29 @@ const AdminPredictions = () => {
     <DashboardLayout navItems={navItems} title="AI Predictions">
       <div className="ds-page">
         <div className="ds-page-header">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700">
-              <Brain size={20} strokeWidth={2} />
+          <div className="ds-page-header-left">
+            <div className="ds-page-header-icon">
+              <Brain size={20} strokeWidth={1.75} />
             </div>
             <div>
               <h1 className="ds-page-title">AI Sales Predictions</h1>
-              <p className="ds-page-subtitle">Statistical forecasting & trend analysis — {period} view</p>
+              <p className="ds-page-subtitle">Statistical forecasting &amp; trend analysis — {period} view</p>
             </div>
           </div>
 
           {/* Period Selector */}
-          <div className="ds-tab-bar">
-            {PERIOD_OPTIONS.map((p) => (
-              <button
-                key={p.key}
-                onClick={() => setPeriod(p.key)}
-                className={`ds-tab-btn ${period === p.key ? 'active' : ''}`}
-              >
-                {p.label}
-              </button>
-            ))}
+          <div className="ds-page-header-right">
+            <div className="ds-tab-bar">
+              {PERIOD_OPTIONS.map((p) => (
+                <button
+                  key={p.key}
+                  onClick={() => setPeriod(p.key)}
+                  className={`ds-tab-btn ${period === p.key ? 'active' : ''}`}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 

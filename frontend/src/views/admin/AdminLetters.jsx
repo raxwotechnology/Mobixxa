@@ -240,14 +240,15 @@ const AdminLetters = () => {
     <DashboardLayout navItems={navItems} title="Mobixa Admin Panel">
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
-          <div>
-            <h1 className="text-2xl font-semibold text-slate-900 flex items-center gap-2 m-0">
-              <FileText size={24} className="text-brand-indigo" /> Official Letters & Documents
-            </h1>
-            <p className="text-xs font-normal text-slate-500 mt-1 m-0">
-              Choose a letter category & template — content is automatically formatted with official company letterhead
-            </p>
+        <div className="ds-page-header">
+          <div className="ds-page-header-left">
+            <div className="ds-page-header-icon">
+              <FileText size={20} strokeWidth={1.75} />
+            </div>
+            <div>
+              <h1 className="ds-page-title">Official Letters &amp; Documents</h1>
+              <p className="ds-page-subtitle">Choose a letter category &amp; template — content is automatically formatted with official company letterhead</p>
+            </div>
           </div>
         </div>
 

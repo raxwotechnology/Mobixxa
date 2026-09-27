@@ -168,11 +168,16 @@ const ManagerLeaves = ({ navItems = managerNavGroups, title = 'Manager Dashboard
     <DashboardLayout navItems={navItems} title={title}>
       <div className="ds-page">
         <div className="ds-page-header">
-          <div>
-            <h1 className="ds-page-title">Store Leave Management</h1>
-            <p className="ds-page-subtitle">{leaves.filter((l) => l.status === 'pending').length} pending requests awaiting review</p>
+          <div className="ds-page-header-left">
+            <div className="ds-page-header-icon">
+              <Calendar size={20} strokeWidth={1.75} />
+            </div>
+            <div>
+              <h1 className="ds-page-title">Store Leave Management</h1>
+              <p className="ds-page-subtitle">{leaves.filter((l) => l.status === 'pending').length} pending requests awaiting review</p>
+            </div>
           </div>
-          <div className="flex gap-2 flex-wrap items-center">
+          <div className="ds-page-header-right flex gap-2 flex-wrap items-center">
             <button onClick={() => setShowLeaveModal(true)} className="ds-btn ds-btn-primary text-xs uppercase py-2">
               <Calendar size={14} /> Add Leave
             </button>

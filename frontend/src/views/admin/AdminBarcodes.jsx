@@ -82,18 +82,21 @@ const AdminBarcodes = () => {
   return (
     <DashboardLayout navItems={navItems} title="Mobixa Admin Panel">
       <div>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
-          <div>
-            <h1 className="text-2xl font-semibold text-dark-navy flex items-center gap-2">
-              <Barcode size={24} /> Barcode Activity Log
-            </h1>
-            <p className="text-muted-text text-sm mt-1">Track all barcode generation activity ({total} total records)</p>
+        <div className="ds-page-header mb-6">
+          <div className="ds-page-header-left">
+            <div className="ds-page-header-icon">
+              <Barcode size={20} strokeWidth={1.75} />
+            </div>
+            <div>
+              <h1 className="ds-page-title">Barcode Activity Log</h1>
+              <p className="ds-page-subtitle">Track all barcode generation activity ({total} total records)</p>
+            </div>
           </div>
-          <div className="flex gap-2">
+          <div className="ds-page-header-right">
             <button
               onClick={exportCSV}
               disabled={logs.length === 0}
-              className="flex items-center gap-2 bg-dark-navy hover:bg-gray-800 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors disabled:opacity-50 cursor-pointer border-0"
+              className="ds-btn ds-btn-secondary"
             >
               <Download size={14} /> Export CSV
             </button>

@@ -178,12 +178,12 @@ const AdminEmployees = ({ navItems: propNavItems }) => {
         {/* Header Block */}
         <div className="ds-page-header">
           <div className="ds-page-header-left">
-            <div className="ds-page-header-badge">
-              <Users size={24} />
+            <div className="ds-page-header-icon">
+              <Users size={20} strokeWidth={1.75} />
             </div>
             <div>
-              <h1>Employee Directory</h1>
-              <p>Manage complete staff profiles, salaries, bank details, roles, and emergency contacts</p>
+              <h1 className="ds-page-title">Employee Directory</h1>
+              <p className="ds-page-subtitle">Manage complete staff profiles, salaries, bank details, roles, and emergency contacts</p>
             </div>
           </div>
           <div className="ds-page-header-right">

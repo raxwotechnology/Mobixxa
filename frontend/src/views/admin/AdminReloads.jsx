@@ -208,12 +208,12 @@ const AdminReloads = ({ navItems: propNavItems }) => {
       <div className="ds-page">
         {/* Header Title */}
         <div className="ds-page-header">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700">
-              <Smartphone size={20} strokeWidth={2} />
+          <div className="ds-page-header-left">
+            <div className="ds-page-header-icon">
+              <Smartphone size={20} strokeWidth={1.75} />
             </div>
             <div>
-              <h1 className="ds-page-title">Reloads & Card Stock</h1>
+              <h1 className="ds-page-title">Reloads &amp; Card Stock</h1>
               <p className="ds-page-subtitle">
                 Manage physical card stocks, daily e-reload floats, end-of-day balances, and distributor payments.
               </p>
@@ -221,7 +221,8 @@ const AdminReloads = ({ navItems: propNavItems }) => {
           </div>
 
           {/* Navigation Tabs */}
-          <div className="ds-tab-bar">
+          <div className="ds-page-header-right">
+            <div className="ds-tab-bar">
             <button 
               className={`ds-tab-btn ${activeTab === 'stocks' ? 'active' : ''}`}
               onClick={() => setActiveTab('stocks')}
@@ -240,6 +241,7 @@ const AdminReloads = ({ navItems: propNavItems }) => {
             >
               Reload Transactions
             </button>
+            </div>
           </div>
         </div>
 

@@ -122,9 +122,9 @@ const AdminTargets = () => {
     <DashboardLayout navItems={navItems} title="Targets">
       <div className="ds-page">
         <div className="ds-page-header">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700">
-              <Target size={20} strokeWidth={2} />
+          <div className="ds-page-header-left">
+            <div className="ds-page-header-icon">
+              <Target size={20} strokeWidth={1.75} />
             </div>
             <div>
               <h1 className="ds-page-title">Employee Targets</h1>
@@ -132,7 +132,7 @@ const AdminTargets = () => {
             </div>
           </div>
           
-          <div className="flex flex-wrap gap-2 items-center">
+          <div className="ds-page-header-right flex flex-wrap gap-2 items-center">
             <select 
               value={filterMonth} 
               onChange={(e) => setFilterMonth(Number(e.target.value))}

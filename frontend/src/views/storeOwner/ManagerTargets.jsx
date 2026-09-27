@@ -122,27 +122,26 @@ const ManagerTargets = () => {
     <DashboardLayout navItems={navItems} title="Manager Dashboard">
       <div className="animate-fade-in space-y-6">
         {/* Operations Control Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-indigo/5 rounded-full blur-3xl pointer-events-none -z-10"></div>
-          <div>
-            <div className="flex items-center gap-3 mb-1">
-              <div className="w-10 h-10 rounded-2xl bg-brand-indigo/10 flex items-center justify-center text-brand-indigo">
-                <Target size={20} strokeWidth={2.5} />
-              </div>
-              <h1 className="text-2xl font-semibold text-slate-900 m-0">Employee Targets</h1>
+        <div className="ds-page-header mb-6">
+          <div className="ds-page-header-left">
+            <div className="ds-page-header-icon">
+              <Target size={20} strokeWidth={1.75} />
             </div>
-            <p className="text-xs font-normal uppercase tracking-wider text-slate-500 mt-2 m-0">Current period: {targets.length} targets assigned, {completedCount} completed</p>
+            <div>
+              <h1 className="ds-page-title">Employee Targets</h1>
+              <p className="ds-page-subtitle">Current period: {targets.length} targets assigned, {completedCount} completed</p>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="ds-page-header-right flex flex-wrap items-center gap-3">
             <select value={filterMonth} onChange={(e) => setFilterMonth(Number(e.target.value))}
-              className="bg-white/80 border border-slate-200 rounded-xl py-2 px-3.5 text-xs font-bold text-slate-700 outline-none cursor-pointer focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo">
+              className="ds-select py-1.5 px-3 text-xs w-auto">
               {Array.from({length: 12}, (_, i) => <option key={i+1} value={i+1}>{new Date(0, i).toLocaleString('default', {month: 'long'})}</option>)}
             </select>
             <select value={filterYear} onChange={(e) => setFilterYear(Number(e.target.value))}
-              className="bg-white/80 border border-slate-200 rounded-xl py-2 px-3.5 text-xs font-bold text-slate-700 outline-none cursor-pointer focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo">
+              className="ds-select py-1.5 px-3 text-xs w-auto">
               {[2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
             </select>
-            <button onClick={() => setShowModal(true)} className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
+            <button onClick={() => setShowModal(true)} className="ds-btn ds-btn-primary">
               <Plus size={14} /> Assign Target
             </button>
           </div>

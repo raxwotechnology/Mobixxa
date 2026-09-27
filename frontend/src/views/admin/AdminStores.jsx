@@ -134,11 +134,13 @@ const AdminStores = () => {
       <div className="ds-page">
         <div className="ds-page-header">
           <div className="ds-page-header-left">
-            <span className="ds-page-header-badge">
-              <Store size={11} /> Stores
-            </span>
-            <h1>Store Management</h1>
-            <p>{stores.length} registered boutiques</p>
+            <div className="ds-page-header-icon">
+              <Store size={20} strokeWidth={1.75} />
+            </div>
+            <div>
+              <h1 className="ds-page-title">Store Management</h1>
+              <p className="ds-page-subtitle">{stores.length} registered boutiques</p>
+            </div>
           </div>
           <div className="ds-page-header-right" style={{ display: 'flex', gap: '0.5rem' }}>
             <button onClick={() => setShowTransferModal(true)} className="ds-btn ds-btn-secondary">

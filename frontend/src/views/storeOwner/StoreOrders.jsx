@@ -112,25 +112,24 @@ const StoreOrders = () => {
     <DashboardLayout navItems={navItems} title="Manager Dashboard">
       <div className="animate-fade-in space-y-6">
         {/* Operations Control Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm relative overflow-hidden mb-6">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-indigo/5 rounded-full blur-3xl pointer-events-none -z-10"></div>
-          <div>
-            <div className="flex items-center gap-3 mb-1">
-              <div className="w-10 h-10 rounded-2xl bg-brand-indigo/10 flex items-center justify-center text-brand-indigo">
-                <ShoppingBag size={20} strokeWidth={2.5} />
-              </div>
-              <h1 className="text-2xl font-semibold text-slate-900 m-0">Customer Orders</h1>
+        <div className="ds-page-header mb-6">
+          <div className="ds-page-header-left">
+            <div className="ds-page-header-icon">
+              <ShoppingBag size={20} strokeWidth={1.75} />
             </div>
-            <p className="text-xs font-normal uppercase tracking-wider text-slate-500 mt-2 m-0">Manage statuses, payments, and delivery assignments</p>
+            <div>
+              <h1 className="ds-page-title">Customer Orders</h1>
+              <p className="ds-page-subtitle">Manage statuses, payments, and delivery assignments</p>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="ds-page-header-right flex items-center gap-3">
             <div className="text-xs text-slate-400 font-bold hidden sm:block">
               <span className="font-bold text-slate-700">{orders.length}</span> total orders
             </div>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="bg-white border border-slate-200 rounded-xl py-2.5 px-3.5 text-xs font-bold text-slate-700 outline-none cursor-pointer focus:ring-2 focus:ring-brand-indigo/20 focus:border-brand-indigo shadow-sm"
+              className="ds-select"
             >
               <option value="newest">Newest first</option>
               <option value="oldest">Oldest first</option>

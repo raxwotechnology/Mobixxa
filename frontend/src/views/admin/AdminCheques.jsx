@@ -172,10 +172,12 @@ const AdminCheques = ({ navItems: propNavItems }) => {
       <div className="ds-page">
         <div className="ds-page-header">
           <div className="ds-page-header-left">
-            <div className="ds-page-header-badge"><Landmark size={24} /></div>
+            <div className="ds-page-header-icon">
+              <Landmark size={20} strokeWidth={1.75} />
+            </div>
             <div>
-              <h1>Cheque Registry</h1>
-              <p>Monitor and manage all customer and supplier cheques</p>
+              <h1 className="ds-page-title">Cheque Registry</h1>
+              <p className="ds-page-subtitle">Monitor and manage all customer and supplier cheques</p>
             </div>
           </div>
           <div className="ds-page-header-right">

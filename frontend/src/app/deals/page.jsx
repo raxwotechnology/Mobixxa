@@ -71,9 +71,9 @@ function DealsContent() {
 
             {/* Interactive Countdown Timer Bar */}
             <div className="pt-3 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-blue-100/90 flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-amber-300" />
-                <span>Offers Expire In:</span>
+              <span className="text-xs font-bold uppercase tracking-wider text-rose-400 bg-rose-500/20 border border-rose-400/40 px-3.5 py-1.5 rounded-full flex items-center gap-2 shadow-sm">
+                <Clock className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
+                <span className="text-rose-400 font-extrabold tracking-wider">Offers Expire In:</span>
               </span>
               <div className="flex items-center gap-2">
                 <div className="bg-blue-800/60 backdrop-blur-md border border-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-xs min-w-[54px]">

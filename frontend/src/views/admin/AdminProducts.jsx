@@ -243,11 +243,13 @@ const AdminProducts = () => {
             
             <div className="ds-page-header">
               <div className="ds-page-header-left">
-                <span className="ds-page-header-badge">
-                  <Package size={11} /> Business Management
-                </span>
-                <h1 className="ds-card-title">Products Catalog</h1>
-                <p style={{ color: 'var(--ds-text-muted)', fontSize: 'var(--ds-text-xs)' }}>{products.length} registered items</p>
+                <div className="ds-page-header-icon">
+                  <Package size={20} strokeWidth={1.75} />
+                </div>
+                <div>
+                  <h1 className="ds-page-title">Products Catalog</h1>
+                  <p className="ds-page-subtitle">{products.length} registered items</p>
+                </div>
               </div>
               <div className="ds-page-header-right">
                 <button onClick={openCreate} className="ds-btn ds-btn-primary">

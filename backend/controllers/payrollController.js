@@ -604,8 +604,8 @@ const getSalaryAdvances = async (req, res, next) => {
   try {
     const { month, year, employeeId } = req.query;
     const query = {};
-    if (month) query.month = Number(month);
-    if (year) query.year = Number(year);
+    if (month && month !== 'all') query.month = Number(month);
+    if (year && year !== 'all') query.year = Number(year);
     if (employeeId) query.employeeId = employeeId;
 
     const advances = await SalaryAdvance.find(query)

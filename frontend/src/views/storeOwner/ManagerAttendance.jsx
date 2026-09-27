@@ -197,9 +197,13 @@ const ManagerAttendance = () => {
       <div className="ds-page">
         <div className="ds-page-header">
           <div className="ds-page-header-left">
-            <span className="ds-page-header-badge">Attendance</span>
-            <h1>Team Attendance</h1>
-            <p>Manage and view team attendance records</p>
+            <div className="ds-page-header-icon">
+              <Clock size={20} strokeWidth={1.75} />
+            </div>
+            <div>
+              <h1 className="ds-page-title">Team Attendance</h1>
+              <p className="ds-page-subtitle">Manage and view team attendance records</p>
+            </div>
           </div>
         </div>
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { Link } from '../utils/navigation';
-import { Star, ShoppingCart, Heart, ShieldCheck, Cpu } from 'lucide-react';
+import { Star, ShoppingCart, Heart, ShieldCheck, Cpu, Eye } from 'lucide-react';
 import useCartStore from '../store/cartStore';
 import useWishlistStore from '../store/wishlistStore';
 import useAuthStore from '../store/authStore';
@@ -129,18 +129,18 @@ const ProductCard = ({ product }) => {
 
           {/* Koko Payment Mention Badge */}
           {product.price > 0 && product.allowKokoOnline !== false && (
-            <div className="mb-2 sm:mb-3 py-1 px-2.5 rounded-lg bg-blue-50/70 border border-blue-200/60 flex items-center justify-between gap-1.5 text-xs sm:text-xs">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="px-1.5 py-0.5 rounded-md bg-[#0052FF] text-white font-bold text-xs leading-none tracking-tight flex items-center justify-center flex-shrink-0 shadow-xs">
+            <div className="mb-2 sm:mb-3 py-1.5 px-2.5 rounded-xl bg-red-50/80 border border-red-200/70 flex items-center justify-between gap-1.5 text-xs">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="px-1.5 py-0.5 rounded-md bg-[#e11d48] text-white font-extrabold text-[11px] uppercase tracking-wider flex items-center justify-center flex-shrink-0 shadow-xs">
                   koko
                 </span>
-                <span className="text-slate-700 font-medium truncate">
-                  Or 3 x <strong className="text-blue-600 font-bold">
+                <span className="text-slate-800 font-medium text-[11px] sm:text-xs leading-snug">
+                  Or 3 x <strong className="text-red-600 font-bold">
                     {currency === 'USD' ? `$${(Math.ceil(product.price / 3) / exchangeRate).toFixed(2)}` : `Rs. ${Math.ceil(product.price / 3).toLocaleString()}`}
                   </strong> with Koko
                 </span>
               </div>
-              <span className="text-xs font-bold text-blue-700 bg-blue-100/70 px-1.5 py-0.5 rounded-full uppercase tracking-wider flex-shrink-0">
+              <span className="text-[10px] font-bold text-red-600 bg-red-100/80 border border-red-200 px-1.5 py-0.5 rounded-full uppercase tracking-wider flex-shrink-0 whitespace-nowrap">
                 3x Pay
               </span>
             </div>
@@ -164,16 +164,32 @@ const ProductCard = ({ product }) => {
                 )}
               </div>
             </div>
-            <button onClick={handleAddToCart}
-              disabled={!inStock}
-              className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex-shrink-0 flex items-center justify-center transition-all ${
-                inStock 
-                  ? 'bg-brand-indigo hover:opacity-90 text-white shadow-md shadow-brand-indigo/20 hover:shadow-lg' 
-                  : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-              }`}
-            >
-              <ShoppingCart size={16} />
-            </button>
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  window.location.href = `/product/${product._id}`;
+                }}
+                className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-bold text-slate-700 hover:text-brand-indigo bg-slate-100 hover:bg-slate-200/80 transition-all flex items-center gap-1 shadow-2xs"
+                title="View Product Details"
+              >
+                <Eye size={14} />
+                <span className="hidden xs:inline">View</span>
+              </button>
+              <button onClick={handleAddToCart}
+                disabled={!inStock}
+                title={inStock ? "Add to cart" : "Out of stock"}
+                className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex-shrink-0 flex items-center justify-center transition-all ${
+                  inStock 
+                    ? 'bg-brand-indigo hover:opacity-90 text-white shadow-md shadow-brand-indigo/20 hover:shadow-lg active:scale-95' 
+                    : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                }`}
+              >
+                <ShoppingCart size={15} />
+              </button>
+            </div>
           </div>
         </div>
       </div>

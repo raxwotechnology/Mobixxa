@@ -83,9 +83,13 @@ const ManagerInventory = () => {
         {/* Page Header */}
         <div className="ds-page-header">
           <div className="ds-page-header-left">
-            <span className="ds-page-header-badge">Store Inventory</span>
-            <h1>Store Inventory</h1>
-            <p>Stock levels and product tracking</p>
+            <div className="ds-page-header-icon">
+              <Package size={20} strokeWidth={1.75} />
+            </div>
+            <div>
+              <h1 className="ds-page-title">Store Inventory</h1>
+              <p className="ds-page-subtitle">Stock levels and product tracking</p>
+            </div>
           </div>
           <div className="ds-page-header-right">
             <button onClick={() => exportToCSV(filtered, exportCols, 'store-inventory')} className="ds-btn ds-btn-secondary ds-btn-sm">

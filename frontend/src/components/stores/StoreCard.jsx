@@ -10,40 +10,54 @@ import {
   Sparkles,
   Building2,
   Navigation,
+  Star,
+  ExternalLink,
+  MessageSquare,
 } from "lucide-react";
 
 export default function StoreCard({ store }) {
+  const rating = store.rating || 4.9;
+  const reviewCount = store.reviewCount || 280;
+  const googleReviewUrl = store.googleReviewUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((store.name || 'Store') + ' ' + (store.address || 'Colombo'))}`;
+  const theme = store.theme || {
+    cardBg: "from-blue-900/10 via-slate-50 to-white",
+    accent: "bg-blue-600 hover:bg-blue-700 text-white",
+    badge: "bg-blue-50 text-blue-700 border-blue-200",
+    border: "border-blue-200/90 hover:border-blue-400",
+    iconColor: "text-blue-600",
+  };
+
   return (
-    <div className="bg-white border border-slate-200 rounded-[32px] p-5 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between group">
+    <div className={`bg-gradient-to-b ${theme.cardBg} border ${theme.border} rounded-[32px] p-5 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between group`}>
       {/* ========================================================================= */}
       {/* 1. Showroom Image Viewport with Overlays */}
       {/* ========================================================================= */}
-      <div className="h-72 rounded-2xl relative overflow-hidden select-none bg-slate-900 border border-slate-800 flex items-center justify-center group-hover:scale-[1.01] transition-transform duration-300">
+      <div className="h-64 sm:h-72 rounded-2xl relative overflow-hidden select-none bg-slate-900 border border-slate-800 flex items-center justify-center group-hover:scale-[1.01] transition-transform duration-300">
         {/* Architectural Tech Showroom Interior Graphic */}
         <ShowroomInteriorGraphic type={store.storeType} />
 
         {/* Top-Right Badge: OPEN SHOWROOM */}
         <div className="absolute top-4 right-4 z-20">
-          <span className="bg-[#2080f0]/90 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm">
-            <span className="w-2 h-2 rounded-full bg-cyan-300 animate-pulse" />
-            <span>{store.status}</span>
+          <span className="bg-emerald-600/95 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-emerald-200 animate-pulse" />
+            <span>{store.status || "OPEN SHOWROOM"}</span>
           </span>
         </div>
 
         {/* Top-Left Subtle City Tag */}
         <div className="absolute top-4 left-4 z-20">
-          <span className="bg-black/50 backdrop-blur-md text-white/90 text-xs font-semibold px-2.5 py-1 rounded-full border border-white/20">
+          <span className="bg-black/60 backdrop-blur-md text-white/95 text-xs font-semibold px-3 py-1 rounded-full border border-white/20">
             {store.city}
           </span>
         </div>
 
         {/* Bottom-Left Overlay Pill: Branch Title */}
         <div className="absolute bottom-4 left-4 z-20">
-          <div className="bg-slate-900/80 backdrop-blur-md text-white px-4 py-2 rounded-full flex items-center gap-2 text-sm font-bold border border-slate-700/80 shadow-lg">
-            <Building2 className="w-4 h-4 text-blue-400 flex-shrink-0" />
+          <div className="bg-slate-900/85 backdrop-blur-md text-white px-4 py-2 rounded-full flex items-center gap-2 text-sm font-bold border border-slate-700/80 shadow-lg">
+            <Building2 className={`w-4 h-4 ${theme.iconColor} flex-shrink-0`} />
             <span>{store.name}</span>
             {store.subtitle && (
-              <span className="text-xs text-blue-300 font-semibold tracking-wider bg-blue-900/60 px-2 py-0.5 rounded-full border border-blue-500/30">
+              <span className={`text-[11px] font-bold tracking-wider px-2 py-0.5 rounded-full border ${theme.badge}`}>
                 {store.subtitle}
               </span>
             )}
@@ -52,49 +66,102 @@ export default function StoreCard({ store }) {
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. Store Details */}
+      {/* 2. Store Details & Address */}
       {/* ========================================================================= */}
       <div className="space-y-3 mt-4">
         {/* Tagline text */}
-        <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">
+        <p className="text-xs text-slate-600 leading-relaxed">
           {store.tagline}
         </p>
 
-        {/* Address Box */}
-        <div className="border border-slate-200/80 bg-slate-50/50 rounded-xl px-4 py-2.5 flex items-center gap-2.5 text-xs text-slate-700 font-medium">
-          <MapPin className="w-4 h-4 text-blue-600 flex-shrink-0" />
-          <span className="truncate">{store.address}</span>
+        {/* Full Address Box */}
+        <div className="border border-slate-200/90 bg-white/90 rounded-2xl p-3 flex items-start gap-2.5 text-xs text-slate-700 font-medium shadow-2xs">
+          <MapPin className={`w-4 h-4 ${theme.iconColor} flex-shrink-0 mt-0.5`} />
+          <div className="min-w-0 flex-1">
+            <span className="font-bold text-slate-800 block text-xs">Address:</span>
+            <span className="text-slate-600 text-xs block leading-snug">{store.address}</span>
+          </div>
         </div>
 
         {/* Info Row (Hours + Phone) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           {/* Left Pill: Hours */}
-          <div className="border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-600 font-semibold flex items-center gap-1.5 bg-white">
+          <div className="border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-700 font-semibold flex items-center gap-1.5 bg-white shadow-2xs">
             <Clock className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
-            <span>{store.hours}</span>
+            <span>Open: {store.hours}</span>
           </div>
 
           {/* Right Pill: Phone */}
           <a
-            href={`tel:${store.phone.replace(/\s+/g, "")}`}
-            className="border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-600 font-semibold flex items-center gap-1.5 bg-white hover:text-blue-600 hover:border-blue-300 transition-colors"
+            href={`tel:${(store.phone || '').replace(/\s+/g, "")}`}
+            className="border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-700 font-semibold flex items-center gap-1.5 bg-white hover:text-blue-600 hover:border-blue-300 transition-colors shadow-2xs"
           >
             <Phone className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
             <span>{store.phone}</span>
           </a>
         </div>
+
+        {/* ======================================================================= */}
+        {/* Google Reviews & Rating Card */}
+        {/* ======================================================================= */}
+        <div className="bg-white/95 rounded-2xl border border-slate-200/90 p-3.5 space-y-2 shadow-2xs">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-0.5">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                ))}
+              </div>
+              <span className="text-xs font-bold text-slate-900">{rating}</span>
+              <span className="text-[11px] text-slate-500 font-medium">({reviewCount} reviews)</span>
+            </div>
+
+            {/* Google Review Link */}
+            <a
+              href={googleReviewUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-700 hover:underline bg-blue-50 hover:bg-blue-100/80 px-2.5 py-1 rounded-full transition-colors"
+            >
+              <span>Google Reviews</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
+
+          {/* Customer Review Quote */}
+          {store.customerReview && (
+            <p className="text-xs text-slate-600 italic bg-slate-50 p-2.5 rounded-xl border border-slate-100 m-0 leading-relaxed">
+              &ldquo;{store.customerReview}&rdquo;
+              {store.reviewerName && (
+                <span className="not-italic font-bold text-slate-800 text-[11px] block mt-1">
+                  — {store.reviewerName} (Verified Customer)
+                </span>
+              )}
+            </p>
+          )}
+        </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* 3. Action Button: EXPLORE BRANCH CATALOG */}
+      {/* 3. Action Buttons Row: EXPLORE CATALOG + DIRECTIONS */}
       {/* ========================================================================= */}
-      <div className="mt-4 pt-1">
+      <div className="mt-4 pt-2 border-t border-slate-200/70 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        <a
+          href={googleReviewUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold py-2.5 rounded-full text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-2xs hover:scale-[1.01]"
+        >
+          <Navigation className="w-3.5 h-3.5 text-blue-600" />
+          <span>Get Directions</span>
+        </a>
+
         <Link
           href={`/shop?branch=${encodeURIComponent(store.name)}`}
-          className="w-full bg-[#1967d2] hover:bg-blue-700 text-white font-bold py-3.5 rounded-full text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-sm hover:shadow-md hover:scale-[1.01] active:scale-100"
+          className={`${theme.accent} font-bold py-2.5 rounded-full text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-sm hover:shadow-md hover:scale-[1.01] active:scale-100`}
         >
-          <span>EXPLORE BRANCH CATALOG</span>
-          <ArrowRight className="w-4 h-4" />
+          <span>Explore Catalog</span>
+          <ArrowRight className="w-3.5 h-3.5" />
         </Link>
       </div>
     </div>

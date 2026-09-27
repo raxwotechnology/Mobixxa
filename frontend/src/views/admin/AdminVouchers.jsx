@@ -263,9 +263,13 @@ const AdminVouchers = () => {
       <div className="ds-page">
         <div className="ds-page-header">
           <div className="ds-page-header-left">
-            <span className="ds-page-header-badge">Vouchers</span>
-            <h1>Voucher Management</h1>
-            <p>{vouchers.length} vouchers total</p>
+            <div className="ds-page-header-icon">
+              <Ticket size={20} strokeWidth={1.75} />
+            </div>
+            <div>
+              <h1 className="ds-page-title">Voucher Management</h1>
+              <p className="ds-page-subtitle">{vouchers.length} vouchers total</p>
+            </div>
           </div>
           <div className="ds-page-header-right">
             <button onClick={() => {

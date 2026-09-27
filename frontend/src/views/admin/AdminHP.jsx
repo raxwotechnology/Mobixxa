@@ -232,17 +232,17 @@ const AdminHP = ({ navItems: propNavItems }) => {
       <div className="ds-page">
         {/* Header */}
         <div className="ds-page-header">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700">
-              <Clock size={20} strokeWidth={2} />
+          <div className="ds-page-header-left">
+            <div className="ds-page-header-icon">
+              <Clock size={20} strokeWidth={1.75} />
             </div>
             <div>
-              <h1 className="ds-page-title">Credit Sales & Installments (HP)</h1>
+              <h1 className="ds-page-title">Credit Sales &amp; Installments (HP)</h1>
               <p className="ds-page-subtitle">Monitor credit customer registry, billing installments, and cash receipts history</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="ds-page-header-right">
             <button 
               onClick={fetchData} 
               className="ds-btn ds-btn-secondary"

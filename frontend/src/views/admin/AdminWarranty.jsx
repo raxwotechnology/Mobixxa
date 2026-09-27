@@ -43,11 +43,13 @@ const AdminWarranty = () => {
         {/* Header Title Banner */}
         <div className="ds-page-header">
           <div className="ds-page-header-left">
-            <span className="ds-page-header-badge">
-              <ShieldCheck size={11} /> Warranty
-            </span>
-            <h1>Warranty Management</h1>
-            <p>Search, verify, and monitor device warranty validity across all sales and stores.</p>
+            <div className="ds-page-header-icon">
+              <ShieldCheck size={20} strokeWidth={1.75} />
+            </div>
+            <div>
+              <h1 className="ds-page-title">Warranty Management</h1>
+              <p className="ds-page-subtitle">Search, verify, and monitor device warranty validity across all sales and stores.</p>
+            </div>
           </div>
         </div>
 

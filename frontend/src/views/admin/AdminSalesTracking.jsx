@@ -136,12 +136,12 @@ const AdminSalesTracking = () => {
         {/* Header Controls */}
         <div className="ds-page-header">
           <div className="ds-page-header-left">
-            <div className="ds-page-header-badge">
-              <span className="text-lg"></span>
+            <div className="ds-page-header-icon">
+              <TrendingUp size={20} strokeWidth={1.75} />
             </div>
             <div>
-              <h1 className="m-0">Sales Tracking</h1>
-              <p className="m-0 mt-1 text-slate-500 text-sm">Cashier POS performance monitoring and detailed summaries</p>
+              <h1 className="ds-page-title">Sales Tracking</h1>
+              <p className="ds-page-subtitle">Cashier POS performance monitoring and detailed summaries</p>
             </div>
           </div>
           <div className="ds-page-header-right">

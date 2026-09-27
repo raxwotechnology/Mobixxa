@@ -167,11 +167,16 @@ const AdminOvertime = () => {
       <div className="ds-page">
         {/* Header */}
         <div className="ds-page-header">
-          <div>
-            <h1 className="ds-page-title">Overtime Pay Management</h1>
-            <p className="ds-page-subtitle">Track, approve, and disburse employee overtime earnings</p>
+          <div className="ds-page-header-left">
+            <div className="ds-page-header-icon">
+              <Clock size={20} strokeWidth={1.75} />
+            </div>
+            <div>
+              <h1 className="ds-page-title">Overtime Pay Management</h1>
+              <p className="ds-page-subtitle">Track, approve, and disburse employee overtime earnings</p>
+            </div>
           </div>
-          <div className="flex gap-2 flex-wrap items-center">
+          <div className="ds-page-header-right flex gap-2 flex-wrap items-center">
             <input type="date" value={dateRange.startDate} onChange={e => setDateRange(r => ({ ...r, startDate: e.target.value }))} className="ds-input text-xs py-2 w-auto" />
             <input type="date" value={dateRange.endDate} onChange={e => setDateRange(r => ({ ...r, endDate: e.target.value }))} className="ds-input text-xs py-2 w-auto" />
             <button onClick={exportCSV} className="ds-btn ds-btn-secondary text-xs uppercase py-2">

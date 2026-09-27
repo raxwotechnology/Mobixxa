@@ -412,22 +412,21 @@ const ManagerSupplierPayments = () => {
     <DashboardLayout title="Supplier Payments">
       <div className="animate-fade-in space-y-6">
         {/* Operations Control Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-indigo/5 rounded-full blur-3xl pointer-events-none -z-10"></div>
-          <div>
-            <div className="flex items-center gap-3 mb-1">
-              <div className="w-10 h-10 rounded-2xl bg-brand-indigo/10 flex items-center justify-center text-brand-indigo">
-                <Wallet size={20} strokeWidth={2.5} />
-              </div>
-              <h1 className="text-2xl font-semibold text-slate-900 m-0">Supplier Payments</h1>
+        <div className="ds-page-header">
+          <div className="ds-page-header-left">
+            <div className="ds-page-header-icon">
+              <Wallet size={20} strokeWidth={1.75} />
             </div>
-            <p className="text-xs font-normal uppercase tracking-wider text-slate-500 mt-2 m-0">Track supplier balances, purchases, and payments</p>
+            <div>
+              <h1 className="ds-page-title">Supplier Payments</h1>
+              <p className="ds-page-subtitle">Track supplier balances, purchases, and payments</p>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-2.5">
+          <div className="ds-page-header-right">
             <button
               onClick={() => fetchSummary(true)}
               disabled={loading}
-              className="bg-white border border-slate-200 text-slate-650 hover:bg-slate-50 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shadow-sm flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              className="ds-btn ds-btn-secondary"
             >
               <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh
             </button>

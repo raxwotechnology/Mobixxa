@@ -236,13 +236,17 @@ const AdminReturns = () => {
       <div className="ds-page">
         <div className="ds-page-header">
           <div className="ds-page-header-left">
-            <span className="ds-page-header-badge">Sales &amp; Operations</span>
-            <h1 style={{ margin: '8px 0 0 0' }}>Returns &amp; Refunds</h1>
-            <p style={{ margin: '8px 0 0 0', color: 'var(--ds-text-muted)' }}>Pending / Approved / Rejected return requests</p>
+            <div className="ds-page-header-icon">
+              <RotateCcw size={20} strokeWidth={1.75} />
+            </div>
+            <div>
+              <h1 className="ds-page-title">Returns &amp; Refunds</h1>
+              <p className="ds-page-subtitle">Pending / Approved / Rejected return requests</p>
+            </div>
           </div>
-          <div className="ds-page-header-right" style={{ display: 'flex', gap: '8px' }}>
-             <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="ds-input" style={{ width: 'auto' }} />
-             <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="ds-input" style={{ width: 'auto' }} />
+          <div className="ds-page-header-right flex gap-2 items-center flex-wrap">
+             <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="ds-input py-1.5 px-3 text-xs w-auto" />
+             <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="ds-input py-1.5 px-3 text-xs w-auto" />
              <button onClick={handleExport} className="ds-btn ds-btn-secondary">Export PDF</button>
           </div>
         </div>

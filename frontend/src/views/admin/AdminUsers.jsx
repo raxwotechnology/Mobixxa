@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Trash2, Search, ToggleLeft, ToggleRight, Edit, X, CheckCircle, Eye, AlertCircle, Users, ShieldCheck } from 'lucide-react';
+import { Trash2, Search, ToggleLeft, ToggleRight, Edit, X, CheckCircle, Eye, AlertCircle, Users, ShieldCheck, ArrowLeft, Save } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
 import { getAdminUsers, updateUser, toggleUserStatus, deleteUser } from '../../services/api';
 import { toast } from 'react-toastify';
@@ -247,11 +247,13 @@ const AdminUsers = () => {
       <div className="ds-page">
         <div className="ds-page-header">
           <div className="ds-page-header-left">
-            <span className="ds-page-header-badge">
-              <Users size={11} /> User & Employee Management
-            </span>
-            <h1 className="text-2xl font-semibold text-slate-900 m-0">Team Directory</h1>
-            <p className="text-slate-400 text-xs font-normal mt-1 m-0">{users.length} total accounts · {activeCount} active members</p>
+            <div className="ds-page-header-icon">
+              <Users size={20} strokeWidth={1.75} />
+            </div>
+            <div>
+              <h1 className="ds-page-title">Team Directory</h1>
+              <p className="ds-page-subtitle">{users.length} total accounts · {activeCount} active members</p>
+            </div>
           </div>
           <div className="ds-page-header-right">
             <button onClick={() => handleOpenModal()} className="ds-btn ds-btn-primary">
@@ -384,56 +386,107 @@ const AdminUsers = () => {
           <div className="ds-modal-overlay">
             <div className="ds-modal w-full max-w-4xl">
               <div className="ds-modal-header">
-                <h2 className="ds-modal-title">{editingUser ? `Manage Access — ${editingUser.name}` : 'Select Employee'}</h2>
+                <div className="flex items-center gap-3">
+                  {editingUser && (
+                    <button
+                      type="button"
+                      onClick={() => { setEditingUser(null); setEmployeePickerQuery(''); }}
+                      className="ds-btn ds-btn-sm ds-btn-secondary text-xs py-1 px-2.5 flex items-center gap-1.5"
+                      title="Back to All Employees"
+                    >
+                      <ArrowLeft size={13} /> Back to Employees
+                    </button>
+                  )}
+                  <h2 className="ds-modal-title">{editingUser ? `Manage Access — ${editingUser.name}` : 'Employee Permission Manager'}</h2>
+                </div>
                 <button onClick={() => setIsModalOpen(false)} className="ds-btn ds-btn-icon ds-btn-ghost"><X size={20} /></button>
               </div>
               
               <div className="ds-modal-body">
-                <form id="user-form" onSubmit={handleSaveUser} className="space-y-8">
-                  {/* Existing Employee Search & Select */}
+                <form id="user-form" onSubmit={handleSaveUser} className="space-y-6">
+                  {/* All Employees Picker & Real-time Search */}
                   {!editingUser && (
-                    <div className="bg-indigo-50/60 border border-indigo-200/80 rounded-2xl p-5 space-y-2 relative">
-                      <label className="ds-label">Already an employee? Search &amp; select instead of creating a duplicate</label>
-                      <div className="relative">
-                        <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input
-                          value={employeePickerQuery}
-                          onChange={(e) => { setEmployeePickerQuery(e.target.value); setEmployeePickerOpen(true); }}
-                          onFocus={() => setEmployeePickerOpen(true)}
-                          onBlur={() => setTimeout(() => setEmployeePickerOpen(false), 150)}
-                          placeholder="Search employee by name or email..."
-                          className="ds-input pl-10"
-                        />
-                        {employeePickerOpen && employeePickerQuery.trim() !== '' && (
-                          <div className="absolute z-20 mt-1.5 w-full max-h-56 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-lg">
-                            {users
-                              .filter((u) => u.role !== 'customer' && (
-                                u.name?.toLowerCase().includes(employeePickerQuery.toLowerCase()) ||
-                                u.email?.toLowerCase().includes(employeePickerQuery.toLowerCase())
-                              ))
-                              .slice(0, 8)
-                              .map((u) => (
-                                <button
-                                  type="button"
-                                  key={u._id}
-                                  onMouseDown={() => handleOpenModal(u)}
-                                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 text-left cursor-pointer border-b border-slate-100 last:border-0"
-                                >
-                                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-indigo to-brand-violet flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                                    {u.name?.charAt(0)?.toUpperCase()}
-                                  </div>
-                                  <div className="min-w-0">
-                                    <p className="text-xs font-bold text-slate-800 m-0 truncate">{u.name}</p>
+                    <div className="space-y-4">
+                      <div className="bg-indigo-50/70 border border-indigo-200/90 rounded-2xl p-4 sm:p-5">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                          <div>
+                            <h3 className="text-sm font-bold text-slate-900 m-0">All Staff Members &amp; Employees</h3>
+                            <p className="text-xs text-slate-500 m-0 mt-0.5">Select any employee below to view and customize their module permissions</p>
+                          </div>
+                          <span className="ds-badge ds-badge-primary self-start sm:self-auto">
+                            {users.filter(u => u.role !== 'customer').length} Staff Members
+                          </span>
+                        </div>
+                        <div className="relative">
+                          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                          <input
+                            value={employeePickerQuery}
+                            onChange={(e) => setEmployeePickerQuery(e.target.value)}
+                            placeholder="Search employee by name, role or email..."
+                            className="ds-input pl-10 bg-white"
+                            autoFocus
+                          />
+                        </div>
+                      </div>
+
+                      {/* Immediate Employee Grid */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[440px] overflow-y-auto p-1">
+                        {users
+                          .filter((u) => u.role !== 'customer' && (
+                            !employeePickerQuery.trim() ||
+                            u.name?.toLowerCase().includes(employeePickerQuery.toLowerCase()) ||
+                            u.email?.toLowerCase().includes(employeePickerQuery.toLowerCase()) ||
+                            u.role?.toLowerCase().includes(employeePickerQuery.toLowerCase())
+                          ))
+                          .map((u) => {
+                            const activePermsCount = Object.values(u.permissions || {}).filter(Boolean).length;
+                            return (
+                              <div
+                                key={u._id}
+                                onClick={() => handleOpenModal(u)}
+                                className="group bg-white hover:bg-indigo-50/40 border border-slate-200 hover:border-indigo-300 rounded-2xl p-4 transition-all cursor-pointer shadow-xs hover:shadow-md flex flex-col justify-between gap-3"
+                              >
+                                <div className="flex items-center gap-3">
+                                  {u.avatar ? (
+                                    <img src={getImageUrl(u.avatar)} alt={u.name} className="w-10 h-10 rounded-xl object-cover border border-slate-200 shadow-2xs flex-shrink-0" />
+                                  ) : (
+                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-indigo to-brand-violet flex items-center justify-center text-white text-xs font-bold shadow-2xs flex-shrink-0">
+                                      {u.name?.charAt(0)?.toUpperCase()}
+                                    </div>
+                                  )}
+                                  <div className="min-w-0 flex-1">
+                                    <p className="font-bold text-slate-900 text-sm m-0 truncate group-hover:text-indigo-600 transition-colors">{u.name}</p>
                                     <p className="text-xs text-slate-400 m-0 truncate">{u.email}</p>
                                   </div>
+                                </div>
+
+                                <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+                                  <span className={roleColors[u.role] || 'ds-badge ds-badge-slate'}>
+                                    {u.role.toUpperCase()}
+                                  </span>
+                                  <span className="text-[0.7rem] font-semibold text-slate-500">
+                                    {u.role === 'admin' ? 'Full Access' : `${activePermsCount}/${ALL_PERMISSION_KEYS.length} Modules`}
+                                  </span>
+                                </div>
+
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); handleOpenModal(u); }}
+                                  className="w-full ds-btn ds-btn-sm ds-btn-secondary group-hover:ds-btn-primary text-xs py-1.5 justify-center"
+                                >
+                                  <ShieldCheck size={13} /> Manage Permissions
                                 </button>
-                              ))}
-                            {users.filter((u) => u.role !== 'customer' && (
-                              u.name?.toLowerCase().includes(employeePickerQuery.toLowerCase()) ||
-                              u.email?.toLowerCase().includes(employeePickerQuery.toLowerCase())
-                            )).length === 0 && (
-                              <p className="px-4 py-3 text-xs text-slate-400 font-medium">No matching employee. New staff are added first in Employees Directory.</p>
-                            )}
+                              </div>
+                            );
+                          })}
+                        {users.filter((u) => u.role !== 'customer' && (
+                          !employeePickerQuery.trim() ||
+                          u.name?.toLowerCase().includes(employeePickerQuery.toLowerCase()) ||
+                          u.email?.toLowerCase().includes(employeePickerQuery.toLowerCase()) ||
+                          u.role?.toLowerCase().includes(employeePickerQuery.toLowerCase())
+                        )).length === 0 && (
+                          <div className="col-span-full py-12 text-center text-slate-400 text-xs font-medium">
+                            No employees found matching "{employeePickerQuery}".
                           </div>
                         )}
                       </div>
@@ -531,13 +584,13 @@ const AdminUsers = () => {
                               </button>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                               {cat.items.map((mod) => {
                                 const isChecked = formData.permissions[mod.key] || false;
                                 return (
                                   <label
                                     key={mod.key}
-                                    className={`flex items-center gap-2.5 p-2.5 rounded-xl border transition-all cursor-pointer select-none ${
+                                    className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer select-none ${
                                       isChecked
                                         ? 'bg-brand-indigo/5 border-brand-indigo/50 text-brand-indigo shadow-2xs'
                                         : 'bg-slate-50/50 border-slate-200/70 text-slate-700 hover:border-slate-300'
@@ -552,7 +605,7 @@ const AdminUsers = () => {
                                     >
                                       {isChecked && <CheckCircle size={12} className="text-white" />}
                                     </div>
-                                    <span className="text-xs font-bold truncate">
+                                    <span className="text-xs font-semibold leading-tight whitespace-normal break-words flex-1">
                                       {mod.label}
                                     </span>
                                     <input
@@ -576,10 +629,10 @@ const AdminUsers = () => {
 
               {/* Actions */}
               <div className="ds-modal-footer">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="ds-btn ds-btn-ghost">Cancel</button>
+                <button type="button" onClick={() => setIsModalOpen(false)} className="ds-btn ds-btn-ghost">Close</button>
                 {editingUser && (
-                  <button type="submit" form="user-form" className="ds-btn ds-btn-primary">
-                    Save Permissions
+                  <button type="submit" form="user-form" disabled={saving} className="ds-btn ds-btn-primary">
+                    <Save size={15} /> {saving ? 'Saving...' : 'Save Permissions'}
                   </button>
                 )}
               </div>

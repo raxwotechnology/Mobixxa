@@ -82,9 +82,9 @@ const AdminCustomerHistory = () => {
       <div className="ds-page">
         {/* Page Header */}
         <div className="ds-page-header">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700">
-              <Users size={20} strokeWidth={2} />
+          <div className="ds-page-header-left">
+            <div className="ds-page-header-icon">
+              <Users size={20} strokeWidth={1.75} />
             </div>
             <div>
               <h1 className="ds-page-title">Customer History</h1>

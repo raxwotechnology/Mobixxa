@@ -389,9 +389,13 @@ const AdminLeaves = ({ navItems: propNavItems }) => {
         {/* Page Header */}
         <div className="ds-page-header">
           <div className="ds-page-header-left">
-            <span className="ds-page-header-badge">Leave &amp; Absence</span>
-            <h1>Leave Management</h1>
-            <p>Configure leave policies and track employee leave requests across stores</p>
+            <div className="ds-page-header-icon">
+              <Calendar size={20} strokeWidth={1.75} />
+            </div>
+            <div>
+              <h1 className="ds-page-title">Leave Management</h1>
+              <p className="ds-page-subtitle">Configure leave policies and track employee leave requests across stores</p>
+            </div>
           </div>
           <div className="ds-page-header-right">
             {activeTab === 'requests' && (

@@ -193,14 +193,21 @@ const AdminAccounts = ({ navItems: propNavItems }) => {
     <DashboardLayout navItems={navItems} title="Accounts Management">
       <div className="ds-page">
         <div className="ds-page-header">
-          <div>
-            <h1 className="ds-page-title">Bank & Financial Accounts</h1>
-            <p className="ds-page-subtitle">Manage cash drawers, company bank accounts and mobile settlement wallets</p>
+          <div className="ds-page-header-left">
+            <div className="ds-page-header-icon">
+              <Landmark size={20} strokeWidth={1.75} />
+            </div>
+            <div>
+              <h1 className="ds-page-title">Bank &amp; Financial Accounts</h1>
+              <p className="ds-page-subtitle">Manage cash drawers, company bank accounts and mobile settlement wallets</p>
+            </div>
           </div>
           
-          <button onClick={openCreate} className="ds-btn ds-btn-primary">
-            <Plus size={16} /> New Account
-          </button>
+          <div className="ds-page-header-right">
+            <button onClick={openCreate} className="ds-btn ds-btn-primary">
+              <Plus size={16} /> New Account
+            </button>
+          </div>
         </div>
 
         {/* Total Liquidity Cards */}

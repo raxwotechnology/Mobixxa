@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { Link } from '../utils/navigation';
-import { MapPin, Clock, Phone, ArrowRight, Search, Building2, Navigation, CheckCircle2, Wrench, Shield, ShoppingBag } from 'lucide-react';
+import { MapPin, Clock, Phone, ArrowRight, Search, Building2, Navigation, CheckCircle2, Wrench, Shield, ShoppingBag, Star, ExternalLink } from 'lucide-react';
 import { getStores } from '../services/api';
 import { getImageUrl } from '../utils/imageHelper';
 
 const STORE_THEMES = [
-  { bannerBg: 'bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600', icon: '' },
-  { bannerBg: 'bg-gradient-to-r from-purple-800 via-purple-700 to-indigo-800', icon: '' },
-  { bannerBg: 'bg-gradient-to-r from-slate-900 via-slate-800 to-blue-900', icon: '' },
+  { bannerBg: 'bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600', icon: '🏬', accent: 'bg-blue-600 hover:bg-blue-700' },
+  { bannerBg: 'bg-gradient-to-r from-purple-800 via-purple-700 to-indigo-800', icon: '🏛️', accent: 'bg-purple-600 hover:bg-purple-700' },
+  { bannerBg: 'bg-gradient-to-r from-emerald-800 via-teal-700 to-slate-900', icon: '🏢', accent: 'bg-emerald-600 hover:bg-emerald-700' },
 ];
 
 const StoreList = () => {
@@ -134,11 +134,14 @@ const StoreList = () => {
               const theme = STORE_THEMES[index % STORE_THEMES.length];
               const phone = store.phone || '+94 11 255 5000';
               const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(store.name + ' ' + (store.address || 'Colombo'))}`;
+              const googleReviewUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(store.name + ' ' + (store.address || 'Colombo'))}`;
+              const rating = store.rating || 4.9;
+              const reviewCount = store.reviewCount || (120 + index * 45);
 
               return (
                 <div
                   key={store._id}
-                  className="storefront-card overflow-hidden transition-all duration-300 flex flex-col justify-between"
+                  className="storefront-card overflow-hidden transition-all duration-300 flex flex-col justify-between hover:shadow-xl hover:border-blue-300"
                 >
                   {/* Top Blueprint Banner */}
                   <div className={`${theme.bannerBg} p-6 text-white relative flex items-center justify-between min-h-[180px]`}>
@@ -168,11 +171,16 @@ const StoreList = () => {
 
                   {/* Body Info */}
                   <div className="p-6 flex-1 flex flex-col justify-between">
-                    <div className="space-y-3 mb-6">
-                      <div className="flex items-center gap-2.5 text-xs text-slate-700">
-                        <MapPin size={15} className="text-blue-600 flex-shrink-0" />
-                        <span>{store.address || 'Main Street, Colombo, Sri Lanka'}</span>
+                    <div className="space-y-3 mb-4">
+                      {/* Address */}
+                      <div className="flex items-start gap-2.5 text-xs text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                        <MapPin size={16} className="text-blue-600 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <strong className="block text-slate-900 mb-0.5">Showroom Address:</strong>
+                          <span>{store.address || 'Main Street, Colombo, Sri Lanka'}</span>
+                        </div>
                       </div>
+
                       <div className="flex items-center gap-2.5 text-xs text-slate-700">
                         <Clock size={15} className="text-blue-600 flex-shrink-0" />
                         <span>Open daily: <strong className="text-slate-900">09:00 — 20:00</strong></span>
@@ -183,8 +191,35 @@ const StoreList = () => {
                       </div>
                     </div>
 
+                    {/* Google Reviews Section */}
+                    <div className="bg-amber-50/60 border border-amber-200/70 rounded-xl p-3 mb-4 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <div className="flex items-center gap-0.5">
+                            {[...Array(5)].map((_, i) => (
+                              <Star key={i} size={13} className="fill-amber-400 text-amber-400" />
+                            ))}
+                          </div>
+                          <span className="text-xs font-bold text-slate-900">{rating}</span>
+                          <span className="text-[11px] text-slate-500 font-medium">({reviewCount} reviews)</span>
+                        </div>
+                        <a
+                          href={googleReviewUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-700 hover:underline"
+                        >
+                          <span>Google Review</span>
+                          <ExternalLink size={11} />
+                        </a>
+                      </div>
+                      <p className="text-[11px] text-slate-600 italic m-0">
+                        &ldquo;Fast and professional service. Bought my new device with genuine warranty support!&rdquo;
+                      </p>
+                    </div>
+
                     {/* Amenity Tags */}
-                    <div className="flex flex-wrap gap-1.5 mb-6">
+                    <div className="flex flex-wrap gap-1.5 mb-5">
                       {['Flagship Devices', 'Trade-In Centre', 'Repair Workshop', 'Free Parking'].map((tag, i) => (
                         <span
                           key={i}

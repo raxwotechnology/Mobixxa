@@ -452,9 +452,13 @@ const AdminRepairs = () => {
         {/* Header Block */}
         <div className="ds-page-header">
           <div className="ds-page-header-left">
-            <span className="ds-page-header-badge">Repairs</span>
-            <h1>Repair Jobs</h1>
-            <p>Log customer devices, manage technician tasks, parts replacements, and track ledger synchronization</p>
+            <div className="ds-page-header-icon">
+              <Wrench size={20} strokeWidth={1.75} />
+            </div>
+            <div>
+              <h1 className="ds-page-title">Repair Jobs</h1>
+              <p className="ds-page-subtitle">Log customer devices, manage technician tasks, parts replacements, and track ledger synchronization</p>
+            </div>
           </div>
           <div className="ds-page-header-right">
             <button

@@ -95,16 +95,16 @@ const AdminLateDeductions = () => {
     <DashboardLayout title="Late Deductions">
       <div className="ds-page">
         <div className="ds-page-header">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700">
-              <Clock size={20} strokeWidth={2} />
+          <div className="ds-page-header-left">
+            <div className="ds-page-header-icon">
+              <Clock size={20} strokeWidth={1.75} />
             </div>
             <div>
               <h1 className="ds-page-title">Late Arrival Deductions</h1>
               <p className="ds-page-subtitle">Automatically computed from check-in time vs. shift start</p>
             </div>
           </div>
-          <div className="flex gap-2 flex-wrap items-center">
+          <div className="ds-page-header-right flex gap-2 flex-wrap items-center">
             <input type="date" value={dateRange.startDate} onChange={e => setDateRange(r => ({ ...r, startDate: e.target.value }))} className="ds-input py-2 px-3 text-xs w-auto" />
             <input type="date" value={dateRange.endDate} onChange={e => setDateRange(r => ({ ...r, endDate: e.target.value }))} className="ds-input py-2 px-3 text-xs w-auto" />
             <button onClick={exportCSV} className="ds-btn ds-btn-secondary">

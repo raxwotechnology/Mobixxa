@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, X, Search, FileDown, Upload, Paperclip } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Search, FileDown, Upload, Paperclip, Wallet } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
 import { getTransactions, createTransaction, updateTransaction, deleteTransaction, uploadDocument, getFinancialDashboard, getStores, getAccounts } from '../../services/api';
 
@@ -203,12 +203,12 @@ const AdminExpenses = ({ navItems: propNavItems }) => {
         {/* Page Banner */}
         <div className="ds-page-header">
           <div className="ds-page-header-left">
-            <div className="ds-page-header-badge">
-              <FileDown size={24} />
+            <div className="ds-page-header-icon">
+              <Wallet size={20} strokeWidth={1.75} />
             </div>
             <div>
-              <h1>Ledger Management</h1>
-              <p>{transactions.length} total transactions tracked</p>
+              <h1 className="ds-page-title">Ledger Management</h1>
+              <p className="ds-page-subtitle">{transactions.length} total transactions tracked</p>
             </div>
           </div>
           

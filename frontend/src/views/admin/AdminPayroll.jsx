@@ -158,9 +158,13 @@ const AdminPayroll = () => {
         {/* Header */}
         <div className="ds-page-header">
           <div className="ds-page-header-left">
-            <span className="ds-page-header-badge"><Landmark size={12} /> Staff Payroll</span>
-            <h1>Monthly Payroll Engine</h1>
-            <p>Target bonuses, sales incentives &amp; attendance OTs are automatically calculated in real time</p>
+            <div className="ds-page-header-icon">
+              <Landmark size={20} strokeWidth={1.75} />
+            </div>
+            <div>
+              <h1 className="ds-page-title">Monthly Payroll Engine</h1>
+              <p className="ds-page-subtitle">Target bonuses, sales incentives &amp; attendance OTs are automatically calculated in real time</p>
+            </div>
           </div>
           <div className="ds-page-header-right">
             <div className="ds-card" style={{ padding: '0.25rem' }}>

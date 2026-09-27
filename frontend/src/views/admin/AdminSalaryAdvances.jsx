@@ -41,8 +41,11 @@ const AdminSalaryAdvances = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
+      const params = {};
+      if (month && month !== 'all') params.month = month;
+      if (year && year !== 'all') params.year = year;
       const [advRes, empRes, accRes] = await Promise.all([
-        getSalaryAdvances({ month, year }),
+        getSalaryAdvances(params),
         getAdminUsers({ limit: 100 }),
         getAccounts().catch(() => ({ data: [] })),
       ]);
@@ -92,33 +95,49 @@ const AdminSalaryAdvances = () => {
 
   const totalOutstanding = advances.reduce((sum, a) => sum + (a.amount || 0), 0);
 
-  const filteredAdvances = advances.filter(a =>
-    a.employeeId?.name?.toLowerCase().includes(search.toLowerCase()) ||
-    a.reason?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredAdvances = advances.filter(a => {
+    const q = search.toLowerCase().trim();
+    if (!q) return true;
+    const empName = a.employeeId?.name || (typeof a.employeeId === 'string' ? employees.find(e => e._id === a.employeeId)?.name : '') || '';
+    const empEmail = a.employeeId?.email || '';
+    const empRole = a.employeeId?.role || '';
+    const reason = a.reason || '';
+    const method = a.paymentMethod || '';
+    const amount = String(a.amount || '');
+    return (
+      empName.toLowerCase().includes(q) ||
+      empEmail.toLowerCase().includes(q) ||
+      empRole.toLowerCase().includes(q) ||
+      reason.toLowerCase().includes(q) ||
+      method.toLowerCase().includes(q) ||
+      amount.includes(q)
+    );
+  });
 
   return (
     <DashboardLayout navItems={navItems} title="Mobixa Admin Panel">
       <div className="ds-page">
         {/* Header */}
         <div className="ds-page-header">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700">
-              <DollarSign size={20} strokeWidth={2} />
+          <div className="ds-page-header-left">
+            <div className="ds-page-header-icon">
+              <DollarSign size={20} strokeWidth={1.75} />
             </div>
             <div>
               <h1 className="ds-page-title">Advance Payments</h1>
               <p className="ds-page-subtitle">
-                Record employee salary advances with payment mode & automatic payroll deduction
+                Record employee salary advances with payment mode &amp; automatic payroll deduction
               </p>
             </div>
           </div>
-          <button
-            onClick={() => setShowModal(true)}
-            className="ds-btn ds-btn-primary"
-          >
-            <Plus size={15} /> New Advance Payment
-          </button>
+          <div className="ds-page-header-right">
+            <button
+              onClick={() => setShowModal(true)}
+              className="ds-btn ds-btn-primary"
+            >
+              <Plus size={15} /> New Advance Payment
+            </button>
+          </div>
         </div>
 
         {/* Stats & Filters Row */}
@@ -131,7 +150,7 @@ const AdminSalaryAdvances = () => {
               LKR {totalOutstanding.toLocaleString()}
             </div>
             <p className="ds-stat-sub">
-              {advances.length} Active record(s) for {month}/{year}
+              {advances.length} Active record(s) {month === 'all' ? `(All Months ${year})` : `for ${new Date(0, month - 1).toLocaleString('en', { month: 'short' })} ${year}`}
             </p>
           </div>
 
@@ -142,16 +161,17 @@ const AdminSalaryAdvances = () => {
                 type="text"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                placeholder="Search by employee name or notes..."
+                placeholder="Search by employee name (e.g. Kapila), reason, or amount..."
                 className="ds-input pl-10"
               />
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <select
                 value={month}
-                onChange={e => setMonth(Number(e.target.value))}
+                onChange={e => setMonth(e.target.value === 'all' ? 'all' : Number(e.target.value))}
                 className="ds-input py-2 px-3 text-xs w-auto cursor-pointer"
               >
+                <option value="all">All Months</option>
                 {[...Array(12)].map((_, i) => (
                   <option key={i + 1} value={i + 1}>
                     {new Date(0, i).toLocaleString('en', { month: 'long' })}
@@ -179,7 +199,7 @@ const AdminSalaryAdvances = () => {
             </div>
           ) : filteredAdvances.length === 0 ? (
             <div className="text-center py-12 text-slate-400 text-xs font-medium">
-              No advance payments recorded for {month}/{year}
+              {search ? `No salary advances found matching "${search}"` : `No advance payments recorded for ${month === 'all' ? 'any month' : `${month}/${year}`}`}
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -196,49 +216,53 @@ const AdminSalaryAdvances = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredAdvances.map(adv => (
-                    <tr key={adv._id}>
-                      <td>
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs">
-                            {adv.employeeId?.name?.charAt(0)?.toUpperCase()}
+                  {filteredAdvances.map(adv => {
+                    const empName = adv.employeeId?.name || (typeof adv.employeeId === 'string' ? employees.find(e => e._id === adv.employeeId)?.name : null) || 'Unknown Employee';
+                    const empRole = adv.employeeId?.role || (typeof adv.employeeId === 'string' ? employees.find(e => e._id === adv.employeeId)?.role : null) || 'Staff';
+                    return (
+                      <tr key={adv._id}>
+                        <td>
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs">
+                              {empName.charAt(0)?.toUpperCase()}
+                            </div>
+                            <div>
+                              <p className="font-semibold text-slate-900 m-0">{empName}</p>
+                              <p className="text-[0.7rem] text-slate-400 m-0 capitalize">{empRole}</p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-semibold text-slate-900 m-0">{adv.employeeId?.name || 'Unknown'}</p>
-                            <p className="text-[0.7rem] text-slate-400 m-0 capitalize">{adv.employeeId?.role}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="font-medium text-slate-700">
-                        {new Date(adv.requestDate).toLocaleDateString()}
-                      </td>
-                      <td>
-                        <span className="ds-badge ds-badge-gray capitalize">
-                          {adv.paymentMethod || 'cash'}
-                        </span>
-                      </td>
-                      <td>
-                        <span className="font-bold text-rose-600 text-xs">
-                          LKR {Number(adv.amount || 0).toLocaleString()}
-                        </span>
-                      </td>
-                      <td className="text-slate-600 text-xs font-medium">
-                        {adv.repaymentType === 'lump_sum' ? 'Lump Sum (Next Payroll)' : 'Installments'}
-                      </td>
-                      <td className="text-slate-600 text-xs italic">
-                        "{adv.reason || 'Salary advance'}"
-                      </td>
-                      <td className="text-center">
-                        <button
-                          onClick={() => { setItemToDelete(adv); setDeleteModalOpen(true); }}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer border-0"
-                          title="Delete Advance Record"
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="font-medium text-slate-700">
+                          {new Date(adv.requestDate).toLocaleDateString()}
+                        </td>
+                        <td>
+                          <span className="ds-badge ds-badge-gray capitalize">
+                            {adv.paymentMethod || 'cash'}
+                          </span>
+                        </td>
+                        <td>
+                          <span className="font-bold text-rose-600 text-xs">
+                            LKR {Number(adv.amount || 0).toLocaleString()}
+                          </span>
+                        </td>
+                        <td className="text-slate-600 text-xs font-medium">
+                          {adv.repaymentType === 'lump_sum' ? 'Lump Sum (Next Payroll)' : 'Installments'}
+                        </td>
+                        <td className="text-slate-700 text-xs font-medium">
+                          {adv.reason || 'Salary advance'}
+                        </td>
+                        <td className="text-center">
+                          <button
+                            onClick={() => { setItemToDelete(adv); setDeleteModalOpen(true); }}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer border-0"
+                            title="Delete Advance Record"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
