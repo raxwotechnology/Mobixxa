@@ -39,7 +39,7 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(cookieParser());
 
-// CORS: allow explicit production frontend + local dev ports
+// CORS: allow explicit production frontend + Netlify/Vercel domains + local dev ports
 // Set CORS_ORIGINS in .env for custom domains (comma-separated)
 const envOrigins = (process.env.CORS_ORIGINS || "")
   .split(",")
@@ -66,16 +66,27 @@ app.use(
       const isLocalhost =
         /^http:\/\/localhost:\d+$/.test(origin) ||
         /^http:\/\/127\.0\.0\.1:\d+$/.test(origin);
+      const isNetlify =
+        /\.netlify\.app$/.test(origin) || origin.includes("netlify.app");
+      const isVercel =
+        /\.vercel\.app$/.test(origin) || origin.includes("vercel.app");
+      const isRender =
+        /\.onrender\.com$/.test(origin) || origin.includes("onrender.com");
 
-      // BUG-20 FIX: Strict matching against explicit allowedOrigins array and local hosts only
-      if (allowedOrigins.includes(origin) || isLocalhost) {
+      if (
+        allowedOrigins.includes(origin) ||
+        isLocalhost ||
+        isNetlify ||
+        isVercel ||
+        isRender
+      ) {
         return callback(null, true);
       }
       return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "X-From"],
   }),
 );
 

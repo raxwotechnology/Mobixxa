@@ -3,11 +3,11 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://sr-mobile-api.vercel.app/api/:path*"
+      "destination": "https://mobixxa.onrender.com/api/:path*"
     },
     {
       "source": "/uploads/:path*",
-      "destination": "https://sr-mobile-api.vercel.app/uploads/:path*"
+      "destination": "https://mobixxa.onrender.com/uploads/:path*"
     }
   ]
 }
