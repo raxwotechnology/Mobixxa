@@ -14,12 +14,12 @@ const generalLimiter = rateLimit({
   },
 });
 
-// BUG-14 FIX: Strict rate limiter for authentication endpoints
-// 5 requests per 15 minutes per IP
+// BUG-14 FIX: Rate limiter for authentication endpoints
+// 50 requests per 15 minutes per IP
 // Prevents brute-force attacks on login, OTP, and password reset endpoints
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 requests per windowMs
+  max: 50, // 50 requests per windowMs
   message: "Too many authentication attempts, please try again later.",
   standardHeaders: true,
   legacyHeaders: false,
