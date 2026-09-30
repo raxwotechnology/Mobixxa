@@ -46,7 +46,7 @@ const ProtectedRoute = ({ children, roles, permission }) => {
       const allowedRoles = [...roles];
       if (!allowedRoles.includes('admin')) allowedRoles.push('admin');
 
-      const isRoleAllowed = allowedRoles.includes(activeUser.role) || activeUser.isSuperAdmin || activeUser.email === 'admin@mobilehub.com';
+      const isRoleAllowed = allowedRoles.includes(activeUser.role) || activeUser.isSuperAdmin;
       if (!isRoleAllowed) {
         router.replace(getFallbackHomeForUser(activeUser));
         return;
@@ -56,7 +56,7 @@ const ProtectedRoute = ({ children, roles, permission }) => {
 
     // Granular Permission check (only if roles wasn't specified)
     if (permission) {
-      const isSuperAdminOrAdmin = activeUser.email === 'admin@mobilehub.com' || activeUser.isSuperAdmin || activeUser.role === 'admin' || activeUser.role === 'manager';
+      const isSuperAdminOrAdmin = activeUser.isSuperAdmin || activeUser.role === 'admin' || activeUser.role === 'manager';
 
       if (!isSuperAdminOrAdmin) {
         const p = activeUser.permissions || {};
@@ -108,13 +108,13 @@ const ProtectedRoute = ({ children, roles, permission }) => {
   if (roles && roles.length > 0) {
     const allowedRoles = [...roles];
     if (!allowedRoles.includes('admin')) allowedRoles.push('admin');
-    const isRoleAllowed = allowedRoles.includes(activeUser.role) || activeUser.isSuperAdmin || activeUser.email === 'admin@mobilehub.com';
+    const isRoleAllowed = allowedRoles.includes(activeUser.role) || activeUser.isSuperAdmin;
     if (!isRoleAllowed) return null;
     return children;
   }
 
   if (permission) {
-    const isSuperAdminOrAdmin = activeUser.email === 'admin@mobilehub.com' || activeUser.isSuperAdmin || activeUser.role === 'admin' || activeUser.role === 'manager';
+    const isSuperAdminOrAdmin = activeUser.isSuperAdmin || activeUser.role === 'admin' || activeUser.role === 'manager';
     if (!isSuperAdminOrAdmin) {
       const p = activeUser.permissions || {};
 

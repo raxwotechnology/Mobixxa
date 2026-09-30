@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Order = require('../models/Order');
 const Cart = require('../models/Cart');
 const Product = require('../models/Product');
@@ -75,6 +76,18 @@ const createOrder = async (req, res, next) => {
     // Group items by store
     const storeId = items[0].storeId || productMap.get(String(items[0].productId))?.storeId || null;
 
+    // Idempotency check: prevent duplicate order creation
+    const idempotencyKey = req.headers['idempotency-key'] || req.body.idempotencyKey;
+    if (idempotencyKey) {
+      const existing = await Order.findOne({ idempotencyKey });
+      if (existing) {
+        return res.status(200).json({
+          ...existing.toObject(),
+          isExisting: true,
+        });
+      }
+    }
+
     let order;
     let appliedVoucher = null;
     let voucherDiscount = 0;
@@ -89,18 +102,20 @@ const createOrder = async (req, res, next) => {
         res.status(400);
         return next(new Error('Voucher has expired'));
       }
-      const user = await User.findById(req.user._id).select('vouchers').lean();
-      const userVoucher = (user?.vouchers || []).find((v) => v.code === voucher.code && v.isUsed !== true);
-      if (!userVoucher) {
-        res.status(400);
-        return next(new Error('Voucher must be claimed before checkout'));
-      }
-      const userUsageCount = (voucher.usedBy || []).filter(
-        (entry) => String(entry?.userId) === String(req.user._id)
-      ).length;
-      if (voucher.perUserMaxUses && userUsageCount >= voucher.perUserMaxUses) {
-        res.status(400);
-        return next(new Error('You have reached your usage limit for this voucher'));
+      if (req.user) {
+        const user = await User.findById(req.user._id).select('vouchers').lean();
+        const userVoucher = (user?.vouchers || []).find((v) => v.code === voucher.code && v.isUsed !== true);
+        if (!userVoucher) {
+          res.status(400);
+          return next(new Error('Voucher must be claimed before checkout'));
+        }
+        const userUsageCount = (voucher.usedBy || []).filter(
+          (entry) => String(entry?.userId) === String(req.user._id)
+        ).length;
+        if (voucher.perUserMaxUses && userUsageCount >= voucher.perUserMaxUses) {
+          res.status(400);
+          return next(new Error('You have reached your usage limit for this voucher'));
+        }
       }
       const subtotal = items.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 0), 0);
       const orderAmount = subtotal + Number(deliveryFee || 0) + Number(tax || 0);
@@ -158,45 +173,98 @@ const createOrder = async (req, res, next) => {
       };
     };
 
+    const currentYear = new Date().getFullYear();
+    const randomSuffix = Math.floor(100000 + Math.random() * 900000);
+    const orderNumber = req.body.orderNumber || `MOB-${currentYear}-${randomSuffix}`;
+    const invoiceNumber = req.body.invoiceNumber || `INV-${currentYear}-${randomSuffix}`;
+
+    const customerName = req.body.customerName || req.body.fullName || req.body.contact?.fullName || (req.user ? req.user.name : 'Guest Customer');
+    const customerPhone = req.body.customerPhone || req.body.phone || req.body.contact?.phone || (req.user ? req.user.phone : '');
+    const customerEmail = req.body.customerEmail || req.body.email || req.body.contact?.email || (req.user ? req.user.email : '');
+    const deliveryMethod = req.body.deliveryMethod || 'courier';
+    const notes = req.body.notes || req.body.instructions || '';
+
+    const formattedAddress = deliveryAddress ? {
+      street: deliveryAddress.street || deliveryAddress.line1 || deliveryAddress.addressLine1 || '',
+      line2: deliveryAddress.line2 || deliveryAddress.addressLine2 || '',
+      city: deliveryAddress.city || '',
+      district: deliveryAddress.district || deliveryAddress.state || '',
+      state: deliveryAddress.state || deliveryAddress.district || '',
+      zipCode: deliveryAddress.zipCode || '',
+      country: deliveryAddress.country || 'Sri Lanka',
+    } : undefined;
+
+    let finalStoreId = req.body.storeId || storeId;
+    if (!finalStoreId && deliveryMethod === 'pickup') {
+      const Store = require('../models/Store');
+      const activeStore = await Store.findOne({ isActive: true });
+      finalStoreId = activeStore?._id;
+    }
+
     if (paymentMethod === 'koko' && nonKokoItems.length > 0) {
       const kokoTotal = calculateTotal(kokoEligibleItems, 0, 0);
       const nonKokoTotal = calculateTotal(nonKokoItems, deliveryFee || 0, tax || 0);
 
       const kokoOrder = kokoEligibleItems.length
         ? await Order.create({
-          userId: req.user._id,
-          storeId,
+          userId: req.user ? req.user._id : undefined,
+          storeId: finalStoreId,
           items: buildOrderItems(kokoEligibleItems),
-          deliveryAddress,
+          deliveryAddress: formattedAddress,
           deliverySlot,
           totalAmount: kokoTotal,
           deliveryFee: 0,
           tax: 0,
+          source: req.body.source || 'WEB',
+          orderNumber,
+          invoiceNumber,
+          deliveryMethod,
+          customerDetails: {
+            fullName: customerName,
+            phone: customerPhone,
+            email: customerEmail,
+          },
+          customerName,
+          customerPhone,
+          notes,
+          idempotencyKey,
           paymentMethod: 'koko',
           paymentStatus: 'completed',
           kokoDetails: buildKokoScheduleData(kokoTotal),
           orderStatus: 'confirmed',
           paymentOtpRequired: false,
           sendReceiptEmail: !!sendReceiptEmail,
-          receiptEmail: receiptEmail || undefined,
+          receiptEmail: receiptEmail || customerEmail || undefined,
         })
         : null;
 
       const fallbackOrder = await Order.create({
-        userId: req.user._id,
-        storeId,
+        userId: req.user ? req.user._id : undefined,
+        storeId: finalStoreId,
         items: buildOrderItems(nonKokoItems),
-        deliveryAddress,
+        deliveryAddress: formattedAddress,
         deliverySlot,
         totalAmount: nonKokoTotal,
-        deliveryFee: deliveryFee || 0,
+        deliveryFee: deliveryMethod === 'pickup' ? 0 : (deliveryFee || 0),
         tax: tax || 0,
+        source: req.body.source || 'WEB',
+        orderNumber: `${orderNumber}-2`,
+        invoiceNumber: `${invoiceNumber}-2`,
+        deliveryMethod,
+        customerDetails: {
+          fullName: customerName,
+          phone: customerPhone,
+          email: customerEmail,
+        },
+        customerName,
+        customerPhone,
+        notes,
         paymentMethod: 'cod',
         paymentStatus: 'pending',
         orderStatus: 'pending',
         paymentOtpRequired: false,
         sendReceiptEmail: !!sendReceiptEmail,
-        receiptEmail: receiptEmail || undefined,
+        receiptEmail: receiptEmail || customerEmail || undefined,
       });
 
       order = kokoOrder || fallbackOrder;
@@ -209,27 +277,41 @@ const createOrder = async (req, res, next) => {
     } else {
       const totalAmount = Math.max(0, calculateTotal(items, deliveryFee, tax) - voucherDiscount);
       order = await Order.create({
-        userId: req.user._id,
-        storeId,
+        userId: req.user ? req.user._id : undefined,
+        storeId: finalStoreId,
         items: buildOrderItems(items),
-        deliveryAddress,
+        deliveryAddress: formattedAddress,
         deliverySlot,
         totalAmount,
-        deliveryFee: deliveryFee || 0,
+        deliveryFee: deliveryMethod === 'pickup' ? 0 : (deliveryFee || 0),
         tax: tax || 0,
+        source: req.body.source || 'WEB',
+        orderNumber,
+        invoiceNumber,
+        deliveryMethod,
+        customerDetails: {
+          fullName: customerName,
+          phone: customerPhone,
+          email: customerEmail,
+        },
+        customerName,
+        customerPhone,
+        customerAddress: formattedAddress ? `${formattedAddress.street}, ${formattedAddress.city}, ${formattedAddress.district}` : '',
+        notes,
+        idempotencyKey,
         paymentMethod: paymentMethod || 'cod',
         paymentStatus: paymentMethod === 'koko' ? 'completed' : 'pending',
         kokoDetails: paymentMethod === 'koko' ? buildKokoScheduleData(totalAmount) : undefined,
         orderStatus: paymentMethod === 'koko' ? 'confirmed' : 'pending',
         paymentOtpRequired: paymentMethod === 'payhere',
         sendReceiptEmail: !!sendReceiptEmail,
-        receiptEmail: receiptEmail || undefined,
+        receiptEmail: receiptEmail || customerEmail || undefined,
         voucherCode: appliedVoucher?.code,
         discountAmount: voucherDiscount,
       });
     }
 
-    if (appliedVoucher && paymentMethod !== 'payhere') {
+    if (appliedVoucher && paymentMethod !== 'payhere' && req.user) {
       await markVoucherAsUsed(req.user._id, appliedVoucher.code);
     }
 
@@ -328,7 +410,7 @@ const createOrder = async (req, res, next) => {
           paymentMethod: paymentMethod === 'payhere' ? 'Card' : (paymentMethod === 'koko' ? 'Koko' : (paymentMethod === 'hire_purchase' ? 'Hire Purchase' : 'Cash')),
           referenceNo: order.invoiceNumber || order._id.toString().slice(-8).toUpperCase(),
           description: `Online Order #${order._id.toString().slice(-8).toUpperCase()} - ${itemNames.slice(0, 120)}`,
-          createdBy: req.user._id,
+          createdBy: req.user?._id || undefined,
           date: new Date(),
         });
       }
@@ -360,28 +442,36 @@ const getMyOrders = async (req, res, next) => {
   }
 };
 
-// @desc    Get order by ID
+// @desc    Get order by ID or Order Number
 // @route   GET /api/orders/:id
-// @access  Private
+// @access  Public / Optional Auth
 const getOrderById = async (req, res, next) => {
   try {
-    const order = await Order.findById(req.params.id)
-      .populate('storeId', 'name logo phone')
-      .populate('userId', 'name email phone');
+    let order;
+    if (mongoose.Types.ObjectId.isValid(req.params.id)) {
+      order = await Order.findById(req.params.id)
+        .populate('storeId', 'name logo phone')
+        .populate('userId', 'name email phone');
+    } else {
+      order = await Order.findOne({ orderNumber: req.params.id })
+        .populate('storeId', 'name logo phone')
+        .populate('userId', 'name email phone');
+    }
 
     if (!order) {
       res.status(404);
       return next(new Error('Order not found'));
     }
 
-    // Verify ownership
-    if (
-      order.userId._id.toString() !== req.user._id.toString() &&
-      req.user.role !== 'admin' &&
-      req.user.role !== 'manager'
-    ) {
-      res.status(403);
-      return next(new Error('Not authorized'));
+    // Verify ownership only if order belongs to a registered user and requester is logged in
+    if (order.userId && req.user) {
+      const orderUserId = order.userId._id ? order.userId._id.toString() : order.userId.toString();
+      const currentUserId = req.user._id ? req.user._id.toString() : '';
+      const isStaff = req.user.role && ['admin', 'manager'].includes(req.user.role);
+      if (orderUserId !== currentUserId && !isStaff) {
+        res.status(403);
+        return next(new Error('Not authorized'));
+      }
     }
 
     res.json(order);

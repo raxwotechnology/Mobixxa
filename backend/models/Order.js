@@ -4,12 +4,12 @@ const orderSchema = mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
+      required: false,
       ref: 'User',
     },
     storeId: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
+      required: false,
       ref: 'Store',
     },
     items: [
@@ -31,7 +31,9 @@ const orderSchema = mongoose.Schema(
     ],
     deliveryAddress: {
       street: String,
+      line2: String,
       city: String,
+      district: String,
       state: String,
       zipCode: String,
       country: String,
@@ -102,13 +104,41 @@ const orderSchema = mongoose.Schema(
       ],
       default: 'pending',
     },
+    source: {
+      type: String,
+      enum: ['WEB', 'POS'],
+      default: 'WEB',
+    },
     isPosOrder: {
       type: Boolean,
       default: false,
     },
+    orderNumber: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
     invoiceNumber: {
       type: String,
       sparse: true,
+    },
+    deliveryMethod: {
+      type: String,
+      enum: ['courier', 'pickup', 'delivery'],
+      default: 'courier',
+    },
+    customerDetails: {
+      fullName: String,
+      phone: String,
+      email: String,
+    },
+    idempotencyKey: {
+      type: String,
+      sparse: true,
+      index: true,
+    },
+    notes: {
+      type: String,
     },
     cashierId: {
       type: mongoose.Schema.Types.ObjectId,

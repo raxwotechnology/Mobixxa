@@ -127,8 +127,10 @@ export const createReview = (productId, data) => API.post(`/reviews/product/${pr
 export const updateReview = (id, data) => API.put(`/reviews/${id}`, data);
 export const deleteReview = (id) => API.delete(`/reviews/${id}`);
 
-// Orders
-export const createOrder = (data) => API.post('/orders', data);
+// Orders & Checkout Profile
+export const getCheckoutProfile = () => API.get('/me/checkout-profile');
+export const saveAddress = (data) => API.post('/me/addresses', data);
+export const createOrder = (data, options) => API.post('/orders', data, options);
 export const getMyOrders = () => API.get('/orders/my');
 export const getOrderById = (id) => API.get(`/orders/${id}`);
 export const getStoreOrders = () => API.get('/orders/store');

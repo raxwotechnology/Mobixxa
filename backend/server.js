@@ -108,6 +108,7 @@ app.use(async (req, res, next) => {
 app.use(generalLimiter);
 
 // Routes
+app.use("/api/me", require("./routes/meRoutes"));
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/categories", require("./routes/categoryRoutes"));
 app.use("/api/products", require("./routes/productRoutes"));

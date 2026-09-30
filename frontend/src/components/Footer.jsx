@@ -41,7 +41,7 @@ const Footer = () => {
   const brandLogoUrl = getImageUrl(settings?.logoUrl || settings?.logo) || '/logo.png';
   const brandEmail = settings?.email || 'support@mobixa.com';
   const brandPhone = settings?.phone || '+94 11 255 5000';
-  const brandAddress = settings?.address || '88 Tech Avenue, Colombo 03';
+  const brandAddress = settings?.address || 'Colombo, Sri Lanka';
 
   const socialButtons = [
     { name: 'Facebook', icon: FacebookIcon, url: settings?.socialLinks?.facebook, hoverBg: 'hover:bg-blue-600' },

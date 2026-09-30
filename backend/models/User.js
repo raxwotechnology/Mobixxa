@@ -50,8 +50,12 @@ const userSchema = mongoose.Schema(
     },
     addresses: [
       {
+        label: { type: String, default: 'Home' },
         street: String,
+        line1: String,
+        line2: String,
         city: String,
+        district: String,
         state: String,
         zipCode: String,
         country: String,

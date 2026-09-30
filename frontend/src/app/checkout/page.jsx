@@ -20,86 +20,187 @@ import {
   Sparkles,
   MapPin,
   ChevronRight,
+  ShoppingBag,
+  Loader2,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { getCheckoutProfile, getStores, createOrder, saveAddress } from "@/services/api";
+
+const SRI_LANKA_DISTRICTS = [
+  "Ampara",
+  "Anuradhapura",
+  "Badulla",
+  "Batticaloa",
+  "Colombo",
+  "Galle",
+  "Gampaha",
+  "Hambantota",
+  "Jaffna",
+  "Kalutara",
+  "Kandy",
+  "Kegalle",
+  "Kilinochchi",
+  "Kurunegala",
+  "Mannar",
+  "Matale",
+  "Matara",
+  "Monaragala",
+  "Mullaitivu",
+  "Nuwara Eliya",
+  "Polonnaruwa",
+  "Puttalam",
+  "Ratnapura",
+  "Trincomalee",
+  "Vavuniya",
+];
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { cartItems, cartTotal, clearCart } = useCart();
+  const { cartItems, clearCart } = useCart();
 
-  // Delivery Method: 'delivery' | 'pickup'
+  // Delivery Method: 'delivery' (Courier) | 'pickup' (Branch Pickup)
   const [deliveryMethod, setDeliveryMethod] = useState("delivery");
 
-  // Form State
+  // Form State - strictly starts EMPTY with NO hardcoded dummy defaults
   const [formData, setFormData] = useState({
-    fullName: "Gayan Chanuka",
-    phone: "+94 77 123 4567",
-    email: "gayan@mobixa.lk",
-    addressLine1: "No. 88, Tech Avenue",
-    addressLine2: "Suite 4B",
-    city: "Colombo",
-    district: "Colombo",
-    pickupBranch: "Colombo 03 - Flagship Experience Center",
-    instructions: "Please call before delivery.",
+    fullName: "",
+    phone: "",
+    email: "",
+    addressLine1: "",
+    addressLine2: "",
+    city: "",
+    district: "",
+    selectedBranchId: "",
+    instructions: "",
   });
 
-  // Pre-fill from localStorage if available
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem("mobixa_user");
-      if (stored) {
-        const user = JSON.parse(stored);
-        setFormData((prev) => ({
-          ...prev,
-          fullName: user.name || prev.fullName,
-          email: user.email || prev.email,
-        }));
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  }, []);
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState("new");
+  const [saveAddressForLater, setSaveAddressForLater] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [stores, setStores] = useState([]);
+  const [loadingProfile, setLoadingProfile] = useState(true);
+  const [formErrors, setFormErrors] = useState({});
 
   // Payment Method: 'card' | 'bnpl' | 'bank' | 'cod'
   const [paymentMethod, setPaymentMethod] = useState("card");
-
-  // Mock Card Form State
-  const [cardData, setCardData] = useState({
-    number: "4532 •••• •••• 8891",
-    expiry: "09/28",
-    cvv: "•••",
-    name: "Gayan Chanuka",
-  });
 
   // Mock Bank Transfer Receipt
   const [uploadedReceiptName, setUploadedReceiptName] = useState("");
 
   // Promo Code State
   const [promoInput, setPromoInput] = useState("");
-  const [appliedPromo, setAppliedPromo] = useState(null); // { code: 'MOBI10', percent: 10 }
+  const [appliedPromo, setAppliedPromo] = useState(null);
   const [promoError, setPromoError] = useState("");
 
-  // Order Placement Loading
+  // Order Placement Loading & Idempotency Key
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [serverError, setServerError] = useState("");
+  const [idempotencyKey, setIdempotencyKey] = useState("");
 
-  // Fallback items if cart is currently empty
-  const displayItems =
-    cartItems.length > 0
-      ? cartItems
-      : [
-          {
-            cartItemId: "pixel-10-pro-xl-default",
-            id: "pixel-10-pro-xl",
-            name: "Google Pixel 10 Pro XL",
-            price: "339,900.00",
-            color: "Obsidian",
-            storage: "256GB",
-            colorCode: "#1e1e20",
-            quantity: 1,
-          },
-        ];
+  // Generate unique idempotency key once per checkout session
+  useEffect(() => {
+    if (typeof crypto !== "undefined" && crypto.randomUUID) {
+      setIdempotencyKey(crypto.randomUUID());
+    } else {
+      setIdempotencyKey(`IDEM-${Date.now()}-${Math.floor(Math.random() * 1000000)}`);
+    }
+  }, []);
 
-  // Calculate prices
+  // Fetch branches and pre-fill profile data for logged-in users via API
+  useEffect(() => {
+    let isMounted = true;
+
+    // Load available stores for branch pickup
+    getStores()
+      .then((res) => {
+        if (!isMounted) return;
+        const branchList = Array.isArray(res.data)
+          ? res.data
+          : Array.isArray(res.data?.stores)
+          ? res.data.stores
+          : [];
+        setStores(branchList);
+        if (branchList.length > 0) {
+          setFormData((prev) => ({
+            ...prev,
+            selectedBranchId: prev.selectedBranchId || branchList[0]._id,
+          }));
+        }
+      })
+      .catch((err) => {
+        console.warn("Could not fetch stores list:", err.message);
+      });
+
+    // Check if user is logged in and fetch checkout profile
+    getCheckoutProfile()
+      .then((res) => {
+        if (!isMounted) return;
+        const profile = res.data;
+        if (profile) {
+          setIsLoggedIn(true);
+          const addrs = profile.addresses || [];
+          setSavedAddresses(addrs);
+
+          const defaultAddr = addrs.find((a) => a.isDefault) || addrs[0];
+
+          setFormData((prev) => ({
+            ...prev,
+            fullName: profile.fullName || "",
+            phone: profile.phone || "",
+            email: profile.email || "",
+            addressLine1: defaultAddr?.line1 || defaultAddr?.street || "",
+            addressLine2: defaultAddr?.line2 || "",
+            city: defaultAddr?.city || "",
+            district: defaultAddr?.district || "",
+          }));
+
+          if (defaultAddr) {
+            setSelectedAddressId(defaultAddr.id || defaultAddr._id);
+          }
+        }
+      })
+      .catch((err) => {
+        // 401 or not logged in - Guest user: fields remain completely empty
+        setIsLoggedIn(false);
+      })
+      .finally(() => {
+        if (isMounted) setLoadingProfile(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Handle saved address switch
+  const handleAddressSelect = (addrId) => {
+    setSelectedAddressId(addrId);
+    if (addrId === "new") {
+      setFormData((prev) => ({
+        ...prev,
+        addressLine1: "",
+        addressLine2: "",
+        city: "",
+        district: "",
+      }));
+    } else {
+      const selected = savedAddresses.find(
+        (a) => (a.id || a._id) === addrId
+      );
+      if (selected) {
+        setFormData((prev) => ({
+          ...prev,
+          addressLine1: selected.line1 || selected.street || "",
+          addressLine2: selected.line2 || "",
+          city: selected.city || "",
+          district: selected.district || "",
+        }));
+      }
+    }
+  };
+
+  // Helper to parse currency numbers safely
   const parseNum = (val) => {
     if (typeof val === "number") return val;
     if (!val) return 0;
@@ -107,7 +208,7 @@ export default function CheckoutPage() {
     return parseFloat(clean) || 0;
   };
 
-  const rawSubtotal = displayItems.reduce((acc, it) => {
+  const rawSubtotal = cartItems.reduce((acc, it) => {
     return acc + parseNum(it.price) * (it.quantity || 1);
   }, 0);
 
@@ -115,7 +216,15 @@ export default function CheckoutPage() {
     ? (rawSubtotal * appliedPromo.percent) / 100
     : 0;
 
-  const finalTotalNum = Math.max(0, rawSubtotal - discountAmount);
+  // Islandwide Courier delivery: FREE if over Rs 50,000, else flat Rs 350. Branch pickup is always Rs 0.
+  const shippingFee =
+    deliveryMethod === "pickup"
+      ? 0
+      : rawSubtotal >= 50000 || rawSubtotal === 0
+      ? 0
+      : 350;
+
+  const finalTotalNum = Math.max(0, rawSubtotal - discountAmount + shippingFee);
 
   const formatLKR = (amount) =>
     amount.toLocaleString("en-US", {
@@ -141,48 +250,193 @@ export default function CheckoutPage() {
     setPromoError("");
   };
 
-  const handleCompleteOrder = () => {
-    setIsPlacingOrder(true);
+  // Client-side Validation (matching Developer Spec Section 8)
+  const validateForm = () => {
+    const errors = {};
 
-    const newOrderId = `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
-    const orderDetails = {
-      orderId: newOrderId,
-      date: new Date().toLocaleDateString("en-US", {
-        month: "short",
-        day: "2-digit",
-        year: "numeric",
-      }),
-      items: displayItems,
-      deliveryMethod,
-      customer: formData,
-      paymentMethod,
-      subtotal: formatLKR(rawSubtotal),
-      discount: discountAmount > 0 ? formatLKR(discountAmount) : null,
-      total: formatLKR(finalTotalNum),
-      status: "Confirmed • Processing",
-    };
-
-    try {
-      localStorage.setItem("mobixa_latest_order", JSON.stringify(orderDetails));
-      clearCart();
-    } catch (e) {
-      console.error(e);
+    if (!formData.fullName.trim() || formData.fullName.trim().length < 2) {
+      errors.fullName = "Please enter your full name (at least 2 characters)";
     }
 
-    setTimeout(() => {
-      setIsPlacingOrder(false);
-      router.push("/order-success");
-    }, 1200);
+    // Sri Lankan mobile number validation: 07XXXXXXXX or +947XXXXXXXX
+    const slPhoneRegex = /^(?:0|(?:\+94))7\d{8}$/;
+    const cleanPhone = formData.phone.replace(/[\s-]/g, "");
+    if (!formData.phone.trim() || !slPhoneRegex.test(cleanPhone)) {
+      errors.phone = "Enter a valid mobile number (e.g. 0771234567 or +94771234567)";
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email.trim() || !emailRegex.test(formData.email.trim())) {
+      errors.email = "Enter a valid email address";
+    }
+
+    if (deliveryMethod === "delivery") {
+      if (!formData.addressLine1.trim() || formData.addressLine1.trim().length < 5) {
+        errors.addressLine1 = "Please enter your street address (at least 5 characters)";
+      }
+      if (!formData.city.trim() || formData.city.trim().length < 2) {
+        errors.city = "Please enter your city/town";
+      }
+      if (!formData.district.trim() || !SRI_LANKA_DISTRICTS.includes(formData.district)) {
+        errors.district = "Please select your district from the list";
+      }
+    } else if (deliveryMethod === "pickup") {
+      if (!formData.selectedBranchId) {
+        errors.selectedBranchId = "Please select a pickup branch";
+      }
+    }
+
+    if (!paymentMethod) {
+      errors.paymentMethod = "Please choose a payment method";
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
   };
+
+  const handleCompleteOrder = async () => {
+    setServerError("");
+
+    if (cartItems.length === 0) {
+      setServerError("Your cart is empty. Please add items before checking out.");
+      return;
+    }
+
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsPlacingOrder(true);
+
+    try {
+      // If user selected "Save address for next time" and is logged in
+      if (
+        isLoggedIn &&
+        saveAddressForLater &&
+        deliveryMethod === "delivery" &&
+        selectedAddressId === "new"
+      ) {
+        try {
+          await saveAddress({
+            line1: formData.addressLine1.trim(),
+            line2: formData.addressLine2.trim(),
+            city: formData.city.trim(),
+            district: formData.district,
+            isDefault: savedAddresses.length === 0,
+          });
+        } catch (addrErr) {
+          console.warn("Address save failed:", addrErr.message);
+        }
+      }
+
+      // Map cart items for backend order items contract
+      const orderItems = cartItems.map((item) => ({
+        productId: item.productId || item.id || item._id,
+        name: item.name,
+        image: item.image,
+        quantity: Number(item.quantity) || 1,
+        price: parseNum(item.price),
+        color: item.color,
+        storage: item.storage,
+      }));
+
+      const payload = {
+        items: orderItems,
+        deliveryMethod: deliveryMethod === "pickup" ? "pickup" : "courier",
+        deliveryAddress:
+          deliveryMethod === "delivery"
+            ? {
+                street: formData.addressLine1.trim(),
+                line2: formData.addressLine2.trim(),
+                city: formData.city.trim(),
+                district: formData.district,
+                country: "Sri Lanka",
+              }
+            : undefined,
+        storeId:
+          deliveryMethod === "pickup" ? formData.selectedBranchId : undefined,
+        customerDetails: {
+          fullName: formData.fullName.trim(),
+          phone: formData.phone.trim(),
+          email: formData.email.trim(),
+        },
+        customerName: formData.fullName.trim(),
+        customerPhone: formData.phone.trim(),
+        customerEmail: formData.email.trim(),
+        notes: formData.instructions.trim(),
+        paymentMethod:
+          paymentMethod === "card"
+            ? "card"
+            : paymentMethod === "bank"
+            ? "bank_transfer"
+            : paymentMethod === "bnpl"
+            ? "koko"
+            : "cod",
+        voucherCode: appliedPromo?.code,
+        deliveryFee: shippingFee,
+        idempotencyKey,
+      };
+
+      // Call server POST /api/orders
+      const response = await createOrder(payload, {
+        headers: {
+          "Idempotency-Key": idempotencyKey,
+        },
+      });
+
+      const placedOrder = response.data;
+
+      // Save latest order info for client hydration and verification
+      try {
+        localStorage.setItem(
+          "mobixa_latest_order",
+          JSON.stringify({
+            orderId: placedOrder.orderNumber || placedOrder._id,
+            date: new Date().toLocaleDateString("en-US", {
+              month: "short",
+              day: "2-digit",
+              year: "numeric",
+            }),
+            items: cartItems,
+            deliveryMethod,
+            customer: formData,
+            paymentMethod,
+            subtotal: formatLKR(rawSubtotal),
+            discount: discountAmount > 0 ? formatLKR(discountAmount) : null,
+            total: formatLKR(finalTotalNum),
+            status: "Confirmed • Processing",
+          })
+        );
+      } catch (e) {
+        console.error("Storage error:", e);
+      }
+
+      // Clear cart
+      clearCart();
+
+      // Redirect to confirmation screen with server order number / id
+      const targetParam = placedOrder.orderNumber || placedOrder._id;
+      router.push(`/order-success?orderId=${targetParam}`);
+    } catch (err) {
+      console.error("Order placement failed:", err);
+      const errMsg =
+        err.response?.data?.message ||
+        "Could not place your order. Please review your details and try again.";
+      setServerError(errMsg);
+    } finally {
+      setIsPlacingOrder(false);
+    }
+  };
+
+  const selectedStoreDetails = stores.find(
+    (s) => s._id === formData.selectedBranchId
+  );
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 pb-24">
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-10">
-        {/* ================================================================= */}
-        {/* Top Breadcrumb & Progress Header                                  */}
-        {/* ================================================================= */}
+        {/* Top Breadcrumb & Progress Header */}
         <div className="space-y-3 pb-6 border-b border-slate-200/80">
-          {/* Breadcrumb Stepper */}
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 overflow-x-auto pb-1">
             <Link href="/shop" className="hover:text-blue-600 transition-colors">
               Cart
@@ -190,7 +444,7 @@ export default function CheckoutPage() {
             <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
             <span className="text-blue-600 font-bold flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-blue-600" />
-              Shipping & Details
+              Shipping & Contact
             </span>
             <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
             <span>Payment</span>
@@ -198,77 +452,169 @@ export default function CheckoutPage() {
             <span>Confirmation</span>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">
-                Checkout
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight">
+                Secure Checkout
               </h1>
               <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                Complete your order with secure islandwide insured delivery or
-                branch pickup.
+                Review your items and complete your order with guaranteed purchase protection.
               </p>
             </div>
-            <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3.5 py-1 rounded-full w-fit shadow-2xs">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Official Warranty & 100% Genuine</span>
-            </div>
+            {isLoggedIn && (
+              <span className="self-start sm:self-auto text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 rounded-full flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
+                Signed In Profile
+              </span>
+            )}
           </div>
         </div>
 
-        {/* ================================================================= */}
-        {/* Main 2-Column Architecture Grid                                   */}
-        {/* ================================================================= */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mt-8">
-          {/* --------------------------------------------------------------- */}
-          {/* COLUMN 1: Customer Details & Payment Methods (lg:col-span-7)     */}
-          {/* --------------------------------------------------------------- */}
+        {/* Global Error Banner */}
+        {serverError && (
+          <div className="mt-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-sm flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold">Order Placement Error</p>
+              <p className="text-xs mt-0.5">{serverError}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Main 2-Column Checkout Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 mt-8">
+          {/* COLUMN 1: Shipping, Contact & Payment (lg:col-span-7) */}
           <div className="lg:col-span-7 space-y-6">
             {/* 1. Delivery Method Toggle */}
-            <div className="bg-white border border-slate-200/90 rounded-[28px] p-2 sm:p-3 shadow-sm flex flex-col sm:flex-row gap-2">
-              <button
-                type="button"
-                onClick={() => setDeliveryMethod("delivery")}
-                className={`flex-1 py-3 px-5 rounded-2xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2.5 transition-all cursor-pointer ${
-                  deliveryMethod === "delivery"
-                    ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
-                    : "bg-slate-50 text-slate-700 hover:bg-slate-100"
-                }`}
-              >
-                <Truck className="w-4 h-4" />
-                <span>Islandwide Courier Delivery (1-3 Days)</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setDeliveryMethod("pickup")}
-                className={`flex-1 py-3 px-5 rounded-2xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2.5 transition-all cursor-pointer ${
-                  deliveryMethod === "pickup"
-                    ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
-                    : "bg-slate-50 text-slate-700 hover:bg-slate-100"
-                }`}
-              >
-                <Store className="w-4 h-4" />
-                <span>Branch Pickup (Express Collection)</span>
-              </button>
-            </div>
-
-            {/* 2. Shipping & Contact Information Card */}
             <div className="bg-white border border-slate-200/90 rounded-[28px] p-6 sm:p-8 shadow-sm space-y-5">
               <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                 <h3 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs font-bold flex items-center justify-center">
                     1
                   </span>
+                  <span>Delivery Method</span>
+                </h3>
+                <span className="text-xs font-semibold text-slate-500">
+                  Step 1 of 2
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                {/* Islandwide Courier Delivery */}
+                <button
+                  type="button"
+                  onClick={() => setDeliveryMethod("delivery")}
+                  className={`p-4 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                    deliveryMethod === "delivery"
+                      ? "border-blue-600 bg-blue-50/40 ring-1 ring-blue-600/30"
+                      : "border-slate-200 hover:border-slate-300 bg-white"
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full mb-3">
+                    <div
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                        deliveryMethod === "delivery"
+                          ? "bg-blue-600 text-white"
+                          : "bg-slate-100 text-slate-600"
+                      }`}
+                    >
+                      <Truck className="w-4 h-4" />
+                    </div>
+                    {deliveryMethod === "delivery" && (
+                      <CheckCircle2 className="w-5 h-5 text-blue-600" />
+                    )}
+                  </div>
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-bold text-slate-900">
+                      Islandwide Courier Delivery
+                    </h4>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Fast door-to-door delivery within 1–3 business days.
+                    </p>
+                    <span className="inline-block mt-2 text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
+                      {rawSubtotal >= 50000 ? "FREE Delivery" : "Rs 350 Flat Fee"}
+                    </span>
+                  </div>
+                </button>
+
+                {/* Branch Pickup */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDeliveryMethod("pickup");
+                    if (paymentMethod === "cod") {
+                      setPaymentMethod("card");
+                    }
+                  }}
+                  className={`p-4 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                    deliveryMethod === "pickup"
+                      ? "border-blue-600 bg-blue-50/40 ring-1 ring-blue-600/30"
+                      : "border-slate-200 hover:border-slate-300 bg-white"
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full mb-3">
+                    <div
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                        deliveryMethod === "pickup"
+                          ? "bg-blue-600 text-white"
+                          : "bg-slate-100 text-slate-600"
+                      }`}
+                    >
+                      <Store className="w-4 h-4" />
+                    </div>
+                    {deliveryMethod === "pickup" && (
+                      <CheckCircle2 className="w-5 h-5 text-blue-600" />
+                    )}
+                  </div>
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-bold text-slate-900">
+                      Branch Pickup (Express)
+                    </h4>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Collect directly from our store experience centers.
+                    </p>
+                    <span className="inline-block mt-2 text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">
+                      Always Free (Rs 0)
+                    </span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            {/* 2. Customer Contact & Address Card */}
+            <div className="bg-white border border-slate-200/90 rounded-[28px] p-6 sm:p-8 shadow-sm space-y-5">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <h3 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-blue-600" />
                   <span>
                     {deliveryMethod === "delivery"
                       ? "Shipping & Contact Details"
                       : "Pickup & Contact Details"}
                   </span>
                 </h3>
-                <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full">
-                  Step 1 of 2
-                </span>
               </div>
+
+              {/* Saved Address Selector for Logged In Customers */}
+              {isLoggedIn && savedAddresses.length > 0 && deliveryMethod === "delivery" && (
+                <div className="p-4 rounded-2xl bg-blue-50/50 border border-blue-200/60 space-y-2">
+                  <label className="text-xs font-bold text-slate-700 block">
+                    Choose Saved Address
+                  </label>
+                  <select
+                    value={selectedAddressId}
+                    onChange={(e) => handleAddressSelect(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-blue-200 text-xs sm:text-sm font-semibold bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 cursor-pointer"
+                  >
+                    {savedAddresses.map((addr) => (
+                      <option key={addr.id || addr._id} value={addr.id || addr._id}>
+                        {addr.label || "Saved Address"}: {addr.line1 || addr.street},{" "}
+                        {addr.city}, {addr.district} {addr.isDefault ? "(Default)" : ""}
+                      </option>
+                    ))}
+                    <option value="new">+ Use a new address</option>
+                  </select>
+                </div>
+              )}
 
               <div className="space-y-4">
                 {/* Full Name & Phone */}
@@ -283,23 +629,42 @@ export default function CheckoutPage() {
                       onChange={(e) =>
                         setFormData({ ...formData, fullName: e.target.value })
                       }
-                      placeholder="e.g. Gayan Chanuka"
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30 text-xs sm:text-sm text-slate-900 bg-slate-50/50"
+                      placeholder="e.g. Nimal Perera"
+                      className={`w-full px-4 py-2.5 rounded-xl border text-xs sm:text-sm text-slate-900 bg-slate-50/50 focus:outline-none focus:ring-2 ${
+                        formErrors.fullName
+                          ? "border-rose-400 focus:ring-rose-200"
+                          : "border-slate-200 focus:ring-blue-500/30"
+                      }`}
                     />
+                    {formErrors.fullName && (
+                      <span className="text-xs text-rose-600 block mt-1">
+                        {formErrors.fullName}
+                      </span>
+                    )}
                   </div>
+
                   <div>
                     <label className="text-xs font-bold text-slate-700 block mb-1.5">
-                      Phone Number *
+                      Phone Number (Sri Lanka) *
                     </label>
                     <input
-                      type="text"
+                      type="tel"
                       value={formData.phone}
                       onChange={(e) =>
                         setFormData({ ...formData, phone: e.target.value })
                       }
-                      placeholder="+94 77 123 4567"
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30 text-xs sm:text-sm text-slate-900 bg-slate-50/50"
+                      placeholder="e.g. 0771234567 or +94771234567"
+                      className={`w-full px-4 py-2.5 rounded-xl border text-xs sm:text-sm text-slate-900 bg-slate-50/50 focus:outline-none focus:ring-2 ${
+                        formErrors.phone
+                          ? "border-rose-400 focus:ring-rose-200"
+                          : "border-slate-200 focus:ring-blue-500/30"
+                      }`}
                     />
+                    {formErrors.phone && (
+                      <span className="text-xs text-rose-600 block mt-1">
+                        {formErrors.phone}
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -311,7 +676,7 @@ export default function CheckoutPage() {
                     </label>
                     <span className="text-xs text-blue-600 font-semibold flex items-center gap-1">
                       <CheckCircle2 className="w-3 h-3 text-blue-600" />
-                      Live Order Tracking Enabled
+                      Order confirmation & tracking sent here
                     </span>
                   </div>
                   <input
@@ -320,9 +685,18 @@ export default function CheckoutPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
-                    placeholder="gayan@mobixa.lk"
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30 text-xs sm:text-sm text-slate-900 bg-slate-50/50"
+                    placeholder="e.g. customer@example.com"
+                    className={`w-full px-4 py-2.5 rounded-xl border text-xs sm:text-sm text-slate-900 bg-slate-50/50 focus:outline-none focus:ring-2 ${
+                      formErrors.email
+                        ? "border-rose-400 focus:ring-rose-200"
+                        : "border-slate-200 focus:ring-blue-500/30"
+                    }`}
                   />
+                  {formErrors.email && (
+                    <span className="text-xs text-rose-600 block mt-1">
+                      {formErrors.email}
+                    </span>
+                  )}
                 </div>
 
                 {/* Address or Branch Selection */}
@@ -343,9 +717,19 @@ export default function CheckoutPage() {
                             })
                           }
                           placeholder="Street Address, House No."
-                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30 text-xs sm:text-sm text-slate-900 bg-slate-50/50"
+                          className={`w-full px-4 py-2.5 rounded-xl border text-xs sm:text-sm text-slate-900 bg-slate-50/50 focus:outline-none focus:ring-2 ${
+                            formErrors.addressLine1
+                              ? "border-rose-400 focus:ring-rose-200"
+                              : "border-slate-200 focus:ring-blue-500/30"
+                          }`}
                         />
+                        {formErrors.addressLine1 && (
+                          <span className="text-xs text-rose-600 block mt-1">
+                            {formErrors.addressLine1}
+                          </span>
+                        )}
                       </div>
+
                       <div>
                         <label className="text-xs font-bold text-slate-700 block mb-1.5">
                           Address Line 2 (Optional)
@@ -359,7 +743,7 @@ export default function CheckoutPage() {
                               addressLine2: e.target.value,
                             })
                           }
-                          placeholder="Apartment, suite, unit"
+                          placeholder="Apartment, suite, unit (optional)"
                           className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30 text-xs sm:text-sm text-slate-900 bg-slate-50/50"
                         />
                       </div>
@@ -376,13 +760,23 @@ export default function CheckoutPage() {
                           onChange={(e) =>
                             setFormData({ ...formData, city: e.target.value })
                           }
-                          placeholder="e.g. Colombo"
-                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30 text-xs sm:text-sm text-slate-900 bg-slate-50/50"
+                          placeholder="e.g. Dehiwala"
+                          className={`w-full px-4 py-2.5 rounded-xl border text-xs sm:text-sm text-slate-900 bg-slate-50/50 focus:outline-none focus:ring-2 ${
+                            formErrors.city
+                              ? "border-rose-400 focus:ring-rose-200"
+                              : "border-slate-200 focus:ring-blue-500/30"
+                          }`}
                         />
+                        {formErrors.city && (
+                          <span className="text-xs text-rose-600 block mt-1">
+                            {formErrors.city}
+                          </span>
+                        )}
                       </div>
+
                       <div>
                         <label className="text-xs font-bold text-slate-700 block mb-1.5">
-                          District *
+                          District (Sri Lanka) *
                         </label>
                         <select
                           value={formData.district}
@@ -392,20 +786,45 @@ export default function CheckoutPage() {
                               district: e.target.value,
                             })
                           }
-                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30 text-xs sm:text-sm text-slate-900 bg-slate-50/50 cursor-pointer"
+                          className={`w-full px-4 py-2.5 rounded-xl border text-xs sm:text-sm text-slate-900 bg-slate-50/50 focus:outline-none focus:ring-2 cursor-pointer ${
+                            formErrors.district
+                              ? "border-rose-400 focus:ring-rose-200"
+                              : "border-slate-200 focus:ring-blue-500/30"
+                          }`}
                         >
-                          <option value="Colombo">Colombo</option>
-                          <option value="Gampaha">Gampaha</option>
-                          <option value="Kalutara">Kalutara</option>
-                          <option value="Kandy">Kandy</option>
-                          <option value="Galle">Galle</option>
-                          <option value="Matara">Matara</option>
-                          <option value="Kurunegala">Kurunegala</option>
-                          <option value="Anuradhapura">Anuradhapura</option>
-                          <option value="Jaffna">Jaffna</option>
+                          <option value="">-- Select District --</option>
+                          {SRI_LANKA_DISTRICTS.map((dist) => (
+                            <option key={dist} value={dist}>
+                              {dist}
+                            </option>
+                          ))}
                         </select>
+                        {formErrors.district && (
+                          <span className="text-xs text-rose-600 block mt-1">
+                            {formErrors.district}
+                          </span>
+                        )}
                       </div>
                     </div>
+
+                    {/* Save address checkbox for logged in user */}
+                    {isLoggedIn && selectedAddressId === "new" && (
+                      <div className="flex items-center gap-2 pt-1">
+                        <input
+                          type="checkbox"
+                          id="saveAddressCheckbox"
+                          checked={saveAddressForLater}
+                          onChange={(e) => setSaveAddressForLater(e.target.checked)}
+                          className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                        />
+                        <label
+                          htmlFor="saveAddressCheckbox"
+                          className="text-xs text-slate-700 font-semibold cursor-pointer"
+                        >
+                          Save this address to my profile for next time
+                        </label>
+                      </div>
+                    )}
                   </>
                 ) : (
                   <div>
@@ -413,29 +832,41 @@ export default function CheckoutPage() {
                       Select Branch for Express Pickup *
                     </label>
                     <select
-                      value={formData.pickupBranch}
+                      value={formData.selectedBranchId}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          pickupBranch: e.target.value,
+                          selectedBranchId: e.target.value,
                         })
                       }
                       className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30 text-xs sm:text-sm text-slate-900 bg-slate-50/50 cursor-pointer"
                     >
-                      <option value="Colombo 03 - Flagship Experience Center">
-                        Colombo 03 — Flagship Store (No. 88, Tech Avenue)
-                      </option>
-                      <option value="Kandy City Centre - Level 2 Showroom">
-                        Kandy City Centre — Level 2 Tech Hub
-                      </option>
-                      <option value="Galle Fort - Digital Lounge">
-                        Galle Fort — Digital Lounge Showroom
-                      </option>
+                      {stores.length > 0 ? (
+                        stores.map((branch) => (
+                          <option key={branch._id} value={branch._id}>
+                            {branch.name} — {branch.city || branch.district || "Main Branch"}
+                          </option>
+                        ))
+                      ) : (
+                        <option value="">Colombo Flagship Center</option>
+                      )}
                     </select>
-                    <p className="text-xs text-slate-500 mt-2 flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5 text-blue-600" />
-                      Ready for collection within 2 hours of payment approval.
-                    </p>
+
+                    {selectedStoreDetails && (
+                      <div className="mt-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-xs text-slate-600 space-y-1">
+                        <p className="font-semibold text-slate-800 flex items-center gap-1.5">
+                          <MapPin className="w-3.5 h-3.5 text-blue-600" />
+                          {selectedStoreDetails.address?.street || selectedStoreDetails.name},{" "}
+                          {selectedStoreDetails.address?.city || selectedStoreDetails.city}
+                        </p>
+                        {selectedStoreDetails.phone && (
+                          <p>Phone: {selectedStoreDetails.phone}</p>
+                        )}
+                        <p className="text-emerald-700 font-medium">
+                          Opening Hours: Mon - Sat 9:00 AM - 7:00 PM
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -450,7 +881,7 @@ export default function CheckoutPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, instructions: e.target.value })
                     }
-                    placeholder="Gate code, landmark, or specific delivery time preference..."
+                    placeholder="Gate code, landmark, or specific delivery preference..."
                     className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30 text-xs text-slate-900 bg-slate-50/50 resize-none"
                   />
                 </div>
@@ -497,10 +928,10 @@ export default function CheckoutPage() {
                       </div>
                       <div>
                         <span className="text-xs sm:text-sm font-bold text-slate-900 block">
-                          Credit / Debit Card
+                          Credit / Debit Card (Online Gateway)
                         </span>
                         <span className="text-xs text-slate-500">
-                          Visa, Mastercard, American Express
+                          Secure processing via Visa, Mastercard, AMEX
                         </span>
                       </div>
                     </div>
@@ -513,58 +944,17 @@ export default function CheckoutPage() {
                       </span>
                     </div>
                   </div>
-
                   {paymentMethod === "card" && (
-                    <div className="mt-4 pt-4 border-t border-blue-100 space-y-3">
-                      <div>
-                        <label className="text-xs font-bold text-slate-700 block mb-1">
-                          Card Number
-                        </label>
-                        <input
-                          type="text"
-                          value={cardData.number}
-                          onChange={(e) =>
-                            setCardData({ ...cardData, number: e.target.value })
-                          }
-                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-mono bg-white text-slate-800"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="text-xs font-bold text-slate-700 block mb-1">
-                            Expiry (MM/YY)
-                          </label>
-                          <input
-                            type="text"
-                            value={cardData.expiry}
-                            onChange={(e) =>
-                              setCardData({
-                                ...cardData,
-                                expiry: e.target.value,
-                              })
-                            }
-                            className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-mono bg-white text-slate-800"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-xs font-bold text-slate-700 block mb-1">
-                            CVV / CVC
-                          </label>
-                          <input
-                            type="text"
-                            value={cardData.cvv}
-                            onChange={(e) =>
-                              setCardData({ ...cardData, cvv: e.target.value })
-                            }
-                            className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-mono bg-white text-slate-800"
-                          />
-                        </div>
-                      </div>
+                    <div className="mt-3 pt-3 border-t border-blue-100 text-xs text-slate-600 flex items-center gap-2">
+                      <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>
+                        You will be securely redirected to our bank-grade payment gateway. No card numbers are stored on our servers.
+                      </span>
                     </div>
                   )}
                 </div>
 
-                {/* 2. Buy Now Pay Later (Koko / Mintpay) */}
+                {/* 2. Buy Now Pay Later (Koko) */}
                 <div
                   onClick={() => setPaymentMethod("bnpl")}
                   className={`border rounded-2xl p-4 transition-all cursor-pointer ${
@@ -588,7 +978,7 @@ export default function CheckoutPage() {
                       </div>
                       <div>
                         <span className="text-xs sm:text-sm font-bold text-slate-900 block">
-                          Buy Now Pay Later (Koko / Mintpay)
+                          Buy Now Pay Later (Koko 3 Installments)
                         </span>
                         <span className="text-xs text-emerald-600 font-semibold">
                           Split into 3 interest-free payments of Rs{" "}
@@ -600,32 +990,9 @@ export default function CheckoutPage() {
                       0% Interest
                     </span>
                   </div>
-
-                  {paymentMethod === "bnpl" && (
-                    <div className="mt-3 pt-3 border-t border-blue-100 text-xs text-slate-600 space-y-1.5">
-                      <div className="flex justify-between">
-                        <span>1st Payment (Today):</span>
-                        <span className="font-bold text-slate-900">
-                          Rs {formatLKR(Math.round(finalTotalNum / 3))}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>2nd Payment (In 30 Days):</span>
-                        <span className="font-bold text-slate-900">
-                          Rs {formatLKR(Math.round(finalTotalNum / 3))}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>3rd Payment (In 60 Days):</span>
-                        <span className="font-bold text-slate-900">
-                          Rs {formatLKR(Math.round(finalTotalNum / 3))}
-                        </span>
-                      </div>
-                    </div>
-                  )}
                 </div>
 
-                {/* 3. Direct Bank Transfer / CDM Deposit */}
+                {/* 3. Direct Bank Transfer */}
                 <div
                   onClick={() => setPaymentMethod("bank")}
                   className={`border rounded-2xl p-4 transition-all cursor-pointer ${
@@ -674,7 +1041,7 @@ export default function CheckoutPage() {
 
                       <div>
                         <label className="text-xs font-bold text-slate-700 block mb-1">
-                          Upload Deposit Slip / Transfer Screenshot
+                          Upload Deposit Slip / Transfer Screenshot (Optional)
                         </label>
                         <input
                           type="file"
@@ -685,7 +1052,7 @@ export default function CheckoutPage() {
                         />
                         {uploadedReceiptName && (
                           <span className="text-xs text-emerald-600 block mt-1">
-                             Attached: {uploadedReceiptName}
+                            Attached: {uploadedReceiptName}
                           </span>
                         )}
                       </div>
@@ -693,47 +1060,81 @@ export default function CheckoutPage() {
                   )}
                 </div>
 
-                {/* 4. Cash on Delivery / Showroom Pay */}
-                <div
-                  onClick={() => setPaymentMethod("cod")}
-                  className={`border rounded-2xl p-4 transition-all cursor-pointer ${
-                    paymentMethod === "cod"
-                      ? "border-blue-600 bg-blue-50/30 ring-1 ring-blue-600/30"
-                      : "border-slate-200 hover:border-slate-300 bg-white"
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                          paymentMethod === "cod"
-                            ? "border-blue-600 bg-blue-600"
-                            : "border-slate-300 bg-white"
-                        }`}
-                      >
-                        {paymentMethod === "cod" && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-white" />
-                        )}
+                {/* 4. Cash on Delivery (Courier) OR Pay at Branch (Pickup) */}
+                {deliveryMethod === "delivery" ? (
+                  <div
+                    onClick={() => setPaymentMethod("cod")}
+                    className={`border rounded-2xl p-4 transition-all cursor-pointer ${
+                      paymentMethod === "cod"
+                        ? "border-blue-600 bg-blue-50/30 ring-1 ring-blue-600/30"
+                        : "border-slate-200 hover:border-slate-300 bg-white"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                            paymentMethod === "cod"
+                              ? "border-blue-600 bg-blue-600"
+                              : "border-slate-300 bg-white"
+                          }`}
+                        >
+                          {paymentMethod === "cod" && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                          )}
+                        </div>
+                        <div>
+                          <span className="text-xs sm:text-sm font-bold text-slate-900 block">
+                            Cash on Delivery (Courier)
+                          </span>
+                          <span className="text-xs text-slate-500">
+                            Pay in cash directly to the courier upon receiving your package
+                          </span>
+                        </div>
                       </div>
-                      <div>
-                        <span className="text-xs sm:text-sm font-bold text-slate-900 block">
-                          Cash on Delivery / Pay at Showroom
-                        </span>
-                        <span className="text-xs text-slate-500">
-                          Pay securely upon receiving your package
-                        </span>
-                      </div>
+                      <Banknote className="w-4 h-4 text-slate-400" />
                     </div>
-                    <Banknote className="w-4 h-4 text-slate-400" />
                   </div>
-                </div>
+                ) : (
+                  <div
+                    onClick={() => setPaymentMethod("cod")}
+                    className={`border rounded-2xl p-4 transition-all cursor-pointer ${
+                      paymentMethod === "cod"
+                        ? "border-blue-600 bg-blue-50/30 ring-1 ring-blue-600/30"
+                        : "border-slate-200 hover:border-slate-300 bg-white"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                            paymentMethod === "cod"
+                              ? "border-blue-600 bg-blue-600"
+                              : "border-slate-300 bg-white"
+                          }`}
+                        >
+                          {paymentMethod === "cod" && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                          )}
+                        </div>
+                        <div>
+                          <span className="text-xs sm:text-sm font-bold text-slate-900 block">
+                            Pay at Branch on Collection
+                          </span>
+                          <span className="text-xs text-slate-500">
+                            Pay via Cash or Card counter POS upon collecting your order
+                          </span>
+                        </div>
+                      </div>
+                      <Banknote className="w-4 h-4 text-slate-400" />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
-          {/* --------------------------------------------------------------- */}
-          {/* COLUMN 2: Order Summary & Placement (lg:col-span-5)             */}
-          {/* --------------------------------------------------------------- */}
+          {/* COLUMN 2: Order Summary & Placement (lg:col-span-5) */}
           <div className="lg:col-span-5">
             <div className="bg-white border border-slate-200/90 rounded-[32px] p-6 sm:p-8 shadow-sm sticky top-24 space-y-6">
               <div className="flex items-center justify-between pb-3 border-b border-slate-100">
@@ -741,92 +1142,129 @@ export default function CheckoutPage() {
                   Order Summary
                 </h3>
                 <span className="text-xs font-bold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full">
-                  {displayItems.length} {displayItems.length === 1 ? "Item" : "Items"}
+                  {cartItems.length} {cartItems.length === 1 ? "Item" : "Items"}
                 </span>
               </div>
 
-              {/* Cart Items Preview */}
-              <div className="space-y-3.5 max-h-72 overflow-y-auto pr-1">
-                {displayItems.map((item, idx) => (
-                  <div
-                    key={item.cartItemId || idx}
-                    className="flex items-center gap-3.5 p-3 rounded-2xl bg-slate-50/70 border border-slate-200/60"
+              {/* Cart Items List */}
+              {cartItems.length === 0 ? (
+                <div className="py-8 text-center space-y-3">
+                  <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+                    <ShoppingBag className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-800">Your cart is empty</p>
+                    <p className="text-xs text-slate-500 mt-1">
+                      Add products from our catalog to proceed with checkout.
+                    </p>
+                  </div>
+                  <Link
+                    href="/shop"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 mt-2"
                   >
-                    {/* Thumbnail */}
-                    <div
-                      className="w-12 h-12 rounded-xl border border-slate-200 bg-white flex items-center justify-center flex-shrink-0 shadow-2xs"
-                      style={{ backgroundColor: item.colorCode || "#ffffff" }}
-                    >
-                      <span className="text-xs font-bold text-slate-800">
-                        {item.name?.split(" ")?.slice(0, 2)?.join(" ") || "ITEM"}
+                    <span>Browse Products</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
+                  {cartItems.map((item, idx) => {
+                    const unitPrice = parseNum(item.price);
+                    const qty = Number(item.quantity) || 1;
+                    const lineTotal = unitPrice * qty;
+
+                    return (
+                      <div
+                        key={item.cartItemId || idx}
+                        className="flex items-center gap-3.5 p-3 rounded-2xl bg-slate-50/70 border border-slate-200/60"
+                      >
+                        {/* Thumbnail */}
+                        <div
+                          className="w-12 h-12 rounded-xl border border-slate-200 bg-white flex items-center justify-center flex-shrink-0 overflow-hidden"
+                          style={{ backgroundColor: item.colorCode || "#ffffff" }}
+                        >
+                          {item.image ? (
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-[10px] font-bold text-slate-700 text-center px-1">
+                              {item.name?.split(" ")?.slice(0, 2)?.join(" ") || "ITEM"}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Details */}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-xs font-bold text-slate-900 truncate">
+                            {item.name}
+                          </h4>
+                          <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5">
+                            {item.color && <span>{item.color}</span>}
+                            {item.color && item.storage && <span>•</span>}
+                            {item.storage && <span>{item.storage}</span>}
+                          </div>
+                          <div className="text-xs font-semibold text-slate-700 mt-0.5">
+                            Qty: {qty} × Rs {formatLKR(unitPrice)}
+                          </div>
+                        </div>
+
+                        <div className="text-xs font-bold text-slate-900 text-right">
+                          Rs {formatLKR(lineTotal)}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Promo Code Input */}
+              {cartItems.length > 0 && (
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1.5">
+                    Have a Promo Code?
+                  </label>
+                  {appliedPromo ? (
+                    <div className="flex items-center justify-between p-2.5 px-4 bg-emerald-50 border border-emerald-200 rounded-full text-xs font-bold text-emerald-700">
+                      <span className="flex items-center gap-1.5">
+                        <Tag className="w-3.5 h-3.5 text-emerald-600" />
+                        Promo &quot;{appliedPromo.code}&quot; applied (-{appliedPromo.percent}%)
                       </span>
+                      <button
+                        type="button"
+                        onClick={handleRemovePromo}
+                        className="text-slate-400 hover:text-slate-600 transition-colors text-xs cursor-pointer ml-2"
+                      >
+                        Remove
+                      </button>
                     </div>
-
-                    {/* Details */}
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-xs font-bold text-slate-900 truncate">
-                        {item.name}
-                      </h4>
-                      <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5">
-                        {item.color && <span>{item.color}</span>}
-                        {item.color && item.storage && <span>•</span>}
-                        {item.storage && <span>{item.storage}</span>}
-                      </div>
-                      <div className="text-xs font-semibold text-slate-700 mt-0.5">
-                        Qty: {item.quantity || 1}
-                      </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={promoInput}
+                        onChange={(e) => setPromoInput(e.target.value)}
+                        placeholder="Try 'MOBI10'"
+                        className="flex-1 px-4 py-2 rounded-full border border-slate-200 text-xs uppercase text-slate-800 placeholder:normal-case focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleApplyPromo}
+                        className="bg-slate-900 hover:bg-black text-white text-xs font-bold px-5 py-2 rounded-full transition-colors cursor-pointer"
+                      >
+                        Apply
+                      </button>
                     </div>
-
-                    <div className="text-xs font-bold text-slate-900 text-right">
-                      Rs {item.price}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Promo Code Pill Input */}
-              <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1.5">
-                  Have a Promo Code?
-                </label>
-                {appliedPromo ? (
-                  <div className="flex items-center justify-between p-2.5 px-4 bg-emerald-50 border border-emerald-200 rounded-full text-xs font-bold text-emerald-700">
-                    <span className="flex items-center gap-1.5">
-                      <Tag className="w-3.5 h-3.5 text-emerald-600" />
-                      Promo &quot;{appliedPromo.code}&quot; applied (-10%)
+                  )}
+                  {promoError && (
+                    <span className="text-xs text-rose-600 block mt-1">
+                      {promoError}
                     </span>
-                    <button
-                      type="button"
-                      onClick={handleRemovePromo}
-                      className="text-slate-400 hover:text-slate-600 transition-colors text-xs cursor-pointer ml-2"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={promoInput}
-                      onChange={(e) => setPromoInput(e.target.value)}
-                      placeholder="Try 'MOBI10'"
-                      className="flex-1 px-4 py-2 rounded-full border border-slate-200 text-xs uppercase text-slate-800 placeholder:normal-case focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleApplyPromo}
-                      className="bg-slate-900 hover:bg-black text-white text-xs font-bold px-5 py-2 rounded-full transition-colors cursor-pointer"
-                    >
-                      Apply
-                    </button>
-                  </div>
-                )}
-                {promoError && (
-                  <span className="text-xs text-rose-600 block mt-1">
-                    {promoError}
-                  </span>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
 
               {/* Pricing Breakdown Table */}
               <div className="space-y-2.5 pt-4 border-t border-slate-100 text-xs text-slate-600">
@@ -838,9 +1276,13 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="flex justify-between items-center">
-                  <span>Islandwide Insured Shipping</span>
+                  <span>
+                    {deliveryMethod === "pickup"
+                      ? "Express Branch Pickup"
+                      : "Islandwide Courier Delivery"}
+                  </span>
                   <span className="font-bold text-emerald-600 uppercase text-xs">
-                    FREE
+                    {shippingFee === 0 ? "FREE" : `Rs ${formatLKR(shippingFee)}`}
                   </span>
                 </div>
 
@@ -861,7 +1303,7 @@ export default function CheckoutPage() {
                   <span className="text-sm font-bold text-slate-900">
                     Total Payable
                   </span>
-                  <span className="text-2xl font-bold text-slate-950">
+                  <span className="text-2xl font-black text-slate-950">
                     Rs {formatLKR(finalTotalNum)}
                   </span>
                 </div>
@@ -870,12 +1312,15 @@ export default function CheckoutPage() {
               {/* Place Order CTA */}
               <button
                 type="button"
-                disabled={isPlacingOrder}
+                disabled={isPlacingOrder || cartItems.length === 0}
                 onClick={handleCompleteOrder}
-                className="w-full bg-[#1967d2] hover:bg-blue-700 active:bg-blue-800 text-white font-bold py-4 rounded-full text-base shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer mt-4"
+                className="w-full bg-[#1967d2] hover:bg-blue-700 active:bg-blue-800 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold py-4 rounded-full text-base shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer mt-4"
               >
                 {isPlacingOrder ? (
-                  <span>Securing Order...</span>
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>Processing Order...</span>
+                  </span>
                 ) : (
                   <>
                     <span>Complete & Place Order</span>

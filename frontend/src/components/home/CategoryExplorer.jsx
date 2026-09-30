@@ -203,7 +203,7 @@ export default function CategoryExplorer() {
               </p>
             </div>
             <Link
-              href="/categories"
+              href="/shop"
               className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-blue-600 hover:text-blue-700 group flex-shrink-0"
             >
               <span>View All</span>
@@ -294,7 +294,7 @@ export default function CategoryExplorer() {
               )}
               {selectedCard?.realCategoryId && (
                 <Link
-                  href={`/categories?category=${selectedCard.realCategoryId}`}
+                  href="/shop"
                   className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-blue-600 hover:text-blue-700 group flex-shrink-0"
                 >
                   <span>See all {selectedCard.name}</span>

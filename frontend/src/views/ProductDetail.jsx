@@ -5,6 +5,8 @@ import { useParams, Link } from '../utils/navigation';
 import { Star, ShoppingCart, Heart, Share2, Minus, Plus, Store, MapPin, ShieldCheck, Cpu, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getProductById, getProducts } from '../services/api';
+import { products as mockProductsList } from '../data/mockProducts';
+import { deals as mockDealsList } from '../data/mockDeals';
 import ProductCard from '../components/ProductCard';
 import ReviewSection from '../components/ReviewSection';
 import useCartStore from '../store/cartStore';
@@ -33,18 +35,56 @@ const ProductDetail = () => {
       setLoading(true);
       try {
         const res = await getProductById(id);
-        setProduct(res.data);
-        setSelectedImage(0);
-        setQuantity(1);
-        if (res.data.categoryId?._id) {
-          const relRes = await getProducts({ category: res.data.categoryId._id, limit: 4 });
-          setRelated(relRes.data.products.filter((p) => p._id !== id));
+        if (res.data) {
+          setProduct(res.data);
+          setSelectedImage(0);
+          setQuantity(1);
+          if (res.data.categoryId?._id) {
+            const relRes = await getProducts({ category: res.data.categoryId._id, limit: 4 });
+            setRelated(relRes.data.products.filter((p) => p._id !== id));
+          }
+          setLoading(false);
+          return;
         }
       } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
+        console.warn('Backend API getProductById failed, checking local catalog:', err.message);
       }
+
+      // Fallback lookup from mock products and deals catalog
+      const fallback =
+        mockProductsList.find((p) => p.id === id || p._id === id || p.deviceType === id) ||
+        mockDealsList.find((d) => d.id === id || d._id === id || d.deviceType === id);
+
+      if (fallback) {
+        const numPrice = typeof fallback.price === 'string'
+          ? parseFloat(fallback.price.replace(/,/g, ''))
+          : fallback.price;
+
+        setProduct({
+          _id: fallback.id || fallback._id || id,
+          name: fallback.name,
+          price: numPrice,
+          originalPrice: fallback.originalPrice ? parseFloat(String(fallback.originalPrice).replace(/,/g, '')) : undefined,
+          discount: fallback.discount ? parseInt(String(fallback.discount).replace(/[^0-9]/g, '')) : 0,
+          description: fallback.description || `${fallback.name} - official Sri Lanka warranty, authentic build quality with fast door-to-door delivery.`,
+          images: fallback.images && fallback.images.length > 0 ? fallback.images : (fallback.image ? [fallback.image] : []),
+          productLink: fallback.image || fallback.productLink,
+          stock: 15,
+          brand: fallback.brand || fallback.category || 'Mobixa',
+          category: fallback.category,
+          specs: fallback.specs || {
+            'Audio / Display': 'Premium Hi-Fi Output',
+            'Connectivity': 'Bluetooth 5.3 / Type-C',
+            'Warranty': '1 Year Mobixa Official Warranty',
+          },
+          swatches: fallback.swatches || [],
+          storages: fallback.storages || [],
+        });
+      } else {
+        setProduct(null);
+      }
+
+      setLoading(false);
     };
     fetchProduct();
     window.scrollTo(0, 0);
@@ -149,7 +189,7 @@ const ProductDetail = () => {
               </span>
             )}
           </div>
-          {product.images.length > 1 && (
+          {product.images?.length > 1 && (
             <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
               {product.images.map((img, i) => (
                 <button key={i} onClick={() => setSelectedImage(i)}
