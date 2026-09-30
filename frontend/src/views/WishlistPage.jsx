@@ -85,11 +85,11 @@ const WishlistPage = () => {
           >
             <Link to={`/product/${product._id}`} style={{ position: 'relative', display: 'block', aspectRatio: '1', background: '#fafbfc', borderBottom: '1px solid var(--ds-border-soft)' }}>
               <img
-                src={getImageUrl(product.productLink || product.images?.[0]) || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&auto=format&fit=crop&q=60'}
+                src={getImageUrl(product.productLink || product.images?.[0]) || `https://placehold.co/400x400/f8fafc/64748b?text=${encodeURIComponent(product.name || 'Device')}`}
                 alt={product.name}
                 style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '1rem', transition: 'transform 0.3s' }}
                 loading="lazy"
-                onError={(e) => handleImageError(e, 'Product')}
+                onError={(e) => handleImageError(e, product.name || 'Device')}
               />
               {product.discount > 0 && (
                 <span className="ds-badge ds-badge-red" style={{ position: 'absolute', top: '0.75rem', left: '0.75rem' }}>

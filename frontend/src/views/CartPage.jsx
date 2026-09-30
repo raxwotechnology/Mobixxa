@@ -96,10 +96,10 @@ const CartPage = () => {
                     {/* Product Image */}
                     <Link to={`/product/${productId}`} className="flex-shrink-0">
                       <img
-                        src={getImageUrl(image) || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&auto=format&fit=crop&q=60'}
+                        src={getImageUrl(image) || `https://placehold.co/100x100/f8fafc/64748b?text=${encodeURIComponent(name || 'Device')}`}
                         alt={name}
-                        className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover border border-slate-200/80 p-1 bg-white"
-                        onError={(e) => handleImageError(e, 'Product')}
+                        className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-contain border border-slate-200/80 p-1 bg-white"
+                        onError={(e) => handleImageError(e, name || 'Device')}
                       />
                     </Link>
 

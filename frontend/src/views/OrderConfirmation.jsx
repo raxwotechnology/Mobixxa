@@ -105,10 +105,10 @@ const OrderConfirmation = () => {
           {order.items.map((item, i) => (
             <div key={i} className="flex items-center gap-3">
               <img 
-                src={getImageUrl(item.image) || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&auto=format&fit=crop&q=60'} 
-                alt="" 
-                className="w-12 h-12 rounded-xl object-cover border border-slate-100 p-0.5" 
-                onError={(e) => handleImageError(e, 'Product')}
+                src={getImageUrl(item.image) || `https://placehold.co/100x100/f8fafc/64748b?text=${encodeURIComponent(item.name || 'Item')}`} 
+                alt={item.name} 
+                className="w-12 h-12 rounded-xl object-contain border border-slate-100 p-0.5 bg-white" 
+                onError={(e) => handleImageError(e, item.name || 'Item')}
               />
               <div className="flex-1">
                 <p className="text-xs font-bold text-slate-850 m-0 leading-tight">{item.name}</p>

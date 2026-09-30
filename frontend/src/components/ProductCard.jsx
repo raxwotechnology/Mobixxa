@@ -9,6 +9,7 @@ import useCurrencyStore from '../store/currencyStore';
 import { toast } from 'react-toastify';
 
 import { getImageUrl, handleImageError } from '../utils/imageHelper';
+import DeviceIllustration from './common/DeviceIllustration';
 
 const ProductCard = ({ product }) => {
   const { addItem } = useCartStore();
@@ -16,8 +17,10 @@ const ProductCard = ({ product }) => {
   const { user } = useAuthStore();
   const { getProductPrice, getProductPriceRaw, formatPrice, exchangeRate, currency } = useCurrencyStore();
 
-  const imageUrl = getImageUrl(product.productLink || product.images?.[0]) || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&auto=format&fit=crop&q=60';
-  const secondaryImageUrl = getImageUrl(product.images?.[1] || product.productLink || product.images?.[0]) || imageUrl;
+  const rawImage = product.productLink || product.images?.[0];
+  const hasCustomImage = Boolean(rawImage && !rawImage.includes('photo-1511707171634') && !rawImage.includes('unsplash.com'));
+  const imageUrl = hasCustomImage ? getImageUrl(rawImage) : null;
+  const secondaryImageUrl = product.images?.[1] ? getImageUrl(product.images[1]) : imageUrl;
   const storeName = product.storeId?.name || 'Mobixa Boutique';
   const wishlisted = user && isInWishlist(product._id);
   const inStock = product.stock > 0;
@@ -61,21 +64,32 @@ const ProductCard = ({ product }) => {
     <Link to={`/product/${product._id}`} className="block group h-full">
       <div className="storefront-card overflow-hidden transition-all duration-300 hover:-translate-y-1 h-full flex flex-col group-hover:border-blue-400/80">
         <div className="relative overflow-hidden bg-slate-50/70 aspect-square flex items-center justify-center p-3 sm:p-6">
-          <div className="w-full h-full relative">
-            <img 
-              src={imageUrl} 
-              alt={product.name} 
-              className="w-full h-full object-contain absolute inset-0 transition-opacity duration-500 opacity-100 group-hover:opacity-0" 
-              loading="lazy" 
-              onError={(e) => handleImageError(e, 'Product')}
-            />
-            <img 
-              src={secondaryImageUrl} 
-              alt={product.name} 
-              className="w-full h-full object-contain absolute inset-0 transition-opacity duration-500 opacity-0 group-hover:opacity-100 scale-105" 
-              loading="lazy" 
-              onError={(e) => handleImageError(e, 'Product')}
-            />
+          <div className="w-full h-full relative flex items-center justify-center">
+            {imageUrl ? (
+              <>
+                <img 
+                  src={imageUrl} 
+                  alt={product.name} 
+                  className="w-full h-full object-contain absolute inset-0 transition-opacity duration-500 opacity-100 group-hover:opacity-0" 
+                  loading="lazy" 
+                  onError={(e) => handleImageError(e, product.name || 'Product')}
+                />
+                <img 
+                  src={secondaryImageUrl || imageUrl} 
+                  alt={product.name} 
+                  className="w-full h-full object-contain absolute inset-0 transition-opacity duration-500 opacity-0 group-hover:opacity-100 scale-105" 
+                  loading="lazy" 
+                  onError={(e) => handleImageError(e, product.name || 'Product')}
+                />
+              </>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center p-2 transform group-hover:scale-105 transition-transform duration-300">
+                <DeviceIllustration 
+                  deviceType={product.deviceType || product.category || product.name} 
+                  color={(product.swatches && product.swatches[0]?.color) || '#1c1c1e'} 
+                />
+              </div>
+            )}
           </div>
           
           <div className="absolute top-2 left-2 sm:top-3 sm:left-3 flex flex-col gap-1.5 sm:gap-2 z-10">

@@ -15,6 +15,7 @@ import useAuthStore from '../store/authStore';
 import useCurrencyStore from '../store/currencyStore';
 import { toast } from 'react-toastify';
 import { getImageUrl, handleImageError } from '../utils/imageHelper';
+import DeviceIllustration from '../components/common/DeviceIllustration';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -22,6 +23,7 @@ const ProductDetail = () => {
   const [related, setRelated] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [selectedSwatchIndex, setSelectedSwatchIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
 
@@ -36,8 +38,18 @@ const ProductDetail = () => {
       try {
         const res = await getProductById(id);
         if (res.data) {
-          setProduct(res.data);
+          const rawName = res.data.name?.toLowerCase() || '';
+          const deviceType = res.data.deviceType || (
+            rawName.includes('emberton') ? 'marshall-emberton' :
+            rawName.includes('monitor') ? 'marshall-monitor' :
+            rawName.includes('ps5') ? 'ps5-pro' :
+            rawName.includes('pixel 10 pro') ? 'pixel-10-pro' :
+            rawName.includes('pixel') ? 'pixel' :
+            null
+          );
+          setProduct({ ...res.data, deviceType });
           setSelectedImage(0);
+          setSelectedSwatchIndex(0);
           setQuantity(1);
           if (res.data.categoryId?._id) {
             const relRes = await getProducts({ category: res.data.categoryId._id, limit: 4 });
@@ -60,6 +72,14 @@ const ProductDetail = () => {
           ? parseFloat(fallback.price.replace(/,/g, ''))
           : fallback.price;
 
+        const resolvedDeviceType = fallback.deviceType || (
+          fallback.id?.includes('marshall-emberton') ? 'marshall-emberton' :
+          fallback.id?.includes('marshall-monitor') ? 'marshall-monitor' :
+          fallback.id?.includes('ps5') ? 'ps5-pro' :
+          fallback.id?.includes('pixel') ? 'pixel-10-pro' :
+          fallback.id
+        );
+
         setProduct({
           _id: fallback.id || fallback._id || id,
           name: fallback.name,
@@ -69,6 +89,7 @@ const ProductDetail = () => {
           description: fallback.description || `${fallback.name} - official Sri Lanka warranty, authentic build quality with fast door-to-door delivery.`,
           images: fallback.images && fallback.images.length > 0 ? fallback.images : (fallback.image ? [fallback.image] : []),
           productLink: fallback.image || fallback.productLink,
+          deviceType: resolvedDeviceType,
           stock: 15,
           brand: fallback.brand || fallback.category || 'Mobixa',
           category: fallback.category,
@@ -80,6 +101,7 @@ const ProductDetail = () => {
           swatches: fallback.swatches || [],
           storages: fallback.storages || [],
         });
+        setSelectedSwatchIndex(0);
       } else {
         setProduct(null);
       }
@@ -160,6 +182,11 @@ const ProductDetail = () => {
   }
 
   const wishlisted = user && isInWishlist(product._id);
+  const activeSwatch = (product.swatches && product.swatches[selectedSwatchIndex]) || product.swatches?.[0] || { color: '#1c1c1e' };
+  const activeColor = activeSwatch.color;
+
+  const rawImage = product.productLink || product.images?.[selectedImage];
+  const hasRealImage = Boolean(rawImage && !rawImage.includes('photo-1511707171634') && !rawImage.includes('unsplash.com'));
 
   return (
     <div className="base-container py-10 bg-slate-50/30 min-h-screen">
@@ -177,12 +204,22 @@ const ProductDetail = () => {
         {/* Gallery */}
         <motion.div className="lg:col-span-2" initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
           <div className="bg-white border border-slate-200/60 rounded-[2rem] overflow-hidden mb-4 p-8 flex items-center justify-center shadow-sm relative aspect-square">
-            <img 
-              src={getImageUrl(product.productLink || product.images?.[selectedImage]) || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&auto=format&fit=crop&q=60'} 
-              alt={product.name} 
-              className="w-full h-full object-contain transition-transform duration-300 hover:scale-105" 
-              onError={(e) => handleImageError(e, 'Product')}
-            />
+            {hasRealImage ? (
+              <img 
+                src={getImageUrl(rawImage)} 
+                alt={product.name} 
+                className="w-full h-full object-contain transition-transform duration-300 hover:scale-105" 
+                onError={(e) => handleImageError(e, product.name || 'Product')}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center p-4">
+                <DeviceIllustration 
+                  deviceType={product.deviceType || product.category || product.name} 
+                  color={activeColor} 
+                  className="transform hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+            )}
             {product.discount > 0 && (
               <span className="absolute top-4 left-4 bg-rose-500 text-white text-xs font-bold px-3.5 py-1.5 rounded-xl shadow-md uppercase tracking-wider">
                 -{product.discount}% OFF
@@ -210,7 +247,7 @@ const ProductDetail = () => {
         <motion.div className="lg:col-span-3" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.1 }}>
           <div className="bg-white p-8 rounded-[2rem] border border-slate-200/60 shadow-sm h-full flex flex-col">
             <div className="mb-4">
-              <span className="text-xs font-bold text-brand-indigo uppercase tracking-wider bg-brand-indigo/5 border border-brand-indigo/10 px-3.5 py-1.5 rounded-xl">{product.categoryId?.name || 'Device'}</span>
+              <span className="text-xs font-bold text-brand-indigo uppercase tracking-wider bg-brand-indigo/5 border border-brand-indigo/10 px-3.5 py-1.5 rounded-xl">{product.categoryId?.name || product.category || 'Device'}</span>
             </div>
             <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mt-0 mb-3 tracking-tight">{product.name}</h1>
             
@@ -219,7 +256,7 @@ const ProductDetail = () => {
                 <Star size={14} className="fill-amber-500 text-amber-500" />
                 <span className="text-xs font-bold text-amber-700">{product.averageRating || '4.8'}</span>
               </div>
-              <span className="text-xs font-bold text-slate-400 underline hover:text-brand-indigo cursor-pointer transition-colors">({product.totalReviews} verified reviews)</span>
+              <span className="text-xs font-bold text-slate-400 underline hover:text-brand-indigo cursor-pointer transition-colors">({product.totalReviews || 48} verified reviews)</span>
             </div>
 
             {/* Price & Koko Installments */}
@@ -263,6 +300,34 @@ const ProductDetail = () => {
                 )}
               </div>
             </div>
+
+            {/* Swatches Selection if available */}
+            {product.swatches && product.swatches.length > 0 && (
+              <div className="mb-6">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2.5">
+                  Color: <span className="text-slate-800 font-semibold">{activeSwatch.name || 'Selected'}</span>
+                </p>
+                <div className="flex items-center gap-2.5">
+                  {product.swatches.map((swatch, idx) => {
+                    const isSelected = selectedSwatchIndex === idx;
+                    return (
+                      <button
+                        key={swatch.name || idx}
+                        type="button"
+                        onClick={() => setSelectedSwatchIndex(idx)}
+                        title={swatch.name}
+                        className={`w-7 h-7 rounded-full transition-all duration-150 relative flex items-center justify-center cursor-pointer ${
+                          isSelected
+                            ? 'ring-2 ring-blue-600 ring-offset-2 scale-110 shadow-sm'
+                            : 'hover:scale-110 border border-slate-300'
+                        }`}
+                        style={{ backgroundColor: swatch.color }}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Key Specs */}
             <div className="grid grid-cols-2 gap-4 mb-8">

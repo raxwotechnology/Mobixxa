@@ -70,7 +70,7 @@ const StoreDetail = () => {
         <div className="absolute bottom-0 left-0 right-0">
           <div className="base-container py-6 flex items-end gap-5">
             <div className="w-20 h-20 rounded-[1.25rem] border-2 border-white/95 overflow-hidden bg-white shadow-xl flex-shrink-0 p-0.5">
-              <img src={getImageUrl(store.logo) || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&auto=format&fit=crop&q=60'} alt="" className="w-full h-full object-cover rounded-xl" />
+              <img src={getImageUrl(store.logo) || `https://placehold.co/200x200/f8fafc/64748b?text=${encodeURIComponent(store.name || 'Store')}`} alt={store.name} className="w-full h-full object-contain rounded-xl p-1" onError={(e) => handleImageError(e, store.name || 'Store')} />
             </div>
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-white mt-0 mb-1 drop-shadow-md">{store.name}</h1>

@@ -296,10 +296,10 @@ const OrdersPage = () => {
                 {order.items.slice(0, 5).map((item, j) => (
                   <img 
                     key={j} 
-                    src={getImageUrl(item.image) || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&auto=format&fit=crop&q=60'} 
-                    alt="" 
-                    style={{ width: '2.5rem', height: '2.5rem', borderRadius: 'var(--ds-r-sm)', objectFit: 'cover', border: '1px solid var(--ds-border-soft)' }}
-                    onError={(e) => handleImageError(e, 'Product')}
+                    src={getImageUrl(item.image) || `https://placehold.co/100x100/f8fafc/64748b?text=${encodeURIComponent(item.name || 'Item')}`} 
+                    alt={item.name} 
+                    style={{ width: '2.5rem', height: '2.5rem', borderRadius: 'var(--ds-r-sm)', objectFit: 'contain', border: '1px solid var(--ds-border-soft)', background: '#fff' }}
+                    onError={(e) => handleImageError(e, item.name || 'Item')}
                   />
                 ))}
                 {order.items.length > 5 && (
